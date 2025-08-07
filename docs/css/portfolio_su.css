@@ -46,7 +46,8 @@ header .logo {
     display: flex;
     align-items: center;
     background-color: white; /* White background for logo */
-    padding: 0 20px;
+    padding: 0 40px; /* Increased padding for wider logo area */
+    min-width: 300px; /* Ensures minimum width for logo section */
 }
 
 header .logo img {
