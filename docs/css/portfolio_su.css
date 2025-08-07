@@ -76,9 +76,9 @@ header nav a:hover {
 }
 
 main {
-    max-width: 800px;
+    max-width: 900px;
     margin: 30px auto 0;
-    padding: 20px;
+    padding: 40px 60px;
     padding-top: 100px;
     flex: 1 0 auto;
     box-sizing: border-box;
@@ -91,16 +91,21 @@ main > section:first-of-type {
 
 section {
     margin-bottom: 40px;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100%;
 }
 
 section p {
     margin-bottom: 10px;
     line-height: 1.6;
-    padding-left: 20px;
+    padding-left: 0;
+    text-align: left;
 }
 
 section ul {
-    padding-left: 40px;
+    padding-left: 25px;
+    margin-left: 0;
 }
 
 section ul ul {
@@ -109,9 +114,11 @@ section ul ul {
 
 h2 {
     color: #AA0000; /* Seattle U Red for main headings */
-    padding-left: 20px;
+    padding-left: 0;
     border-bottom: 2px solid var(--seattle-gray);
     padding-bottom: 10px;
+    text-align: left;
+    margin-bottom: 20px;
 }
 
 h2:first-of-type {
@@ -121,14 +128,15 @@ h2:first-of-type {
 h3 {
     color: #000000; /* Black for subheadings */
     margin-top: 20px;
-    padding-left: 20px;
+    padding-left: 0;
+    text-align: left;
 }
 
 .project {
     background-color: #f9f9f9;
     border: 1px solid #ddd;
     border-radius: 5px;
-    padding: 20px;
+    padding: 25px;
     margin-bottom: 20px;
     transition: box-shadow 0.3s ease;
 }
@@ -139,6 +147,17 @@ h3 {
 
 .project h3 {
     color: var(--seattle-red);
+    padding-left: 0;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.project p {
+    padding-left: 0;
+}
+
+.project ul {
+    padding-left: 25px;
 }
 
 .project h3 a {
@@ -174,7 +193,8 @@ footer {
     perspective: 1000px;
     width: 200px;
     height: 200px;
-    margin: -10px auto 20px;
+    margin: 20px auto 40px;
+    display: block;
 }
 
 .profile-photo-flipper {
