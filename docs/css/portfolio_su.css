@@ -45,15 +45,18 @@ header .logo {
     height: 100%;
     display: flex;
     align-items: center;
+    justify-content: center; /* Centers the logo horizontally */
     background-color: white; /* White background for logo */
-    padding: 0 40px; /* Increased horizontal padding for wider logo area */
-    min-width: 300px; /* Ensures minimum width for the logo section */
+    padding: 0 30px; /* Balanced horizontal padding */
+    min-width: 280px; /* Ensures minimum width for the logo section */
 }
 
 header .logo img {
-    height: 100%;
+    height: 60%; /* Slightly reduced to ensure proper fit */
     width: auto;
     object-fit: contain;
+    display: block; /* Ensures proper rendering */
+    margin: 0 auto; /* Centers the image */
 }
 
 header nav {
