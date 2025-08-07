@@ -52,7 +52,7 @@ header .logo {
 }
 
 header .logo img {
-    height: 60%; /* Slightly reduced to ensure proper fit */
+    height: 85%; /* Restored to larger size for better visibility */
     width: auto;
     object-fit: contain;
     display: block; /* Ensures proper rendering */
