@@ -9,7 +9,7 @@ LinkedIn: [https://www.linkedin.com/in/duwe-ng/](https://www.linkedin.com/in/duw
 
 ## Overview
 
-This repository contains the comprehensive web portfolio for Duy Nguyen, a Master of Science in Data Science candidate at Seattle University. The portfolio showcases academic research, technical projects, and professional development work completed during graduate studies. The website features an integrated AI chatbot assistant to enhance visitor engagement and provide interactive navigation through the portfolio content.
+This repository contains the comprehensive web portfolio for Duy Nguyen, a Master of Science in Data Science candidate at Seattle University. The portfolio showcases independent academic research (not in a research program), technical projects, and professional development work completed during graduate studies. The website features an integrated AI chatbot assistant to enhance visitor engagement and provide interactive navigation through the portfolio content.
 
 ## Portfolio Architecture
 
