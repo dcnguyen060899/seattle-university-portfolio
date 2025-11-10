@@ -3,7 +3,7 @@
 
 
 **Duy Nguyen**  
-Email: [dcnguyen060899@gmail.com](mailto:dcnguyen060899@gmail.com)  
+Email: [dcnguyen060899@gmail.com](mailto:dnguyen44@seattleu.edu)  
 LinkedIn: [https://www.linkedin.com/in/duwe-ng/](https://www.linkedin.com/in/duwe-ng/)
 
 
