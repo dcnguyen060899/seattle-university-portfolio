@@ -5,7 +5,6 @@
 Email: [dcnguyen060899@gmail.com](mailto:dcnguyen060899@gmail.com)  
 LinkedIn: [https://www.linkedin.com/in/duwe-ng/](https://www.linkedin.com/in/duwe-ng/)
 
-# Seattle University Data Science Portfolio
 
 ## Overview
 
