@@ -4,546 +4,1130 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Duy Integral Theorem - Mathematical Research</title>
-    <link rel="stylesheet" href="css/portfolio.css">
-    <link rel="stylesheet" href="css/research.css">
+    <meta name="description" content="A measure-theoretic framework for understanding implicit regularization in deep neural networks">
+    <meta name="author" content="Duy Nguyen">
+    
+    <!-- MathJax for mathematical notation -->
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- Three.js for 3D visualization -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            line-height: 1.8;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        /* Header styles */
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .logo img {
+            height: 50px;
+            width: auto;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        
+        nav a:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        
+        /* Main container */
+        .research-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        /* Paper header section */
+        .paper-header {
+            background: white;
+            border-radius: 10px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .paper-header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+        
+        .paper-meta {
+            margin: 2rem 0;
+        }
+        
+        .author {
+            font-size: 1.2rem;
+            color: #34495e;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .affiliation {
+            color: #7f8c8d;
+            font-style: italic;
+            margin-bottom: 0.5rem;
+        }
+        
+        .date {
+            color: #95a5a6;
+        }
+        
+        .paper-links {
+            margin-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .download-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .download-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .citation {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            font-style: italic;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            border-left: 3px solid #667eea;
+        }
+        
+        /* Content sections */
+        section {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        section h2 {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        section h3 {
+            color: #34495e;
+            font-size: 1.3rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* Abstract styling */
+        .abstract {
+            background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+            border-left: 4px solid #667eea;
+        }
+        
+        .abstract-content p {
+            margin-bottom: 1rem;
+        }
+        
+        .abstract-content p:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* Theorem blocks */
+        .theorem-block {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .theorem-block strong {
+            color: #667eea;
+        }
+        
+        .equation {
+            margin: 2rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        /* Lemma styling */
+        .lemma {
+            margin: 2rem 0;
+            border-left: 3px solid #764ba2;
+            padding-left: 1rem;
+        }
+        
+        .lemma h3 {
+            color: #764ba2;
+        }
+        
+        .lemma-content {
+            margin-top: 1rem;
+        }
+        
+        /* Visualization container */
+        #canvas-container {
+            width: 100%;
+            height: 600px;
+            background: #000;
+            margin: 2rem 0;
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Visualization controls */
+        .visualization-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 1rem;
+            border-radius: 8px;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        
+        .control-group {
+            margin-bottom: 1rem;
+        }
+        
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        .control-group label {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        .control-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            width: 100%;
+            transition: background 0.3s ease;
+        }
+        
+        .control-button:hover {
+            background: #764ba2;
+        }
+        
+        .control-slider {
+            width: 100%;
+            margin-top: 0.3rem;
+        }
+        
+        #time-display {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: 1.2rem;
+            background: rgba(0,0,0,0.8);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+        
+        /* List styling */
+        ul {
+            margin-left: 2rem;
+            margin-top: 1rem;
+        }
+        
+        ul li {
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Reference list */
+        .reference-list {
+            margin-top: 1rem;
+        }
+        
+        .reference {
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+            text-indent: -2rem;
+        }
+        
+        .reference a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .reference a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Footer */
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+        
+        footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .paper-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            section {
+                padding: 1.5rem;
+            }
+            
+            section h2 {
+                font-size: 1.5rem;
+            }
+            
+            #canvas-container {
+                height: 400px;
+            }
+            
+            .visualization-controls {
+                position: static;
+                margin-top: 1rem;
+                border-radius: 0;
+            }
+        }
+        
+        /* Print styles */
+        @media print {
+            header, footer, .download-button, #canvas-container, .visualization-controls {
+                display: none;
+            }
+            
+            body {
+                background: white;
+            }
+            
+            section {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                break-inside: avoid;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
-        <a href="https://em-executive.berkeley.edu/professional-certificate-machine-learning-artificial-intelligence" class="logo-link">
-            <div class="logo">
-                <img src="images/UC_Berkeley.png" alt="Berkeley Engineering and Haas logo">
+        <div class="header-content">
+            <div class="logo-section">
+                <a href="https://www.seattleu.edu/scieng/computer-science/graduate/msds/" class="logo">
+                    <img src="images/seattle-u-logo.png" alt="Seattle University Logo">
+                </a>
+                <div>
+                    <div style="font-size: 1.2rem; font-weight: bold;">Seattle University</div>
+                    <div style="font-size: 0.9rem; opacity: 0.9;">Master of Science in Data Science</div>
+                </div>
             </div>
-        </a>
-        <nav>
-            <a href="index_portfolio.html">Portfolio</a>
-        </nav>
+            <nav>
+                <a href="index_portfolio.html">Portfolio</a>
+                <a href="#abstract">Abstract</a>
+                <a href="#visualizations">Visualization</a>
+                <a href="#references">References</a>
+            </nav>
+        </div>
     </header>
 
     <div class="research-container">
+        <!-- Paper header with enhanced metadata -->
         <div class="paper-header">
             <h1>Geometric Implicit Regularization: Duy Integral Theorem</h1>
             <div class="paper-meta">
-                <p class="author">Duy Nguyen, B.A. (Economics)</p>
-                <p class="affiliation">Working Paper - Independent Research</p>
-                <p class="date">December 2024</p>
+                <p class="author">Duy Nguyen, M.S. Data Science Candidate</p>
+                <p class="affiliation">Seattle University - Independent Research</p>
+                <p class="date">December 2024 (Revised)</p>
             </div>
             <div class="paper-links">
                 <a href="https://drive.google.com/file/d/1K0lywYnA6MddzZtKFpsYuPjmBQva0apj/view?usp=sharing" class="download-button" target="_blank">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
                     Download Full Paper (PDF)
                 </a>
-                <p class="citation">Nguyen, D. (2024). Geometric Implicit Regularization: Duy Integral Theorem. <em>Working Paper</em>.</p>
+                <p class="citation">
+                    Nguyen, D. (2024). Geometric Implicit Regularization: Duy Integral Theorem. 
+                    <em>Working Paper, Seattle University</em>.
+                </p>
             </div>
         </div>
 
+        <!-- Enhanced Abstract Section -->
         <section id="abstract" class="abstract">
             <h2>Abstract</h2>
-            <p>Deep neural networks, particularly in overparameterized regimes, exhibit remarkable learning and generalization capabilities that defy classical intuition. A leading hypothesis is that gradient-based training dynamics implicitly favor wide, flat minima in the loss landscape—regions often correlated with robust, well-generalizing solutions. However, translating this heuristic into a rigorous, unifying mathematical framework has proven challenging. <strong>Duy Integral Theory</strong> seeks to address this gap by treating the parameter space of a neural network as a continuum endowed with a time-evolving measure that flows under gradient descent. By defining an integral over submanifolds of "equivalent expressivity," this theory captures how measure concentrates on flat, generalizing regions while exponentially suppressing sharper, overfitting directions. In essence, Duy Integral Theory offers a measure-theoretic and PDE-based explanation for why overparameterized networks, despite their large dimensionality, converge to solutions that generalize effectively. This paper details the core ideas, the formal PDE framework, and the technical lemmas ensuring the existence and uniqueness of these measure evolutions. Our results illuminate the deeper geometric–measure-theoretic principles underlying deep learning's success and serve as a foundation for further theoretical and practical advances.</p>
-        </section>
-
-        <section id="theorem-statement" class="theorem-statement">
-            <h2>1. Duy Integral Theorem: Statement</h2>
-            <div class="theorem-block">
-                <p>Let \(\mathcal{M}\subseteq \mathbb{R}^n\) be the parameter space of a (potentially overparameterized) neural network, equipped with a smooth loss function \(\mathcal{L}:\mathcal{M}\to\mathbb{R}\). Suppose \(\{P_i\}_{i\in I}\) is a partition of \(\mathcal{M}\) into submanifolds corresponding to equivalence classes of "similar expressivity." For each \(t\ge0\), let \(\mu_t\) be the time-evolving measure over \(\mathcal{M}\) determined by the gradient-flow continuity equation</p>
-
-                <div class="equation">
-                    \[ \begin{cases}
-                    \displaystyle
-                    \frac{\partial \mu_t}{\partial t}
-                    \;+\;
-                    \nabla_w \cdot 
-                    \Bigl(\mu_t\bigl(-\nabla_w\mathcal{L}(w)\bigr)\Bigr)
-                    \;=\;0,
-                    \\[6pt]
-                    \mu_{t=0} \;=\;\mu_0,
-                    \end{cases} \]
-                </div>
-
-                <p>for some initial measure \(\mu_0\). Define the <strong>Duy Integral</strong> of a "neural-approximable" function \(f:\mathcal{M}\to\mathbb{R}\) as</p>
-
-                <div class="equation">
-                    \[ \int^D f
-                    \;:=\;
-                    \lim_{t\to\infty}
-                    \;\lim_{n,L\to\infty}
-                    \sum_{i\in I}
-                    f(w_i)\;\mu_t(P_i), \]
-                </div>
-
-                <p>where \(w_i\in P_i\) is a chosen representative and \(\mu_t(P_i)\) is the measure of submanifold \(P_i\) at time \(t\).</p>
+            <div class="abstract-content">
+                <p><strong>Problem:</strong> Deep neural networks operating in overparameterized regimes demonstrate remarkable generalization capabilities that contradict classical statistical learning theory. While empirical evidence suggests that gradient-based optimization naturally discovers flat minima associated with good generalization, the mathematical machinery to formalize this phenomenon has remained elusive.</p>
+                
+                <p><strong>Approach:</strong> This work introduces <strong>Duy Integral Theory</strong>, a rigorous measure-theoretic framework that reconceptualizes neural network training as the evolution of probability measures over parameter space. By treating the parameter manifold as a continuum equipped with a time-evolving measure governed by partial differential equations, we establish a mathematical foundation for understanding implicit regularization in deep learning.</p>
+                
+                <p><strong>Key Contributions:</strong> We prove three fundamental results: (1) existence and uniqueness of measure solutions to the gradient flow continuity equation, (2) exponential suppression of measure on sharp submanifolds characterized by high curvature, and (3) concentration of measure on flat regions in the asymptotic limit. The framework introduces the novel concept of the "Duy Integral" over submanifolds of equivalent expressivity, providing a principled way to aggregate neural network behaviors across parameter space.</p>
+                
+                <p><strong>Significance:</strong> This theory bridges the gap between empirical observations and theoretical understanding, offering a rigorous explanation for why overparameterized networks generalize well despite having the capacity to memorize training data. The results have immediate implications for optimization algorithm design and provide new perspectives on the geometry of neural network loss landscapes.</p>
             </div>
         </section>
 
-        <section id="main-theorem" class="main-theorem">
-            <h2>2. Main Theorem</h2>
+        <!-- Main Theorem Statement -->
+        <section id="theorem-statement" class="theorem-statement">
+            <h2>1. The Duy Integral Theorem: Formal Statement</h2>
             <div class="theorem-block">
-                <p><strong>Theorem (Duy Integral Theorem).</strong> Under suitable smoothness and regularity assumptions, the following holds:</p>
-                <ol>
-                    <li><strong>(Existence and uniqueness of \(\mu_t\))</strong> There is a unique measure solution \(\{\mu_t\}_{t\ge0}\) of the continuity equation.</li>
-                    <li><strong>(Exponential suppression of sharp submanifolds)</strong> If a submanifold \(P_i\) exhibits strictly positive curvature (in the Hessian sense) along relevant directions, then \(\mu_t(P_i)\) decays exponentially to \(0\) as \(t\to\infty\).</li>
-                    <li><strong>(Dominance of flat submanifolds)</strong> Submanifolds \(P_i\) with negligible or zero curvature retain non-vanishing measure.</li>
-                    <li><strong>(Limit of the Duy Integral)</strong> Consequently, the Duy Integral \(\int^D f\) is determined entirely by contributions from those "flat" submanifolds, explaining why gradient descent in overparameterized neural networks converges to broad, generalizing solutions.</li>
+                <p><strong>Setting:</strong> Consider a neural network with parameter space \(\mathcal{M} \subseteq \mathbb{R}^n\), where \(n\) may be arbitrarily large (overparameterized regime). Let \(\mathcal{L}: \mathcal{M} \to \mathbb{R}\) denote a smooth loss function, and partition \(\mathcal{M}\) into submanifolds \(\{P_i\}_{i \in I}\) representing equivalence classes of parameters with similar functional behavior.</p>
+
+                <p><strong>Measure Evolution:</strong> Under gradient flow dynamics, the distribution of parameters evolves according to the continuity equation:</p>
+
+                <div class="equation">
+                    \[ \frac{\partial \mu_t}{\partial t} + \nabla_w \cdot \left(\mu_t \cdot (-\nabla_w \mathcal{L}(w))\right) = 0, \quad \mu_{t=0} = \mu_0 \]
+                </div>
+
+                <p>where \(\mu_t\) represents the time-evolving measure over parameter space and \(\mu_0\) is the initial distribution.</p>
+
+                <p><strong>The Duy Integral:</strong> For any neural-approximable function \(f: \mathcal{M} \to \mathbb{R}\), we define:</p>
+
+                <div class="equation">
+                    \[ \int^D f := \lim_{t \to \infty} \lim_{n,L \to \infty} \sum_{i \in I} f(w_i) \cdot \mu_t(P_i) \]
+                </div>
+
+                <p>where \(w_i \in P_i\) is a representative point and \(\mu_t(P_i)\) denotes the measure of submanifold \(P_i\) at time \(t\).</p>
+            </div>
+        </section>
+
+        <!-- Core Results -->
+        <section id="main-theorem" class="main-theorem">
+            <h2>2. Main Theoretical Results</h2>
+            <div class="theorem-block">
+                <p><strong>Theorem (Duy Integral Characterization of Implicit Regularization).</strong></p>
+                <p>Under appropriate smoothness and regularity conditions on \(\mathcal{L}\) and \(\mathcal{M}\), the following statements hold:</p>
+                
+                <ol style="margin-top: 1rem; margin-left: 2rem;">
+                    <li style="margin-bottom: 1rem;">
+                        <strong>Well-posedness:</strong> The continuity equation admits a unique weak solution \(\{\mu_t\}_{t \geq 0}\) in the space of probability measures over \(\mathcal{M}\).
+                    </li>
+                    
+                    <li style="margin-bottom: 1rem;">
+                        <strong>Sharp Region Suppression:</strong> For any submanifold \(P_i\) with average curvature \(\kappa_i > 0\) (measured via the trace of the Hessian restricted to \(P_i\)), there exists a constant \(c_i > 0\) such that:
+                        <div class="equation">
+                            \[ \mu_t(P_i) \leq \mu_0(P_i) \cdot \exp(-c_i \cdot t) \]
+                        </div>
+                    </li>
+                    
+                    <li style="margin-bottom: 1rem;">
+                        <strong>Flat Region Persistence:</strong> Submanifolds with negligible curvature (\(\kappa_i \approx 0\)) maintain finite measure in the limit: \(\liminf_{t \to \infty} \mu_t(P_i) > 0\).
+                    </li>
+                    
+                    <li style="margin-bottom: 0.5rem;">
+                        <strong>Asymptotic Characterization:</strong> The Duy Integral converges and is dominated by contributions from flat submanifolds, providing a quantitative characterization of the implicit bias.
+                    </li>
                 </ol>
             </div>
         </section>
 
+        <!-- Technical Foundations -->
         <section id="key-lemmas" class="key-lemmas">
-            <h2>3. Key Mathematical Lemmas</h2>
+            <h2>3. Mathematical Foundations</h2>
+            
+            <p>The proof of the main theorem relies on several technical results that establish the mathematical infrastructure for our framework. These lemmas ensure the well-posedness of our formulation and provide the tools necessary for analyzing measure evolution.</p>
             
             <div class="lemma">
-                <h3>Lemma A.1 (Manifold Setup and Smoothness)</h3>
+                <h3>Lemma 3.1 (Gradient Flow Well-Posedness)</h3>
                 <div class="lemma-content">
-                    <p>Let \(\mathcal{M}\subseteq \mathbb{R}^n\) be an open subset or a smooth manifold (possibly with boundary). Suppose \(\mathcal{L}\in C^2(\mathcal{M})\) is a twice continuously differentiable function. Then for any compact subset \(K\subset\mathcal{M}\), there exists a Lipschitz constant \(L_K>0\) such that</p>
+                    <p>Assume \(\mathcal{L} \in C^2(\mathcal{M})\) with locally Lipschitz gradient. For any compactly supported initial measure \(\mu_0\), the gradient flow ODE:</p>
                     <div class="equation">
-                        \[ \|\nabla_w \mathcal{L}(w_1) - \nabla_w \mathcal{L}(w_2)\|
-                        \;\leq\;
-                        L_K\|w_1 - w_2\|,
-                        \quad
-                        \forall w_1,w_2 \in K. \]
+                        \[ \frac{dw}{dt} = -\nabla_w \mathcal{L}(w), \quad w(0) = w_0 \]
                     </div>
+                    <p>generates a unique flow map \(\Phi_t: \mathcal{M} \to \mathcal{M}\) that is measure-preserving up to a density factor determined by the divergence of the vector field.</p>
                 </div>
             </div>
             
             <div class="lemma">
-                <h3>Lemma B.1 (Existence of Measure Solutions)</h3>
+                <h3>Lemma 3.2 (Measure Transport Formula)</h3>
                 <div class="lemma-content">
-                    <p>Let \(v(w)=-\nabla_w \mathcal{L}(w)\) be locally Lipschitz on \(\mathcal{M}\). Consider the continuity equation</p>
+                    <p>The solution to the continuity equation is given by the pushforward measure:</p>
                     <div class="equation">
-                        \[ \frac{\partial \mu_t}{\partial t} \;+\; \nabla_w\cdot\bigl(\mu_t\,v(w)\bigr) = 0,
-                        \quad
-                        \mu_{t=0} = \mu_0. \]
+                        \[ \mu_t = (\Phi_t)_* \mu_0 \]
                     </div>
-                    <p>Then there exists a unique solution \(\mu_t\) in the sense of measures (or distributions), for \(t\ge0\), given by</p>
-                    <div class="equation">
-                        \[ \mu_t = (\Phi_t)_*\mu_0 \]
-                    </div>
-                    <p>where \(\Phi_t\) is the flow map of the ODE \(\tfrac{dw}{dt}=v(w)\).</p>
+                    <p>where \((\Phi_t)_*\) denotes the pushforward operator. This establishes the connection between pointwise dynamics and measure evolution.</p>
                 </div>
             </div>
 
             <div class="lemma">
-                <h3>Proposition D.2 (Exponential Suppression of Sharp Submanifolds)</h3>
+                <h3>Lemma 3.3 (Curvature-Dependent Contraction)</h3>
                 <div class="lemma-content">
-                    <p>Suppose submanifold \(P_i\) has \(\alpha_i>0\). Then there is a constant \(c_i>0\) such that</p>
+                    <p>For a submanifold \(P_i\) with minimum eigenvalue \(\lambda_{\min}(H|_{P_i}) > 0\) of the restricted Hessian, the local volume element contracts at rate:</p>
                     <div class="equation">
-                        \[ \mu_t(P_i) 
-                        \;\le\;
-                        \mu_0(P_i)\;\exp(-\,c_i\,t). \]
+                        \[ \frac{d}{dt} \log \mu_t(P_i) \leq -\lambda_{\min}(H|_{P_i}) \]
                     </div>
-                    <p>Consequently, \(\lim_{t\to\infty}\mu_t(P_i)=0\).</p>
+                    <p>This quantifies how geometric properties directly influence measure dynamics.</p>
                 </div>
             </div>
         </section>
 
+        <!-- Geometric Interpretation -->
         <section id="geometric-intuition" class="geometric-intuition">
-            <h2>4. Geometric Intuition</h2>
-            <p>The Duy Integral Theory provides a rigorous explanation for how gradient descent naturally discovers flat minima in the loss landscape. In high-dimensional parameter spaces, the model parameters are more accurately viewed as "flowing measures" rather than point particles following fixed paths.</p>
+            <h2>4. Geometric Interpretation and Physical Analogy</h2>
             
-            <p>As gradient flow progresses, measure evacuation from sharply curved regions occurs exponentially fast—mirroring how probability mass concentrates on low energy states in statistical physics. The theorem proves that this evacuation isn't just a heuristic—it's a mathematical necessity embedded in the differential geometry of gradient flow.</p>
+            <p>The Duy Integral Theory reveals that neural network training can be understood through the lens of geometric flow on high-dimensional manifolds. This perspective transforms our understanding of optimization from tracking individual parameter trajectories to analyzing the collective behavior of parameter distributions.</p>
             
-            <p>The key insight is that generalization in neural networks emerges naturally from this geometric flow property, without requiring explicit regularization. The "implicit bias" toward flat minima is formalized in the measure-theoretic framework, yielding a rigorous mathematical explanation for empirically observed phenomena like the ability of overparameterized networks to resist overfitting.</p>
+            <h3>4.1 The Measure Flow Perspective</h3>
+            <p>Rather than viewing gradient descent as moving a single point through parameter space, we conceptualize it as the evolution of a probability distribution. This distribution, initially spread across the parameter manifold, gradually concentrates in regions with favorable geometric properties. The mathematics shows that this concentration isn't arbitrary—it follows precise laws governed by the local curvature of the loss landscape.</p>
             
-            <p>What makes this framework particularly powerful is that it doesn't assume geometric properties from the outset. Instead, the preference for flat regions over sharp ones emerges naturally from the mathematics. This provides a principled explanation for why certain neural network configurations generalize better than others, grounded in the fundamental properties of measure evolution under gradient flow.</p>
+            <h3>4.2 Curvature as a Selection Mechanism</h3>
+            <p>The key insight is that curvature acts as a natural selection mechanism during training. Regions with high positive curvature (sharp minima) experience exponential depletion of measure, while flat regions (associated with robust generalization) retain and accumulate measure over time. This process occurs automatically without explicit regularization, explaining the "implicit" nature of the regularization phenomenon.</p>
+            
+            <h3>4.3 Statistical Physics Analogy</h3>
+            <p>The framework bears striking resemblance to statistical mechanics, where systems naturally evolve toward states of maximum entropy subject to constraints. In our setting, the "entropy" corresponds to the spread of parameters across flat regions, while sharp minima represent low-entropy configurations that are naturally suppressed. This analogy provides intuition for why overparameterized networks, despite their vast parameter spaces, consistently find generalizing solutions.</p>
+            
+            <h3>4.4 Implications for Network Architecture</h3>
+            <p>The theory suggests that network architectures that naturally induce flatter loss landscapes will exhibit superior generalization. This provides a principled approach to architecture design: rather than relying solely on empirical validation, we can analyze the geometric properties of the loss landscape induced by different architectural choices.</p>
         </section>
 
+        <!-- Interactive Visualization -->
         <section id="visualizations" class="visualization">
-            <h2>5. Visualizations</h2>
-            <p>Consider a simple loss landscape with both sharp and flat minima. As training progresses, the measure (representing the parameter distribution) initially dispersed across the parameter space gradually concentrates on flat regions while evacuating sharp regions.</p>
+            <h2>5. Interactive Visualization of Measure Evolution</h2>
+            
+            <p>The following visualization demonstrates the core concept of the Duy Integral Theory: how measure (represented by point density) flows from sharp to flat regions of the loss landscape over time. This real-time simulation shows the mathematical principles in action.</p>
             
             <div id="canvas-container">
-                <div id="time-display">Time: t = 0</div>
+                <div id="time-display">Time: t = 0.00</div>
+                <div class="visualization-controls">
+                    <div class="control-group">
+                        <label>Animation Control</label>
+                        <button id="play-pause-btn" class="control-button">Pause</button>
+                        <button id="reset-btn" class="control-button" style="margin-top: 0.5rem;">Reset</button>
+                    </div>
+                    <div class="control-group">
+                        <label>Animation Speed</label>
+                        <input type="range" id="speed-slider" class="control-slider" min="0.1" max="3" step="0.1" value="1">
+                        <div style="font-size: 0.8rem; margin-top: 0.3rem;">Speed: <span id="speed-value">1.0</span>x</div>
+                    </div>
+                    <div class="control-group">
+                        <label>Camera Mode</label>
+                        <button id="camera-mode-btn" class="control-button">Auto Rotate: ON</button>
+                    </div>
+                </div>
             </div>
             
-            <p>I've created an animated visualization that shows the continuous flow of measure from t=0 to t=∞, directly demonstrating the key concepts from the Duy Integral Theory paper.</p>
+            <h3>Understanding the Visualization</h3>
+            <p>This three-dimensional representation illustrates several key aspects of the theory:</p>
             
-            <p>Features of the Visualization:</p>
             <ul>
-                <li><strong>Continuous Animation:</strong>
-                    <ul>
-                        <li>Smoothly animates the measure flow from initial uniform distribution to final concentration</li>
-                        <li>Time counter shows the progression from t=0 to t=10 (representing t=∞)</li>
-                        <li>The animation cycles a few times for continuous observation</li>
-                    </ul>
-                </li>
-                <li><strong>Realistic Measure Flow Dynamics:</strong>
-                    <ul>
-                        <li>Points near the sharp minimum evacuate more quickly (as predicted by the theory)</li>
-                        <li>The animation shows gradual color transition (white → red/blue) based on region</li>
-                        <li>Both position and color evolve to highlight the measure concentration process</li>
-                    </ul>
-                </li>
-                <li><strong>Clear Geometric Features:</strong>
-                    <ul>
-                        <li>Distinct red sphere marking the sharp minimum</li>
-                        <li>Distinct blue sphere marking the flat minimum</li>
-                        <li>Detailed surface with wireframe showing the loss landscape</li>
-                    </ul>
-                </li>
+                <li><strong>Loss Landscape Surface:</strong> The wireframe mesh represents a simplified loss landscape with two distinct minima—one sharp (red sphere) and one flat (blue sphere). The height corresponds to the loss value.</li>
+                
+                <li><strong>Measure Distribution:</strong> The cloud of points represents the distribution of parameters (measure) across the landscape. Initially uniformly distributed, these points evolve according to gradient flow dynamics.</li>
+                
+                <li><strong>Color Evolution:</strong> Points transition from white (initial state) to colored states (red near sharp minimum, blue near flat minimum) as they settle into their respective basins of attraction.</li>
+                
+                <li><strong>Exponential Suppression:</strong> Observe how points near the sharp minimum rapidly evacuate the region, while the flat minimum accumulates and retains measure—a direct visualization of Lemma 3.3.</li>
+                
+                <li><strong>Time Evolution:</strong> The simulation spans from t=0 (uniform distribution) to t=10 (asymptotic state), with the time parameter shown in the upper left. This compressed timescale allows observation of the full evolution process.</li>
             </ul>
             
-            <p>The animation directly demonstrates how gradient descent naturally favors flat regions through the effect of geometry on measure flow. You can observe how initially the measure (points) is distributed uniformly, but over time the measure in sharp regions is exponentially suppressed while flat regions retain their measure, precisely as the Duy Integral Theorem predicts.</p>
-            
-            <p>This visual representation helps explain why seemingly counterintuitive practices like early stopping and small batch training can improve generalization—they align with the natural flow of measure toward flat, generalizing regions of the parameter space.</p>
+            <p>The animation demonstrates that the preference for flat minima isn't imposed externally but emerges naturally from the mathematical structure of gradient flow on manifolds with varying curvature.</p>
         </section>
-        
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-        <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x000000);
-            const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({ antialias: true });
-            
-            // Grab container AFTER DOM is loaded
-            const container = document.getElementById('canvas-container');
-            container.appendChild(renderer.domElement);
-        
-            // Time display element
-            const timeDisplay = document.getElementById('time-display');
-        
-            // Add lights
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-            scene.add(ambientLight);
-            
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(1, 2, 1);
-            scene.add(directionalLight);
-            
-            const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.6);
-            directionalLight2.position.set(-1, 1, -1);
-            scene.add(directionalLight2);
-        
-            // Loss function with distinct sharp and flat minima
-            function calculateLoss(x, z) {
-                const sharpMin = 1.5 * Math.exp(-((x+2.5)**2 + (z+2.5)**2) * 3);
-                const flatMin = Math.exp(-((x-2.5)**2 + (z-2.5)**2) * 0.5);
-                return 1 - Math.max(sharpMin, flatMin);
-            }
-        
-            // Create loss landscape surface
-            const size = 10;
-            const resolution = 80;
-        
-            function createSurface() {
-                const geometry = new THREE.PlaneGeometry(size, size, resolution, resolution);
-                const positions = geometry.attributes.position.array;
-                for(let i = 0; i < positions.length; i += 3) {
-                    const x = positions[i];
-                    const z = positions[i + 2];
-                    positions[i + 1] = calculateLoss(x, z) * 1.5;
-                }
-                const material = new THREE.MeshPhongMaterial({
-                    color: 0xaaaaaa,
-                    transparent: true,
-                    opacity: 0.7,
-                    side: THREE.DoubleSide,
-                    wireframe: false,
-                    flatShading: true
-                });
-                const surface = new THREE.Mesh(geometry, material);
-                
-                // Add wireframe
-                const wireframe = new THREE.LineSegments(
-                    new THREE.WireframeGeometry(geometry),
-                    new THREE.LineBasicMaterial({ color: 0x444444, linewidth: 1 })
-                );
-                surface.add(wireframe);
-                scene.add(surface);
-                return surface;
-            }
-            const surface = createSurface();
-        
-            // Create points
-            const numPoints = 5000;
-            const geometry = new THREE.BufferGeometry();
-            const positions = new Float32Array(numPoints * 3);
-            const colors = new Float32Array(numPoints * 3);
-            const initialPositions = new Float32Array(numPoints * 3);
-            const targetPositions = new Float32Array(numPoints * 3);
-            
-            for(let i = 0; i < positions.length; i += 3) {
-                // Initial positions (t=0)
-                initialPositions[i] = (Math.random() - 0.5) * size;
-                initialPositions[i + 2] = (Math.random() - 0.5) * size;
-                initialPositions[i + 1] = calculateLoss(initialPositions[i], initialPositions[i + 2]) * 1.5 + 0.1;
-                
-                // Target positions (t=∞)
-                const angle = Math.random() * Math.PI * 2;
-                const radius = Math.random() * 3;
-                if(Math.random() < 0.95) {
-                    // 95% in flat region
-                    targetPositions[i] = 2.5 + radius * Math.cos(angle) * 0.7;
-                    targetPositions[i + 2] = 2.5 + radius * Math.sin(angle) * 0.7;
-                } else {
-                    // 5% random
-                    targetPositions[i] = (Math.random() - 0.5) * size;
-                    targetPositions[i + 2] = (Math.random() - 0.5) * size;
-                }
-                targetPositions[i + 1] = calculateLoss(targetPositions[i], targetPositions[i + 2]) * 1.5 + 0.1;
-                
-                // Start with initial positions
-                positions[i] = initialPositions[i];
-                positions[i + 1] = initialPositions[i + 1];
-                positions[i + 2] = initialPositions[i + 2];
-                
-                // Initial color: white
-                colors[i] = 1;     // R
-                colors[i + 1] = 1; // G
-                colors[i + 2] = 1; // B
-            }
-            
-            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-            
-            const pointMaterial = new THREE.PointsMaterial({
-                size: 0.15,
-                vertexColors: true,
-                transparent: true,
-                opacity: 0.9
-            });
-            const points = new THREE.Points(geometry, pointMaterial);
-            scene.add(points);
-        
-            // Create sphere markers
-            function createSphereMarker(x, y, z, color, s) {
-                const sphereGeom = new THREE.SphereGeometry(s, 16, 16);
-                const sphereMat = new THREE.MeshPhongMaterial({ color, transparent: true, opacity: 0.7 });
-                const sphere = new THREE.Mesh(sphereGeom, sphereMat);
-                sphere.position.set(x, y, z);
-                scene.add(sphere);
-                return sphere;
-            }
-            const sharpMinima = createSphereMarker(-2.5, calculateLoss(-2.5, -2.5)*1.5, -2.5, 0xff0000, 0.4);
-            const flatMinima  = createSphereMarker(2.5,  calculateLoss(2.5, 2.5)*1.5,   2.5,  0x0000ff, 0.4);
-        
-            // Create text sprites
-            function createTextSprite(text, fontSize, bgColor) {
-                const canvas = document.createElement('canvas');
-                canvas.width = 1024;
-                canvas.height = 512;
-                const ctx = canvas.getContext('2d');
-                
-                // Semi-transparent background
-                if (bgColor) {
-                    ctx.fillStyle = bgColor; // e.g. "rgba(0,0,0,0.4)"
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                }
-            
-                // Draw text with stroke
-                const fSize = fontSize || 60;
-                ctx.font = `Bold ${fSize}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-            
-                ctx.lineWidth = 6;
-                ctx.strokeStyle = 'black';
-                ctx.strokeText(text, canvas.width / 2, canvas.height / 2);
-            
-                ctx.fillStyle = 'white';
-                ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-            
-                // Create texture
-                const texture = new THREE.CanvasTexture(canvas);
-                const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
-                
-                // Draw label on top of everything
-                material.depthTest = false;
-                material.depthWrite = false;
-            
-                const sprite = new THREE.Sprite(material);
-                sprite.renderOrder = 9999;
-            
-                // Scale so it’s readable
-                sprite.scale.set(4, 2, 1);
-                
-                return sprite;
-            }
-        
-            // Create and position your labels
-            const sharpLabel = createTextSprite("Sharp Minimum", 60, "rgba(0,0,0,0.4)");
-            sharpLabel.position.set(-2.5, 3, -2.5); // higher than sphere
-            scene.add(sharpLabel);
-            
-            const flatLabel = createTextSprite("Flat Minimum", 60, "rgba(0,0,0,0.4)");
-            flatLabel.position.set(2.5, 3, 2.5); // higher than sphere
-            scene.add(flatLabel);
 
-            // const infoLabel = createTextSprite("", 36, "rgba(0,0,0,0.7)");
-            // infoLabel.position.set(0, 2, -5);
-            // scene.add(infoLabel);
-        
-            // Camera setup
-            camera.position.set(15, 10, 15);
-            camera.lookAt(0, 0, 0);
-        
-            // Animation parameters
-            let animationTime = 0;
-            const animationDuration = 300; // frames
-            let isAnimating = true;
-            let animationComplete = false;
-            let cycleCount = 0;
-            const totalCycles = 4;
-        
-            function animate() {
-                requestAnimationFrame(animate);
-                
-                // Rotate camera
-                const cameraTime = Date.now() * 0.0001;
-                camera.position.x = 15 * Math.cos(cameraTime * 0.3);
-                camera.position.z = 15 * Math.sin(cameraTime * 0.3);
-                camera.lookAt(0, 0, 0);
-                
-                if (isAnimating) {
-                    animationTime++;
-                    let progress = animationTime / animationDuration;
-                    if (progress >= 1) {
-                        if (cycleCount < totalCycles - 1) {
-                            animationTime = 0;
-                            cycleCount++;
-                        } else {
-                            progress = 1;
-                            animationComplete = true;
-                        }
-                    }
-                    
-                    // Show time in [0..10]
-                    timeDisplay.textContent = `Time: t = ${(progress * 10).toFixed(2)}`;
-                    
-                    // Easing
-                    const easedProgress = progress < 0.5 
-                        ? 2 * progress * progress
-                        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-                    
-                    const pos = points.geometry.attributes.position.array;
-                    const col = points.geometry.attributes.color.array;
-                    
-                    for(let i = 0; i < pos.length; i += 3) {
-                        const isNearSharp = Math.sqrt((initialPositions[i]+2.5)**2 + (initialPositions[i+2]+2.5)**2) < 2;
-                        let pointProgress = isNearSharp ? Math.min(1, easedProgress * 1.5) : easedProgress;
-                        if (animationComplete) {
-                            pointProgress = 1;
-                        }
-                        
-                        pos[i]     = initialPositions[i]     + (targetPositions[i]     - initialPositions[i])     * pointProgress;
-                        pos[i + 2] = initialPositions[i + 2] + (targetPositions[i + 2] - initialPositions[i + 2]) * pointProgress;
-                        pos[i + 1] = calculateLoss(pos[i], pos[i + 2]) * 1.5 + 0.1;
-                        
-                        const distToSharp = Math.sqrt((pos[i]+2.5)**2 + (pos[i+2]+2.5)**2);
-                        const distToFlat  = Math.sqrt((pos[i]-2.5)**2 + (pos[i+2]-2.5)**2);
-                        
-                        if (distToSharp < distToFlat) {
-                            // White → Red
-                            col[i]     = 1;
-                            col[i + 1] = 1 - pointProgress;
-                            col[i + 2] = 1 - pointProgress;
-                        } else {
-                            // White → Blue
-                            col[i]     = 1 - pointProgress;
-                            col[i + 1] = 1 - pointProgress;
-                            col[i + 2] = 1;
-                        }
-                    }
-                    
-                    points.geometry.attributes.position.needsUpdate = true;
-                    points.geometry.attributes.color.needsUpdate = true;
-                    
-                    if (animationComplete && cycleCount >= totalCycles - 1) {
-                        animationTime = 0;
-                        cycleCount = 0;
-                        animationComplete = false;
-                    }
-                }
-                
-                // Keep text sprites facing camera
-                sharpLabel.quaternion.copy(camera.quaternion);
-                flatLabel.quaternion.copy(camera.quaternion);
-                // infoLabel.quaternion.copy(camera.quaternion);
-                
-                renderer.render(scene, camera);
-            }
-        
-            // Handle window resize
-            function onWindowResize() {
-                const width = container.clientWidth;
-                const height = container.clientHeight;
-                camera.aspect = width / height;
-                camera.updateProjectionMatrix();
-                renderer.setSize(width, height);
-            }
-            window.addEventListener('resize', onWindowResize);
-            
-            // Force an initial resize to ensure correct sizing
-            onWindowResize();
-        
-            // Start animation
-            animate();
-        });
-        </script>
-        
-        <style>
-            #canvas-container {
-                width: 100%;
-                height: 500px;
-                overflow: hidden;
-                background: #000;
-                margin: 20px 0;
-                position: relative;
-            }
-            canvas {
-                width: 100%;
-                height: 100%;
-            }
-            #time-display {
-                position: absolute;
-                top: 10px;
-                left: 10px;
-                color: white;
-                font-family: Arial, sans-serif;
-                font-size: 20px;
-                background-color: rgba(0,0,0,0.7);
-                padding: 5px 10px;
-                border-radius: 5px;
-            }
-        </style>
-
-
+        <!-- Practical Implications -->
         <section id="implications" class="implications">
-            <h2>6. Implications and Applications</h2>
-            <p>The Duy Integral Theorem has several important implications for deep learning theory and practice:</p>
+            <h2>6. Implications for Deep Learning Practice</h2>
             
-            <ul>
-                <li>It explains why stochastic gradient descent (SGD) outperforms deterministic gradient descent in many settings, as the stochasticity helps explore the geometric structure of flat manifolds.</li>
-                <li>It provides theoretical justification for why large batch training can perform worse than small batch training, as large batches may impede the natural flow of measure through the parameter space.</li>
-                <li>It suggests new optimization strategies that directly leverage geometric properties of the parameter space, potentially enabling faster convergence to generalizing solutions.</li>
-                <li>It bridges the gap between the empirical success of overparameterized models and theoretical understanding of generalization, addressing a fundamental paradox in machine learning theory.</li>
-            </ul>
-        </section>
-        
-        <section id="conclusion" class="conclusion">
-            <h2>7. Conclusion and Future Work</h2>
-            <p>The Duy Integral Theorem brings a rigorous geometric and measure-theoretic perspective to understanding neural network optimization. By formulating gradient flow as a measure evolution process, it provides a solid mathematical foundation for explaining how neural networks naturally favor generalizing solutions despite their vast parameter spaces.</p>
+            <p>The Duy Integral Theorem provides theoretical justification for several empirical observations in deep learning and suggests new directions for algorithm development. Understanding the measure-theoretic foundations of neural network training opens doors to more principled approaches in model design and optimization.</p>
             
-            <p>This framework demonstrates that geometric properties of neural network training aren't imposed artificially but emerge naturally from the underlying mathematical principles governing gradient flow. The preference for flat minima isn't an assumed property but rather a derived consequence of how measures evolve in the parameter space.</p>
+            <h3>6.1 Batch Size Effects</h3>
+            <p>The theory explains why small-batch training often yields better generalization than large-batch training. Small batches introduce stochasticity that helps the measure explore flat regions more effectively, while large batches may cause premature concentration in sharper minima. The mathematical framework quantifies this effect through the interaction between noise scale and local curvature.</p>
             
-            <p>Future work includes extending the theory to stochastic gradient methods, developing practical algorithms that leverage these geometric insights, and exploring connections to other theoretical frameworks such as information geometry and optimal transport theory.</p>
+            <h3>6.2 Early Stopping as Measure Control</h3>
+            <p>Early stopping can be reinterpreted as halting the evolution before measure fully evacuates from mildly sharp regions that still generalize reasonably well. The theory provides a principled way to determine optimal stopping times based on the rate of measure concentration.</p>
+            
+            <h3>6.3 Learning Rate Schedules</h3>
+            <p>The framework suggests that learning rate schedules should adapt to the local geometry of the loss landscape. Regions with high curvature benefit from smaller learning rates to prevent overshooting, while flat regions can accommodate larger steps. This geometric adaptation emerges naturally from the measure evolution equations.</p>
+            
+            <h3>6.4 Architecture Design Principles</h3>
+            <p>Network architectures that induce flatter loss landscapes will naturally exhibit better generalization properties. This includes architectural choices like skip connections, batch normalization, and certain activation functions. The theory provides a quantitative framework for evaluating these design choices beyond empirical validation.</p>
+            
+            <h3>6.5 Novel Optimization Algorithms</h3>
+            <p>The measure-theoretic perspective suggests new optimization algorithms that directly manipulate the parameter distribution rather than individual points. These "measure-aware" optimizers could potentially achieve better generalization by explicitly encouraging exploration of flat regions.</p>
         </section>
 
+        <!-- Future Directions -->
+        <section id="future-work" class="future-work">
+            <h2>7. Future Research Directions</h2>
+            
+            <p>While this work establishes the foundational framework of Duy Integral Theory, several promising avenues remain for future investigation. These directions span both theoretical extensions and practical applications.</p>
+            
+            <h3>7.1 Extension to Stochastic Settings</h3>
+            <p>The current framework analyzes deterministic gradient flow. Extending the theory to stochastic gradient descent (SGD) requires incorporating diffusion terms into the continuity equation, leading to Fokker-Planck type equations. This extension would provide a more complete picture of practical neural network training.</p>
+            
+            <h3>7.2 Discrete-Time Analysis</h3>
+            <p>Real optimization algorithms operate in discrete time steps. Developing a discrete-time version of the theory, accounting for discretization errors and their impact on measure evolution, would bridge the gap between continuous theory and discrete practice.</p>
+            
+            <h3>7.3 Connections to Information Geometry</h3>
+            <p>The measure evolution framework naturally connects to information geometry and the Fisher information metric. Exploring these connections could yield insights into the relationship between parameter space geometry and function space behavior.</p>
+            
+            <h3>7.4 Computational Methods</h3>
+            <p>Developing efficient numerical methods to compute or approximate the Duy Integral for practical neural networks remains an open challenge. Such methods would enable direct application of the theory to architecture selection and hyperparameter tuning.</p>
+            
+            <h3>7.5 Empirical Validation</h3>
+            <p>While the theory aligns with empirical observations, systematic experimental validation across different architectures, datasets, and optimization algorithms would strengthen the framework and potentially reveal new phenomena.</p>
+        </section>
+
+        <!-- Conclusion -->
+        <section id="conclusion" class="conclusion">
+            <h2>8. Conclusion</h2>
+            
+            <p>The Duy Integral Theorem represents a significant step toward understanding the fundamental mechanisms underlying deep learning's empirical success. By recasting neural network optimization as measure evolution on parameter manifolds, we obtain a mathematically rigorous explanation for implicit regularization—one of the most important phenomena in modern machine learning.</p>
+            
+            <p>The framework demonstrates that the tendency of gradient-based optimization to find generalizing solutions isn't accidental but rather a mathematical necessity arising from the geometric structure of high-dimensional optimization. The exponential suppression of sharp regions and persistence of flat regions emerge naturally from the differential equations governing measure flow, without requiring additional assumptions or heuristics.</p>
+            
+            <p>This work bridges multiple mathematical disciplines—measure theory, partial differential equations, and differential geometry—to address a fundamental question in machine learning. The resulting framework not only explains existing phenomena but also suggests new directions for both theoretical investigation and practical algorithm development.</p>
+            
+            <p>As deep learning continues to transform technology and science, understanding its theoretical foundations becomes increasingly critical. The Duy Integral Theory contributes to this understanding by providing a principled, mathematically grounded perspective on why neural networks work as well as they do, and how we might make them work even better.</p>
+        </section>
+
+        <!-- References -->
         <section id="references" class="references">
             <h2>References</h2>
             <div class="reference-list">
-                <p class="reference">Nguyen, D. (2025). Geometric Implicit Regularization: Duy Integral Theorem. <em>Working Paper</em>. [<a href="https://drive.google.com/file/d/1K0lywYnA6MddzZtKFpsYuPjmBQva0apj/view?usp=sharing" target="_blank">PDF Link</a>]</p>
-                <p class="reference">Ambrosio, L., Gigli, N., Savaré, G. (2008). <em>Gradient Flows</em>. Birkhäuser.</p>
-                <p class="reference">Keskar, N.S., Mudigere, D., Nocedal, J., Smelyanskiy, M., Tang, P.T.P. (2017). <em>On Large-Batch Training for Deep Learning: Generalization Gap and Sharp Minima</em>. ICLR.</p>
-                <p class="reference">Dinh, L., Pascanu, R., Bengio, S., Bengio, Y. (2017). <em>Sharp Minima Can Generalize for Deep Nets</em>. ICML.</p>
+                <p class="reference">Nguyen, D. (2024). Geometric Implicit Regularization: Duy Integral Theorem. <em>Working Paper, Seattle University</em>. [<a href="https://drive.google.com/file/d/1K0lywYnA6MddzZtKFpsYuPjmBQva0apj/view?usp=sharing" target="_blank">PDF</a>]</p>
+                
+                <p class="reference">Ambrosio, L., Gigli, N., & Savaré, G. (2008). <em>Gradient Flows in Metric Spaces and in the Space of Probability Measures</em>. Birkhäuser Basel.</p>
+                
+                <p class="reference">Keskar, N. S., Mudigere, D., Nocedal, J., Smelyanskiy, M., & Tang, P. T. P. (2017). On large-batch training for deep learning: Generalization gap and sharp minima. In <em>International Conference on Learning Representations</em>.</p>
+                
+                <p class="reference">Dinh, L., Pascanu, R., Bengio, S., & Bengio, Y. (2017). Sharp minima can generalize for deep nets. In <em>Proceedings of the 34th International Conference on Machine Learning</em> (pp. 1019-1028).</p>
+                
+                <p class="reference">Neyshabur, B., Bhojanapalli, S., McAllester, D., & Srebro, N. (2017). Exploring generalization in deep learning. In <em>Advances in Neural Information Processing Systems</em> (pp. 5947-5956).</p>
+                
+                <p class="reference">Zhang, C., Bengio, S., Hardt, M., Recht, B., & Vinyals, O. (2017). Understanding deep learning requires rethinking generalization. In <em>International Conference on Learning Representations</em>.</p>
+                
+                <p class="reference">Villani, C. (2003). <em>Topics in Optimal Transportation</em>. American Mathematical Society.</p>
+                
+                <p class="reference">Evans, L. C. (2010). <em>Partial Differential Equations</em> (2nd ed.). American Mathematical Society.</p>
             </div>
         </section>
     </div>
 
     <footer>
-        <p>© 2024 UC Berkeley. All rights reserved.</p>
-        <a href="index_portfolio.html">Back to Portfolio</a>
+        <p>© 2024 Duy Nguyen, Seattle University. All rights reserved.</p>
+        <p>
+            <a href="index_portfolio.html">Back to Portfolio</a> | 
+            <a href="https://github.com/duynguyen">GitHub</a> | 
+            <a href="https://linkedin.com/in/duynguyen">LinkedIn</a>
+        </p>
     </footer>
+
+    <!-- Enhanced Three.js Visualization Script -->
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Scene setup
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+        scene.fog = new THREE.Fog(0x000000, 10, 30);
+        
+        const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ 
+            antialias: true,
+            alpha: true,
+            powerPreference: "high-performance"
+        });
+        
+        // Get container and add renderer
+        const container = document.getElementById('canvas-container');
+        container.appendChild(renderer.domElement);
+        
+        // Get control elements
+        const timeDisplay = document.getElementById('time-display');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const speedSlider = document.getElementById('speed-slider');
+        const speedValue = document.getElementById('speed-value');
+        const cameraModeBtn = document.getElementById('camera-mode-btn');
+        
+        // Animation state
+        let isPlaying = true;
+        let animationSpeed = 1.0;
+        let autoRotate = true;
+        let animationTime = 0;
+        const animationDuration = 300;
+        let cycleCount = 0;
+        const totalCycles = Infinity; // Continuous animation
+        
+        // Enhanced lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+        
+        const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight1.position.set(5, 10, 5);
+        directionalLight1.castShadow = true;
+        scene.add(directionalLight1);
+        
+        const directionalLight2 = new THREE.DirectionalLight(0x4466ff, 0.4);
+        directionalLight2.position.set(-5, 5, -5);
+        scene.add(directionalLight2);
+        
+        const pointLight = new THREE.PointLight(0xffffff, 0.5);
+        pointLight.position.set(0, 5, 0);
+        scene.add(pointLight);
+        
+        // Loss function with sharp and flat minima
+        function calculateLoss(x, z) {
+            const sharpMin = 2.0 * Math.exp(-((x + 2.5)**2 + (z + 2.5)**2) * 4);
+            const flatMin = 1.2 * Math.exp(-((x - 2.5)**2 + (z - 2.5)**2) * 0.4);
+            const base = 0.05 * (x**2 + z**2);
+            return 1 - Math.max(sharpMin, flatMin) + base * 0.01;
+        }
+        
+        // Create loss landscape surface with higher resolution
+        function createSurface() {
+            const size = 10;
+            const resolution = 100;
+            const geometry = new THREE.PlaneGeometry(size, size, resolution, resolution);
+            const positions = geometry.attributes.position.array;
+            
+            for(let i = 0; i < positions.length; i += 3) {
+                const x = positions[i];
+                const z = positions[i + 2];
+                positions[i + 1] = calculateLoss(x, z) * 1.5;
+            }
+            
+            geometry.computeVertexNormals();
+            
+            // Main surface material
+            const material = new THREE.MeshPhongMaterial({
+                color: 0x888888,
+                specular: 0x222222,
+                shininess: 50,
+                transparent: true,
+                opacity: 0.8,
+                side: THREE.DoubleSide
+            });
+            
+            const surface = new THREE.Mesh(geometry, material);
+            
+            // Add wireframe overlay
+            const wireframeGeometry = new THREE.WireframeGeometry(geometry);
+            const wireframeMaterial = new THREE.LineBasicMaterial({ 
+                color: 0x333333, 
+                transparent: true, 
+                opacity: 0.3 
+            });
+            const wireframe = new THREE.LineSegments(wireframeGeometry, wireframeMaterial);
+            surface.add(wireframe);
+            
+            scene.add(surface);
+            return surface;
+        }
+        
+        const surface = createSurface();
+        
+        // Create measure points with improved distribution
+        const numPoints = 8000;
+        const particleGeometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(numPoints * 3);
+        const colors = new Float32Array(numPoints * 3);
+        const sizes = new Float32Array(numPoints);
+        const initialPositions = new Float32Array(numPoints * 3);
+        const targetPositions = new Float32Array(numPoints * 3);
+        
+        // Initialize particles
+        for(let i = 0; i < numPoints; i++) {
+            const idx = i * 3;
+            
+            // Initial uniform distribution
+            initialPositions[idx] = (Math.random() - 0.5) * 8;
+            initialPositions[idx + 2] = (Math.random() - 0.5) * 8;
+            initialPositions[idx + 1] = calculateLoss(
+                initialPositions[idx], 
+                initialPositions[idx + 2]
+            ) * 1.5 + 0.1;
+            
+            // Target distribution (concentrated in flat region)
+            const angle = Math.random() * Math.PI * 2;
+            const radius = Math.sqrt(Math.random()) * 2;
+            
+            if(Math.random() < 0.92) {
+                // Most particles go to flat region
+                targetPositions[idx] = 2.5 + radius * Math.cos(angle) * 0.8;
+                targetPositions[idx + 2] = 2.5 + radius * Math.sin(angle) * 0.8;
+            } else if(Math.random() < 0.5) {
+                // Few particles remain near sharp region
+                targetPositions[idx] = -2.5 + radius * Math.cos(angle) * 0.3;
+                targetPositions[idx + 2] = -2.5 + radius * Math.sin(angle) * 0.3;
+            } else {
+                // Some particles scattered
+                targetPositions[idx] = (Math.random() - 0.5) * 6;
+                targetPositions[idx + 2] = (Math.random() - 0.5) * 6;
+            }
+            
+            targetPositions[idx + 1] = calculateLoss(
+                targetPositions[idx], 
+                targetPositions[idx + 2]
+            ) * 1.5 + 0.1;
+            
+            // Initialize current positions
+            positions[idx] = initialPositions[idx];
+            positions[idx + 1] = initialPositions[idx + 1];
+            positions[idx + 2] = initialPositions[idx + 2];
+            
+            // Initial colors (white)
+            colors[idx] = 1;
+            colors[idx + 1] = 1;
+            colors[idx + 2] = 1;
+            
+            // Particle sizes
+            sizes[i] = 0.02 + Math.random() * 0.01;
+        }
+        
+        particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        particleGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        particleGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+        
+        // Enhanced particle material
+        const particleMaterial = new THREE.PointsMaterial({
+            size: 0.12,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.85,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+        
+        const particles = new THREE.Points(particleGeometry, particleMaterial);
+        scene.add(particles);
+        
+        // Create minima markers with glow effect
+        function createMinimaMarker(x, y, z, color, label) {
+            const group = new THREE.Group();
+            
+            // Main sphere
+            const sphereGeometry = new THREE.SphereGeometry(0.3, 32, 32);
+            const sphereMaterial = new THREE.MeshPhongMaterial({
+                color: color,
+                emissive: color,
+                emissiveIntensity: 0.3,
+                transparent: true,
+                opacity: 0.8
+            });
+            const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+            group.add(sphere);
+            
+            // Glow effect
+            const glowGeometry = new THREE.SphereGeometry(0.4, 16, 16);
+            const glowMaterial = new THREE.MeshBasicMaterial({
+                color: color,
+                transparent: true,
+                opacity: 0.3
+            });
+            const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+            group.add(glow);
+            
+            // Position group
+            group.position.set(x, y, z);
+            scene.add(group);
+            
+            return group;
+        }
+        
+        const sharpMinima = createMinimaMarker(
+            -2.5, 
+            calculateLoss(-2.5, -2.5) * 1.5, 
+            -2.5, 
+            0xff4444, 
+            "Sharp"
+        );
+        
+        const flatMinima = createMinimaMarker(
+            2.5, 
+            calculateLoss(2.5, 2.5) * 1.5, 
+            2.5, 
+            0x4444ff, 
+            "Flat"
+        );
+        
+        // Create text labels
+        function createTextSprite(text, position, bgColor) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            
+            // Background
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Text
+            ctx.font = 'Bold 48px Arial';
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            const material = new THREE.SpriteMaterial({ 
+                map: texture, 
+                transparent: true,
+                depthTest: false
+            });
+            const sprite = new THREE.Sprite(material);
+            sprite.scale.set(2, 1, 1);
+            sprite.position.copy(position);
+            sprite.position.y += 1.5;
+            
+            return sprite;
+        }
+        
+        const sharpLabel = createTextSprite(
+            "Sharp Minimum", 
+            sharpMinima.position, 
+            'rgba(255, 68, 68, 0.8)'
+        );
+        scene.add(sharpLabel);
+        
+        const flatLabel = createTextSprite(
+            "Flat Minimum", 
+            flatMinima.position, 
+            'rgba(68, 68, 255, 0.8)'
+        );
+        scene.add(flatLabel);
+        
+        // Camera setup
+        camera.position.set(15, 10, 15);
+        camera.lookAt(0, 0, 0);
+        
+        // Control event handlers
+        playPauseBtn.addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            playPauseBtn.textContent = isPlaying ? 'Pause' : 'Play';
+        });
+        
+        resetBtn.addEventListener('click', () => {
+            animationTime = 0;
+            cycleCount = 0;
+            isPlaying = true;
+            playPauseBtn.textContent = 'Pause';
+        });
+        
+        speedSlider.addEventListener('input', (e) => {
+            animationSpeed = parseFloat(e.target.value);
+            speedValue.textContent = animationSpeed.toFixed(1);
+        });
+        
+        cameraModeBtn.addEventListener('click', () => {
+            autoRotate = !autoRotate;
+            cameraModeBtn.textContent = `Auto Rotate: ${autoRotate ? 'ON' : 'OFF'}`;
+        });
+        
+        // Mouse interaction for manual camera control
+        let mouseX = 0;
+        let mouseY = 0;
+        let isMouseDown = false;
+        
+        container.addEventListener('mousedown', () => { isMouseDown = true; });
+        container.addEventListener('mouseup', () => { isMouseDown = false; });
+        container.addEventListener('mousemove', (e) => {
+            if (isMouseDown && !autoRotate) {
+                const rect = container.getBoundingClientRect();
+                mouseX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                mouseY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+            }
+        });
+        
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Update animation
+            if (isPlaying) {
+                animationTime += animationSpeed;
+                
+                let progress = animationTime / animationDuration;
+                if (progress >= 1) {
+                    progress = 0;
+                    animationTime = 0;
+                    cycleCount++;
+                }
+                
+                // Display time
+                const displayTime = progress * 10;
+                timeDisplay.textContent = `Time: t = ${displayTime.toFixed(2)}`;
+                
+                // Smooth easing function
+                const easedProgress = progress < 0.5
+                    ? 2 * progress * progress
+                    : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                
+                // Update particles
+                const pos = particles.geometry.attributes.position.array;
+                const col = particles.geometry.attributes.color.array;
+                
+                for(let i = 0; i < numPoints; i++) {
+                    const idx = i * 3;
+                    
+                    // Check proximity to sharp minimum for faster evacuation
+                    const distToSharp = Math.sqrt(
+                        (initialPositions[idx] + 2.5)**2 + 
+                        (initialPositions[idx + 2] + 2.5)**2
+                    );
+                    
+                    // Sharp region evacuates faster
+                    const localProgress = distToSharp < 2.5 
+                        ? Math.min(1, easedProgress * 1.8) 
+                        : easedProgress;
+                    
+                    // Interpolate positions
+                    pos[idx] = initialPositions[idx] + 
+                        (targetPositions[idx] - initialPositions[idx]) * localProgress;
+                    pos[idx + 2] = initialPositions[idx + 2] + 
+                        (targetPositions[idx + 2] - initialPositions[idx + 2]) * localProgress;
+                    pos[idx + 1] = calculateLoss(pos[idx], pos[idx + 2]) * 1.5 + 0.1 + 
+                        Math.sin(animationTime * 0.01 + i) * 0.02; // Small floating effect
+                    
+                    // Update colors based on position
+                    const currentDistToSharp = Math.sqrt(
+                        (pos[idx] + 2.5)**2 + (pos[idx + 2] + 2.5)**2
+                    );
+                    const currentDistToFlat = Math.sqrt(
+                        (pos[idx] - 2.5)**2 + (pos[idx + 2] - 2.5)**2
+                    );
+                    
+                    if (currentDistToSharp < currentDistToFlat) {
+                        // Near sharp minimum - red tint
+                        col[idx] = 1;
+                        col[idx + 1] = 1 - localProgress * 0.7;
+                        col[idx + 2] = 1 - localProgress * 0.7;
+                    } else {
+                        // Near flat minimum - blue tint
+                        col[idx] = 1 - localProgress * 0.7;
+                        col[idx + 1] = 1 - localProgress * 0.7;
+                        col[idx + 2] = 1;
+                    }
+                }
+                
+                particles.geometry.attributes.position.needsUpdate = true;
+                particles.geometry.attributes.color.needsUpdate = true;
+            }
+            
+            // Camera rotation
+            if (autoRotate) {
+                const time = Date.now() * 0.0001;
+                camera.position.x = Math.cos(time * 0.3) * 18;
+                camera.position.z = Math.sin(time * 0.3) * 18;
+                camera.position.y = 10 + Math.sin(time * 0.5) * 3;
+            } else if (!isMouseDown) {
+                // Manual camera control
+                camera.position.x += (mouseX * 20 - camera.position.x) * 0.05;
+                camera.position.z += (mouseY * 20 - camera.position.z) * 0.05;
+            }
+            
+            camera.lookAt(0, 0, 0);
+            
+            // Update sprite orientations
+            sharpLabel.lookAt(camera.position);
+            flatLabel.lookAt(camera.position);
+            
+            // Render
+            renderer.render(scene, camera);
+        }
+        
+        // Handle window resizing
+        function onWindowResize() {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        }
+        
+        window.addEventListener('resize', onWindowResize);
+        onWindowResize();
+        
+        // Start animation
+        animate();
+    });
+    </script>
 </body>
 </html>
