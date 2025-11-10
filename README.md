@@ -1,4 +1,4 @@
-# [<u><em>Seattle University (MSDS) - Portfolio</em>]([https://ucberkeley-ml-ai-capstone.com](https://duyng-portfolio.com/docs/index_portfolio.html)/)
+# [<u><em>Seattle University (MSDS) - Portfolio</em>]([https://duyng-portfolio.com/docs/index_portfolio.html](https://duyng-portfolio.com/docs/index_portfolio.html)/)
 
 
 **Duy Nguyen**  
