@@ -66,95 +66,79 @@ def evaluate_challenge():
         user_solution = data.get("code", "")
         challenge_type = data.get("challenge_type", "")
         
-        # Prompt asking for text format
+        # Prompt asking for text format - very explicit instructions
         evaluation_prompt = f"""
         Evaluate this solution for the {challenge_type} algorithm challenge:
-        
+
         ```javascript
         {user_solution}
         ```
-        
+
         Check for:
         1. Correctness - Does it implement the required algorithm properly?
         2. Key concepts - Does it handle the core requirements (e.g., tracking differences in fuzzy matching)?
         3. Edge cases - Does it handle null/empty inputs and other edge cases?
         4. Code quality - Is the code well-structured and efficient?
-        
-        IMPORTANT: Format your response as plain text with the following structure:
-        
+
+        CRITICAL FORMATTING REQUIREMENT:
+        You MUST respond with ONLY plain text in this EXACT format. Do NOT use JSON, do NOT use a dictionary structure, do NOT use markdown code blocks. Just plain text:
+
         Score: X/100
-        
-        Correctness: [Your detailed feedback]
-        
-        Key Concepts: [Your detailed feedback]
-        
-        Edge Cases: [Your detailed feedback]
-        
-        Code Quality: [Your detailed feedback]
-        
+
+        Correctness: [Your detailed feedback here as plain text]
+
+        Key Concepts: [Your detailed feedback here as plain text]
+
+        Edge Cases: [Your detailed feedback here as plain text]
+
+        Code Quality: [Your detailed feedback here as plain text]
+
         Suggestions for Improvement:
         1. [First suggestion]
         2. [Second suggestion]
         3. [Third suggestion]
+
+        Again: PLAIN TEXT ONLY, not JSON or dict format.
         """
         
         try:
             # Get response using evaluation agent
             response_content = chat_service.get_evaluation_response(evaluation_prompt)
-            
-            # Handle dictionary response
+
+            # Helper function to format dict/JSON to text
+            def format_evaluation_dict(eval_dict):
+                formatted = f"Score: {eval_dict.get('Score', 'N/A')}\n\n"
+                formatted += f"Correctness: {eval_dict.get('Correctness', '')}\n\n"
+                formatted += f"Key Concepts: {eval_dict.get('Key Concepts', '')}\n\n"
+                formatted += f"Edge Cases: {eval_dict.get('Edge Cases', '')}\n\n"
+                formatted += f"Code Quality: {eval_dict.get('Code Quality', '')}\n\n"
+
+                suggestions = eval_dict.get('Suggestions for Improvement', [])
+                formatted += "Suggestions for Improvement:\n"
+                if isinstance(suggestions, list):
+                    for i, suggestion in enumerate(suggestions, 1):
+                        formatted += f"{i}. {suggestion}\n"
+                else:
+                    formatted += str(suggestions)
+                return formatted
+
+            # Handle different response formats
             if isinstance(response_content, dict):
-                import json
-                try:
-                    # Try to convert to JSON string
-                    response_content = json.dumps(response_content)
-                except:
-                    # If that fails, manually format as text
-                    formatted_text = f"Score: {response_content.get('Score', 'N/A')}\n\n"
-                    formatted_text += f"Correctness: {response_content.get('Correctness', '')}\n\n"
-                    formatted_text += f"Key Concepts: {response_content.get('Key Concepts', '')}\n\n"
-                    formatted_text += f"Edge Cases: {response_content.get('Edge Cases', '')}\n\n"
-                    formatted_text += f"Code Quality: {response_content.get('Code Quality', '')}\n\n"
-                    
-                    suggestions = response_content.get('Suggestions for Improvement', [])
-                    formatted_text += "Suggestions for Improvement:\n"
-                    if isinstance(suggestions, list):
-                        for i, suggestion in enumerate(suggestions, 1):
-                            formatted_text += f"{i}. {suggestion}\n"
-                    else:
-                        formatted_text += str(suggestions)
-                    
-                    response_content = formatted_text
-            
-            # If response is from action_input, extract and convert
-            if isinstance(response_content, str):
+                # Direct dict response
+                response_content = format_evaluation_dict(response_content)
+            elif isinstance(response_content, str):
+                # Try to parse if it's JSON string
                 try:
                     import json
-                    # Try to parse as JSON
                     parsed = json.loads(response_content)
-                    if isinstance(parsed, dict) and parsed.get("action") == "Final Answer" and parsed.get("action_input"):
-                        action_input = parsed["action_input"]
-                        if isinstance(action_input, dict):
-                            # Format it as text
-                            formatted_text = f"Score: {action_input.get('Score', 'N/A')}\n\n"
-                            formatted_text += f"Correctness: {action_input.get('Correctness', '')}\n\n"
-                            formatted_text += f"Key Concepts: {action_input.get('Key Concepts', '')}\n\n"
-                            formatted_text += f"Edge Cases: {action_input.get('Edge Cases', '')}\n\n"
-                            formatted_text += f"Code Quality: {action_input.get('Code Quality', '')}\n\n"
-                            
-                            suggestions = action_input.get('Suggestions for Improvement', [])
-                            formatted_text += "Suggestions for Improvement:\n"
-                            if isinstance(suggestions, list):
-                                for i, suggestion in enumerate(suggestions, 1):
-                                    formatted_text += f"{i}. {suggestion}\n"
-                            else:
-                                formatted_text += str(suggestions)
-                            
-                            response_content = formatted_text
-                except:
-                    # If parsing fails, use the string as is
+                    if isinstance(parsed, dict):
+                        # Check if it has evaluation fields
+                        if 'Score' in parsed or 'Correctness' in parsed:
+                            response_content = format_evaluation_dict(parsed)
+                except (json.JSONDecodeError, ValueError):
+                    # Not JSON, use as is (already plain text)
                     pass
-            
+
             return jsonify({"response": response_content})
             
         except Exception as e:
