@@ -94,10 +94,11 @@ tools = [
 agent = initialize_agent(
     tools,
     llm,
-    memory = memory,                    
+    memory = memory,
     verbose = True,
     agent =  AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
-    agent_kwargs = {"system_message": SYSTEM_MESSAGE}
+    agent_kwargs = {"system_message": SYSTEM_MESSAGE},
+    handle_parsing_errors=True
 )
 
 
@@ -183,11 +184,45 @@ def generate_evaluation_response(prompt):
         response = evaluation_agent(prompt)
         return response['output']
     except Exception as e:
-        # If parsing fails, try to extract the score and feedback from the error message
         error_msg = str(e)
+
+        # Handle parsing errors - extract actual content
         if "Could not parse LLM output:" in error_msg:
-            # Extract the actual content after the error message
             content_start = error_msg.find("Could not parse LLM output:") + len("Could not parse LLM output:")
             return error_msg[content_start:].strip()
-        # If it's a different error, return a generic message
+
+        # Handle validation errors - try to extract the actual AI-generated content
+        if "validation error" in error_msg.lower() and "AIMessage" in error_msg:
+            try:
+                # Try to access the agent's memory to get the last AI response
+                if hasattr(evaluation_agent, 'memory') and evaluation_agent.memory and hasattr(evaluation_agent.memory, 'chat_memory'):
+                    messages = evaluation_agent.memory.chat_memory.messages
+                    if messages and len(messages) > 0:
+                        # Look for the last AI message
+                        for msg in reversed(messages):
+                            if hasattr(msg, 'content'):
+                                content = msg.content
+                                # If content is a dict, format it as text
+                                if isinstance(content, dict):
+                                    formatted_text = f"Score: {content.get('Score', 'N/A')}\n\n"
+                                    formatted_text += f"Correctness: {content.get('Correctness', '')}\n\n"
+                                    formatted_text += f"Key Concepts: {content.get('Key Concepts', '')}\n\n"
+                                    formatted_text += f"Edge Cases: {content.get('Edge Cases', '')}\n\n"
+                                    formatted_text += f"Code Quality: {content.get('Code Quality', '')}\n\n"
+
+                                    suggestions = content.get('Suggestions for Improvement', [])
+                                    formatted_text += "Suggestions for Improvement:\n"
+                                    if isinstance(suggestions, list):
+                                        for i, suggestion in enumerate(suggestions, 1):
+                                            formatted_text += f"{i}. {suggestion}\n"
+                                    else:
+                                        formatted_text += str(suggestions)
+
+                                    return formatted_text
+                                # If it's already a string with evaluation content, return it
+                                elif isinstance(content, str) and "Score:" in content:
+                                    return content
+            except:
+                pass
+
         return f"Error generating evaluation: {str(e)}"

@@ -99,8 +99,8 @@ def evaluate_challenge():
         """
         
         try:
-            # Get response
-            response_content = chat_service.get_response(evaluation_prompt)
+            # Get response using evaluation agent
+            response_content = chat_service.get_evaluation_response(evaluation_prompt)
             
             # Handle dictionary response
             if isinstance(response_content, dict):
