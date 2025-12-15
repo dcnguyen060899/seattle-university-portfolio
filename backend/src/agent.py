@@ -179,5 +179,15 @@ evaluation_agent = initialize_agent(
 )
 
 def generate_evaluation_response(prompt):
-    response = evaluation_agent(prompt)
-    return response['output']
+    try:
+        response = evaluation_agent(prompt)
+        return response['output']
+    except Exception as e:
+        # If parsing fails, try to extract the score and feedback from the error message
+        error_msg = str(e)
+        if "Could not parse LLM output:" in error_msg:
+            # Extract the actual content after the error message
+            content_start = error_msg.find("Could not parse LLM output:") + len("Could not parse LLM output:")
+            return error_msg[content_start:].strip()
+        # If it's a different error, return a generic message
+        return f"Error generating evaluation: {str(e)}"
