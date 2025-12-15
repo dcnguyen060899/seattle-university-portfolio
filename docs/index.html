@@ -3,480 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UC Berkeley ML AI Professional Certificate - Capstone</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-
+    <link rel="stylesheet" href="css/portfolio_su.css">
+    <link rel="icon" type="image/x-icon" href="seattleu_2.ico?v=2">
+    <title>Duy Nguyen - Portfolio</title>
 </head>
 <body>
     <header>
-        <a href="https://em-executive.berkeley.edu/professional-certificate-machine-learning-artificial-intelligence" class="logo-link">
+        <a href="https://www.seattleu.edu/science-engineering/discover-data-science/" class="logo-link">
             <div class="logo">
-                <img src="images/UC_Berkeley.png" alt="Berkeley Engineering and Haas logo">
+                <img src="images/seattle_university.png" alt=" logo"> <!-- changing to Seattle U design -->
             </div>
         </a>
     </header>
-    <div id="sidebar" class="sidebar">
-        <div class="sidebar-content">
-            <nav>
-                <a href="index_certificate.html">Professional Certificate</a>
-                <a href="index_portfolio.html">Portfolio</a>
-                <a href="index_resume.html">Resume</a>
-            </nav>
-        </div>
-        <div class="sidebar-footer">
-            <div class="sidebar-icon">☰</div>
-        </div>
-    </div>
-    
+
     <main>
-        <section id="executive-summary">
-            <h2>Executive Summary</h2>
-            <p>In response to challenges exposed by the COVID-19 pandemic, our project focused on optimizing hospital resource management by predicting patient length of stay. Using advanced data analysis, machine learning, and deep learning techniques, we have identified key factors affecting stay duration and developed models to enhance patient care and resource allocation.</p>
+        <div class="profile-photo-container">
+            <div class="profile-photo-flipper">
+                <div class="flipper-front">
+                    <img src="images/Duy_Nguyen_3.jpg" alt="Duy Nguyen" class="profile-photo">
+                </div>
+                <div class="flipper-back">
+                    <img src="images/seattle_university_seal.png" alt="Seattle University Seal" class="uc-seal"> <!-- changing to Seattle U design -->
+                </div>
+            </div>
+        </div>
+        <section id="about">
+            <h2>About Me</h2>
+            
+            <!-- Introduction and background -->
+            <p>
+                I'm Duy Nguyen, an MS Data Science student at Seattle University beginning Fall 2025, focused on making causal inference practical at scale. My background combines Economics (causal reasoning), UC Berkeley ML training (neural architectures), and industry experience building RAG systems (production deployment).
+            </p>
+            
+            <!-- Core focus and approach -->
+            <p>
+                My focus: bridging the gap between rigorous causal methods and modern ML infrastructure. Traditional causal inference doesn't scale to high-dimensional data, while neural networks can't distinguish correlation from causation. I'm developing solutions that combine both—scalable systems that can identify true causal relationships in complex, real-world datasets.
+            </p>
+            
+            <!-- Current projects and implementation -->
+            <p>
+                Current projects include implementing uplift modeling pipelines using DoWhy and CausalML, building neural architectures for heterogeneous treatment effect estimation, and creating diagnostic tools to validate causal assumptions in production systems. Each project moves from theory through implementation to deployment, addressing the full lifecycle companies actually need.
+            </p>
+            
+            <!-- Two-year academic plan -->
+            <p>
+                My two-year plan is straightforward: Year 1 focuses beyond coursework on mastering the foundations—causal identification strategies with Prof. Huntington-Klein's book "The Effect" and his research paper: "The influence of hidden researcher decisions in applied microeconomics" while building production implementations of existing methods. Year 2 leverages my skills from MS in Data Science coursework to apply to novel problems: automated causal discovery in observational data, real-time treatment effect estimation, and interpretable frameworks that translate causal findings into business decisions.
+            </p>
+            
+            <!-- Ultimate goal and vision -->
+            <p>
+                The goal isn't to revolutionize the field, but to make existing causal methods work reliably at the scale organizations need—whether that's understanding which interventions actually change customer behavior or identifying root causes in complex systems.
+            </p>
         </section>
-
-        <section id="project-goals">
-            <h2>Project Goals</h2>
-            <ol>
-                <li><strong>Enhance Patient Care:</strong> Understand social, financial, and demographic factors impacting recovery times.</li>
-                <li><strong>Optimize Hospital Resources:</strong> Identify operational bottlenecks and resource allocation inefficiencies.</li>
-                <li><strong>Develop Targeted Interventions:</strong> Create data-driven strategies to address factors contributing to prolonged stays.</li>
-            </ol>
-        </section>
-
-        <section id="key-findings">
-            <h2>Key Findings</h2>
-            <h3>1. Patient Demographics and Hospital Characteristics</h3>
-            <img src="images/distribution_age_by_cluster.png" alt="Age Distribution">
-            <img src="images/distribution_hospital_type_code_by_cluster.png" alt="Hospital Type Code Distribution by Cluster">
-            <img src="images/distribution_hospital_region_code_by_cluster.png" alt="Hospital Region Distribution by Cluster">
-            <img src="images/distribution_hospital_code_by_cluster.png" alt="Hospital Code Distribution by Cluster">
+        
+        <section id="skills">
+            <h2>Skills</h2>
             <ul>
-                <li>Middle-aged patients (31-60 years) form the largest group requiring hospital care.</li>
-                <li>Very young (0-10) and very old (91-100) patients are least common.</li>
-                <li>Significant variations in patient volumes across hospital types and regions:
-                    <ul>
-                        <li>Hospital codes 8 and 28 handle notably higher volumes.</li>
-                        <li>Type 'e' hospitals are most prevalent, followed by type 'b'.</li>
-                        <li>Region X has the highest number of cases, followed by Y and Z.</li>
-                    </ul>
-                </li>
+                <li>Machine Learning</li>
+                <li>Artificial Intelligence</li>
+                <li>Causal Inference</li>
+                <li>Data Analysis</li>
+                <li>Python Programming</li>
+                <li>Neural Networks</li>
+                <li>Statistical Modeling</li>
+                <li>Software Engineering Principles</li>
+                <li>Learning Java and C++ (Implementing Data Structure and Algorithm)</li>
             </ul>
-
-            <h3>2. Length of Stay Patterns</h3>
-            <img src="images/los_dist.png" alt="Length of Stay (LOS) Distribution">
-            <img src="images/Department_vs_Length_of_Stay.png" alt="Department vs. LOS">
-            <img src="images/Type_of_Admission_vs_Length_of_Stay.png" alt="Type of Admission vs. LOS">
-            <img src="images/Severity_of_Illness_vs_Length_of_Stay.png" alt="Severity of Illness vs. LOS">
-            <img src="images/Ward_Type_vs_Length_of_Stay.png" alt="Ward Type vs. LOS">
-            <ul>
-                <li>Multiple peaks in stay duration, with highest frequencies around 10, 20, and 30 days.</li>
-                <li>Factors associated with longer stays:
-                    <ul>
-                        <li>Trauma admissions</li>
-                        <li>Extreme severity of illness</li>
-                        <li>Departments: Surgery, Radiotherapy</li>
-                        <li>Ward types: T and U</li>
-                    </ul>
-                </li>
-            </ul>
-
-            <h3>3. Readmission Insights</h3>
-            <img src="images/Total_Readmissions_by_Department.png" alt="Readmissions by Department">
-            <img src="images/Total_Readmissions_by_Type_of_Admission.png" alt="Readmissions by Type of Admission">
-            <img src="images/Total_Readmissions_by_Severity_of_Illness.png" alt="Readmissions by Severity of Illness">
-            <img src="images/Total_Readmissions_by_Hospital_Type_Code.png" alt="Readmissions by Hospital Type">
-            <img src="images/Total_Readmissions_by_Age.png" alt="Readmissions by Age">
-            
-            <ul>
-                <li>Higher readmission rates observed in:
-                    <ul>
-                        <li>Trauma cases</li>
-                        <li>Moderate to extreme illness severity</li>
-                        <li>Gynecology department</li>
-                        <li>Hospital type 'a'</li>
-                    </ul>
-                </li>
-                <li>Patients with more than 10 readmissions tend to have significantly longer average stays.</li>
-                <li>Age groups 31-40 and 41-50 have the highest number of readmissions.</li>
-            </ul>
-            
-            <table class="readmission-stats">
-                <thead>
-                    <tr>
-                        <th>Readmission Count</th>
-                        <th>Count</th>
-                        <th>Mean Stay (days)</th>
-                        <th>Std Dev</th>
-                        <th>Min Stay</th>
-                        <th>25% Quartile</th>
-                        <th>Median Stay</th>
-                        <th>75% Quartile</th>
-                        <th>Max Stay</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>0</td>
-                        <td>92017.0</td>
-                        <td>33.10</td>
-                        <td>21.59</td>
-                        <td>5.0</td>
-                        <td>15.0</td>
-                        <td>25.0</td>
-                        <td>35.0</td>
-                        <td>110.0</td>
-                    </tr>
-                    <tr>
-                        <td>1</td>
-                        <td>71668.0</td>
-                        <td>31.94</td>
-                        <td>21.88</td>
-                        <td>5.0</td>
-                        <td>15.0</td>
-                        <td>25.0</td>
-                        <td>35.0</td>
-                        <td>110.0</td>
-                    </tr>
-                    <tr>
-                        <td>5</td>
-                        <td>15875.0</td>
-                        <td>30.76</td>
-                        <td>21.51</td>
-                        <td>5.0</td>
-                        <td>15.0</td>
-                        <td>25.0</td>
-                        <td>35.0</td>
-                        <td>110.0</td>
-                    </tr>
-                    <tr>
-                        <td>10</td>
-                        <td>1030.0</td>
-                        <td>31.57</td>
-                        <td>25.14</td>
-                        <td>5.0</td>
-                        <td>15.0</td>
-                        <td>25.0</td>
-                        <td>35.0</td>
-                        <td>110.0</td>
-                    </tr>
-                    <tr>
-                        <td>15</td>
-                        <td>116.0</td>
-                        <td>44.40</td>
-                        <td>36.61</td>
-                        <td>5.0</td>
-                        <td>15.0</td>
-                        <td>25.0</td>
-                        <td>65.0</td>
-                        <td>110.0</td>
-                    </tr>
-                    <tr>
-                        <td>20</td>
-                        <td>34.0</td>
-                        <td>47.35</td>
-                        <td>35.87</td>
-                        <td>5.0</td>
-                        <td>25.0</td>
-                        <td>35.0</td>
-                        <td>70.0</td>
-                        <td>110.0</td>
-                    </tr>
-                    <tr>
-                        <td>25</td>
-                        <td>16.0</td>
-                        <td>50.31</td>
-                        <td>38.23</td>
-                        <td>5.0</td>
-                        <td>20.0</td>
-                        <td>50.0</td>
-                        <td>75.0</td>
-                        <td>110.0</td>
-                    </tr>
-                    <tr>
-                        <td>30</td>
-                        <td>7.0</td>
-                        <td>44.29</td>
-                        <td>38.56</td>
-                        <td>5.0</td>
-                        <td>20.0</td>
-                        <td>35.0</td>
-                        <td>60.0</td>
-                        <td>110.0</td>
-                    </tr>
-                    <tr>
-                        <td>38</td>
-                        <td>3.0</td>
-                        <td>61.67</td>
-                        <td>20.82</td>
-                        <td>45.0</td>
-                        <td>50.0</td>
-                        <td>55.0</td>
-                        <td>70.0</td>
-                        <td>85.0</td>
-                    </tr>
-                    <tr>
-                        <td>39</td>
-                        <td>2.0</td>
-                        <td>72.50</td>
-                        <td>53.03</td>
-                        <td>35.0</td>
-                        <td>53.8</td>
-                        <td>72.5</td>
-                        <td>91.3</td>
-                        <td>110.0</td>
-                    </tr>
-                    <tr>
-                        <td>40</td>
-                        <td>2.0</td>
-                        <td>62.50</td>
-                        <td>67.18</td>
-                        <td>15.0</td>
-                        <td>38.8</td>
-                        <td>62.5</td>
-                        <td>86.3</td>
-                        <td>110.0</td>
-                    </tr>
-                    <tr>
-                        <td>41</td>
-                        <td>2.0</td>
-                        <td>92.50</td>
-                        <td>24.75</td>
-                        <td>75.0</td>
-                        <td>83.8</td>
-                        <td>92.5</td>
-                        <td>101.3</td>
-                        <td>110.0</td>
-                    </tr>
-                    <tr>
-                        <td>42</td>
-                        <td>2.0</td>
-                        <td>72.50</td>
-                        <td>53.03</td>
-                        <td>35.0</td>
-                        <td>53.8</td>
-                        <td>72.5</td>
-                        <td>91.3</td>
-                        <td>110.0</td>
-                    </tr>
-                </tbody>
-            </table>
-            
-            <p>This table shows a clear trend: as the number of readmissions increases, especially beyond 10, the average length of stay tends to increase significantly. For instance, patients with 15 readmissions have an average stay of 44.40 days, compared to 31.57 days for those with 10 readmissions. It continues to increase to 72.50 days on average patient with 42 readmission</p>
-            
-            <h3>4. Facility Quality Analysis</h3>
-            <img src="images/cluster_numerical.png" alt="Numerical Cluster Pair Plot">
-            <table>
-                <tr>
-                    <th>Cluster</th>
-                    <th>Description</th>
-                    <th>Characteristics</th>
-                </tr>
-                <tr>
-                    <td>0 (Balanced)</td>
-                    <td>Efficient resource utilization</td>
-                    <td>Moderate bed grades, admission deposits, and extra rooms</td>
-                </tr>
-                <tr>
-                    <td>1 (High-End)</td>
-                    <td>Premium hospitals</td>
-                    <td>Highest admission deposits and extra rooms, most visitors</td>
-                </tr>
-                <tr>
-                    <td>2 (Budget)</td>
-                    <td>Possible lower-income areas</td>
-                    <td>Lowest bed grades, deposits, and extra rooms</td>
-                </tr>
-                <tr>
-                    <td>3 (Mixed)</td>
-                    <td>High-quality with moderate capacity</td>
-                    <td>Highest bed grades, second-highest deposits</td>
-                </tr>
-            </table>
-
-            <h3>5. Key Predictive Factors</h3>
-            <img src="images/neural_network_feature_importances_f1.png" alt="Neural Network Feature Importances Fold 1">
-            <img src="images/neural_network_feature_importances_f2.png" alt="Neural Network Feature Importances Fold 2">
-            <img src="images/neural_network_feature_importances_f3.png" alt="Neural Network Feature Importances Fold 3">
-            <img src="images/neural_network_feature_importances_f4.png" alt="Neural Network Feature Importances Fold 4">
-            <img src="images/neural_network_feature_importances_f5.png" alt="Neural Network Feature Importances Fold 5">
-            
-            <ul>
-                <li>Number of visitors with the patient</li>
-                <li>Admission deposit amount</li>
-                <li>Available extra rooms in the hospital</li>
-                <li>Specific ward types (especially Q, P, S)</li>
-                <li>Type of admission (Emergency, Trauma)</li>
-                <li>Severity of illness</li>
-                <li>Specific hospital and city codes</li>
-            </ul>
-            
-            <p>The consistency of these factors across different folds and modeling approaches (LSTM, Random Forest, XGBoost, etc) underscores their robustness as predictors of hospital length of stay.</p>
         </section>
 
-        <section id="model-performance">
-            <h2>Model Performance</h2>
-            <table>
-                <tr>
-                    <th>Model</th>
-                    <th>Train Accuracy</th>
-                    <th>Test Accuracy</th>
-                </tr>
-                <tr>
-                    <td>Neural Network</td>
-                    <td>65.24%</td>
-                    <td>80.42%</td>
-                </tr>
-                <tr>
-                    <td>CatBoost</td>
-                    <td>46.23%</td>
-                    <td>42.84%</td>
-                </tr>
-                <tr>
-                    <td>XGBoost</td>
-                    <td>45.80%</td>
-                    <td>42.41%</td>
-                </tr>
-                <tr>
-                    <td>Random Forest</td>
-                    <td>49.68%</td>
-                    <td>42.19%</td>
-                </tr>
-                <tr>
-                    <td>Gradient Boosting</td>
-                    <td>41.93%</td>
-                    <td>41.62%</td>
-                </tr>
-                <tr>
-                    <td>Logistic Regression</td>
-                    <td>39.92%</td>
-                    <td>40.10%</td>
-                </tr>
-                <tr>
-                    <td>Baseline (Dummies)</td>
-                    <td>27.43%</td>
-                    <td>27.64%</td>
-                </tr>
-            </table>
-            <img src="images/roc_nn.png" alt="ROC-AUC Neural Network">
-            <p>The neural network model achieved high AUC scores (0.92 to 1.00) across all classes, indicating excellent predictive performance.</p>
-            <img src="images/confusion_matrix_nn.png" alt="Confusion Matrix Neural Network">
-            <p>The confusion matrix shows good prediction accuracy for most classes, with some challenges in distinguishing between certain adjacent classes.</p>
+        <section id="learning">
+            <h2>Learning Tools</h2>
+            <div class="project">
+                <h3><a href="learning_algorithm.html">Interactive Subtree Algorithm Learning</a></h3>
+                <p>
+                    Developed an enhanced educational tool to help students master the "Subtree of Another Tree" problem through animated, chain-of-thought visualizations and hands-on practice. This tool breaks down the recursive logic behind determining whether one binary tree is a subtree of another by illustrating each decision step.
+                </p>
+                <ul>
+                    <li>Built a dynamic, step-by-step visualization using SVG and JavaScript that highlights the chain of thought behind subtree matching.</li>
+                    <li>Implemented three learning modes (Learn, Practice, Challenge) to cater to diverse learning styles and deepen conceptual understanding.</li>
+                    <li>Provided progressive code templates with automated feedback, guiding learners through the algorithm's implementation and reinforcing best practices.</li>
+                    <li>Integrated an AI-powered code evaluation system to deliver personalized feedback on challenge submissions, helping users refine their solutions.</li>
+                </ul>
+            </div>
         </section>
 
-        <section id="business-impact">
-            <h2>Business Impact</h2>
-            <p>Implementing our best model could lead to significant cost savings:</p>
-            <table>
-                <tr>
-                    <th>Model</th>
-                    <th>FP Cost</th>
-                    <th>FN Cost</th>
-                    <th>Total Cost</th>
-                    <th>Savings</th>
-                </tr>
-                <tr>
-                    <td>Baseline</td>
-                    <td>$4,689,900</td>
-                    <td>$36,698,500</td>
-                    <td>$41,388,400</td>
-                    <td>-</td>
-                </tr>
-                <tr>
-                    <td>Deep Learning</td>
-                    <td>$1,000,000</td>
-                    <td>$10,000,000</td>
-                    <td>$11,000,000</td>
-                    <td>$30,388,400</td>
-                </tr>
-                <tr>
-                    <td>CatBoost</td>
-                    <td>$1,500,000</td>
-                    <td>$17,500,000</td>
-                    <td>$19,000,000</td>
-                    <td>$22,388,400</td>
-                </tr>
-                <tr>
-                    <td>XGBoost</td>
-                    <td>$1,300,000</td>
-                    <td>$18,500,000</td>
-                    <td>$19,800,000</td>
-                    <td>$21,588,400</td>
-                </tr>
-            </table>
+
+        
+        <section id="projects">
+            <h2>Research Projects</h2>
+            <div class="project">
+                <h3><a href="index_independent_research.html">Geometric Implicit Regularization: Duy Integral Theorem</a></h3>
+                <p>
+                    Developed a novel mathematical framework for understanding generalization in overparameterized neural networks through measure theory and PDEs. The research:
+                    <ul>
+                        <li>Introduces the Duy Integral Theory, providing a rigorous explanation for why gradient descent discovers flat minima that generalize well</li>
+                        <li>Proves mathematically that sharp regions in parameter space experience exponential measure evacuation over time</li>
+                        <li>Establishes the formal connection between geometric properties of loss landscapes and generalization performance</li>
+                        <li>Offers theoretical justification for empirical observations in deep learning optimization</li>
+                    </ul>
+                </p>
+            </div>
+            
+            <h2>Projects</h2>
+            <div class="project">
+                <h3><a href="index_gpa_analysis.html">Academic Performance Analysis - Statistical Pattern Recognition</a></h3>
+                <p>
+                    Conducted a comprehensive statistical analysis of academic performance using R-squared analysis and phase recognition. The project demonstrates:
+                    <ul>
+                        <li>Applied statistical analysis to identify distinct academic growth phases (Adjustment, Transition, Stabilization, Mastery)</li>
+                        <li>Implemented data visualization using React and Recharts to create an interactive dashboard</li>
+                        <li>Quantified academic growth through R-squared analysis, showing progression from initial volatility (R² = 0.262) to strong linear correlation (R² = 0.855)</li>
+                        <li>Demonstrated resilience and continuous improvement through data-driven insights</li>
+                    </ul>
+                </p>
+            </div>
+            <div class="project">
+                <h3><a href="index_ai_agent_project.html">AI Agent for ML-Business Alignment</a></h3>
+                <p>Developed an AI agent to improve alignment between ML development teams and business stakeholders. The agent facilitates communication, provides crucial business context, and ensures ML models directly support strategic goals and KPIs. Key features include:
+                    <ul>
+                        <li>Real-time context provision to ML teams</li>
+                        <li>Alignment of model evaluation criteria with business impact metrics</li>
+                        <li>Automated flagging of potential conflicts with business rules or market realities</li>
+                        <li>Streamlined access to relevant past models and business insights</li>
+                        <li>Significant reduction in knowledge transfer time and misalignment issues</li>
+                    </ul>
+                </p>
+            </div>
+            <div class="project">
+                <h3><a href="index.html">UC Berkeley ML/AI - What drives the patient's length of stay?</a></h3>
+                <p>This is a <a href="https://www.linkedin.com/posts/duwe-ng_professional-certificate-in-machine-learning-activity-7229560019187326976-ShNS?utm_source=share&utm_medium=member_desktop&rcm=ACoAAD9UyUkBFEqloERoWonTw1VozcjVrLUkSS8">Capstone project exemplar</a> from the UC Berkeley Machine Learning and Artificial Intelligence professional certification program (January-July 2024 cohort). It's provided as a reference for future students.</p>
+                <p>Developed a machine learning model to predict patient length of stay in hospitals, optimizing resource allocation and improving patient care. Utilized neural networks and ensemble methods to achieve high accuracy in predictions. Integrated an advanced AI chatbot, powered by a transformer-based neural network, to autonomously analyze the findings and provide concise decision-making guidance for stakeholders.</p>
+            </div>
+            <div class="project">
+                <h3><a href="https://mosaicmate.vercel.app/">MOSAIC - AI Immigration Chatbot</a></h3>
+                <p>
+                    Developed an AI-powered chatbot with SFU Blueprint for MOSAIC to assist Canadian Immigration Consultants, significantly enhancing user experience by providing personalized recommendations and real-time information in multiple languages. Leveraging technologies such as Flask for backend services, Neo4j for graph database integration, and OpenAI models for natural language processing, the chatbot efficiently processes user queries and retrieves relevant information. The project was shortlisted in the Top 4 of the SFU CS Diversity Award, recognizing its innovative approach to improving accessibility and efficiency for newcomers, immigrants, and refugees.
+                </p>
+            </div>
+            <div class="project">
+                <h3><a href="https://vha-roi-slab-retrieval-engine.onrender.com">Simon Fraser University Faisal Lab - AI Medical Translation & Retrieval Engine</a></h3>
+                <p>
+                    Developed a retrieval augmented generation software that translates doctors’ natural language requests into JSON, streamlining access to CT and MRI scan analytics through the DAFs application. Eliminated the need for medical professionals to memorize complex codes for report retrieval, potentially saving hours of manual reference time per week. Utilized Python and frameworks such as Llama Index and the OpenAI API to develop the software, enhancing efficiency and accuracy in processing natural language to JSON conversion.
+                </p>
+            </div>
+
+
+            <!-- Add more projects as needed -->
         </section>
-
-        <section id="recommendations">
-            <h2>Business Recommendations</h2>
-            <ol>
-                <li><strong>Resource Optimization and Facility Improvement:</strong>
-                    <ul>
-                        <li>Focus on high-demand wards (R, Q) while evaluating underutilized wards (P, T, U).</li>
-                        <li>Invest in upgrading bed grades and ensuring adequate extra rooms to improve care quality and management efficiency.</li>
-                    </ul>
-                </li>
-                <li><strong>Personalized Patient Care:</strong>
-                    <ul>
-                        <li>Tailor care plans based on admission type and illness severity, particularly for medium-stay patients (10-40 days).</li>
-                        <li>Develop specialized programs for working-age adults in ward facility F.</li>
-                    </ul>
-                </li>
-                <li><strong>Visitor and Follow-Up Management:</strong>
-                    <ul>
-                        <li>Implement structured visitor programs that balance patient support with operational efficiency.</li>
-                        <li>Provide targeted post-discharge support for high-risk patients to reduce readmission rates.</li>
-                    </ul>
-                </li>
-                <li><strong>Data-Driven Strategies and Continuous Improvement:</strong>
-                    <ul>
-                        <li>Regularly retrain and fine-tune predictive models with new data to improve predictions.</li>
-                        <li>Implement best practices from high-performing hospitals, especially in regions X and Y, and prioritize resources in gynecology and anesthesia.</li>
-                    </ul>
-                </li>
-            </ol>
-
-            <h2>Technical Recommendations</h2>
-            <p>To further improve our model performance and gain deeper insights, we propose the following technical steps:</p>
-            <ol>
-                <li>
-                    <strong>Enhanced Traditional Modeling:</strong>
-                    <ul>
-                        <li>Implement SMOTE (Synthetic Minority Over-sampling Technique) to address class imbalance.</li>
-                        <li>Apply Stratified K-Fold cross-validation to maintain class distribution across folds.</li>
-                        <li>Re-run traditional models (Random Forest, Gradient Boosting, XGBoost, CatBoost) with these techniques.</li>
-                        <li>Analyze changes in model performance and feature importance.</li>
-                    </ul>
-                </li>
-                <li>
-                    <strong>Ensemble Method Exploration:</strong>
-                    <ul>
-                        <li>Develop a voting classifier combining the best-performing traditional models.</li>
-                        <li>Compare the ensemble model's performance against our current LSTM Neural Network.</li>
-                        <li>Evaluate potential improvements in prediction accuracy and robustness.</li>
-                    </ul>
-                </li>
-                <li>
-                    <strong>Comparative Analysis:</strong>
-                    <ul>
-                        <li>Conduct a thorough comparison of all models, including the new ensemble approach.</li>
-                        <li>Assess trade-offs between model complexity, interpretability, and performance.</li>
-                        <li>Determine the most suitable model or combination of models for deployment.</li>
-                        <li>Consider the preference for ensemble methods over neural networks if performance is comparable, due to their superior interpretability.</li>
-                    </ul>
-                </li>
-            </ol>
-            <p>By implementing these technical recommendations, we aim to potentially enhance our predictive capabilities and gain a more comprehensive understanding of the factors influencing hospital length of stay.</p>
-        </section>            
+        
+        <section id="contact">
+            <h2>Contact</h2>
+            <p>Email: <a href="mailto:dcnguyen060899@gmail.com">dcnguyen060899@gmail.com</a></p>
+            <p>LinkedIn: <a href="https://www.linkedin.com/in/duwe-ng/">https://www.linkedin.com/in/duwe-ng/</a></p>
+            <p>GitHub: <a href="https://github.com/dcnguyen060899">https://github.com/dcnguyen060899</a></p>
+            <p>Resume: <a href="https://ucberkeley-ml-ai-capstone.com/index_resume.html">https://ucberkeley-ml-ai-capstone.com/index_resume.html</a></p>
+        </section>
     </main>
-
+    
     <footer>
-        <p>&copy; 2024 UC Berkeley. All rights reserved.</p>
+        <p>&copy; 2025 Seattle University. All rights reserved.</p>
     </footer>
+
     <!-- Chatbot Popup Structure -->
     <div id="chatbot-container" class="closed">
       <div id="chatbot-header">
-        <span>Berkeley AI Assistant</span>
+        <span> Portfolio AI Assistant</span>
         <button id="chatbot-toggle">^</button>
       </div>
       <div id="chatbot-messages"></div>
@@ -488,7 +179,7 @@
 
     <!-- Include JavaScript files -->
     <script src="js/chat.js"></script>
-    <script src="js/sidebar.js"></script>
+    <script src="js/sidebar_port.js"></script>
     
 </body>
 </html>

@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory, redirect
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from dotenv import load_dotenv
 import os
@@ -43,7 +43,7 @@ base_qa = {
 
 @app.route("/")
 def index():
-    return redirect('https://duyng-portfolio.com/docs/index_portfolio.html', code=302)
+    return send_from_directory(app.static_folder, 'index.html')
     
 @app.route("/chat", methods=["POST"])
 def chat():
