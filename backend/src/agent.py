@@ -174,8 +174,8 @@ evaluation_agent = initialize_agent(
     memory=memory,
     verbose=True,
     agent=AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
-    agent_kwargs={"system_message": EVALUATION_SYSTEM_MESSAGE,
-                 "handle_parsing_errors": True}
+    agent_kwargs={"system_message": EVALUATION_SYSTEM_MESSAGE},
+    handle_parsing_errors=True
 )
 
 def generate_evaluation_response(prompt):
