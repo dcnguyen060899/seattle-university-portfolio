@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const apiUrl = 'https://uc-berkeley-ml-ai-capstone-work-sample.onrender.com/chat'; // Replace with your actual backend API URL
+    const apiUrl = 'https://api.duyng-portfolio.com/chat'; // Replace with your actual backend API URL
     const chatbotToggle = document.getElementById("chatbot-toggle");
     const chatbotContainer = document.getElementById("chatbot-container");
     const chatOutput = document.getElementById("chatbot-messages");
