@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Introduce the chatbot when the page loads
     function sendWelcomeMessage() {
-        const welcomeMessage = "Hello! I'm your AI Assistant. I can assist you in multiple languages. How may I help you today?";
+        const welcomeMessage = "Hello! I'm here to help you understand how Duy Nguyen's skills and experience align with your hiring needs. Ask me about his technical expertise, project experience, or potential contributions to your team.";
         addMessage('bot', welcomeMessage);
         welcomeMessageSent = true; // Set flag to true after message is sent
     }
