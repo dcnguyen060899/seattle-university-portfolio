@@ -154,6 +154,24 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // Function to show typing indicator
+    function showTypingIndicator() {
+        const typingDiv = document.createElement('div');
+        typingDiv.id = 'typing-indicator';
+        typingDiv.className = 'bot-message';
+        typingDiv.innerHTML = '<strong>Bot:</strong> <span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>';
+        chatOutput.appendChild(typingDiv);
+        chatOutput.scrollTop = chatOutput.scrollHeight;
+    }
+
+    // Function to remove typing indicator
+    function removeTypingIndicator() {
+        const typingIndicator = document.getElementById('typing-indicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
+    }
+
     // Send message to the chatbot
     sendButton.addEventListener("click", function () {
         const userMessage = userInput.value.trim();
@@ -166,6 +184,9 @@ document.addEventListener("DOMContentLoaded", function () {
             // Reset textarea height
             userInput.style.height = "auto";
 
+            // Show typing indicator
+            showTypingIndicator();
+
             // Send message to the backend
             fetch(apiUrl, {
                 method: 'POST',
@@ -176,6 +197,9 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .then(response => response.json())
             .then(data => {
+                // Remove typing indicator
+                removeTypingIndicator();
+
                 // Format bot message with proper line breaks and structure
                 const botMessage = formatBotMessage(data.response);
                 // Display bot's response
@@ -183,6 +207,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 chatOutput.scrollTop = chatOutput.scrollHeight; // Auto-scroll to the bottom
             })
             .catch(error => {
+                // Remove typing indicator
+                removeTypingIndicator();
+
                 console.error('Error:', error);
                 chatOutput.innerHTML += `<p><strong>Bot:</strong> Sorry, something went wrong. Please try again later.</p>`;
             });
@@ -250,6 +277,12 @@ document.addEventListener("DOMContentLoaded", function () {
         // Convert **bold** to <strong>
         formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 
+        // Convert markdown headings (## Heading) to <h2>
+        formatted = formatted.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+
+        // Convert markdown subheadings (### Heading) to <h3>
+        formatted = formatted.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+
         // Convert double newlines to paragraph breaks
         formatted = formatted.replace(/\n\n/g, '</p><p>');
 
@@ -261,6 +294,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Handle bullet points (- at start of line)
         formatted = formatted.replace(/<br>-\s/g, '<br>• ');
+
+        // Handle bullet points (• at start of line)
+        formatted = formatted.replace(/<br>•\s/g, '<br>• ');
 
         return formatted;
     }
