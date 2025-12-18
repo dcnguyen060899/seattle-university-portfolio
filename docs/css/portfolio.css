@@ -377,6 +377,30 @@ bottom: 0;
   background-color: #f5f5f5;
 }
 
+/* Bot message formatting */
+.bot-message {
+  margin-bottom: 15px;
+  line-height: 1.6;
+}
+
+.bot-message p {
+  margin: 8px 0;
+  line-height: 1.6;
+}
+
+.bot-message strong {
+  color: var(--berkeley-blue);
+}
+
+.bot-message a {
+  color: var(--berkeley-gold);
+  text-decoration: underline;
+}
+
+.bot-message a:hover {
+  color: var(--berkeley-blue);
+}
+
 #chatbot-input {
   display: flex;
   padding: 10px;

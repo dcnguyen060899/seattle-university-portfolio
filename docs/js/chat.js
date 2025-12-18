@@ -42,10 +42,10 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .then(response => response.json())
             .then(data => {
-                // Convert markdown-style links to clickable HTML links
-                const botMessage = convertMarkdownLinks(data.response);
+                // Format bot message with proper line breaks and structure
+                const botMessage = formatBotMessage(data.response);
                 // Display bot's response
-                chatOutput.innerHTML += `<p><strong>Bot:</strong> ${botMessage}</p>`;
+                chatOutput.innerHTML += `<div class="bot-message"><strong>Bot:</strong> ${botMessage}</div>`;
                 chatOutput.scrollTop = chatOutput.scrollHeight; // Auto-scroll to the bottom
             })
             .catch(error => {
@@ -66,7 +66,14 @@ document.addEventListener("DOMContentLoaded", function () {
     function addMessage(sender, text) {
         const messageElement = document.createElement('div');
         messageElement.classList.add('message', sender);
-        messageElement.innerHTML = text; // Use innerHTML to allow HTML content like links
+
+        if (sender === 'bot') {
+            // Format bot messages properly
+            messageElement.innerHTML = `<strong>Bot:</strong> ${formatBotMessage(text)}`;
+        } else {
+            messageElement.innerHTML = text;
+        }
+
         chatOutput.appendChild(messageElement);
         chatOutput.scrollTop = chatOutput.scrollHeight;
     }
@@ -75,5 +82,28 @@ document.addEventListener("DOMContentLoaded", function () {
     function convertMarkdownLinks(text) {
         const markdownLinkPattern = /\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/g;
         return text.replace(markdownLinkPattern, '<a href="$2" target="_blank">$1</a>');
+    }
+
+    // Function to format bot message with proper line breaks and structure
+    function formatBotMessage(text) {
+        // First convert markdown links
+        let formatted = convertMarkdownLinks(text);
+
+        // Convert **bold** to <strong>
+        formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+        // Convert double newlines to paragraph breaks
+        formatted = formatted.replace(/\n\n/g, '</p><p>');
+
+        // Convert single newlines to <br>
+        formatted = formatted.replace(/\n/g, '<br>');
+
+        // Wrap in paragraph tags
+        formatted = '<p>' + formatted + '</p>';
+
+        // Handle bullet points (- at start of line)
+        formatted = formatted.replace(/<br>-\s/g, '<br>• ');
+
+        return formatted;
     }
 });
