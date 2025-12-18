@@ -2,11 +2,86 @@ document.addEventListener("DOMContentLoaded", function () {
     const apiUrl = 'https://uc-berkeley-ml-ai-capstone-work-sample.onrender.com/chat'; // Replace with your actual backend API URL
     const chatbotToggle = document.getElementById("chatbot-toggle");
     const chatbotContainer = document.getElementById("chatbot-container");
+    const chatbotHeader = document.getElementById("chatbot-header");
     const chatOutput = document.getElementById("chatbot-messages");
     const userInput = document.getElementById("user-input");
     const sendButton = document.getElementById("send-button");
     const resizeHandle = document.getElementById("chatbot-resize-handle");
     let welcomeMessageSent = false; // Flag to track if welcome message is sent
+
+    // Drag and click functionality for moving chatbot
+    let isDragging = false;
+    let hasMoved = false;
+    let dragOffsetX, dragOffsetY;
+    let startMouseX, startMouseY;
+
+    chatbotHeader.addEventListener("mousedown", function(e) {
+        isDragging = true;
+        hasMoved = false;
+        startMouseX = e.clientX;
+        startMouseY = e.clientY;
+
+        const rect = chatbotContainer.getBoundingClientRect();
+        dragOffsetX = e.clientX - rect.left;
+        dragOffsetY = e.clientY - rect.top;
+
+        e.preventDefault();
+    });
+
+    document.addEventListener("mousemove", function(e) {
+        if (!isDragging) return;
+
+        // Check if mouse has moved more than 5 pixels (to distinguish click from drag)
+        const deltaX = Math.abs(e.clientX - startMouseX);
+        const deltaY = Math.abs(e.clientY - startMouseY);
+
+        if (deltaX > 5 || deltaY > 5) {
+            hasMoved = true;
+            chatbotContainer.style.cursor = "move";
+
+            let newLeft = e.clientX - dragOffsetX;
+            let newTop = e.clientY - dragOffsetY;
+
+            // Keep chatbot within viewport bounds
+            const maxX = window.innerWidth - chatbotContainer.offsetWidth;
+            const maxY = window.innerHeight - chatbotContainer.offsetHeight;
+
+            newLeft = Math.max(0, Math.min(newLeft, maxX));
+            newTop = Math.max(0, Math.min(newTop, maxY));
+
+            // Convert from bottom/right positioning to top/left
+            chatbotContainer.style.bottom = "auto";
+            chatbotContainer.style.right = "auto";
+            chatbotContainer.style.left = newLeft + "px";
+            chatbotContainer.style.top = newTop + "px";
+        }
+    });
+
+    document.addEventListener("mouseup", function() {
+        if (isDragging) {
+            isDragging = false;
+            chatbotContainer.style.cursor = "";
+
+            // If no significant movement, treat it as a click to toggle
+            if (!hasMoved) {
+                toggleChatbot();
+            }
+        }
+    });
+
+    // Toggle chatbot function
+    function toggleChatbot() {
+        chatbotContainer.classList.toggle("closed");
+
+        if (!chatbotContainer.classList.contains("closed")) {
+            if (!welcomeMessageSent) {
+                sendWelcomeMessage();
+            }
+            // Show resize hint and header hint
+            showResizeHint();
+            showHeaderHint();
+        }
+    }
 
     // Resize functionality
     let isResizing = false;
@@ -21,17 +96,16 @@ document.addEventListener("DOMContentLoaded", function () {
         const rect = chatbotContainer.getBoundingClientRect();
         startWidth = rect.width;
         startHeight = rect.height;
-        startRight = window.innerWidth - rect.right;
-        startBottom = window.innerHeight - rect.bottom;
 
         e.preventDefault();
+        e.stopPropagation(); // Prevent triggering drag
     });
 
     document.addEventListener("mousemove", function(e) {
         if (!isResizing) return;
 
-        const deltaX = startX - e.clientX; // Reversed for left-side resize
-        const deltaY = startY - e.clientY; // Reversed for top-side resize
+        const deltaX = e.clientX - startX; // Normal for right-side resize
+        const deltaY = e.clientY - startY; // Normal for bottom-side resize
 
         const newWidth = Math.min(Math.max(startWidth + deltaX, 300), 600);
         const newHeight = Math.min(Math.max(startHeight + deltaY, 300), 700);
@@ -54,14 +128,31 @@ document.addEventListener("DOMContentLoaded", function () {
         welcomeMessageSent = true; // Set flag to true after message is sent
     }
     
-    // Toggle chatbot visibility
-    chatbotToggle.addEventListener("click", function () {
-        chatbotContainer.classList.toggle("closed");
-        chatbotToggle.innerHTML = chatbotContainer.classList.contains('closed') ? '&#9650;' : '&#9660;';
-        if (!chatbotContainer.classList.contains("closed") && !welcomeMessageSent) {
-            sendWelcomeMessage();
+    // Note: Toggle functionality is now handled by clicking the header (see toggleChatbot function above)
+
+    // Show resize hint function
+    function showResizeHint() {
+        const resizeHint = document.getElementById("resize-hint");
+        if (resizeHint) {
+            resizeHint.classList.add("show");
+            // Remove the class after animation completes
+            setTimeout(function() {
+                resizeHint.classList.remove("show");
+            }, 4000);
         }
-    });
+    }
+
+    // Show header hint function
+    function showHeaderHint() {
+        const headerHint = document.getElementById("header-hint");
+        if (headerHint) {
+            headerHint.classList.add("show");
+            // Remove the class after animation completes
+            setTimeout(function() {
+                headerHint.classList.remove("show");
+            }, 4000);
+        }
+    }
 
     // Send message to the chatbot
     sendButton.addEventListener("click", function () {
