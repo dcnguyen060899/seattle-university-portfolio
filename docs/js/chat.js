@@ -55,11 +55,19 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Allow sending message with Enter key
-    userInput.addEventListener("keypress", function (e) {
-        if (e.key === "Enter") {
+    // Allow sending message with Enter key (Shift+Enter for new line)
+    userInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault(); // Prevent default newline behavior
             sendButton.click();
         }
+        // If Shift+Enter is pressed, allow default behavior (creates new line)
+    });
+
+    // Auto-resize textarea as user types
+    userInput.addEventListener("input", function() {
+        this.style.height = "auto";
+        this.style.height = Math.min(this.scrollHeight, 100) + "px";
     });
     
     // Add a message to the chat output

@@ -412,9 +412,16 @@ bottom: 0;
 
 #user-input {
   flex-grow: 1;
-  padding: 5px;
+  padding: 8px;
   border: 1px solid var(--berkeley-gray);
   border-radius: 5px;
+  resize: none;
+  overflow-y: auto;
+  min-height: 36px;
+  max-height: 100px;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 #send-button {
