@@ -1,6 +1,6 @@
 from langchain.agents import AgentType, initialize_agent
 from langchain.tools import Tool
-from langchain.chains.conversation.memory import ConversationBufferMemory
+
 #Project modules
 from llm import llm, memory, evaluation_memory
 from tools.llmchain import chat_chain
