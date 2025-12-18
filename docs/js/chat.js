@@ -5,7 +5,47 @@ document.addEventListener("DOMContentLoaded", function () {
     const chatOutput = document.getElementById("chatbot-messages");
     const userInput = document.getElementById("user-input");
     const sendButton = document.getElementById("send-button");
+    const resizeHandle = document.getElementById("chatbot-resize-handle");
     let welcomeMessageSent = false; // Flag to track if welcome message is sent
+
+    // Resize functionality
+    let isResizing = false;
+    let startX, startY, startWidth, startHeight, startRight, startBottom;
+
+    resizeHandle.addEventListener("mousedown", function(e) {
+        isResizing = true;
+        chatbotContainer.classList.add("resizing");
+        startX = e.clientX;
+        startY = e.clientY;
+
+        const rect = chatbotContainer.getBoundingClientRect();
+        startWidth = rect.width;
+        startHeight = rect.height;
+        startRight = window.innerWidth - rect.right;
+        startBottom = window.innerHeight - rect.bottom;
+
+        e.preventDefault();
+    });
+
+    document.addEventListener("mousemove", function(e) {
+        if (!isResizing) return;
+
+        const deltaX = startX - e.clientX; // Reversed for left-side resize
+        const deltaY = startY - e.clientY; // Reversed for top-side resize
+
+        const newWidth = Math.min(Math.max(startWidth + deltaX, 300), 600);
+        const newHeight = Math.min(Math.max(startHeight + deltaY, 300), 700);
+
+        chatbotContainer.style.width = newWidth + "px";
+        chatbotContainer.style.height = newHeight + "px";
+    });
+
+    document.addEventListener("mouseup", function() {
+        if (isResizing) {
+            isResizing = false;
+            chatbotContainer.classList.remove("resizing");
+        }
+    });
 
     // Introduce the chatbot when the page loads
     function sendWelcomeMessage() {
