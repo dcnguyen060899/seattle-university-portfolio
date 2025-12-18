@@ -145,7 +145,7 @@ Remember: Keep responses short, conversational, and focused on what matters most
 
 tools = [
         Tool.from_function(
-            name = "ChatOpenAI",
+            name = "ChatHistory",
             description = "For when you need to talk about chat history. The question will be a string. Return a string.",
             func = chat_chain.run,
             return_direct = True
