@@ -14,7 +14,7 @@ CORS(app)  # Initialize CORS with the Flask app
 # Add specific CORS configuration for the evaluate-challenge endpoint
 CORS(app, resources={r"/evaluate-challenge": {"origins": "https://ucberkeley-ml-ai-capstone.com"}})
 
-api_key = os.getenv("OPENAI_API_KEY")
+api_key = os.getenv("ANTHROPIC_API_KEY")
 chat_service = ChatService(api_key=api_key)
 
 # put questions and answers here

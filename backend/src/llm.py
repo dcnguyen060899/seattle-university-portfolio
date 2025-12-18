@@ -1,4 +1,4 @@
-from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
 from langchain_openai.embeddings import OpenAIEmbeddings
 from langchain.chains.conversation.memory import ConversationBufferMemory
 import os
@@ -8,9 +8,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # LLM
-llm = ChatOpenAI(
-    openai_api_key = os.getenv("OPENAI_API_KEY"),
-    model = os.getenv("OPENAI_API_MODEL"),
+llm = ChatAnthropic(
+    anthropic_api_key = os.getenv("ANTHROPIC_API_KEY"),
+    model = os.getenv("ANTHROPIC_MODEL"),
 )
 
 #Embeddings for Vector Search Index

@@ -1,6 +1,7 @@
 python-dotenv
 langchain==0.1.20
 langchain-community==0.0.38
+langchain-anthropic==0.1.11
 openai<2.0.0,>=1.10.0
 flask
 langchain-openai==0.1.3
