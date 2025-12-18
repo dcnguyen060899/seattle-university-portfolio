@@ -60,16 +60,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Allow sending message with Enter key (Shift+Enter for new line)
     userInput.addEventListener("keydown", function (e) {
-        if (e.key === "Enter") {
-            if (e.shiftKey) {
-                // Shift+Enter: allow default behavior to create new line
-                // Do nothing, let the default behavior happen
-                return;
+        // Check if Enter key is pressed
+        if (e.key === "Enter" || e.keyCode === 13) {
+            // Check if Shift key is held down
+            if (e.shiftKey === true) {
+                // Shift+Enter: Allow new line, don't send message
+                // Let the default behavior happen (insert newline)
+                console.log("Shift+Enter detected - creating new line");
+                return true;
             } else {
-                // Just Enter: prevent default and send message
+                // Just Enter: Send message, don't create new line
+                console.log("Enter detected - sending message");
                 e.preventDefault();
                 e.stopPropagation();
-                sendButton.click();
+
+                const message = userInput.value.trim();
+                if (message) {
+                    sendButton.click();
+                }
+                return false;
             }
         }
     });
