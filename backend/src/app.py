@@ -18,7 +18,9 @@ api_key = os.getenv("OPENAI_API_KEY")
 chat_service = ChatService(api_key=api_key)
 
 # put questions and answers here
+# put questions and answers here
 base_qa = {
+    # UC Berkeley Capstone Project Q&A (existing)
     "What was the main goal of your project?": "The main goal of the project was to identify key factors affecting the duration of hospital stays during the COVID-19 pandemic. This involved improving patient care, optimizing resource allocation, and developing targeted strategies to reduce unnecessary extended hospitalizations.",
     
     "How did you analyze the data?": "We performed a comprehensive exploratory data analysis (EDA) that included numerical and categorical feature distributions, group-wise statistics, and heatmaps. We also used machine learning models like Gradient Boosting, Random Forest, CatBoost, XGBoost, and Logistic Regression to predict patient length of stay and identify the most impactful features.",
@@ -37,7 +39,46 @@ base_qa = {
     
     "How can hospitals apply the insights from this project?": "Hospitals can use these insights to optimize resource allocation, reduce the length of patient stays, and lower readmission rates. By implementing the recommended strategies, hospitals can improve operational efficiency, enhance patient care quality, and achieve significant cost savings.",
     
-    "What were the main challenges you faced during this project?": "The main challenges included dealing with imbalanced data, ensuring model generalization across different hospital types and regions, and accurately predicting outcomes for less common cases. Hyperparameter tuning and feature engineering were also critical to improving model performance."
+    "What were the main challenges you faced during this project?": "The main challenges included dealing with imbalanced data, ensuring model generalization across different hospital types and regions, and accurately predicting outcomes for less common cases. Hyperparameter tuning and feature engineering were also critical to improving model performance.",
+    
+    # Recruiter-Focused Q&A (NEW)
+    "What type of internship roles are you looking for?": "I'm seeking Summer 2026 internships in Data Science, Machine Learning Engineering, or Analytics/Strategy roles. I'm particularly interested in positions that involve production ML systems, large-scale data analysis, or strategic insights using Python and SQL.",
+    
+    "What are your key technical skills?": "I'm proficient in Python and SQL, with strong experience in PyTorch, TensorFlow, scikit-learn, pandas, and NumPy. I've built production ML systems, analyzed datasets with 1.88M+ records, and developed interactive dashboards using Matplotlib, Seaborn, and Plotly. I also have experience with Git/GitHub, Neo4j graph databases, and statistical analysis including A/B testing and experimental design.",
+    
+    "Can you describe your production ML experience?": "I built an AI chatbot serving 660K+ users for MOSAIC immigrant services, implementing Neo4j graph database architecture and achieving 90% accuracy. The system required debugging critical production issues, cross-functional collaboration with 4 engineers, and managing the full development lifecycle from design to deployment. This project was shortlisted Top 4 for SFU CS Diversity Award.",
+    
+    "What large-scale data analysis have you done?": "I analyzed 1.88 million flight measurements using SQL and Python to optimize operational efficiency. Through systematic ANOVA and variance decomposition, I discovered that engine performance accounted for 64% of efficiency variance. I built interactive dashboards to communicate findings and made strategic resource allocation recommendations that challenged conventional assumptions.",
+    
+    "What's your experience with experimental design?": "In my garbage classification project, I systematically tested 4 different approaches to class imbalance, conducting rigorous A/B testing across multiple performance dimensions. I discovered that conservative augmentation parameters outperformed aggressive approaches by 0.5% while reducing training time by 10%. This demonstrates my ability to design controlled experiments and use data to challenge assumptions.",
+    
+    "Do you have analytics or business strategy experience?": "Yes, through multiple projects I've demonstrated strategic thinking. In the UC Berkeley healthcare capstone, I projected $30.4M annual savings through predictive analytics. In marketing optimization, I identified optimal customer contact windows (6-8 minutes) to maximize conversion. I excel at translating complex analysis into clear business recommendations for cross-functional stakeholders.",
+    
+    "What machine learning frameworks do you use?": "I'm experienced with PyTorch, TensorFlow, scikit-learn, FastAI, and XGBoost. I've used PyTorch to build CNN architectures (ResNet34, ResNet50) for image classification, achieving 94% accuracy with transfer learning. I've also worked with LlamaIndex and Langchain for RAG architectures in medical documentation automation.",
+    
+    "Can you work with SQL and databases?": "Absolutely. I use SQL extensively for data extraction and analysis. I've processed datasets with 1.88M+ measurements, designed efficient queries for performance optimization, and worked with Neo4j graph databases to model complex entity relationships. I understand both traditional SQL databases and specialized data systems.",
+    
+    "What's your experience with dashboards and visualization?": "I've built interactive dashboards using Matplotlib, Seaborn, and Plotly to visualize operational efficiency trends and enable stakeholders to understand key metrics at a glance. I have exposure to Tableau and focus on creating visualizations that translate complex data into clear, actionable insights for both technical and business audiences.",
+    
+    "Do you have experience working cross-functionally?": "Yes, in my AI Engineer role at Blueprint, I collaborated with 4 engineers, a product lead, and domain experts to deliver a system serving 660K+ users. I've presented findings to diverse stakeholders, translated between technical and business contexts, and demonstrated strong project management in fast-paced environments.",
+    
+    "When are you available for internships?": "I'm available for Summer 2026 internships (May-August), and I can commit to 12-week full-time programs. I'm based in Seattle but open to hybrid or relocation opportunities for strong roles. I'm currently a first-year MS Data Science student at Seattle University, graduating in June 2027.",
+    
+    "What makes you stand out for data science roles?": "My economics background gives me strong causal inference skills beyond typical data science candidates. I maintain 98%+ grades demonstrating learning agility, have production experience serving 660K+ users, and excel at translating analysis into business strategy. I combine statistical rigor with practical implementation and clear communication.",
+    
+    "What makes you stand out for ML engineering roles?": "I've built production ML systems from research to deployment, not just academic projects. My systematic experimentation approach (testing 4 strategies, rigorous evaluation) shows strong engineering mindset. I have experience with full ML lifecycle, PyTorch/TensorFlow proficiency, and understand both model development and production deployment challenges.",
+    
+    "What makes you stand out for analytics roles?": "I bring a resource optimization mindset from my economics background. I've analyzed 1.88M+ measurements for operational insights, created strategic recommendations that challenged assumptions, and excel at presenting complex data clearly. My cross-functional experience shows I can work with diverse teams and translate data into business value.",
+    
+    "Tell me about your computational biology experience": "I built a RAG pipeline for medical documentation using LlamaIndex, automating physician workflows with 50% efficiency improvement. I also competed in Kaggle medical image classification (12th place) using PyTorch. My Neo4j experience with graph databases translates directly to biological network analysis. I understand how to bridge technical and domain-specific contexts.",
+    
+    "What are your strongest programming languages?": "Python and SQL are my strongest languages - I use them daily for data analysis, ML development, and database queries. I'm also proficient in R for statistical analysis and have exposure to C++ through PyTorch. I follow clean code practices, use Git/GitHub for version control, and write well-documented, maintainable code.",
+    
+    "Can you give an example of business impact from your work?": "In the UC Berkeley healthcare capstone, my predictive model projected $30.4M annual cost savings by reducing misclassification costs. In the garbage classification project, I positioned the model for recycling facility deployment with 60% labor cost reduction. I consistently connect technical work to measurable business outcomes.",
+    
+    "How do you handle ambiguity and fast-paced environments?": "In my Blueprint project, I independently prioritized tasks while managing competing deadlines in a fast-paced startup environment. I debugged critical production issues affecting 660K users by systematically identifying root causes. I maintain detail-oriented quality standards while moving quickly, and I'm comfortable with iterative problem-solving when requirements evolve.",
+    
+    "What's your GitHub and portfolio?": "My GitHub is github.com/dcnguyen060899 with live code for all major projects. My portfolio at duyng-portfolio.com showcases interactive demos and project details. My UC Berkeley capstone site at ucberkeley-ml-ai-capstone.com has a full case study. All code is well-documented and demonstrates both technical depth and practical applications."
 }
 
 
