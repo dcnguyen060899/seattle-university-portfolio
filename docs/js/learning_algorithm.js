@@ -513,9 +513,11 @@ function submitChallenge() {
     thinkingAnimation.classList.remove('hidden');
     solutionSection.classList.add('hidden');
     
-    // API endpoint - check if on GitHub Pages
-    const isGitHubPages = window.location.hostname === 'ucberkeley-ml-ai-capstone.com';
-    const apiUrl = isGitHubPages 
+    // API endpoint - check if on production domains
+    const isProduction = window.location.hostname === 'ucberkeley-ml-ai-capstone.com' ||
+                         window.location.hostname === 'duyng-portfolio.com' ||
+                         window.location.hostname === 'www.duyng-portfolio.com';
+    const apiUrl = isProduction
         ? 'https://uc-berkeley-ml-ai-capstone-work-sample.onrender.com/evaluate-challenge'
         : '/evaluate-challenge';
     

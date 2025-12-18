@@ -12,7 +12,12 @@ app = Flask(__name__, static_folder='../../docs', static_url_path='/')
 CORS(app)  # Initialize CORS with the Flask app
 
 # Add specific CORS configuration for the evaluate-challenge endpoint
-CORS(app, resources={r"/evaluate-challenge": {"origins": "https://ucberkeley-ml-ai-capstone.com"}})
+CORS(app, resources={r"/evaluate-challenge": {"origins": [
+    "http://duyng-portfolio.com",
+    "https://duyng-portfolio.com",
+    "http://ucberkeley-ml-ai-capstone.com",
+    "https://ucberkeley-ml-ai-capstone.com"
+]}})
 
 api_key = os.getenv("ANTHROPIC_API_KEY")
 chat_service = ChatService(api_key=api_key)
@@ -84,7 +89,7 @@ base_qa = {
 
 @app.route("/")
 def index():
-    return send_from_directory(app.static_folder, 'index.html')
+    return send_from_directory(app.static_folder, 'index_portfolio.html')
     
 @app.route("/chat", methods=["POST"])
 def chat():

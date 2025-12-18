@@ -329,9 +329,13 @@ def fix_format_variance_with_ai(malformed_content):
 
         # Use the LLM directly for format correction (bypass agent to avoid same errors)
         from llm import llm
-        corrected_response = llm.predict(correction_prompt)
+        corrected_response = llm.invoke(correction_prompt)
 
-        return corrected_response.strip()
+        # Extract content from response (Claude returns AIMessage object)
+        if hasattr(corrected_response, 'content'):
+            return corrected_response.content.strip()
+        else:
+            return str(corrected_response).strip()
 
     except Exception as correction_error:
         # If the correction AI also fails, return the original content
