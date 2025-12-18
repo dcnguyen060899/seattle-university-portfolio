@@ -32,6 +32,9 @@ document.addEventListener("DOMContentLoaded", function () {
             chatOutput.innerHTML += `<p><strong>You:</strong> ${userMessage}</p>`;
             userInput.value = ""; // Clear input field
 
+            // Reset textarea height
+            userInput.style.height = "auto";
+
             // Send message to the backend
             fetch(apiUrl, {
                 method: 'POST',
@@ -57,11 +60,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Allow sending message with Enter key (Shift+Enter for new line)
     userInput.addEventListener("keydown", function (e) {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault(); // Prevent default newline behavior
-            sendButton.click();
+        if (e.key === "Enter") {
+            if (e.shiftKey) {
+                // Shift+Enter: allow default behavior to create new line
+                // Do nothing, let the default behavior happen
+                return;
+            } else {
+                // Just Enter: prevent default and send message
+                e.preventDefault();
+                e.stopPropagation();
+                sendButton.click();
+            }
         }
-        // If Shift+Enter is pressed, allow default behavior (creates new line)
     });
 
     // Auto-resize textarea as user types
