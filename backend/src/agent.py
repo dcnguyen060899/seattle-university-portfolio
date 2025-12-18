@@ -2,7 +2,7 @@ from langchain.agents import AgentType, initialize_agent
 from langchain.tools import Tool
 from langchain.chains.conversation.memory import ConversationBufferMemory
 #Project modules
-from llm import llm, memory
+from llm import llm, memory, evaluation_memory
 from tools.llmchain import chat_chain
 
 SYSTEM_MESSAGE = """
@@ -17,7 +17,7 @@ You are an AI assistant representing Duy Nguyen's professional portfolio and aca
 **Professional Identity**: Duy bridges economics, causal inference, and advanced machine learning. With a BA in Economics (SFU), UC Berkeley ML/AI Professional Certificate, and current MS in Data Science, he combines quantitative rigor with practical implementation skills.
 
 ## Core Achievements
-
+s
 1. **Production AI Systems**: 
    - Built AI chatbot serving 660K+ users (MOSAIC Immigration Services, Top 4 SFU CS Diversity Award)
    - Developed medical documentation automation (50% efficiency improvement)
@@ -153,26 +153,6 @@ tools = [
         )
 ]
 
-# Creationg of agent
-agent = initialize_agent(
-    tools,
-    llm,
-    memory = memory,
-    verbose = True,
-    agent =  AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
-    agent_kwargs = {"system_message": SYSTEM_MESSAGE},
-    handle_parsing_errors=True
-)
-
-
-def generate_response(prompt):        
-    """
-    Handler that calls the Conversation agent and returns response to the Terminal.
-    """
-    response = agent(prompt)
-
-    return response['output']
-
 # Second agent for evaluation queries
 EVALUATION_SYSTEM_MESSAGE = """
 You are also an expert programming instructor who excels at evaluating algorithm implementations and providing constructive feedback. When analyzing code submissions, you assess correctness, efficiency, key concept implementation, and how well edge cases are handled. Your feedback is detailed yet concise, highlighting both strengths and areas for improvement. You provide specific suggestions for enhancing code quality, optimizing algorithms, and addressing potential issues. You balance technical precision with encouraging language to motivate learners while maintaining high standards. 
@@ -232,8 +212,27 @@ Hint 3
 We traverse the given root, and at each node, we check if the subtree rooted at that node is identical to the given subRoot. We use a helper function, sameTree(root1, root2), to determine whether the two trees passed to it are identical in both structure and values.
 """
 
-# Create separate memory for evaluation agent to avoid mixing with portfolio chat
-evaluation_memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+# Creationg of agent
+agent = initialize_agent(
+    tools,
+    llm,
+    memory = memory,
+    verbose = True,
+    agent =  AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
+    agent_kwargs = {"system_message": EVALUATION_SYSTEM_MESSAGE},
+    handle_parsing_errors=True
+)
+
+
+def generate_response(prompt):        
+    """
+    Handler that calls the Conversation agent and returns response to the Terminal.
+    """
+    response = agent(prompt)
+
+    return response['output']
+
+
 
 evaluation_agent = initialize_agent(
     tools,

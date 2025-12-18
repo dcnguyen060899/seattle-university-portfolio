@@ -20,3 +20,6 @@ llm = ChatAnthropic(
 
 #Memory that uses all conversation 
 memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+
+# Create separate memory for evaluation agent to avoid mixing with portfolio chat
+evaluation_memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
