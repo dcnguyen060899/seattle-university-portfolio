@@ -1,5 +1,6 @@
 from langchain.agents import AgentType, initialize_agent
 from langchain.tools import Tool
+from langchain.chains.conversation.memory import ConversationBufferMemory
 #Project modules
 from llm import llm, memory
 from tools.llmchain import chat_chain
@@ -231,10 +232,13 @@ Hint 3
 We traverse the given root, and at each node, we check if the subtree rooted at that node is identical to the given subRoot. We use a helper function, sameTree(root1, root2), to determine whether the two trees passed to it are identical in both structure and values.
 """
 
+# Create separate memory for evaluation agent to avoid mixing with portfolio chat
+evaluation_memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+
 evaluation_agent = initialize_agent(
     tools,
     llm,
-    memory=memory,
+    memory=evaluation_memory,
     verbose=True,
     agent=AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
     agent_kwargs={"system_message": EVALUATION_SYSTEM_MESSAGE},
@@ -243,6 +247,9 @@ evaluation_agent = initialize_agent(
 
 def generate_evaluation_response(prompt):
     try:
+        # Clear memory before each evaluation to ensure fresh context
+        evaluation_memory.clear()
+
         response = evaluation_agent(prompt)
         return response['output']
     except Exception as e:
