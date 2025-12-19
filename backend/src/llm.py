@@ -11,6 +11,7 @@ load_dotenv()
 llm = ChatAnthropic(
     anthropic_api_key = os.getenv("ANTHROPIC_API_KEY"),
     model = os.getenv("ANTHROPIC_MODEL"),
+    max_tokens = 4096,  # Increased limit for long-form responses like cover letters
 )
 
 # Embeddings for Vector Search Index (commented out - not currently used)
