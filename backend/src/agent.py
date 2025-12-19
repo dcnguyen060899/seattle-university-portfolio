@@ -256,6 +256,56 @@ evaluation_agent = initialize_agent(
     handle_parsing_errors=True
 )
 
+def fix_format_variance_with_ai(malformed_content):
+    """
+    Uses a second AI call to detect and fix format variances in evaluation responses.
+    This is a self-healing mechanism for when the first AI returns content in unexpected formats.
+    """
+    try:
+        # Create a correction prompt for the LLM
+        correction_prompt = f"""
+        The following evaluation content was generated but needs to be reformatted to match the required structure.
+
+        Original content:
+        {malformed_content}
+
+        Please reformat this evaluation into the following EXACT plain text structure:
+
+        Score: X/100
+
+        Correctness: [feedback]
+
+        Key Concepts: [feedback]
+
+        Edge Cases: [feedback]
+
+        Code Quality: [feedback]
+
+        Suggestions for Improvement:
+        1. [suggestion]
+        2. [suggestion]
+        3. [suggestion]
+
+        Extract the actual evaluation content from above and format it correctly.
+        Do NOT add new evaluation content, just reformat what's already there.
+        Return ONLY the reformatted text, nothing else.
+        """
+
+        # Use the LLM directly for format correction (bypass agent to avoid same errors)
+        from llm import llm
+        corrected_response = llm.invoke(correction_prompt)
+
+        # Extract content from response (Claude returns AIMessage object)
+        if hasattr(corrected_response, 'content'):
+            return corrected_response.content.strip()
+        else:
+            return str(corrected_response).strip()
+
+    except Exception as correction_error:
+        # If the correction AI also fails, return the original content
+        print(f"Format correction AI failed: {str(correction_error)}")
+        return malformed_content
+
 def generate_evaluation_response(prompt):
     try:
         # Clear memory before each evaluation to ensure fresh context
@@ -310,52 +360,3 @@ def generate_evaluation_response(prompt):
 
         return f"Error generating evaluation: {str(e)}"
 
-def fix_format_variance_with_ai(malformed_content):
-    """
-    Uses a second AI call to detect and fix format variances in evaluation responses.
-    This is a self-healing mechanism for when the first AI returns content in unexpected formats.
-    """
-    try:
-        # Create a correction prompt for the LLM
-        correction_prompt = f"""
-        The following evaluation content was generated but needs to be reformatted to match the required structure.
-
-        Original content:
-        {malformed_content}
-
-        Please reformat this evaluation into the following EXACT plain text structure:
-
-        Score: X/100
-
-        Correctness: [feedback]
-
-        Key Concepts: [feedback]
-
-        Edge Cases: [feedback]
-
-        Code Quality: [feedback]
-
-        Suggestions for Improvement:
-        1. [suggestion]
-        2. [suggestion]
-        3. [suggestion]
-
-        Extract the actual evaluation content from above and format it correctly.
-        Do NOT add new evaluation content, just reformat what's already there.
-        Return ONLY the reformatted text, nothing else.
-        """
-
-        # Use the LLM directly for format correction (bypass agent to avoid same errors)
-        from llm import llm
-        corrected_response = llm.invoke(correction_prompt)
-
-        # Extract content from response (Claude returns AIMessage object)
-        if hasattr(corrected_response, 'content'):
-            return corrected_response.content.strip()
-        else:
-            return str(corrected_response).strip()
-
-    except Exception as correction_error:
-        # If the correction AI also fails, return the original content
-        print(f"Format correction AI failed: {str(correction_error)}")
-        return malformed_content
