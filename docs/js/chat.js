@@ -179,7 +179,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (userMessage) {
             // Display user's message with line breaks preserved
             const formattedUserMessage = userMessage.replace(/\n/g, '<br>');
-            chatOutput.innerHTML += `<p><strong>You:</strong> ${formattedUserMessage}</p>`;
+            chatOutput.innerHTML += `<p><strong>You:</strong><br>${formattedUserMessage}</p>`;
             userInput.value = ""; // Clear input field
 
             // Reset textarea height
