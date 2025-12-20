@@ -1,7 +1,9 @@
 # AI-Powered Portfolio Website with Intelligent Assistant
 
 **Live Demo:** [https://duyng-portfolio.com](https://duyng-portfolio.com/docs/index_portfolio.html)
+
 **Author:** Duy Nguyen | MS Data Science @ Seattle University
+
 **Contact:** [dnguyen44@seattleu.edu](mailto:dnguyen44@seattleu.edu) | [LinkedIn](https://www.linkedin.com/in/duwe-ng/)
 
 ---
