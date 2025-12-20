@@ -1,3 +1,11 @@
+:root {
+    --seattle-red: #AA0000;
+    --seattle-white: #FFFFFF;
+    --seattle-black: #000000;
+    --seattle-gray: #E5E5E5;
+    --seattle-dark-gray: #666666;
+}
+
 body, html {
     margin: 0;
     padding: 0;
@@ -8,28 +16,28 @@ body, html {
 }
 
 header {
-    background-color: #003262; /* Berkeley Blue background */
-    color: #FFFFFF;
+    background-color: var(--seattle-red); /* Seattle University Red background */
+    color: var(--seattle-white);
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
     position: relative;
-    height: 80px; /* Adjust as needed */
+    height: 80px;
 }
 
 header .logo {
     height: 100%;
     display: flex;
     align-items: center;
-    background-color: white; /* Set logo background to white */
-    padding: 0 20px; /* Add some padding around the logo */
+    background-color: white;
+    padding: 0 20px;
 }
 
 header .logo img {
     height: 100%;
-    width: auto; /* Maintain aspect ratio */
-    object-fit: contain; /* Ensure the entire logo is visible */
+    width: auto;
+    object-fit: contain;
 }
 
 header nav {
@@ -40,16 +48,17 @@ header nav {
 }
 
 header nav a {
-    color: #FFFFFF;
+    color: var(--seattle-white);
     text-decoration: none;
     margin: 0 15px;
     font-weight: bold;
-    font-family: 'Helvetica Neue', Arial, sans-serif; /* Match font family */
-    font-size: 16px; /* Adjust font size if necessary */
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 16px;
 }
 
 header nav a:hover {
     text-decoration: underline;
+    color: var(--seattle-gray);
 }
 
 main {
@@ -57,8 +66,8 @@ main {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #FFFFFF;
-    height: calc(100% - 80px); /* Full height minus the header height */
+    background-color: var(--seattle-white);
+    height: calc(100% - 80px);
 }
 
 iframe {
@@ -68,8 +77,8 @@ iframe {
 }
 
 footer {
-    background-color: #003262; /* Berkeley Blue */
-    color: #FFFFFF;
+    background-color: var(--seattle-red); /* Seattle University Red */
+    color: var(--seattle-white);
     text-align: center;
     padding: 10px 0;
     position: fixed;
@@ -77,6 +86,15 @@ footer {
     bottom: 0;
 }
 
+footer a {
+    color: var(--seattle-white);
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+    color: var(--seattle-gray);
+}
 
 .logo-link {
     display: flex;
@@ -85,6 +103,10 @@ footer {
     text-decoration: none;
     padding: 0;
     margin: 0;
+}
+
+.logo-link:hover {
+    text-decoration: none;
 }
 
 .logo-link .logo {
