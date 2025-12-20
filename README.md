@@ -471,9 +471,13 @@ MS Data Science Candidate @ Seattle University
 Expected Graduation: June 2027
 
 **Email:** [dnguyen44@seattleu.edu](mailto:dnguyen44@seattleu.edu)
+
 **LinkedIn:** [linkedin.com/in/duwe-ng](https://www.linkedin.com/in/duwe-ng/)
+
 **GitHub:** [github.com/dcnguyen060899](https://github.com/dcnguyen060899)
+
 **Portfolio:** [duyng-portfolio.com](https://duyng-portfolio.com/docs/index_portfolio.html)
+
 **Resume:** [ucberkeley-ml-ai-capstone.com/index_resume.html](https://ucberkeley-ml-ai-capstone.com/index_resume.html)
 
 ### Other Notable Projects
