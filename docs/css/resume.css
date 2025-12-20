@@ -67,7 +67,7 @@ main {
     justify-content: center;
     align-items: center;
     background-color: var(--seattle-white);
-    height: calc(100% - 80px);
+    min-height: 0;
 }
 
 iframe {
@@ -81,9 +81,7 @@ footer {
     color: var(--seattle-white);
     text-align: center;
     padding: 10px 0;
-    position: fixed;
     width: 100%;
-    bottom: 0;
 }
 
 footer a {
