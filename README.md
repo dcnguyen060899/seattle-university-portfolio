@@ -371,7 +371,9 @@ Different use cases require different contexts:
 
 ### Why Three-Layer AI System?
 **Layer 1:** Primary agent handles normal responses
+
 **Layer 2:** Error detection catches formatting issues
+
 **Layer 3:** Fallback AI reformats malformed content
 
 This provides robust error recovery without manual intervention.
@@ -432,26 +434,9 @@ This provides robust error recovery without manual intervention.
 
 ---
 
-## For Recruiters: How to Evaluate This Project
+## What This Project Demonstrates
 
-### Questions to Ask in an Interview
-
-**System Design:**
-- "Walk me through how the dual-chatbot system prevents memory contamination."
-- "What happens when the evaluation chatbot encounters an error?"
-- "How did you decide on the three-layer AI architecture?"
-
-**Technical Depth:**
-- "Why did you separate the portfolio and evaluation agents?"
-- "Explain the CORS configuration and why it's necessary."
-- "How does the tertiary AI fallback mechanism work?"
-
-**Problem-Solving:**
-- "What was the most challenging bug you encountered, and how did you fix it?"
-- "How did you optimize the chatbot for long-form responses like cover letters?"
-- "What would you do differently if you built this project again?"
-
-### What This Project Proves
+This portfolio website serves as a practical demonstration of:
 
 - **Full-stack capability**: Built both frontend and backend from scratch
 - **AI/ML proficiency**: Integrated advanced LLM with custom prompting
@@ -462,7 +447,7 @@ This provides robust error recovery without manual intervention.
 - **Attention to detail**: Polished animations, formatting, visual feedback
 - **Documentation**: Comprehensive README demonstrating communication skills
 
-**Most importantly:** The ability to build something sophisticated that *actually works in production* and helps real users (you, the recruiter reading this!).
+The existence of this website itself validates the technical skills described within - recruiters are experiencing the product while learning about the developer.
 
 ---
 
