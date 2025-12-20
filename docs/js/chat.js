@@ -172,6 +172,52 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // Function to stream bot message word by word
+    function streamBotMessage(formattedText) {
+        return new Promise((resolve) => {
+            // Create the message container
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'bot-message';
+            messageDiv.innerHTML = '<strong>Bot:</strong> <span class="streaming-content"></span>';
+            chatOutput.appendChild(messageDiv);
+
+            const contentSpan = messageDiv.querySelector('.streaming-content');
+
+            // Split the formatted HTML into chunks while preserving tags
+            const parts = [];
+            const regex = /(<[^>]+>|[^<]+)/g;
+            let match;
+
+            while ((match = regex.exec(formattedText)) !== null) {
+                const part = match[0];
+                if (part.startsWith('<')) {
+                    // It's an HTML tag, add it as a whole
+                    parts.push(part);
+                } else {
+                    // It's text, split into words
+                    const words = part.split(/(\s+)/);
+                    parts.push(...words);
+                }
+            }
+
+            let currentIndex = 0;
+            const delay = 30; // Milliseconds between words (adjust for speed)
+
+            function displayNextPart() {
+                if (currentIndex < parts.length) {
+                    contentSpan.innerHTML += parts[currentIndex];
+                    currentIndex++;
+                    chatOutput.scrollTop = chatOutput.scrollHeight;
+                    setTimeout(displayNextPart, delay);
+                } else {
+                    resolve();
+                }
+            }
+
+            displayNextPart();
+        });
+    }
+
     // Send message to the chatbot
     sendButton.addEventListener("click", function () {
         const userMessage = userInput.value.trim();
@@ -203,9 +249,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // Format bot message with proper line breaks and structure
                 const botMessage = formatBotMessage(data.response);
-                // Display bot's response
-                chatOutput.innerHTML += `<div class="bot-message"><strong>Bot:</strong> ${botMessage}</div>`;
-                chatOutput.scrollTop = chatOutput.scrollHeight; // Auto-scroll to the bottom
+                // Stream bot's response word by word
+                streamBotMessage(botMessage);
             })
             .catch(error => {
                 // Remove typing indicator
@@ -250,18 +295,17 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Add a message to the chat output
     function addMessage(sender, text) {
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('message', sender);
-
         if (sender === 'bot') {
-            // Format bot messages properly
-            messageElement.innerHTML = `<strong>Bot:</strong> ${formatBotMessage(text)}`;
+            // Format and stream bot messages
+            const formattedMessage = formatBotMessage(text);
+            streamBotMessage(formattedMessage);
         } else {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', sender);
             messageElement.innerHTML = text;
+            chatOutput.appendChild(messageElement);
+            chatOutput.scrollTop = chatOutput.scrollHeight;
         }
-
-        chatOutput.appendChild(messageElement);
-        chatOutput.scrollTop = chatOutput.scrollHeight;
     }
 
     // Function to convert markdown-style links to clickable HTML links
