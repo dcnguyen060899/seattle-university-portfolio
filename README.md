@@ -495,6 +495,6 @@ This project is part of Duy Nguyen's academic portfolio for the MS Data Science 
 
 ---
 
-**Built with care by Duy Nguyen | Last Updated: January 2025**
+*Built with care by Duy Nguyen | Last Updated: January 2025*
 
 **Copyright © 2025 Duy Nguyen. Licensed under the MIT License.**
