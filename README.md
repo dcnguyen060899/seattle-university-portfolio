@@ -477,7 +477,11 @@ Expected Graduation: June 2027
 
 ## License
 
-This project is part of Duy Nguyen's academic portfolio for the MS Data Science program at Seattle University. The code is provided for educational and demonstration purposes.
+MIT License - Copyright (c) 2025 Duy Nguyen
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+This project is part of Duy Nguyen's academic portfolio for the MS Data Science program at Seattle University. While the code is open source under MIT License, **attribution is required** if you use or adapt this work. Please credit the original author and link back to this repository.
 
 ---
 
@@ -492,3 +496,5 @@ This project is part of Duy Nguyen's academic portfolio for the MS Data Science 
 ---
 
 **Built with care by Duy Nguyen | Last Updated: January 2025**
+
+**Copyright © 2025 Duy Nguyen. Licensed under the MIT License.**
