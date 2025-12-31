@@ -1,0 +1,532 @@
+/* ===================================
+   BUSINESS CARD DESIGN
+   For Duy Nguyen - Seattle University
+   Standard Size: 3.5" x 2" (88.9mm x 50.8mm)
+   =================================== */
+
+/* Color Palette - Seattle University Branding */
+:root {
+    --seattle-red: #AA0000;
+    --seattle-red-dark: #880000;
+    --white: #FFFFFF;
+    --black: #000000;
+    --light-gray: #E5E5E5;
+    --text-gray: #333333;
+}
+
+/* ===================================
+   GENERAL STYLES
+   =================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f5f5f5;
+    padding: 20px;
+    line-height: 1.4;
+}
+
+/* ===================================
+   PRINT INSTRUCTIONS (SCREEN ONLY)
+   =================================== */
+.print-instructions {
+    max-width: 900px;
+    margin: 0 auto 40px;
+    padding: 30px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.print-instructions h1 {
+    color: var(--seattle-red);
+    margin-bottom: 20px;
+    font-size: 28px;
+    border-bottom: 3px solid var(--seattle-red);
+    padding-bottom: 10px;
+}
+
+.print-instructions h2 {
+    color: var(--black);
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 20px;
+}
+
+.instructions-box {
+    background: #f9f9f9;
+    padding: 20px;
+    border-left: 4px solid var(--seattle-red);
+    margin-top: 20px;
+}
+
+.instructions-box ul,
+.instructions-box ol {
+    margin-left: 25px;
+    margin-top: 10px;
+}
+
+.instructions-box li {
+    margin-bottom: 8px;
+    color: var(--text-gray);
+}
+
+.instructions-box code {
+    background: #e0e0e0;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: monospace;
+    color: var(--seattle-red);
+}
+
+.print-button {
+    background-color: var(--seattle-red);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.print-button:hover {
+    background-color: var(--seattle-red-dark);
+}
+
+/* ===================================
+   BUSINESS CARD CONTAINER
+   =================================== */
+.card-container {
+    max-width: 1000px;
+    margin: 0 auto 40px;
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* ===================================
+   BUSINESS CARD - STANDARD SIZE
+   3.5" x 2" (88.9mm x 50.8mm)
+   =================================== */
+.business-card {
+    width: 3.5in;
+    height: 2in;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    page-break-inside: avoid;
+}
+
+/* ===================================
+   FRONT SIDE
+   =================================== */
+.business-card.front {
+    padding: 0;
+}
+
+.card-header {
+    background-color: var(--seattle-red);
+    padding: 7px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 36px;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+}
+
+.su-logo {
+    height: 29px;
+    width: auto;
+    object-fit: contain;
+}
+
+.card-body {
+    flex: 1;
+    padding: 8px 14px 8px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.content-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    height: 100%;
+    position: relative;
+}
+
+.info-section {
+    flex: 1;
+    max-width: 185px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-right: 10px;
+    border-right: 2px solid var(--light-gray);
+    position: relative;
+}
+
+.info-section::after {
+    content: '';
+    position: absolute;
+    right: -2px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 85%;
+    width: 2px;
+    background: linear-gradient(to bottom,
+        transparent 0%,
+        var(--seattle-red) 15%,
+        var(--seattle-red) 85%,
+        transparent 100%);
+}
+
+.photo-section {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.profile-photo {
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--seattle-red);
+    box-shadow: 0 4px 12px rgba(170, 0, 0, 0.3);
+    background: white;
+    padding: 2.5px;
+}
+
+.name-section {
+    margin-bottom: 0;
+}
+
+.name-section h1 {
+    color: var(--seattle-red);
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 3px;
+    letter-spacing: 0.3px;
+    line-height: 1.1;
+}
+
+.name-section .title {
+    color: var(--black);
+    font-size: 10.5px;
+    font-weight: 600;
+    margin-bottom: 2px;
+    line-height: 1.2;
+}
+
+.name-section .subtitle {
+    color: var(--text-gray);
+    font-size: 9.5px;
+    font-weight: normal;
+    line-height: 1.2;
+}
+
+.contact-section {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 9.5px;
+    color: var(--text-gray);
+}
+
+.contact-item .icon {
+    font-size: 10px;
+    color: var(--seattle-red);
+    width: 14px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.contact-item .text {
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+.card-footer {
+    height: 6px;
+    background: linear-gradient(90deg, var(--seattle-red) 0%, var(--seattle-red-dark) 100%);
+}
+
+/* ===================================
+   BACK SIDE - DETAILED VERSION
+   =================================== */
+.business-card.back {
+    padding: 10px 12px 8px;
+    background: linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.qr-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 3px;
+}
+
+.qr-container {
+    background: white;
+    padding: 4px;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(170, 0, 0, 0.1);
+    border: 2px solid var(--seattle-red);
+}
+
+.qr-container img {
+    display: block;
+    width: 70px;
+    height: 70px;
+}
+
+.qr-label {
+    margin-top: 4px;
+    font-size: 8px;
+    font-weight: bold;
+    color: var(--seattle-red);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.website-url {
+    font-size: 7.5px;
+    color: var(--text-gray);
+    font-weight: 500;
+    margin-top: 1px;
+}
+
+.skills-highlight {
+    margin-top: 4px;
+}
+
+.skills-highlight h3 {
+    font-size: 7.5px;
+    color: var(--seattle-red);
+    margin-bottom: 2px;
+    text-align: center;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.skills-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5px;
+}
+
+.skill-tag {
+    background-color: var(--seattle-red);
+    color: white;
+    padding: 2.5px 4px;
+    border-radius: 2px;
+    font-size: 6.5px;
+    text-align: center;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.graduation-info {
+    margin-top: 3px;
+    text-align: center;
+    padding-top: 2px;
+    border-top: 1.5px solid var(--seattle-red);
+}
+
+.graduation-info p {
+    font-size: 7px;
+    color: var(--text-gray);
+    font-weight: 600;
+}
+
+/* ===================================
+   BACK SIDE - MINIMALIST VERSION
+   =================================== */
+.business-card.back.minimalist {
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    background: white;
+}
+
+.qr-section-centered {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.qr-container-large {
+    background: white;
+    padding: 5px;
+    border-radius: 5px;
+    box-shadow: 0 3px 10px rgba(170, 0, 0, 0.15);
+    border: 2px solid var(--seattle-red);
+}
+
+.qr-container-large img {
+    display: block;
+    width: 100px;
+    height: 100px;
+}
+
+.qr-label-large {
+    margin-top: 8px;
+    font-size: 10px;
+    font-weight: bold;
+    color: var(--seattle-red);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.website-url-large {
+    font-size: 9px;
+    color: var(--text-gray);
+    font-weight: 600;
+    margin-top: 3px;
+}
+
+.back-footer {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+
+.tagline {
+    font-size: 8px;
+    color: var(--text-gray);
+    font-style: italic;
+    font-weight: 500;
+}
+
+/* ===================================
+   QR CODE CANVAS STYLING
+   =================================== */
+#qrcode,
+#qrcode2 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#qrcode canvas,
+#qrcode img,
+#qrcode2 canvas,
+#qrcode2 img {
+    border-radius: 4px;
+}
+
+/* ===================================
+   PRINT STYLES
+   =================================== */
+@media print {
+    /* Hide print instructions when printing */
+    .print-instructions {
+        display: none;
+    }
+
+    body {
+        background: white;
+        padding: 0;
+        margin: 0;
+    }
+
+    .card-container {
+        margin: 0;
+        padding: 0;
+        gap: 0.25in;
+        page-break-after: always;
+    }
+
+    .business-card {
+        box-shadow: none;
+        border-radius: 0;
+        page-break-inside: avoid;
+        margin: 0;
+    }
+
+    /* Ensure backgrounds print */
+    .card-header,
+    .card-footer,
+    .skill-tag,
+    .qr-container,
+    .qr-container-large {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color-adjust: exact;
+    }
+}
+
+/* ===================================
+   RESPONSIVE STYLES (SCREEN ONLY)
+   =================================== */
+@media screen and (max-width: 768px) {
+    .card-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .business-card {
+        transform: scale(1.2);
+        margin: 30px 0;
+    }
+
+    .print-instructions {
+        padding: 20px;
+    }
+
+    .print-instructions h1 {
+        font-size: 22px;
+    }
+}
+
+/* ===================================
+   ACCESSIBILITY
+   =================================== */
+@media (prefers-reduced-motion: reduce) {
+    .print-button {
+        transition: none;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .business-card {
+        border: 2px solid var(--black);
+    }
+
+    .skill-tag {
+        border: 1px solid var(--black);
+    }
+}

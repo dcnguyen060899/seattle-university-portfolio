@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duy Nguyen - Business Card</title>
+    <link rel="stylesheet" href="css/business_card.css">
+</head>
+<body>
+    <div class="print-instructions">
+        <h1>Business Card Design - Print Instructions</h1>
+        <div class="instructions-box">
+            <h2>Printing Guidelines:</h2>
+            <ul>
+                <li><strong>Size:</strong> Standard business card (3.5" x 2" / 88.9mm x 50.8mm)</li>
+                <li><strong>Paper:</strong> 300-350 GSM cardstock recommended</li>
+                <li><strong>Finish:</strong> Matte or glossy (matte recommended for professional look)</li>
+                <li><strong>Print:</strong> Use browser print function (Ctrl/Cmd + P)</li>
+                <li><strong>Settings:</strong> Set to actual size, no margins, landscape orientation</li>
+                <li><strong>QR Code:</strong> Generate using qrcode.js library (automatically loaded)</li>
+            </ul>
+            <h2>How to Generate QR Code:</h2>
+            <ol>
+                <li>Open this file in a web browser</li>
+                <li>QR code will automatically generate linking to: <code>https://duyng-portfolio.com/docs/index_portfolio.html</code></li>
+                <li>Right-click on the cards below and select "Print" or use Ctrl/Cmd + P</li>
+                <li>Ensure "Background graphics" is enabled in print settings</li>
+            </ol>
+            <button onclick="window.print()" class="print-button">Print Business Cards</button>
+        </div>
+    </div>
+
+    <div class="card-container">
+        <!-- FRONT SIDE -->
+        <div class="business-card front">
+            <div class="card-header">
+                <div class="logo-section">
+                    <img src="images/seattle_university_logo.png" alt="Seattle University" class="su-logo">
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="content-wrapper">
+                    <div class="info-section">
+                        <div class="name-section">
+                            <h1>Duy Nguyen</h1>
+                            <p class="title">MS Data Science Student</p>
+                            <p class="subtitle">Seattle University</p>
+                        </div>
+
+                        <div class="contact-section">
+                            <div class="contact-item">
+                                <span class="icon">✉</span>
+                                <span class="text">dnguyen44@seattleu.edu</span>
+                            </div>
+                            <div class="contact-item">
+                                <span class="icon">🔗</span>
+                                <span class="text">linkedin.com/in/duwe-ng</span>
+                            </div>
+                            <div class="contact-item">
+                                <span class="icon">💻</span>
+                                <span class="text">github.com/dcnguyen060899</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="photo-section">
+                        <img src="images/Duy_Nguyen_3.jpg" alt="Duy Nguyen" class="profile-photo">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <div class="footer-accent"></div>
+            </div>
+        </div>
+
+        <!-- BACK SIDE -->
+        <div class="business-card back">
+            <div class="qr-section">
+                <div class="qr-container">
+                    <div id="qrcode"></div>
+                </div>
+                <p class="qr-label">Scan to view portfolio</p>
+                <p class="website-url">duyng-portfolio.com</p>
+            </div>
+
+            <div class="skills-highlight">
+                <h3>Areas of Focus</h3>
+                <div class="skills-grid">
+                    <span class="skill-tag">Machine Learning</span>
+                    <span class="skill-tag">Data Analytics</span>
+                    <span class="skill-tag">AI Development</span>
+                    <span class="skill-tag">Statistical Modeling</span>
+                </div>
+            </div>
+
+            <div class="graduation-info">
+                <p>Expected Graduation: June 2027</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alternative minimalist back design -->
+    <div class="card-container">
+        <div class="business-card front">
+            <div class="card-header">
+                <div class="logo-section">
+                    <img src="images/seattle_university_logo.png" alt="Seattle University" class="su-logo">
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="content-wrapper">
+                    <div class="info-section">
+                        <div class="name-section">
+                            <h1>Duy Nguyen</h1>
+                            <p class="title">MS Data Science Student</p>
+                            <p class="subtitle">Seattle University</p>
+                        </div>
+
+                        <div class="contact-section">
+                            <div class="contact-item">
+                                <span class="icon">✉</span>
+                                <span class="text">dnguyen44@seattleu.edu</span>
+                            </div>
+                            <div class="contact-item">
+                                <span class="icon">🔗</span>
+                                <span class="text">linkedin.com/in/duwe-ng</span>
+                            </div>
+                            <div class="contact-item">
+                                <span class="icon">💻</span>
+                                <span class="text">github.com/dcnguyen060899</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="photo-section">
+                        <img src="images/Duy_Nguyen_3.jpg" alt="Duy Nguyen" class="profile-photo">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <div class="footer-accent"></div>
+            </div>
+        </div>
+
+        <!-- BACK SIDE - Minimalist Version -->
+        <div class="business-card back minimalist">
+            <div class="qr-section-centered">
+                <div class="qr-container-large">
+                    <div id="qrcode2"></div>
+                </div>
+                <p class="qr-label-large">View My Portfolio</p>
+                <p class="website-url-large">duyng-portfolio.com</p>
+            </div>
+
+            <div class="back-footer">
+                <p class="tagline">Building Data-Driven Solutions</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code Generation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        // Generate QR code for portfolio URL
+        const portfolioURL = 'https://duyng-portfolio.com/docs/index_portfolio.html';
+
+        // First QR code (detailed back)
+        new QRCode(document.getElementById("qrcode"), {
+            text: portfolioURL,
+            width: 70,
+            height: 70,
+            colorDark: "#AA0000",  // Seattle Red
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+
+        // Second QR code (minimalist back)
+        new QRCode(document.getElementById("qrcode2"), {
+            text: portfolioURL,
+            width: 100,
+            height: 100,
+            colorDark: "#AA0000",  // Seattle Red
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    </script>
+</body>
+</html>

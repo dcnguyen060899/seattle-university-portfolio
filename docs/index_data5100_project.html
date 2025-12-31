@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/portfolio_su.css">
+    <link rel="stylesheet" href="css/data5100_project.css">
+    <link rel="icon" type="image/x-icon" href="seattleu_2.ico?v=2">
+    <title>Aircraft Fuel Efficiency Optimization - DATA 5100 Final Project</title>
+</head>
+<body>
+    <header>
+        <a href="https://www.seattleu.edu/science-engineering/discover-data-science/" class="logo-link">
+            <div class="logo">
+                <img src="images/seattle_university.png" alt="Seattle University logo">
+            </div>
+        </a>
+        <nav>
+            <a href="index_portfolio.html">Back to Portfolio</a>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero">
+            <h1>Aircraft Fuel Efficiency Optimization</h1>
+            <p class="subtitle">A Statistical Analysis of Cruise Phase Operations for Commercial Aviation</p>
+            <p class="course-info">DATA 5100: Foundation of Data Science | Seattle University | Fall 2025</p>
+            <p class="author">Duy Nguyen</p>
+        </section>
+
+        <section id="executive-summary">
+            <h2>Executive Summary</h2>
+            <div class="summary-card">
+                <p>This project analyzes <strong>1.88 million</strong> high-frequency flight recorder measurements from NASA's DASHlink Aviation Safety Reporting System to identify the primary drivers of fuel consumption during commercial aircraft cruise operations.</p>
+
+                <div class="key-finding">
+                    <h3>Key Finding</h3>
+                    <p>Engine performance management (N1 fan speed) offers approximately <strong>2.2 times</strong> the fuel savings potential of altitude-speed optimization—a result that challenges conventional industry wisdom about flight optimization priorities.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="metrics">
+            <h2>Project Metrics</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <span class="metric-value">1.88M</span>
+                    <span class="metric-label">Data Points Analyzed</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-value">312</span>
+                    <span class="metric-label">Flights Analyzed</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-value">95.9%</span>
+                    <span class="metric-label">Variance Explained (R²)</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-value">64.4%</span>
+                    <span class="metric-label">Engine's Contribution</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="research-question">
+            <h2>Research Question</h2>
+            <div class="question-box">
+                <p><em>"Which operational parameters have the greatest impact on fuel consumption, and how should airlines prioritize improvement initiatives?"</em></p>
+            </div>
+        </section>
+
+        <section id="methodology">
+            <h2>Methodology</h2>
+            <div class="methodology-content">
+                <h3>Data Source</h3>
+                <ul>
+                    <li><strong>Source:</strong> NASA DASHlink Aviation Safety Reporting System</li>
+                    <li><strong>Aircraft:</strong> Tail 687 (wide-body, 4 engines)</li>
+                    <li><strong>Sampling Rate:</strong> 4 Hz (high-frequency data)</li>
+                    <li><strong>Flight Hours:</strong> ~130 hours of cruise operations</li>
+                </ul>
+
+                <h3>Statistical Methods</h3>
+                <ul>
+                    <li>One-Way ANOVA with effect sizes (η²)</li>
+                    <li>Two-Way ANOVA testing interaction effects</li>
+                    <li>Sequential Regression Modeling (6 nested models)</li>
+                    <li>Nested F-Tests for model comparisons</li>
+                    <li>Variance Decomposition (orthogonal contributions)</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="visualizations">
+            <h2>Analysis & Visualizations</h2>
+
+            <div class="viz-section">
+                <h3>1. Exploratory Data Analysis</h3>
+                <p>Comprehensive univariate analysis of all flight parameters including altitude, Mach number, fuel flow, engine metrics, and environmental factors.</p>
+                <div class="viz-container">
+                    <img src="images/data_5100/viz_02.png" alt="Univariate Analysis - Variable Distributions" class="viz-image">
+                </div>
+                <p class="viz-caption">Distribution analysis of 10 key flight variables showing means, medians, and Q-Q plots for normality assessment.</p>
+            </div>
+
+            <div class="viz-section">
+                <h3>2. Discovery: "Slow Cruise" Operations</h3>
+                <p>During exploratory analysis, we identified an unexpected pattern: 5.4% of data points showed unusually low Mach numbers. Investigation revealed this as a deliberate fuel optimization strategy used during heavy weight conditions.</p>
+                <div class="viz-container">
+                    <img src="images/data_5100/viz_03.png" alt="Speed Outliers Investigation" class="viz-image">
+                </div>
+                <p class="viz-caption">Investigation of "slow cruise" operations showing the relationship between Mach number, altitude, fuel consumption, and aircraft weight.</p>
+            </div>
+
+            <div class="viz-section">
+                <h3>3. Correlation Analysis & Variable Selection</h3>
+                <p>Systematic analysis of predictor correlations with fuel flow to identify the most important variables and address multicollinearity concerns.</p>
+                <div class="viz-container">
+                    <img src="images/data_5100/viz_09.png" alt="Correlation Analysis" class="viz-image">
+                </div>
+                <p class="viz-caption">Left: Multicollinearity check showing Mach-Airspeed correlation (r=0.935). Right: Variables ranked by fuel prediction strength, with Engine N1 showing the strongest correlation (0.693).</p>
+            </div>
+
+            <div class="viz-section">
+                <h3>4. Variable Selection Decision Matrix</h3>
+                <div class="viz-container">
+                    <img src="images/data_5100/viz_10.png" alt="Variable Selection Summary" class="viz-image">
+                </div>
+                <p class="viz-caption">Final variable selection decisions based on correlation strength, relationship direction, and theoretical justification.</p>
+            </div>
+
+            <div class="viz-section">
+                <h3>5. Altitude × Mach Interaction Analysis</h3>
+                <p>Two-way visualization examining how altitude and speed jointly affect fuel consumption.</p>
+                <div class="viz-container">
+                    <img src="images/data_5100/viz_11.png" alt="Fuel Consumption Heatmap" class="viz-image">
+                </div>
+                <p class="viz-caption">Heatmap and contour plot showing fuel consumption patterns across altitude-Mach combinations. Green zones indicate optimal efficiency; red zones indicate high consumption.</p>
+            </div>
+
+            <div class="viz-section highlight-section">
+                <h3>6. Key Result: Variance Decomposition</h3>
+                <p>The central finding of this analysis—engine fan speed (N1) dominates fuel consumption variance, accounting for 64.44% of explained variance.</p>
+                <div class="viz-container">
+                    <img src="images/data_5100/viz_15.png" alt="Variance Decomposition" class="viz-image featured">
+                </div>
+                <p class="viz-caption"><strong>Critical insight:</strong> Engine performance monitoring offers 2.2× more fuel savings potential than traditional altitude-speed optimization strategies.</p>
+            </div>
+
+            <div class="viz-section">
+                <h3>7. Model Diagnostics</h3>
+                <p>Residual analysis confirming model assumptions and validating the regression results.</p>
+                <div class="viz-container">
+                    <img src="images/data_5100/viz_16.png" alt="Residual Diagnostics" class="viz-image">
+                </div>
+                <p class="viz-caption">Residual vs. fitted values plot (checking homoskedasticity) and Q-Q plot (checking normality). The model shows good fit with near-zero mean residuals.</p>
+            </div>
+        </section>
+
+        <section id="results">
+            <h2>Key Findings</h2>
+            <div class="results-table-container">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Factor</th>
+                            <th>% Explained Variance</th>
+                            <th>Business Priority</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="highlight-row">
+                            <td><strong>Engine Fan Speed (N1)</strong></td>
+                            <td><strong>64.4%</strong></td>
+                            <td><strong>1st — Engine Monitoring</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Altitude + Mach Number</td>
+                            <td>29.7%</td>
+                            <td>2nd — Flight Planning</td>
+                        </tr>
+                        <tr>
+                            <td>Headwind + Weight</td>
+                            <td>5.8%</td>
+                            <td>3rd — Environmental</td>
+                        </tr>
+                        <tr>
+                            <td>Interaction Terms</td>
+                            <td>&lt;0.1%</td>
+                            <td>Negligible</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="recommendations">
+            <h2>Business Recommendations</h2>
+            <div class="recommendations-grid">
+                <div class="rec-card priority-1">
+                    <h3>Priority 1: Engine Performance (64%)</h3>
+                    <ul>
+                        <li>Implement real-time N1/EGT monitoring systems</li>
+                        <li>Deploy predictive maintenance scheduling</li>
+                        <li>Establish optimal power band operational protocols</li>
+                    </ul>
+                </div>
+                <div class="rec-card priority-2">
+                    <h3>Priority 2: Flight Planning (30%)</h3>
+                    <ul>
+                        <li>Simplified altitude-speed optimization guidelines</li>
+                        <li>Factors can be treated as independent (no complex conditional logic needed)</li>
+                    </ul>
+                </div>
+                <div class="rec-card priority-3">
+                    <h3>Priority 3: Environmental (6%)</h3>
+                    <ul>
+                        <li>Standard wind optimization practices sufficient</li>
+                        <li>Weight management through existing procedures</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="key-insight">
+                <p><strong>Key Challenge:</strong> Many airlines may be overinvesting in sophisticated flight management systems while underinvesting in engine condition monitoring and predictive maintenance.</p>
+            </div>
+        </section>
+
+        <section id="limitations">
+            <h2>Limitations & Future Work</h2>
+            <div class="two-column">
+                <div class="column">
+                    <h3>Current Limitations</h3>
+                    <ul>
+                        <li>Single aircraft type (results specific to Tail 687)</li>
+                        <li>Cruise-only analysis (excludes climb/descent phases)</li>
+                        <li>Observational design (associations, not causal effects)</li>
+                        <li>2012 data (procedures may have evolved)</li>
+                    </ul>
+                </div>
+                <div class="column">
+                    <h3>Future Research</h3>
+                    <ul>
+                        <li>Extend analysis to heterogeneous fleets</li>
+                        <li>Incorporate climb and descent phases</li>
+                        <li>Develop predictive maintenance models</li>
+                        <li>Prospective intervention studies</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="tech-stack">
+            <h2>Technologies Used</h2>
+            <div class="tech-grid">
+                <span class="tech-tag">Python</span>
+                <span class="tech-tag">pandas</span>
+                <span class="tech-tag">NumPy</span>
+                <span class="tech-tag">SciPy</span>
+                <span class="tech-tag">statsmodels</span>
+                <span class="tech-tag">Matplotlib</span>
+                <span class="tech-tag">Seaborn</span>
+                <span class="tech-tag">Plotly</span>
+                <span class="tech-tag">Jupyter Notebook</span>
+                <span class="tech-tag">Git LFS</span>
+            </div>
+        </section>
+
+        <section id="links">
+            <h2>Project Resources</h2>
+            <div class="links-container">
+                <a href="https://github.com/dcnguyen060899/data_5100_final_project" class="resource-link" target="_blank">
+                    <span class="link-icon">&#128187;</span>
+                    <span class="link-text">GitHub Repository</span>
+                </a>
+            </div>
+        </section>
+
+        <section id="contact">
+            <h2>Contact</h2>
+            <p>Email: <a href="mailto:dcnguyen060899@gmail.com">dcnguyen060899@gmail.com</a></p>
+            <p>LinkedIn: <a href="https://www.linkedin.com/in/duwe-ng/">https://www.linkedin.com/in/duwe-ng/</a></p>
+            <p>GitHub: <a href="https://github.com/dcnguyen060899">https://github.com/dcnguyen060899</a></p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Seattle University. All rights reserved.</p>
+    </footer>
+</body>
+</html>

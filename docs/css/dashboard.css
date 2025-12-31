@@ -5,6 +5,17 @@
     --berkeley-gray: #DDD5C7;
 }
 
+/* Sticky footer fix - ensure html and body fill viewport */
+html {
+    height: 100%;
+}
+
+body {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
 /* Dashboard container styles with proper header spacing */
 .dashboard-container {
     background: rgba(255, 255, 255, 0.98);
@@ -13,6 +24,7 @@
     padding: 15px;
     max-width: 1000px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    flex: 1 0 auto; /* Allow container to grow and push footer down */
 }
 
 /* Card styles with Berkeley branding */
@@ -165,4 +177,10 @@
     background-color: #EDE7F6;
     color: #4527A0;
     border: 1px solid #B39DDB;
+}
+
+/* Footer sticky bottom fix */
+footer {
+    flex-shrink: 0;
+    margin-top: auto;
 }
