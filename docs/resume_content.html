@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume - Duy Nguyen</title>
+    <style>
+        :root {
+            --seattle-red: #AA0000;
+            --text-dark: #333333;
+            --text-gray: #666666;
+            --border-gray: #cccccc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Times New Roman', Georgia, serif;
+            font-size: 11pt;
+            line-height: 1.4;
+            color: var(--text-dark);
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .resume-container {
+            max-width: 8.5in;
+            margin: 0 auto;
+            background: white;
+            padding: 0.6in 0.7in;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Header */
+        .resume-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .resume-header h1 {
+            font-size: 28pt;
+            color: var(--seattle-red);
+            font-weight: normal;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .contact-line {
+            font-size: 10pt;
+            color: var(--text-dark);
+        }
+
+        .contact-line a {
+            color: var(--text-dark);
+            text-decoration: underline;
+        }
+
+        .contact-line a:hover {
+            color: var(--seattle-red);
+        }
+
+        /* Section Headers */
+        .section {
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-size: 11pt;
+            font-weight: normal;
+            color: var(--seattle-red);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border-bottom: 1px solid var(--seattle-red);
+            padding-bottom: 3px;
+            margin-bottom: 10px;
+            font-variant: small-caps;
+        }
+
+        /* Entry Items */
+        .entry {
+            margin-bottom: 10px;
+        }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 2px;
+        }
+
+        .entry-title {
+            font-weight: bold;
+            color: var(--seattle-red);
+            font-size: 11pt;
+        }
+
+        .entry-date {
+            font-style: italic;
+            color: var(--text-dark);
+            font-size: 10pt;
+            white-space: nowrap;
+        }
+
+        .entry-subtitle {
+            display: flex;
+            justify-content: space-between;
+            font-style: italic;
+            color: var(--text-dark);
+            font-size: 10pt;
+            margin-bottom: 4px;
+        }
+
+        .entry-location {
+            font-style: italic;
+        }
+
+        /* Bullet Points */
+        .bullets {
+            padding-left: 18px;
+            margin-top: 4px;
+        }
+
+        .bullets li {
+            margin-bottom: 3px;
+            text-align: justify;
+            font-size: 10.5pt;
+        }
+
+        /* Technical Skills */
+        .skills-content {
+            font-size: 10.5pt;
+        }
+
+        .skills-content p {
+            margin-bottom: 4px;
+        }
+
+        .skill-category {
+            font-weight: bold;
+        }
+
+        /* Projects */
+        .project-title {
+            font-weight: bold;
+            color: var(--seattle-red);
+        }
+
+        .project-tech {
+            font-style: italic;
+            color: var(--text-gray);
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .resume-container {
+                box-shadow: none;
+                padding: 0.5in;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .resume-container {
+                padding: 0.4in 0.3in;
+            }
+            .entry-header, .entry-subtitle {
+                flex-direction: column;
+            }
+            .entry-date, .entry-location {
+                margin-top: 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="resume-container">
+        <!-- Header -->
+        <header class="resume-header">
+            <h1>Duy Nguyen</h1>
+            <p class="contact-line">
+                <a href="mailto:dnguyen44@seattleu.edu" target="_blank">dnguyen44@seattleu.edu</a> |
+                <a href="https://www.linkedin.com/in/duwe-ng/" target="_blank">LinkedIn</a> |
+                <a href="https://github.com/dcnguyen060899" target="_blank">GitHub</a> |
+                <a href="index_portfolio.html" target="_blank">Portfolio</a> |
+                Seattle, WA
+            </p>
+        </header>
+
+        <!-- Education -->
+        <section class="section">
+            <h2 class="section-title">Education</h2>
+
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title">Master of Science in Data Science</span>
+                    <span class="entry-date">Sep 2025 – Expected Jun 2027</span>
+                </div>
+                <div class="entry-subtitle">
+                    <span>Seattle University</span>
+                    <span class="entry-location">Seattle, WA</span>
+                </div>
+                <ul class="bullets">
+                    <li><strong>Coursework:</strong> Deep Learning, Statistical Inference & Experimental Design, Programming for Data Science — <strong>GPA: 4.0</strong></li>
+                </ul>
+            </div>
+
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title">Professional Certificate in ML/AI</span>
+                    <span class="entry-date">Jul 2024</span>
+                </div>
+                <div class="entry-subtitle">
+                    <span>UC Berkeley College of Engineering</span>
+                    <span class="entry-location">Online</span>
+                </div>
+                <ul class="bullets">
+                    <li>Built deep learning models (LSTM, MLP) and ensemble methods achieving 80% accuracy; projected $30.4M annual savings; methodology selected as program exemplar</li>
+                </ul>
+            </div>
+
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title">BA Economics, Data Analysis</span>
+                    <span class="entry-date">Dec 2022</span>
+                </div>
+                <div class="entry-subtitle">
+                    <span>Simon Fraser University</span>
+                    <span class="entry-location">Burnaby, BC</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technical Skills -->
+        <section class="section">
+            <h2 class="section-title">Technical Skills</h2>
+            <div class="skills-content">
+                <p><span class="skill-category">ML/DL:</span> PyTorch, TensorFlow, scikit-learn, FastAI, Transfer Learning, CNNs, Ensemble Methods, Hyperparameter Tuning</p>
+                <p><span class="skill-category">Data Science:</span> Python, R, pandas, NumPy, Feature Engineering, Cross-Validation, A/B Testing</p>
+                <p><span class="skill-category">Tools:</span> Git/GitHub, Neo4j, LangChain, LlamaIndex, Jupyter, Matplotlib, Seaborn, Plotly</p>
+            </div>
+        </section>
+
+        <!-- Experience -->
+        <section class="section">
+            <h2 class="section-title">Experience</h2>
+
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title">AI Engineer</span>
+                    <span class="entry-date">Mar 2024 – Oct 2024</span>
+                </div>
+                <div class="entry-subtitle">
+                    <span>Simon Fraser University Blueprint</span>
+                </div>
+                <ul class="bullets">
+                    <li>Developed AI chatbot serving 660K+ interactions with Neo4j graph database and multi-language NLP</li>
+                    <li>Achieved 90% accuracy through prompt engineering and automated quality validation; Top 4 SFU CS Diversity Award</li>
+                </ul>
+            </div>
+
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title">Volunteer Software Developer</span>
+                    <span class="entry-date">Jan 2024 – May 2024</span>
+                </div>
+                <div class="entry-subtitle">
+                    <span>Simon Fraser University Faisal Lab</span>
+                </div>
+                <ul class="bullets">
+                    <li>Built RAG pipeline using Python and LlamaIndex, accelerating physician report generation by 50%</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Projects -->
+        <section class="section">
+            <h2 class="section-title">Projects</h2>
+
+            <div class="entry">
+                <div class="entry-header">
+                    <span><span class="project-title">AI-Powered Portfolio with Conversational Assistant</span> | <span class="project-tech">Python, Flask, LangChain, Claude API</span></span>
+                    <span class="entry-date">Present</span>
+                </div>
+                <ul class="bullets">
+                    <li>Engineered full-stack app integrating Anthropic LLM with Flask backend, RESTful architecture, and conversation memory</li>
+                    <li>Built dual-chatbot system with self-healing error correction via tertiary AI fallback for robust UX</li>
+                </ul>
+            </div>
+
+            <div class="entry">
+                <div class="entry-header">
+                    <span><span class="project-title">Deep Learning Image Classification</span> | <span class="project-tech">PyTorch, ResNet34, Transfer Learning</span></span>
+                    <span class="entry-date">Dec 2025</span>
+                </div>
+                <ul class="bullets">
+                    <li>Achieved 94% accuracy classifying 2,527 images using transfer learning; 100% minority class recall</li>
+                    <li>Designed controlled experiments testing 4 augmentation strategies through systematic A/B testing</li>
+                </ul>
+            </div>
+
+            <div class="entry">
+                <div class="entry-header">
+                    <span><span class="project-title">Aircraft Fuel Efficiency Statistical Analysis</span> | <span class="project-tech">Python, pandas, NumPy</span></span>
+                    <span class="entry-date">Dec 2025</span>
+                </div>
+                <ul class="bullets">
+                    <li>Analyzed 1.88M flight measurements; built regression models achieving 95.9% accuracy via ANOVA</li>
+                </ul>
+            </div>
+
+            <div class="entry">
+                <div class="entry-header">
+                    <span><span class="project-title">Medical Image Classification</span> | <span class="project-tech">PyTorch, ResNet50</span></span>
+                    <span class="entry-date">Nov 2023</span>
+                </div>
+                <ul class="bullets">
+                    <li>Fine-tuned CNN for medical imaging; ranked 12th on Kaggle leaderboard</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Leadership & Activities -->
+        <section class="section">
+            <h2 class="section-title">Leadership & Activities</h2>
+
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title">Co-Founder & Event Coordinator</span>
+                    <span class="entry-date">Sep 2025 – Present</span>
+                </div>
+                <div class="entry-subtitle">
+                    <span>Seattle University International Student Association</span>
+                </div>
+                <ul class="bullets">
+                    <li>Coordinate events fostering community among 200+ international students; manage cross-team collaborations</li>
+                </ul>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
