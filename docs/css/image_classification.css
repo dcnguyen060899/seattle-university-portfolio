@@ -635,7 +635,7 @@
 }
 
 .demo-frame-container {
-    background: white;
+    background: #0b0f19;
     border: 2px solid #AA0000;
     border-radius: 12px;
     overflow: hidden;
@@ -644,7 +644,7 @@
 
 #demo-iframe {
     width: 100%;
-    height: 700px;
+    height: 1200px;
     border: none;
 }
 
@@ -717,7 +717,7 @@
     }
 
     #demo-iframe {
-        height: 600px;
+        height: 1000px;
     }
 
     .demo-container {
