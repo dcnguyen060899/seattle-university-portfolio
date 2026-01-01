@@ -5,8 +5,7 @@ import os
 from chatservice import ChatService
 import re
 import base64
-import tempfile
-from gradio_client import Client, handle_file
+import requests as http_requests
 
 import time
 
@@ -214,7 +213,7 @@ def api_check():
 def classify_image():
     """
     Proxy endpoint for HuggingFace Spaces Garbage Classification API
-    Uses gradio_client for proper queue/WebSocket handling
+    Uses direct HTTP requests (server-side, no CORS issues)
     """
     try:
         data = request.get_json()
@@ -225,35 +224,46 @@ def classify_image():
 
         print(f"Received image data, length: {len(image_data)}")
 
-        # Extract base64 content (remove data:image/...;base64, prefix if present)
-        if "," in image_data:
-            image_data = image_data.split(",")[1]
+        # HuggingFace Spaces API - try multiple endpoints
+        hf_base = "https://dnguyen44-garbage-classification.hf.space"
 
-        # Decode base64 to bytes
-        image_bytes = base64.b64decode(image_data)
+        # Try /api/predict first (works with most Gradio apps)
+        endpoints = [
+            f"{hf_base}/api/predict",
+            f"{hf_base}/run/predict",
+        ]
 
-        # Save to temporary file
-        with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp_file:
-            tmp_file.write(image_bytes)
-            tmp_path = tmp_file.name
+        result = None
+        last_error = None
 
-        print(f"Saved temp file: {tmp_path}")
+        for endpoint in endpoints:
+            try:
+                print(f"Trying endpoint: {endpoint}")
+                response = http_requests.post(
+                    endpoint,
+                    json={"data": [image_data]},
+                    headers={"Content-Type": "application/json"},
+                    timeout=120
+                )
 
-        # Use gradio_client to call the HuggingFace Space
-        client = Client("dnguyen44/garbage-classification")
-        result = client.predict(
-            handle_file(tmp_path),  # Positional argument, not keyword
-            api_name="/predict"
-        )
+                print(f"Response status: {response.status_code}")
 
-        print(f"Classification result: {result}")
+                if response.status_code == 200:
+                    result = response.json()
+                    print(f"Success! Result: {result}")
+                    break
+                else:
+                    last_error = f"{endpoint} returned {response.status_code}: {response.text[:200]}"
+                    print(last_error)
+            except Exception as e:
+                last_error = f"{endpoint} failed: {str(e)}"
+                print(last_error)
+                continue
 
-        # Clean up temp file
-        os.unlink(tmp_path)
-
-        # Return result in expected format
-        # gradio_client returns dict directly for Label component
-        return jsonify({"data": [result]})
+        if result:
+            return jsonify(result)
+        else:
+            return jsonify({"error": last_error or "All endpoints failed"}), 500
 
     except Exception as e:
         print(f"Error in classify-image: {str(e)}")
