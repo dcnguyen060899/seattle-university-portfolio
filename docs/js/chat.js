@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const apiUrl = 'https://uc-berkeley-ml-ai-capstone-work-sample.onrender.com/chat'; // Replace with your actual backend API URL
-    const huggingFaceApiUrl = 'https://dnguyen44-garbage-classification.hf.space/api/predict'; // HuggingFace Spaces API
+    const apiUrl = 'https://uc-berkeley-ml-ai-capstone-work-sample.onrender.com/chat'; // Backend API URL
+    const huggingFaceBaseUrl = 'https://dnguyen44-garbage-classification.hf.space'; // HuggingFace Spaces base URL
     const chatbotToggle = document.getElementById("chatbot-toggle");
     const chatbotContainer = document.getElementById("chatbot-container");
     const chatbotHeader = document.getElementById("chatbot-header");
@@ -359,43 +359,135 @@ document.addEventListener("DOMContentLoaded", function () {
         reader.readAsDataURL(file);
     }
 
-    // Call HuggingFace Spaces API for garbage classification
+    // Generate random session hash for Gradio queue
+    function generateSessionHash() {
+        return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    }
+
+    // Call HuggingFace Spaces API for garbage classification (with multiple fallbacks)
     async function classifyImage(imageFile) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = async function(e) {
-                try {
-                    // Convert to base64 (already includes data:image/... prefix from readAsDataURL)
-                    const base64Data = e.target.result;
-                    console.log("Sending image to HuggingFace API...");
-                    console.log("Image data prefix:", base64Data.substring(0, 50));
+                const base64Data = e.target.result;
 
-                    // Call HuggingFace Spaces API (Gradio 3.x format)
-                    const response = await fetch(huggingFaceApiUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            data: [base64Data]
-                        })
-                    });
+                // Try multiple API approaches for Gradio compatibility
+                const approaches = [
+                    // Approach 1: Direct /run/predict (simpler Gradio configs)
+                    async () => {
+                        console.log("Trying /run/predict endpoint...");
+                        const response = await fetch(`${huggingFaceBaseUrl}/run/predict`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ data: [base64Data] })
+                        });
+                        if (!response.ok) throw new Error(`run/predict failed: ${response.status}`);
+                        return await response.json();
+                    },
+                    // Approach 2: /api/predict/ with trailing slash
+                    async () => {
+                        console.log("Trying /api/predict/ endpoint...");
+                        const response = await fetch(`${huggingFaceBaseUrl}/api/predict/`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ data: [base64Data], fn_index: 0 })
+                        });
+                        if (!response.ok) throw new Error(`api/predict failed: ${response.status}`);
+                        return await response.json();
+                    },
+                    // Approach 3: Queue-based (Gradio 3.x with queue enabled)
+                    async () => {
+                        console.log("Trying queue-based approach...");
+                        const sessionHash = generateSessionHash();
 
-                    console.log("API Response status:", response.status);
+                        // Push to queue
+                        const pushResponse = await fetch(`${huggingFaceBaseUrl}/queue/push`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                data: [base64Data],
+                                fn_index: 0,
+                                session_hash: sessionHash
+                            })
+                        });
 
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        console.error("API Error response:", errorText);
-                        throw new Error(`API error: ${response.status} - ${errorText}`);
+                        if (!pushResponse.ok) throw new Error(`Queue push failed: ${pushResponse.status}`);
+
+                        const pushResult = await pushResponse.json();
+                        console.log("Queue push result:", pushResult);
+                        const eventHash = pushResult.hash;
+
+                        // Poll for result
+                        for (let i = 0; i < 30; i++) {
+                            const statusResponse = await fetch(`${huggingFaceBaseUrl}/queue/status`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ hash: eventHash })
+                            });
+
+                            if (!statusResponse.ok) throw new Error(`Queue status failed: ${statusResponse.status}`);
+
+                            const statusResult = await statusResponse.json();
+                            console.log("Queue status:", statusResult);
+
+                            if (statusResult.status === 'COMPLETE') {
+                                return { data: statusResult.data };
+                            } else if (statusResult.status === 'FAILED' || statusResult.status === 'ERROR') {
+                                throw new Error('Queue failed: ' + (statusResult.message || 'Unknown'));
+                            }
+
+                            await new Promise(r => setTimeout(r, 1000));
+                        }
+                        throw new Error('Queue timed out');
+                    },
+                    // Approach 4: Gradio 4.x /call/predict format
+                    async () => {
+                        console.log("Trying Gradio 4.x /call/predict endpoint...");
+                        const callResponse = await fetch(`${huggingFaceBaseUrl}/call/predict`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ data: [base64Data] })
+                        });
+
+                        if (!callResponse.ok) throw new Error(`call/predict failed: ${callResponse.status}`);
+
+                        const callResult = await callResponse.json();
+                        const eventId = callResult.event_id;
+
+                        // Get result
+                        const resultResponse = await fetch(`${huggingFaceBaseUrl}/call/predict/${eventId}`);
+                        if (!resultResponse.ok) throw new Error(`call result failed: ${resultResponse.status}`);
+
+                        // Parse SSE response
+                        const text = await resultResponse.text();
+                        const lines = text.split('\n');
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                const data = JSON.parse(line.substring(6));
+                                if (data) return { data: data };
+                            }
+                        }
+                        throw new Error('No data in SSE response');
                     }
+                ];
 
-                    const result = await response.json();
-                    console.log("API Result:", result);
-                    resolve(result);
-                } catch (error) {
-                    console.error("Classification API error:", error);
-                    reject(error);
+                // Try each approach until one succeeds
+                let lastError = null;
+                for (const approach of approaches) {
+                    try {
+                        const result = await approach();
+                        console.log("API Success:", result);
+                        resolve(result);
+                        return;
+                    } catch (error) {
+                        console.log("Approach failed:", error.message);
+                        lastError = error;
+                    }
                 }
+
+                // All approaches failed
+                console.error("All API approaches failed:", lastError);
+                reject(lastError || new Error("All classification attempts failed"));
             };
             reader.onerror = function(error) {
                 console.error("FileReader error:", error);
@@ -408,28 +500,71 @@ document.addEventListener("DOMContentLoaded", function () {
     // Format ML results as JSON context for AI
     function formatMLResultsForAI(apiResponse) {
         try {
-            console.log("API Response:", JSON.stringify(apiResponse)); // Debug log
+            console.log("Raw API Response:", JSON.stringify(apiResponse)); // Debug log
 
-            // Gradio 3.x returns: { data: [ { "label": confidence, ... } ] }
-            // The data[0] is an object with class names as keys and confidences as values
-            const predictions = apiResponse.data[0];
+            // Handle different response structures from Gradio
+            let predictions = null;
 
-            if (!predictions || typeof predictions !== 'object') {
-                console.error("Invalid predictions format:", predictions);
+            // Structure 1: { data: [{ label: confidence }] } - object format
+            // Structure 2: { data: [[[ [label, confidence], ... ]]] } - nested array from Label component
+            // Structure 3: { data: [{label: string, confidences: {}}] } - Label component format
+            // Structure 4: Direct data array without wrapper
+
+            const data = apiResponse.data || apiResponse;
+            console.log("Data extracted:", JSON.stringify(data));
+
+            if (Array.isArray(data) && data.length > 0) {
+                const firstItem = data[0];
+                console.log("First item type:", typeof firstItem, firstItem);
+
+                // Check for Gradio Label component format: {label: "class", confidences: {}}
+                if (firstItem && typeof firstItem === 'object' && 'label' in firstItem && 'confidences' in firstItem) {
+                    console.log("Detected Label component format");
+                    predictions = firstItem.confidences;
+                }
+                // Check for object with class keys: {Cardboard: 0.95, Glass: 0.02, ...}
+                else if (firstItem && typeof firstItem === 'object' && !Array.isArray(firstItem)) {
+                    console.log("Detected object format");
+                    predictions = firstItem;
+                }
+                // Check for array of [label, confidence] pairs: [[["Cardboard", 0.95], ...]]
+                else if (Array.isArray(firstItem)) {
+                    console.log("Detected array format");
+                    // Could be nested one more level
+                    const innerArray = Array.isArray(firstItem[0]) && Array.isArray(firstItem[0][0])
+                        ? firstItem[0]
+                        : firstItem;
+                    predictions = {};
+                    innerArray.forEach(item => {
+                        if (Array.isArray(item) && item.length >= 2) {
+                            predictions[item[0]] = item[1];
+                        }
+                    });
+                }
+            }
+
+            if (!predictions || typeof predictions !== 'object' || Object.keys(predictions).length === 0) {
+                console.error("Could not parse predictions from response:", apiResponse);
                 return null;
             }
+
+            console.log("Parsed predictions:", predictions);
 
             // Filter out any NaN or invalid values and sort by confidence
             const validPredictions = Object.entries(predictions)
                 .filter(([label, confidence]) => {
                     const conf = parseFloat(confidence);
-                    return !isNaN(conf) && isFinite(conf);
+                    const isValid = !isNaN(conf) && isFinite(conf);
+                    if (!isValid) console.log(`Filtering out invalid: ${label} = ${confidence}`);
+                    return isValid;
                 })
                 .map(([label, confidence]) => [label, parseFloat(confidence)])
                 .sort((a, b) => b[1] - a[1]);
 
+            console.log("Valid predictions:", validPredictions);
+
             if (validPredictions.length === 0) {
-                console.error("No valid predictions found");
+                console.error("No valid predictions found after filtering");
                 return null;
             }
 
