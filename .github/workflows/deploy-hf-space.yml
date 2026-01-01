@@ -1,0 +1,72 @@
+# GitHub Actions workflow to automatically deploy to HuggingFace Spaces
+# When changes are pushed to ml-demos/garbage-classification/,
+# this workflow syncs those changes to your HuggingFace Space
+
+name: Deploy to HuggingFace Space
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      # Only trigger when files in the ML demo folder change
+      - 'ml-demos/garbage-classification/**'
+
+  # Allow manual trigger from GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository with LFS support
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true  # Important: fetch Git LFS files (the model)
+          fetch-depth: 0
+
+      # Step 2: Install Git LFS
+      - name: Install Git LFS
+        run: git lfs install
+
+      # Step 3: Pull LFS files
+      - name: Pull LFS files
+        run: git lfs pull
+
+      # Step 4: Push to HuggingFace Space
+      - name: Push to HuggingFace
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          # Configure git
+          git config --global user.email "dcnguyen060899@gmail.com"
+          git config --global user.name "Duy Nguyen"
+
+          # Clone the HuggingFace Space repository
+          git clone https://Doweee:$HF_TOKEN@huggingface.co/spaces/dnguyen44/garbage-classification hf-space
+
+          cd hf-space
+
+          # Enable LFS in the cloned repo
+          git lfs install
+
+          # Copy files from GitHub repo to HuggingFace Space
+          # This overwrites existing files with the GitHub versions
+          cp ../ml-demos/garbage-classification/app.py .
+          cp ../ml-demos/garbage-classification/requirements.txt .
+          cp ../ml-demos/garbage-classification/README.md .
+          cp ../ml-demos/garbage-classification/model_2_conservative_augmentation.pkl .
+          cp -r ../ml-demos/garbage-classification/examples/ .
+
+          # Stage all changes
+          git add .
+
+          # Commit if there are changes
+          git diff --staged --quiet || git commit -m "Auto-deploy from GitHub Actions"
+
+          # Push to HuggingFace
+          git push
+
+          echo "Successfully deployed to HuggingFace Space!"
