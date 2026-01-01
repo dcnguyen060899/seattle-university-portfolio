@@ -53,12 +53,12 @@ examples = [
 # Filter to only existing examples
 examples = [ex for ex in examples if os.path.exists(ex)]
 
-# Create Gradio interface
+# Create Gradio interface (Gradio 3.x compatible)
 demo = gr.Interface(
     fn=classify_garbage,
     inputs=gr.Image(type="pil", label="Upload Garbage Image"),
     outputs=gr.Label(num_top_classes=6, label="Classification Results"),
-    title="🗑️ Garbage Classification AI",
+    title="Garbage Classification AI",
     description="""
     **Deep Learning Model for Waste Sorting**
 
@@ -73,15 +73,7 @@ demo = gr.Interface(
     article=category_info,
     examples=examples if examples else None,
     cache_examples=False,
-    theme=gr.themes.Soft(
-        primary_hue="red",
-        secondary_hue="gray",
-    ),
-    css="""
-    .gradio-container {font-family: 'Arial', sans-serif;}
-    .gr-button-primary {background-color: #AA0000 !important;}
-    """
 )
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860, show_api=False)
+    demo.launch(server_name="0.0.0.0", server_port=7860)

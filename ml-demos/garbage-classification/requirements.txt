@@ -4,8 +4,7 @@ numpy<2
 torch==2.1.0
 torchvision==0.16.0
 fastai==2.7.18
-gradio==4.29.0
-gradio_client==0.16.1
+gradio==3.50.2
 huggingface_hub==0.24.0
 fasttransform
 cloudpickle
