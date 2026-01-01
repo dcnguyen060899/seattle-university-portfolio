@@ -1,5 +1,10 @@
 /* Image Classification Project Page - Seattle University Styling */
 
+/* Smooth scroll for anchor links */
+html {
+    scroll-behavior: smooth;
+}
+
 /* Hero Section */
 #hero {
     text-align: center;

@@ -606,3 +606,241 @@ a:hover {
 #contact a:hover {
     text-decoration: underline;
 }
+
+/* ===== HERO METRICS SECTION ===== */
+#impact-metrics {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 30px 0 40px 0;
+    flex-wrap: wrap;
+}
+
+.metric-card {
+    background: linear-gradient(135deg, #AA0000 0%, #880000 100%);
+    color: white;
+    padding: 25px 30px;
+    border-radius: 12px;
+    text-align: center;
+    min-width: 180px;
+    max-width: 220px;
+    flex: 1;
+    box-shadow: 0 4px 15px rgba(170, 0, 0, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(170, 0, 0, 0.4);
+}
+
+.metric-number {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.metric-label {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    opacity: 0.95;
+}
+
+.metric-context {
+    display: block;
+    font-size: 0.8rem;
+    opacity: 0.8;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    padding-top: 8px;
+    margin-top: 5px;
+}
+
+/* ===== FEATURED PROJECTS ===== */
+.project.featured {
+    background: linear-gradient(135deg, #fff9f9 0%, #fff 100%);
+    border: 2px solid var(--seattle-red);
+    position: relative;
+}
+
+.project.featured::before {
+    content: "FEATURED";
+    position: absolute;
+    top: -1px;
+    right: 20px;
+    background: var(--seattle-red);
+    color: white;
+    padding: 4px 12px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    border-radius: 0 0 5px 5px;
+    letter-spacing: 1px;
+}
+
+.project.featured:hover {
+    box-shadow: 0 6px 20px rgba(170, 0, 0, 0.2);
+}
+
+.project-links {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.project-links a {
+    display: inline-block;
+    padding: 6px 14px;
+    background: var(--seattle-red);
+    color: white !important;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: background 0.3s ease;
+}
+
+.project-links a:hover {
+    background: #880000;
+    text-decoration: none !important;
+}
+
+.project-links a.secondary {
+    background: transparent;
+    color: var(--seattle-red) !important;
+    border: 1px solid var(--seattle-red);
+}
+
+.project-links a.secondary:hover {
+    background: var(--seattle-red);
+    color: white !important;
+}
+
+/* ===== VISUAL SKILLS SECTION ===== */
+#skills-visual {
+    margin-bottom: 40px;
+}
+
+.skills-category {
+    margin-bottom: 25px;
+}
+
+.skills-category h4 {
+    color: var(--seattle-red);
+    margin-bottom: 12px;
+    padding-left: 20px;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.skill-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.skill-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.skill-name {
+    min-width: 120px;
+    font-weight: 500;
+    color: #333;
+}
+
+.skill-bar-container {
+    flex: 1;
+    height: 12px;
+    background: var(--seattle-gray);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.skill-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--seattle-red) 0%, #cc3333 100%);
+    border-radius: 6px;
+    transition: width 0.8s ease;
+}
+
+.skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-left: 20px;
+}
+
+.skill-tag {
+    background: #f0f0f0;
+    color: #333;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    border: 1px solid #ddd;
+    transition: all 0.3s ease;
+}
+
+.skill-tag:hover {
+    background: var(--seattle-red);
+    color: white;
+    border-color: var(--seattle-red);
+}
+
+/* ===== OTHER PROJECTS (Smaller) ===== */
+.other-projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px;
+}
+
+.project.compact {
+    padding: 15px;
+    margin-bottom: 0;
+}
+
+.project.compact h3 {
+    font-size: 1rem;
+    margin-top: 0;
+    padding-left: 0;
+}
+
+.project.compact p {
+    font-size: 0.9rem;
+    padding-left: 0;
+    margin-bottom: 0;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    #impact-metrics {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .metric-card {
+        width: 100%;
+        max-width: 280px;
+    }
+
+    .skill-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    .skill-name {
+        min-width: auto;
+    }
+
+    .skill-bar-container {
+        width: 100%;
+    }
+}
