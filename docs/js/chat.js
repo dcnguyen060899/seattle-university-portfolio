@@ -1,13 +1,17 @@
 document.addEventListener("DOMContentLoaded", function () {
     const apiUrl = 'https://uc-berkeley-ml-ai-capstone-work-sample.onrender.com/chat'; // Replace with your actual backend API URL
+    const huggingFaceApiUrl = 'https://dnguyen44-garbage-classification.hf.space/api/predict'; // HuggingFace Spaces API
     const chatbotToggle = document.getElementById("chatbot-toggle");
     const chatbotContainer = document.getElementById("chatbot-container");
     const chatbotHeader = document.getElementById("chatbot-header");
     const chatOutput = document.getElementById("chatbot-messages");
     const userInput = document.getElementById("user-input");
     const sendButton = document.getElementById("send-button");
+    const imageUploadBtn = document.getElementById("image-upload-btn");
+    const imageUploadInput = document.getElementById("image-upload-input");
     const resizeHandle = document.getElementById("chatbot-resize-handle");
     let welcomeMessageSent = false; // Flag to track if welcome message is sent
+    let pendingImage = null; // Store uploaded image for classification
 
     // Drag and click functionality for moving chatbot
     let isDragging = false;
@@ -218,49 +222,8 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Send message to the chatbot
-    sendButton.addEventListener("click", function () {
-        const userMessage = userInput.value.trim();
-
-        if (userMessage) {
-            // Display user's message with line breaks preserved
-            const formattedUserMessage = userMessage.replace(/\n/g, '<br>');
-            chatOutput.innerHTML += `<p><strong>You:</strong><br>${formattedUserMessage}</p>`;
-            userInput.value = ""; // Clear input field
-
-            // Reset textarea height
-            userInput.style.height = "auto";
-
-            // Show typing indicator
-            showTypingIndicator();
-
-            // Send message to the backend
-            fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ message: userMessage }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Remove typing indicator
-                removeTypingIndicator();
-
-                // Format bot message with proper line breaks and structure
-                const botMessage = formatBotMessage(data.response);
-                // Stream bot's response word by word
-                streamBotMessage(botMessage);
-            })
-            .catch(error => {
-                // Remove typing indicator
-                removeTypingIndicator();
-
-                console.error('Error:', error);
-                chatOutput.innerHTML += `<p><strong>Bot:</strong> Sorry, something went wrong. Please try again later.</p>`;
-            });
-        }
-    });
+    // Note: Send message functionality is now handled by handleSendWithImage() at the end of this file
+    // This supports both text messages and image classification
 
     // Allow sending message with Enter key (Shift+Enter for new line)
     userInput.addEventListener("keydown", function (e) {
@@ -270,17 +233,15 @@ document.addEventListener("DOMContentLoaded", function () {
             if (e.shiftKey === true) {
                 // Shift+Enter: Allow new line, don't send message
                 // Let the default behavior happen (insert newline)
-                console.log("Shift+Enter detected - creating new line");
                 return true;
             } else {
                 // Just Enter: Send message, don't create new line
-                console.log("Enter detected - sending message");
                 e.preventDefault();
                 e.stopPropagation();
 
                 const message = userInput.value.trim();
-                if (message) {
-                    sendButton.click();
+                if (message || pendingImage) {
+                    handleSendWithImage();
                 }
                 return false;
             }
@@ -345,4 +306,334 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return formatted;
     }
+
+    // ========================================
+    // IMAGE CLASSIFICATION FEATURE (Phase 1)
+    // ========================================
+
+    // Handle image upload button click
+    if (imageUploadBtn && imageUploadInput) {
+        imageUploadBtn.addEventListener("click", function() {
+            imageUploadInput.click();
+        });
+
+        // Handle image selection
+        imageUploadInput.addEventListener("change", function(e) {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                pendingImage = file;
+                showImagePreview(file);
+                // Update placeholder to indicate image is ready
+                userInput.placeholder = "Image ready! Ask 'What type of waste is this?' or send any question...";
+            }
+        });
+    }
+
+    // Show image preview in chat
+    function showImagePreview(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const previewDiv = document.createElement('div');
+            previewDiv.className = 'image-preview-container';
+            previewDiv.innerHTML = `
+                <div class="image-preview">
+                    <img src="${e.target.result}" alt="Uploaded image">
+                    <button class="remove-image-btn" title="Remove image">✕</button>
+                </div>
+                <p class="image-preview-text">Image ready for classification</p>
+            `;
+
+            // Add remove functionality
+            const removeBtn = previewDiv.querySelector('.remove-image-btn');
+            removeBtn.addEventListener('click', function() {
+                pendingImage = null;
+                previewDiv.remove();
+                userInput.placeholder = "Ask a question...";
+                imageUploadInput.value = ''; // Reset file input
+            });
+
+            // Insert preview before the input area
+            const inputArea = document.getElementById('chatbot-input');
+            inputArea.parentNode.insertBefore(previewDiv, inputArea);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Call HuggingFace Spaces API for garbage classification
+    async function classifyImage(imageFile) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    // Convert to base64 (already includes data:image/... prefix from readAsDataURL)
+                    const base64Data = e.target.result;
+                    console.log("Sending image to HuggingFace API...");
+                    console.log("Image data prefix:", base64Data.substring(0, 50));
+
+                    // Call HuggingFace Spaces API (Gradio 3.x format)
+                    const response = await fetch(huggingFaceApiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            data: [base64Data]
+                        })
+                    });
+
+                    console.log("API Response status:", response.status);
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error("API Error response:", errorText);
+                        throw new Error(`API error: ${response.status} - ${errorText}`);
+                    }
+
+                    const result = await response.json();
+                    console.log("API Result:", result);
+                    resolve(result);
+                } catch (error) {
+                    console.error("Classification API error:", error);
+                    reject(error);
+                }
+            };
+            reader.onerror = function(error) {
+                console.error("FileReader error:", error);
+                reject(error);
+            };
+            reader.readAsDataURL(imageFile);
+        });
+    }
+
+    // Format ML results as JSON context for AI
+    function formatMLResultsForAI(apiResponse) {
+        try {
+            console.log("API Response:", JSON.stringify(apiResponse)); // Debug log
+
+            // Gradio 3.x returns: { data: [ { "label": confidence, ... } ] }
+            // The data[0] is an object with class names as keys and confidences as values
+            const predictions = apiResponse.data[0];
+
+            if (!predictions || typeof predictions !== 'object') {
+                console.error("Invalid predictions format:", predictions);
+                return null;
+            }
+
+            // Filter out any NaN or invalid values and sort by confidence
+            const validPredictions = Object.entries(predictions)
+                .filter(([label, confidence]) => {
+                    const conf = parseFloat(confidence);
+                    return !isNaN(conf) && isFinite(conf);
+                })
+                .map(([label, confidence]) => [label, parseFloat(confidence)])
+                .sort((a, b) => b[1] - a[1]);
+
+            if (validPredictions.length === 0) {
+                console.error("No valid predictions found");
+                return null;
+            }
+
+            const topPrediction = validPredictions[0];
+            const topConfidence = topPrediction[1];
+
+            // Handle both 0-1 range and 0-100 range
+            const isPercentage = topConfidence > 1;
+            const confidenceMultiplier = isPercentage ? 1 : 100;
+
+            const mlContext = {
+                task: "garbage_classification",
+                model: "ResNet34 Transfer Learning (94% accuracy, 100% minority class recall)",
+                project: "Seattle University DATA 5100 Deep Learning Project",
+                results: {
+                    top_prediction: topPrediction[0],
+                    confidence: (topPrediction[1] * confidenceMultiplier).toFixed(1) + "%",
+                    all_predictions: {}
+                },
+                categories: {
+                    cardboard: "Recyclable - flatten boxes before recycling",
+                    glass: "Recyclable - rinse containers, remove lids",
+                    metal: "Recyclable - aluminum cans, tin cans",
+                    paper: "Recyclable - newspapers, magazines, office paper",
+                    plastic: "Recyclable - check recycling number (1-7)",
+                    trash: "Non-recyclable - general waste bin",
+                    Cardboard: "Recyclable - flatten boxes before recycling",
+                    Glass: "Recyclable - rinse containers, remove lids",
+                    Metal: "Recyclable - aluminum cans, tin cans",
+                    Paper: "Recyclable - newspapers, magazines, office paper",
+                    Plastic: "Recyclable - check recycling number (1-7)",
+                    Trash: "Non-recyclable - general waste bin"
+                }
+            };
+
+            // Add all predictions with percentages
+            validPredictions.forEach(([label, confidence]) => {
+                mlContext.results.all_predictions[label] = (confidence * confidenceMultiplier).toFixed(1) + "%";
+            });
+
+            console.log("ML Context:", mlContext); // Debug log
+            return mlContext;
+        } catch (error) {
+            console.error("Error formatting ML results:", error);
+            return null;
+        }
+    }
+
+    // Create augmented prompt with ML context
+    function createAugmentedPrompt(userMessage, mlContext) {
+        return `[IMAGE CLASSIFICATION CONTEXT]
+The user uploaded an image for garbage/waste classification. Here are the ML model results:
+
+Model: ${mlContext.model}
+Project: ${mlContext.project}
+
+Classification Results:
+- Top Prediction: ${mlContext.results.top_prediction} (${mlContext.results.confidence} confidence)
+- All Predictions: ${JSON.stringify(mlContext.results.all_predictions)}
+
+Disposal Information for ${mlContext.results.top_prediction}: ${mlContext.categories[mlContext.results.top_prediction.toLowerCase()] || "Check local guidelines"}
+
+[USER MESSAGE]
+${userMessage || "What type of waste is this?"}
+
+[INSTRUCTIONS]
+Please interpret these ML classification results in a friendly, conversational way. Include:
+1. The classification result with confidence level
+2. Brief disposal/recycling guidance
+3. Mention this demonstrates Duy's Deep Learning project using ResNet34 transfer learning
+Keep the response concise but informative.`;
+    }
+
+    // Display uploaded image in chat as user message (combined with text)
+    function displayImageInChat(imageDataUrl, userMessage) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'user-message with-image';
+
+        let messageHTML = `<p><strong>You:</strong></p>
+            <div class="chat-image-container">
+                <img src="${imageDataUrl}" alt="Uploaded for classification" class="chat-uploaded-image">
+            </div>`;
+
+        // Add text message if provided
+        if (userMessage && userMessage.trim()) {
+            const formattedMessage = userMessage.replace(/\n/g, '<br>');
+            messageHTML += `<p class="image-message-text">${formattedMessage}</p>`;
+        }
+
+        messageDiv.innerHTML = messageHTML;
+        chatOutput.appendChild(messageDiv);
+        chatOutput.scrollTop = chatOutput.scrollHeight;
+    }
+
+    // Modified send message handler to support image classification
+    async function handleSendWithImage() {
+        const userMessage = userInput.value.trim();
+
+        if (!pendingImage && !userMessage) return;
+
+        // If there's a pending image, process it
+        if (pendingImage) {
+            // Read image for display
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const imageDataUrl = e.target.result;
+
+                // Display user's image and message together (single "You:" output)
+                displayImageInChat(imageDataUrl, userMessage);
+
+                userInput.value = "";
+                userInput.style.height = "auto";
+                userInput.placeholder = "Ask a question...";
+
+                // Remove image preview
+                const previewContainer = document.querySelector('.image-preview-container');
+                if (previewContainer) previewContainer.remove();
+
+                // Show typing indicator
+                showTypingIndicator();
+
+                try {
+                    // Step 1: Call HuggingFace API for classification
+                    const apiResponse = await classifyImage(pendingImage);
+
+                    // Step 2: Format results as JSON context
+                    const mlContext = formatMLResultsForAI(apiResponse);
+
+                    if (!mlContext) {
+                        throw new Error("Failed to format ML results");
+                    }
+
+                    // Step 3: Create augmented prompt
+                    const augmentedPrompt = createAugmentedPrompt(userMessage, mlContext);
+
+                    // Step 4: Send to AI chatbot backend
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ message: augmentedPrompt }),
+                    });
+
+                    const data = await response.json();
+
+                    // Remove typing indicator
+                    removeTypingIndicator();
+
+                    // Format and stream bot's response
+                    const botMessage = formatBotMessage(data.response);
+                    await streamBotMessage(botMessage);
+
+                } catch (error) {
+                    removeTypingIndicator();
+                    console.error('Classification error:', error);
+
+                    // Fallback error message
+                    const errorMessage = formatBotMessage(
+                        "I encountered an issue classifying your image. This could be due to:\n" +
+                        "- The image format not being supported\n" +
+                        "- The HuggingFace Spaces API being temporarily unavailable\n\n" +
+                        "You can try the live demo directly at: [Garbage Classification Demo](https://huggingface.co/spaces/dnguyen44/garbage-classification)\n\n" +
+                        "Or ask me anything else about Duy's projects and experience!"
+                    );
+                    await streamBotMessage(errorMessage);
+                }
+
+                // Clear pending image
+                pendingImage = null;
+                imageUploadInput.value = '';
+            };
+            reader.readAsDataURL(pendingImage);
+        } else {
+            // No image, just send text message (original behavior)
+            const formattedUserMessage = userMessage.replace(/\n/g, '<br>');
+            chatOutput.innerHTML += `<p><strong>You:</strong><br>${formattedUserMessage}</p>`;
+            userInput.value = "";
+            userInput.style.height = "auto";
+
+            showTypingIndicator();
+
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: userMessage }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                removeTypingIndicator();
+                const botMessage = formatBotMessage(data.response);
+                streamBotMessage(botMessage);
+            })
+            .catch(error => {
+                removeTypingIndicator();
+                console.error('Error:', error);
+                chatOutput.innerHTML += `<p><strong>Bot:</strong> Sorry, something went wrong. Please try again later.</p>`;
+            });
+        }
+    }
+
+    // Override send button to use new handler
+    sendButton.removeEventListener("click", sendButton.onclick);
+    sendButton.addEventListener("click", handleSendWithImage);
 });

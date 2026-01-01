@@ -588,6 +588,99 @@ footer {
     100% { opacity: 0; }
 }
 
+/* ========================================
+   IMAGE UPLOAD & CLASSIFICATION STYLES
+   ======================================== */
+
+#image-upload-btn {
+    background-color: transparent;
+    border: 1px solid var(--seattle-gray);
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-right: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+#image-upload-btn:hover {
+    background-color: var(--seattle-red);
+    border-color: var(--seattle-red);
+}
+
+/* Image preview container (above input) */
+.image-preview-container {
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-top: 1px solid var(--seattle-gray);
+}
+
+.image-preview {
+    position: relative;
+    display: inline-block;
+}
+
+.image-preview img {
+    max-width: 150px;
+    max-height: 100px;
+    border-radius: 8px;
+    border: 2px solid var(--seattle-red);
+    object-fit: cover;
+}
+
+.remove-image-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 22px;
+    height: 22px;
+    background-color: var(--seattle-red);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+}
+
+.remove-image-btn:hover {
+    background-color: #880000;
+}
+
+.image-preview-text {
+    margin: 5px 0 0 0;
+    font-size: 11px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Uploaded image in chat */
+.user-message.with-image {
+    margin-bottom: 10px;
+}
+
+.chat-image-container {
+    margin-top: 5px;
+}
+
+.chat-uploaded-image {
+    max-width: 200px;
+    max-height: 150px;
+    border-radius: 8px;
+    border: 2px solid var(--seattle-red);
+    object-fit: cover;
+}
+
+.image-message-text {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #333;
+}
+
 /* Additional styling for links */
 a {
     color: var(--seattle-red);
