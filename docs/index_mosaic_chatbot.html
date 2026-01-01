@@ -601,6 +601,258 @@
             color: var(--gray);
         }
 
+        /* Journey Section */
+        .journey-section {
+            background: linear-gradient(180deg, var(--dark-light) 0%, var(--dark) 100%);
+        }
+
+        .journey-content {
+            display: flex;
+            align-items: stretch;
+            gap: 24px;
+            margin-bottom: 64px;
+        }
+
+        .journey-card {
+            flex: 1;
+            background: var(--dark);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 32px;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .journey-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .journey-card.before {
+            border-left: 4px solid var(--gray);
+        }
+
+        .journey-card.after {
+            border-left: 4px solid var(--accent);
+        }
+
+        .journey-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .journey-icon {
+            font-size: 2rem;
+        }
+
+        .journey-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .journey-card p {
+            color: var(--gray);
+            margin-bottom: 16px;
+            line-height: 1.7;
+        }
+
+        .journey-card p:last-child {
+            margin-bottom: 0;
+        }
+
+        .journey-arrow {
+            display: flex;
+            align-items: center;
+            font-size: 2rem;
+            color: var(--accent);
+            padding: 0 8px;
+        }
+
+        .contributions-section {
+            margin-bottom: 64px;
+        }
+
+        .contributions-section h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .contribution-item {
+            background: var(--dark);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        .contribution-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .contribution-icon {
+            font-size: 1.5rem;
+        }
+
+        .contribution-header h4 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .contribution-tag {
+            background: rgba(6, 182, 212, 0.2);
+            color: var(--accent);
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .contribution-item > p {
+            color: var(--gray);
+            margin-bottom: 20px;
+            line-height: 1.7;
+        }
+
+        .contribution-reflection {
+            font-style: italic;
+            border-left: 3px solid var(--primary);
+            padding-left: 16px;
+            margin-top: 20px;
+            color: var(--light) !important;
+        }
+
+        .code-snippet {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .code-header {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.85rem;
+        }
+
+        .code-header span:first-child {
+            color: var(--light);
+            font-weight: 500;
+        }
+
+        .code-commit {
+            color: var(--gray);
+            font-size: 0.75rem;
+        }
+
+        .code-snippet pre {
+            padding: 20px;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .code-snippet code {
+            color: var(--light);
+        }
+
+        .code-snippet .comment { color: #6a9955; }
+        .code-snippet .keyword { color: #c792ea; }
+        .code-snippet .string { color: #c3e88d; }
+        .code-snippet .function { color: #82aaff; }
+
+        .skills-learned {
+            margin-bottom: 64px;
+        }
+
+        .skills-learned h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .skills-grid-journey {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        .skill-item {
+            background: var(--dark);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 24px;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .skill-item:hover {
+            transform: translateY(-4px);
+            border-color: rgba(37, 99, 235, 0.5);
+        }
+
+        .skill-icon {
+            font-size: 1.5rem;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .skill-item h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .skill-item p {
+            color: var(--gray);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .final-reflection {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .final-reflection blockquote {
+            font-size: 1.25rem;
+            font-style: italic;
+            color: var(--light);
+            line-height: 1.8;
+            position: relative;
+            padding: 32px;
+            background: var(--dark);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .final-reflection blockquote::before {
+            content: '"';
+            position: absolute;
+            top: 16px;
+            left: 24px;
+            font-size: 4rem;
+            color: var(--primary);
+            opacity: 0.3;
+            font-family: Georgia, serif;
+            line-height: 1;
+        }
+
         /* Footer */
         footer {
             background: var(--dark-light);
@@ -651,6 +903,21 @@
             }
         }
 
+        @media (max-width: 1024px) {
+            .journey-content {
+                flex-direction: column;
+            }
+
+            .journey-arrow {
+                transform: rotate(90deg);
+                justify-content: center;
+            }
+
+            .skills-grid-journey {
+                grid-template-columns: 1fr;
+            }
+        }
+
         @media (max-width: 768px) {
             .hero h1 {
                 font-size: 2.5rem;
@@ -690,6 +957,35 @@
             .timeline-content {
                 margin: 0;
             }
+
+            .contribution-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .contribution-header h4 {
+                order: 1;
+            }
+
+            .contribution-tag {
+                order: 2;
+                margin-top: 8px;
+            }
+
+            .code-header {
+                flex-direction: column;
+                gap: 8px;
+                align-items: flex-start;
+            }
+
+            .code-snippet pre {
+                font-size: 0.7rem;
+            }
+
+            .final-reflection blockquote {
+                font-size: 1rem;
+                padding: 24px;
+            }
         }
     </style>
 </head>
@@ -703,6 +999,7 @@
                 <li><a href="#tech">Tech Stack</a></li>
                 <li><a href="#impact">Impact</a></li>
                 <li><a href="#timeline">Timeline</a></li>
+                <li><a href="#journey">My Journey</a></li>
                 <li><a href="index_portfolio.html" style="color: var(--accent);">Back to Portfolio</a></li>
             </ul>
         </div>
@@ -1009,6 +1306,152 @@
                         <p>Completed admin portal, documentation, and handed off to MOSAIC for production use.</p>
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="journey" class="journey-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Personal Reflections</span>
+                <h2>My Learning Journey</h2>
+                <p>How this experience transformed me as an engineer</p>
+            </div>
+
+            <div class="journey-content">
+                <div class="journey-card before">
+                    <div class="journey-card-header">
+                        <span class="journey-icon">&#128214;</span>
+                        <h3>Before SFU Blueprint</h3>
+                    </div>
+                    <p>
+                        Before joining the team, I had already built a personal immigration chatbot using RAG and vector databases—a solo project where I controlled every decision. I understood the technical concepts, but I had never experienced what it meant to write code that others would read, extend, and depend on.
+                    </p>
+                    <p>
+                        Working alone, I could take shortcuts. My entire chatbot lived in <strong>one massive .py file</strong>—no classes, no modules, no separation of concerns. Variable names didn't need to be self-explanatory. I didn't practice OOP or think about code organization because there was no one else who needed to understand my code. Git was just a backup tool, not a collaboration platform.
+                    </p>
+                </div>
+
+                <div class="journey-arrow">&#8594;</div>
+
+                <div class="journey-card after">
+                    <div class="journey-card-header">
+                        <span class="journey-icon">&#127919;</span>
+                        <h3>After SFU Blueprint</h3>
+                    </div>
+                    <p>
+                        Joining as an AI Engineer meant I had to <strong>learn fast</strong>. Suddenly, my code needed to integrate with a React frontend, follow established patterns, and be reviewable by teammates. I quickly learned Git workflows—branching, pull requests, rebasing, resolving merge conflicts. I discovered why modularization matters when you're working with <code>cypher.py</code>, <code>llmchain.py</code>, <code>vector.py</code>, and <code>agent.py</code> instead of one monolithic file.
+                    </p>
+                    <p>
+                        SFU Blueprint taught me that professional software engineering is fundamentally about collaboration. The best code isn't clever—it's clear. I experienced the satisfaction of implementing features that integrated seamlessly with my teammates' work, and the humility of having my code reviewed and improved by others.
+                    </p>
+                </div>
+            </div>
+
+            <div class="contributions-section">
+                <h3>Key Technical Contributions</h3>
+
+                <div class="contribution-item">
+                    <div class="contribution-header">
+                        <span class="contribution-icon">&#129302;</span>
+                        <h4>AI Evaluation Fallback Mechanism</h4>
+                        <span class="contribution-tag">Novel Solution</span>
+                    </div>
+                    <p>
+                        One of my final tickets challenged me to solve a critical reliability problem: what happens when the AI generates an unhelpful response? Rather than letting users receive vague or off-topic answers, I designed a fallback system that uses a secondary AI evaluation to detect unhelpful responses and automatically triggers a vector search fallback.
+                    </p>
+                    <div class="code-snippet">
+                        <div class="code-header">
+                            <span>cypher.py</span>
+                            <span class="code-commit">dcnguyen060899 • sequential fall back mechanism + enhance cypher template</span>
+                        </div>
+                        <pre><code><span class="comment"># Response Evaluation Template</span>
+RESPONSE_EVALUATION_TEMPLATE = <span class="string">"""
+You are an AI assistant tasked with determining if a given response is helpful or unhelpful.
+A helpful response provides specific, relevant information that answers the user's question.
+An unhelpful response is vague, off-topic, or indicates a lack of information.
+
+User's question: {question}
+Response to evaluate: {response}
+
+Is this response helpful or unhelpful? Reply with only one word: "HELPFUL" or "UNHELPFUL".
+"""</span>
+
+<span class="keyword">def</span> <span class="function">is_unhelpful_response</span>(question, response):
+    <span class="comment"># Quick check for the exact phrase</span>
+    <span class="keyword">if</span> response.strip() == <span class="string">"I don't know the answer."</span>:
+        <span class="keyword">print</span>(<span class="string">"[*]AI Exact Match: 'I don't know the answer.' Deemed unhelpful."</span>)
+        <span class="keyword">return True</span>
+
+    <span class="comment"># If it's not the exact phrase, use AI to evaluate response...</span>
+    <span class="keyword">print</span>(<span class="string">"No exact match. Using AI to evaluate response..."</span>)
+    evaluation = response_evaluation_chain.run(question=question, response=response)
+    is_unhelpful = evaluation.strip().upper() == <span class="string">"UNHELPFUL"</span>
+    <span class="keyword">print</span>(f<span class="string">"AI evaluation result: {'Unhelpful' if is_unhelpful else 'Helpful'}"</span>)
+    <span class="keyword">return</span> is_unhelpful
+
+<span class="keyword">def</span> <span class="function">cypher_qa</span>(query):
+    <span class="keyword">try</span>:
+        result = cypher_qa_chain(query)
+        <span class="keyword">if</span> is_unhelpful_response(query, result[<span class="string">'result'</span>]):
+            <span class="keyword">print</span>(<span class="string">"Response deemed unhelpful. Falling back to vector search..."</span>)
+            <span class="keyword">return</span> kg_qa(query)  <span class="comment"># Fallback to semantic search</span>
+        <span class="keyword">return</span> result[<span class="string">'result'</span>]
+    <span class="keyword">except</span> (ValueError, CypherSyntaxError) <span class="keyword">as</span> e:
+        <span class="keyword">print</span>(f<span class="string">"Cypher query failed: {e}"</span>)
+        <span class="keyword">print</span>(<span class="string">"Falling back to vector search..."</span>)
+        <span class="keyword">return</span> kg_qa(query)</code></pre>
+                    </div>
+                    <p class="contribution-reflection">
+                        This solution taught me to think about edge cases and user experience holistically. It wasn't enough to make the chatbot work—it needed to fail gracefully and still provide value when the primary method didn't succeed.
+                    </p>
+                </div>
+
+                <div class="contribution-item">
+                    <div class="contribution-header">
+                        <span class="contribution-icon">&#128279;</span>
+                        <h4>Backend Hyperlink Generation</h4>
+                        <span class="contribution-tag">Cross-Team Collaboration</span>
+                    </div>
+                    <p>
+                        I built the backend logic to generate clickable hyperlinks using GPT-4o, ensuring users could navigate directly to relevant resources. But the real learning came from collaborating with frontend engineers to render these links properly in the UI—not just as raw URLs, but as styled, accessible hyperlinks.
+                    </p>
+                    <p class="contribution-reflection">
+                        This feature taught me that backend and frontend are not separate worlds. Understanding how my API responses would be consumed helped me design better data structures and communicate more effectively with the frontend team.
+                    </p>
+                </div>
+            </div>
+
+            <div class="skills-learned">
+                <h3>Skills Developed</h3>
+                <div class="skills-grid-journey">
+                    <div class="skill-item">
+                        <span class="skill-icon">&#129309;</span>
+                        <h4>Collaborative Coding</h4>
+                        <p>Writing code that others can understand, maintain, and extend. Learning to give and receive constructive code reviews.</p>
+                    </div>
+                    <div class="skill-item">
+                        <span class="skill-icon">&#128736;</span>
+                        <h4>Modular Architecture</h4>
+                        <p>Designing systems with separation of concerns. Understanding when to abstract and when to keep things simple.</p>
+                    </div>
+                    <div class="skill-item">
+                        <span class="skill-icon">&#128187;</span>
+                        <h4>Git Workflow</h4>
+                        <p>Moving beyond basic commits to branching strategies, pull requests, rebasing, and resolving merge conflicts.</p>
+                    </div>
+                    <div class="skill-item">
+                        <span class="skill-icon">&#128268;</span>
+                        <h4>Full-Stack Debugging</h4>
+                        <p>Tracing issues across the entire stack—from database queries to API responses to frontend rendering.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="final-reflection">
+                <blockquote>
+                    "The codebase has since been handed off to MOSAIC, and I no longer have repository access. But the lessons I learned—about collaboration, code quality, and building for others—these stay with me. Every line of code I write now is informed by this experience."
+                </blockquote>
             </div>
         </div>
     </section>
