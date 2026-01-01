@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Engineer | SFU Blueprint Experience</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #7c3aed;
+            --accent: #06b6d4;
+            --dark: #0f172a;
+            --dark-light: #1e293b;
+            --gray: #64748b;
+            --light: #f8fafc;
+            --white: #ffffff;
+            --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--dark);
+            color: var(--light);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--gray);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--white);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding-top: 80px;
+            background: radial-gradient(ellipse at top right, rgba(37, 99, 235, 0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at bottom left, rgba(124, 58, 237, 0.15) 0%, transparent 50%);
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 64px;
+            align-items: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 0.875rem;
+            color: var(--accent);
+            margin-bottom: 24px;
+        }
+
+        .hero-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 24px;
+        }
+
+        .hero h1 span {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-description {
+            font-size: 1.25rem;
+            color: var(--gray);
+            margin-bottom: 32px;
+            max-width: 540px;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 48px;
+            margin-top: 48px;
+        }
+
+        .stat {
+            text-align: left;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--gray);
+            margin-top: 4px;
+        }
+
+        .hero-visual {
+            position: relative;
+        }
+
+        .hero-card {
+            background: var(--dark-light);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient);
+        }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.8rem;
+            overflow-x: auto;
+        }
+
+        .code-block .comment { color: var(--gray); }
+        .code-block .keyword { color: #c792ea; }
+        .code-block .string { color: #c3e88d; }
+        .code-block .function { color: #82aaff; }
+        .code-block .variable { color: #f78c6c; }
+
+        /* Section Styles */
+        section {
+            padding: 120px 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .section-tag {
+            display: inline-block;
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .section-header p {
+            color: var(--gray);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Project Section */
+        .project-section {
+            background: linear-gradient(180deg, var(--dark) 0%, var(--dark-light) 100%);
+        }
+
+        .project-card {
+            background: var(--dark);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .project-content {
+            padding: 48px;
+        }
+
+        .project-logo {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .project-logo-icon {
+            width: 56px;
+            height: 56px;
+            background: var(--gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .project-logo-text h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .project-logo-text span {
+            font-size: 0.875rem;
+            color: var(--gray);
+        }
+
+        .project-description {
+            color: var(--gray);
+            margin-bottom: 32px;
+            font-size: 1.1rem;
+        }
+
+        .project-features {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .feature-icon {
+            width: 24px;
+            height: 24px;
+            background: rgba(6, 182, 212, 0.2);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .feature-text h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .feature-text p {
+            font-size: 0.875rem;
+            color: var(--gray);
+        }
+
+        .project-visual {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(124, 58, 237, 0.2) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 48px;
+        }
+
+        .chat-mockup {
+            background: var(--dark);
+            border-radius: 16px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 16px;
+        }
+
+        .chat-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .chat-title {
+            font-weight: 600;
+        }
+
+        .chat-subtitle {
+            font-size: 0.75rem;
+            color: var(--accent);
+        }
+
+        .chat-messages {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chat-message {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            max-width: 85%;
+        }
+
+        .chat-message.user {
+            background: var(--primary);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-message.bot {
+            background: var(--dark-light);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Architecture Section */
+        .architecture-section {
+            background: var(--dark);
+        }
+
+        .architecture-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .arch-card {
+            background: var(--dark-light);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 32px;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .arch-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(37, 99, 235, 0.5);
+        }
+
+        .arch-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .arch-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .arch-card p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Tech Stack Section */
+        .tech-section {
+            background: linear-gradient(180deg, var(--dark-light) 0%, var(--dark) 100%);
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .tech-card {
+            background: var(--dark);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .tech-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(37, 99, 235, 0.5);
+        }
+
+        .tech-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+
+        .tech-card h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .tech-card span {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        /* Impact Section */
+        .impact-section {
+            background: var(--dark);
+        }
+
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 32px;
+        }
+
+        .impact-card {
+            text-align: center;
+            padding: 32px;
+            background: var(--dark-light);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+        }
+
+        .impact-value {
+            font-size: 3rem;
+            font-weight: 800;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .impact-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Timeline Section */
+        .timeline-section {
+            background: linear-gradient(180deg, var(--dark) 0%, var(--dark-light) 100%);
+        }
+
+        .timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .timeline-item {
+            display: flex;
+            justify-content: flex-end;
+            padding-right: 50%;
+            position: relative;
+            margin-bottom: 48px;
+        }
+
+        .timeline-item:nth-child(even) {
+            justify-content: flex-start;
+            padding-right: 0;
+            padding-left: 50%;
+        }
+
+        .timeline-content {
+            background: var(--dark);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 350px;
+            margin: 0 32px;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 16px;
+            background: var(--gradient);
+            border-radius: 50%;
+            border: 3px solid var(--dark);
+        }
+
+        .timeline-date {
+            font-size: 0.8rem;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .timeline-content h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .timeline-content p {
+            font-size: 0.875rem;
+            color: var(--gray);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark-light);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 48px 0;
+            text-align: center;
+        }
+
+        footer p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero-stats {
+                justify-content: center;
+            }
+
+            .hero-visual {
+                display: none;
+            }
+
+            .project-card {
+                grid-template-columns: 1fr;
+            }
+
+            .architecture-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .tech-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .impact-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .architecture-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tech-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .impact-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .timeline::before {
+                left: 20px;
+            }
+
+            .timeline-item,
+            .timeline-item:nth-child(even) {
+                padding-left: 60px;
+                padding-right: 0;
+                justify-content: flex-start;
+            }
+
+            .timeline-dot {
+                left: 20px;
+            }
+
+            .timeline-content {
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <div class="logo">AI Engineer Portfolio</div>
+            <ul class="nav-links">
+                <li><a href="#project">Project</a></li>
+                <li><a href="#architecture">Architecture</a></li>
+                <li><a href="#tech">Tech Stack</a></li>
+                <li><a href="#impact">Impact</a></li>
+                <li><a href="#timeline">Timeline</a></li>
+                <li><a href="index_portfolio.html" style="color: var(--accent);">Back to Portfolio</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <div class="hero-badge">SFU Blueprint</div>
+                    <h1>AI Engineer<br><span>Experience</span></h1>
+                    <p class="hero-description">
+                        Built an AI-powered conversational chatbot for MOSAIC, helping 660,000+ annual visitors
+                        find immigration and settlement services through natural language interactions.
+                    </p>
+                    <div class="hero-stats">
+                        <div class="stat">
+                            <div class="stat-value">660K+</div>
+                            <div class="stat-label">Annual Users Served</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">50+</div>
+                            <div class="stat-label">Programs Indexed</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$16/yr</div>
+                            <div class="stat-label">API Cost</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="hero-card">
+                        <div class="code-block">
+                            <span class="comment"># RAG Pipeline Architecture</span><br><br>
+                            <span class="keyword">class</span> <span class="function">MOSAICAgent</span>:<br>
+                            &nbsp;&nbsp;<span class="keyword">def</span> <span class="function">__init__</span>(self):<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;self.llm = <span class="string">OpenAI("gpt-4o-mini")</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;self.vector_db = <span class="string">Neo4j()</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;self.memory = <span class="string">ConversationMemory()</span><br><br>
+                            &nbsp;&nbsp;<span class="keyword">def</span> <span class="function">process_query</span>(self, query):<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;embedding = self.<span class="function">embed</span>(query)<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;programs = self.<span class="function">vector_search</span>(embedding)<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> self.<span class="function">generate_response</span>(programs)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="project" class="project-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Featured Project</span>
+                <h2>MOSAIC AI Chatbot</h2>
+                <p>An intelligent assistant helping immigrants and refugees discover settlement services</p>
+            </div>
+
+            <div class="project-card">
+                <div class="project-content">
+                    <div class="project-logo">
+                        <div class="project-logo-icon">M</div>
+                        <div class="project-logo-text">
+                            <h3>MOSAIC</h3>
+                            <span>Multicultural Association Serving All Immigrants</span>
+                        </div>
+                    </div>
+                    <p class="project-description">
+                        Developed an AI-powered conversational chatbot that converts natural language queries
+                        into intelligent program recommendations, eliminating the need for users to navigate
+                        complex service directories.
+                    </p>
+                    <div class="project-features">
+                        <div class="feature-item">
+                            <div class="feature-icon">&#10003;</div>
+                            <div class="feature-text">
+                                <h4>RAG-Powered Search</h4>
+                                <p>Vector embeddings with Neo4j for semantic program matching</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">&#10003;</div>
+                            <div class="feature-text">
+                                <h4>Conversational Memory</h4>
+                                <p>Multi-turn dialogue with context retention across sessions</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">&#10003;</div>
+                            <div class="feature-text">
+                                <h4>Cost-Optimized LLM</h4>
+                                <p>GPT-4o Mini achieving $16/year operational cost</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">&#10003;</div>
+                            <div class="feature-text">
+                                <h4>Admin Portal</h4>
+                                <p>Non-technical staff can update programs via CSV upload</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="project-visual">
+                    <div class="chat-mockup">
+                        <div class="chat-header">
+                            <div class="chat-avatar">M</div>
+                            <div>
+                                <div class="chat-title">MOSAIC Assistant</div>
+                                <div class="chat-subtitle">Online</div>
+                            </div>
+                        </div>
+                        <div class="chat-messages">
+                            <div class="chat-message user">
+                                I'm a newcomer looking for English classes in Vancouver
+                            </div>
+                            <div class="chat-message bot">
+                                I found 3 programs that match your needs! The LINC program offers free English classes for permanent residents. Would you like more details?
+                            </div>
+                            <div class="chat-message user">
+                                Yes, what are the eligibility requirements?
+                            </div>
+                            <div class="chat-message bot">
+                                LINC is available to permanent residents and refugees. You'll need to take a placement test. Classes are held at our Vancouver location.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="architecture" class="architecture-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Technical Deep Dive</span>
+                <h2>AI Architecture</h2>
+                <p>End-to-end pipeline from user query to intelligent response</p>
+            </div>
+
+            <div class="architecture-grid">
+                <div class="arch-card">
+                    <div class="arch-icon">&#128269;</div>
+                    <h3>Query Understanding</h3>
+                    <p>Natural language queries are converted into 1536-dimensional vector embeddings using OpenAI's embedding model for semantic search.</p>
+                </div>
+                <div class="arch-card">
+                    <div class="arch-icon">&#128202;</div>
+                    <h3>Knowledge Graph</h3>
+                    <p>Neo4j graph database stores 50+ programs with metadata including services, eligibility criteria, locations, and vector embeddings.</p>
+                </div>
+                <div class="arch-card">
+                    <div class="arch-icon">&#128270;</div>
+                    <h3>Vector Search</h3>
+                    <p>Cosine similarity search retrieves the most relevant programs based on semantic meaning, not just keyword matching.</p>
+                </div>
+                <div class="arch-card">
+                    <div class="arch-icon">&#129302;</div>
+                    <h3>LLM Integration</h3>
+                    <p>GPT-4o Mini generates conversational responses grounded in retrieved program data with optimized prompts.</p>
+                </div>
+                <div class="arch-card">
+                    <div class="arch-icon">&#128172;</div>
+                    <h3>Conversation Memory</h3>
+                    <p>Session-based memory tracks context across multiple exchanges for coherent multi-turn dialogue.</p>
+                </div>
+                <div class="arch-card">
+                    <div class="arch-icon">&#128640;</div>
+                    <h3>RAG Pipeline</h3>
+                    <p>Retrieval-Augmented Generation combines search results with LLM reasoning for accurate, grounded responses.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="tech" class="tech-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Technologies</span>
+                <h2>Tech Stack</h2>
+                <p>Modern tools and frameworks powering the solution</p>
+            </div>
+
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <div class="tech-icon">&#129302;</div>
+                    <h4>OpenAI GPT-4o</h4>
+                    <span>LLM Engine</span>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-icon">&#128206;</div>
+                    <h4>Neo4j</h4>
+                    <span>Vector Database</span>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-icon">&#128013;</div>
+                    <h4>Python</h4>
+                    <span>Backend Language</span>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-icon">&#127760;</div>
+                    <h4>Flask</h4>
+                    <span>REST API</span>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-icon">&#9881;</div>
+                    <h4>React</h4>
+                    <span>Frontend</span>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-icon">&#128230;</div>
+                    <h4>Docker</h4>
+                    <span>Containerization</span>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-icon">&#9729;</div>
+                    <h4>Render</h4>
+                    <span>Deployment</span>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-icon">&#128293;</div>
+                    <h4>Firebase</h4>
+                    <span>Authentication</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="impact" class="impact-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Results</span>
+                <h2>Project Impact</h2>
+                <p>Measurable outcomes and cost efficiency</p>
+            </div>
+
+            <div class="impact-grid">
+                <div class="impact-card">
+                    <div class="impact-value">165K</div>
+                    <div class="impact-label">Projected Annual Users<br>(25% of visitors)</div>
+                </div>
+                <div class="impact-card">
+                    <div class="impact-value">99%</div>
+                    <div class="impact-label">Cost Reduction vs<br>Traditional Solutions</div>
+                </div>
+                <div class="impact-card">
+                    <div class="impact-value">1536</div>
+                    <div class="impact-label">Embedding Dimensions<br>for Semantic Search</div>
+                </div>
+                <div class="impact-card">
+                    <div class="impact-value">~$80</div>
+                    <div class="impact-label">Monthly Infrastructure<br>Operating Cost</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="timeline" class="timeline-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Journey</span>
+                <h2>Development Timeline</h2>
+                <p>Key milestones in building the MOSAIC AI chatbot</p>
+            </div>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">January 2024</div>
+                        <h3>Research & Data Gathering</h3>
+                        <p>Evaluated LLM options (GPT-4, Falcon-7B, Llama-2), collected training data, and designed knowledge graph schema.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">February 2024</div>
+                        <h3>RAG Pipeline Development</h3>
+                        <p>Built vector embedding system with Neo4j, implemented semantic search with cosine similarity.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">March 2024</div>
+                        <h3>LLM Integration & Optimization</h3>
+                        <p>Integrated GPT-4o Mini, optimized prompts for accuracy, implemented conversation memory.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">April 2024</div>
+                        <h3>Full-Stack Deployment</h3>
+                        <p>Deployed React frontend, Flask backend with Docker, set up CI/CD with GitHub Actions.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">November 2024</div>
+                        <h3>Production Handoff</h3>
+                        <p>Completed admin portal, documentation, and handed off to MOSAIC for production use.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>Built with passion at <a href="https://sfublueprint.org" target="_blank">SFU Blueprint</a> |
+               Helping MOSAIC serve immigrants and refugees across Canada</p>
+        </div>
+    </footer>
+</body>
+</html>
