@@ -4,6 +4,9 @@ from dotenv import load_dotenv
 import os
 from chatservice import ChatService
 import re
+import base64
+import tempfile
+from gradio_client import Client, handle_file
 
 import time
 
@@ -206,6 +209,56 @@ def api_check():
             )
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
-    
+
+@app.route("/classify-image", methods=["POST"])
+def classify_image():
+    """
+    Proxy endpoint for HuggingFace Spaces Garbage Classification API
+    Uses gradio_client for proper queue/WebSocket handling
+    """
+    try:
+        data = request.get_json()
+        image_data = data.get("image")
+
+        if not image_data:
+            return jsonify({"error": "No image provided"}), 400
+
+        print(f"Received image data, length: {len(image_data)}")
+
+        # Extract base64 content (remove data:image/...;base64, prefix if present)
+        if "," in image_data:
+            image_data = image_data.split(",")[1]
+
+        # Decode base64 to bytes
+        image_bytes = base64.b64decode(image_data)
+
+        # Save to temporary file
+        with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp_file:
+            tmp_file.write(image_bytes)
+            tmp_path = tmp_file.name
+
+        print(f"Saved temp file: {tmp_path}")
+
+        # Use gradio_client to call the HuggingFace Space
+        client = Client("dnguyen44/garbage-classification")
+        result = client.predict(
+            image=handle_file(tmp_path),
+            api_name="/predict"
+        )
+
+        print(f"Classification result: {result}")
+
+        # Clean up temp file
+        os.unlink(tmp_path)
+
+        # Return result in expected format
+        return jsonify({"data": [result]})
+
+    except Exception as e:
+        print(f"Error in classify-image: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     app.run(debug=True)

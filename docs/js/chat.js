@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     const apiUrl = 'https://uc-berkeley-ml-ai-capstone-work-sample.onrender.com/chat'; // Backend API URL
-    const huggingFaceBaseUrl = 'https://dnguyen44-garbage-classification.hf.space'; // HuggingFace Spaces base URL
+    const classifyImageUrl = 'https://uc-berkeley-ml-ai-capstone-work-sample.onrender.com/classify-image'; // Backend proxy for HuggingFace
     const chatbotToggle = document.getElementById("chatbot-toggle");
     const chatbotContainer = document.getElementById("chatbot-container");
     const chatbotHeader = document.getElementById("chatbot-header");
@@ -359,135 +359,35 @@ document.addEventListener("DOMContentLoaded", function () {
         reader.readAsDataURL(file);
     }
 
-    // Generate random session hash for Gradio queue
-    function generateSessionHash() {
-        return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    }
-
-    // Call HuggingFace Spaces API for garbage classification (with multiple fallbacks)
+    // Call backend proxy for garbage classification (bypasses CORS)
     async function classifyImage(imageFile) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = async function(e) {
                 const base64Data = e.target.result;
+                console.log("Sending image to backend proxy...");
 
-                // Try multiple API approaches for Gradio compatibility
-                const approaches = [
-                    // Approach 1: Queue-based (Gradio 3.x with queue enabled - PREFERRED)
-                    async () => {
-                        console.log("Trying queue-based approach...");
-                        const sessionHash = generateSessionHash();
+                try {
+                    const response = await fetch(classifyImageUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ image: base64Data })
+                    });
 
-                        // Push to queue
-                        const pushResponse = await fetch(`${huggingFaceBaseUrl}/queue/push`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                data: [base64Data],
-                                fn_index: 0,
-                                session_hash: sessionHash
-                            })
-                        });
+                    console.log("Backend response status:", response.status);
 
-                        if (!pushResponse.ok) throw new Error(`Queue push failed: ${pushResponse.status}`);
-
-                        const pushResult = await pushResponse.json();
-                        console.log("Queue push result:", pushResult);
-                        const eventHash = pushResult.hash;
-
-                        // Poll for result
-                        for (let i = 0; i < 30; i++) {
-                            const statusResponse = await fetch(`${huggingFaceBaseUrl}/queue/status`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ hash: eventHash })
-                            });
-
-                            if (!statusResponse.ok) throw new Error(`Queue status failed: ${statusResponse.status}`);
-
-                            const statusResult = await statusResponse.json();
-                            console.log("Queue status:", statusResult);
-
-                            if (statusResult.status === 'COMPLETE') {
-                                return { data: statusResult.data };
-                            } else if (statusResult.status === 'FAILED' || statusResult.status === 'ERROR') {
-                                throw new Error('Queue failed: ' + (statusResult.message || 'Unknown'));
-                            }
-
-                            await new Promise(r => setTimeout(r, 1000));
-                        }
-                        throw new Error('Queue timed out');
-                    },
-                    // Approach 2: Direct /run/predict (simpler Gradio configs)
-                    async () => {
-                        console.log("Trying /run/predict endpoint...");
-                        const response = await fetch(`${huggingFaceBaseUrl}/run/predict`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ data: [base64Data] })
-                        });
-                        if (!response.ok) throw new Error(`run/predict failed: ${response.status}`);
-                        return await response.json();
-                    },
-                    // Approach 3: /api/predict with fn_index
-                    async () => {
-                        console.log("Trying /api/predict endpoint...");
-                        const response = await fetch(`${huggingFaceBaseUrl}/api/predict`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ data: [base64Data], fn_index: 0 })
-                        });
-                        if (!response.ok) throw new Error(`api/predict failed: ${response.status}`);
-                        return await response.json();
-                    },
-                    // Approach 4: Gradio 4.x /call/predict format
-                    async () => {
-                        console.log("Trying Gradio 4.x /call/predict endpoint...");
-                        const callResponse = await fetch(`${huggingFaceBaseUrl}/call/predict`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ data: [base64Data] })
-                        });
-
-                        if (!callResponse.ok) throw new Error(`call/predict failed: ${callResponse.status}`);
-
-                        const callResult = await callResponse.json();
-                        const eventId = callResult.event_id;
-
-                        // Get result
-                        const resultResponse = await fetch(`${huggingFaceBaseUrl}/call/predict/${eventId}`);
-                        if (!resultResponse.ok) throw new Error(`call result failed: ${resultResponse.status}`);
-
-                        // Parse SSE response
-                        const text = await resultResponse.text();
-                        const lines = text.split('\n');
-                        for (const line of lines) {
-                            if (line.startsWith('data: ')) {
-                                const data = JSON.parse(line.substring(6));
-                                if (data) return { data: data };
-                            }
-                        }
-                        throw new Error('No data in SSE response');
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `API error: ${response.status}`);
                     }
-                ];
 
-                // Try each approach until one succeeds
-                let lastError = null;
-                for (const approach of approaches) {
-                    try {
-                        const result = await approach();
-                        console.log("API Success:", result);
-                        resolve(result);
-                        return;
-                    } catch (error) {
-                        console.log("Approach failed:", error.message);
-                        lastError = error;
-                    }
+                    const result = await response.json();
+                    console.log("Classification result:", result);
+                    resolve(result);
+                } catch (error) {
+                    console.error("Classification error:", error);
+                    reject(error);
                 }
-
-                // All approaches failed
-                console.error("All API approaches failed:", lastError);
-                reject(lastError || new Error("All classification attempts failed"));
             };
             reader.onerror = function(error) {
                 console.error("FileReader error:", error);

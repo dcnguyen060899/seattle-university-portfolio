@@ -8,3 +8,4 @@ langchain-openai==0.1.3
 flask-cors
 llm
 gunicorn
+gradio_client
