@@ -4,9 +4,8 @@ from dotenv import load_dotenv
 import os
 from chatservice import ChatService
 import re
+import requests
 import base64
-import tempfile
-from gradio_client import Client, handle_file
 
 import time
 
@@ -214,50 +213,49 @@ def api_check():
 def classify_image():
     """
     Proxy endpoint for HuggingFace Spaces Garbage Classification API
-    Uses gradio_client for proper queue/WebSocket handling
+    Bypasses CORS restrictions by calling the API from the server
     """
     try:
         data = request.get_json()
-        image_data = data.get("image")
+        image_data = data.get("image")  # Base64 encoded image
 
         if not image_data:
             return jsonify({"error": "No image provided"}), 400
 
-        print(f"Received image data, length: {len(image_data)}")
+        # HuggingFace Spaces API URL
+        hf_api_url = "https://dnguyen44-garbage-classification.hf.space/api/predict"
 
-        # Extract base64 content (remove data:image/...;base64, prefix if present)
-        if "," in image_data:
-            image_data = image_data.split(",")[1]
-
-        # Decode base64 to bytes
-        image_bytes = base64.b64decode(image_data)
-
-        # Save to temporary file
-        with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp_file:
-            tmp_file.write(image_bytes)
-            tmp_path = tmp_file.name
-
-        print(f"Saved temp file: {tmp_path}")
-
-        # Use gradio_client to call the HuggingFace Space
-        client = Client("dnguyen44/garbage-classification")
-        result = client.predict(
-            image=handle_file(tmp_path),
-            api_name="/predict"
+        # Call HuggingFace API
+        response = requests.post(
+            hf_api_url,
+            json={"data": [image_data]},
+            headers={"Content-Type": "application/json"},
+            timeout=60
         )
 
-        print(f"Classification result: {result}")
+        if response.status_code != 200:
+            # Try alternative endpoint
+            hf_api_url_alt = "https://dnguyen44-garbage-classification.hf.space/run/predict"
+            response = requests.post(
+                hf_api_url_alt,
+                json={"data": [image_data]},
+                headers={"Content-Type": "application/json"},
+                timeout=60
+            )
 
-        # Clean up temp file
-        os.unlink(tmp_path)
+        if response.status_code == 200:
+            result = response.json()
+            return jsonify(result)
+        else:
+            return jsonify({
+                "error": f"HuggingFace API error: {response.status_code}",
+                "details": response.text
+            }), response.status_code
 
-        # Return result in expected format
-        return jsonify({"data": [result]})
-
+    except requests.exceptions.Timeout:
+        return jsonify({"error": "Request timed out - model may be loading"}), 504
     except Exception as e:
         print(f"Error in classify-image: {str(e)}")
-        import traceback
-        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
