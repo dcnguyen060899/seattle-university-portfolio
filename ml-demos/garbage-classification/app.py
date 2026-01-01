@@ -76,4 +76,6 @@ demo = gr.Interface(
 )
 
 if __name__ == "__main__":
+    # Enable queue for API access (required for external API calls)
+    demo.queue()
     demo.launch(server_name="0.0.0.0", server_port=7860)

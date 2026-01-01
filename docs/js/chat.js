@@ -373,29 +373,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // Try multiple API approaches for Gradio compatibility
                 const approaches = [
-                    // Approach 1: Direct /run/predict (simpler Gradio configs)
-                    async () => {
-                        console.log("Trying /run/predict endpoint...");
-                        const response = await fetch(`${huggingFaceBaseUrl}/run/predict`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ data: [base64Data] })
-                        });
-                        if (!response.ok) throw new Error(`run/predict failed: ${response.status}`);
-                        return await response.json();
-                    },
-                    // Approach 2: /api/predict/ with trailing slash
-                    async () => {
-                        console.log("Trying /api/predict/ endpoint...");
-                        const response = await fetch(`${huggingFaceBaseUrl}/api/predict/`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ data: [base64Data], fn_index: 0 })
-                        });
-                        if (!response.ok) throw new Error(`api/predict failed: ${response.status}`);
-                        return await response.json();
-                    },
-                    // Approach 3: Queue-based (Gradio 3.x with queue enabled)
+                    // Approach 1: Queue-based (Gradio 3.x with queue enabled - PREFERRED)
                     async () => {
                         console.log("Trying queue-based approach...");
                         const sessionHash = generateSessionHash();
@@ -439,6 +417,28 @@ document.addEventListener("DOMContentLoaded", function () {
                             await new Promise(r => setTimeout(r, 1000));
                         }
                         throw new Error('Queue timed out');
+                    },
+                    // Approach 2: Direct /run/predict (simpler Gradio configs)
+                    async () => {
+                        console.log("Trying /run/predict endpoint...");
+                        const response = await fetch(`${huggingFaceBaseUrl}/run/predict`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ data: [base64Data] })
+                        });
+                        if (!response.ok) throw new Error(`run/predict failed: ${response.status}`);
+                        return await response.json();
+                    },
+                    // Approach 3: /api/predict with fn_index
+                    async () => {
+                        console.log("Trying /api/predict endpoint...");
+                        const response = await fetch(`${huggingFaceBaseUrl}/api/predict`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ data: [base64Data], fn_index: 0 })
+                        });
+                        if (!response.ok) throw new Error(`api/predict failed: ${response.status}`);
+                        return await response.json();
                     },
                     // Approach 4: Gradio 4.x /call/predict format
                     async () => {
