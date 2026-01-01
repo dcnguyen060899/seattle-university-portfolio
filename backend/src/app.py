@@ -242,7 +242,7 @@ def classify_image():
         # Use gradio_client to call the HuggingFace Space
         client = Client("dnguyen44/garbage-classification")
         result = client.predict(
-            image=handle_file(tmp_path),
+            handle_file(tmp_path),  # Positional argument, not keyword
             api_name="/predict"
         )
 
