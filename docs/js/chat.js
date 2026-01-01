@@ -417,10 +417,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 const firstItem = data[0];
                 console.log("First item type:", typeof firstItem, firstItem);
 
-                // Check for Gradio Label component format: {label: "class", confidences: {}}
+                // Check for Gradio Label component format: {label: "class", confidences: [...]}
                 if (firstItem && typeof firstItem === 'object' && 'label' in firstItem && 'confidences' in firstItem) {
                     console.log("Detected Label component format");
-                    predictions = firstItem.confidences;
+                    // confidences is an array of {label, confidence} objects
+                    if (Array.isArray(firstItem.confidences)) {
+                        predictions = {};
+                        firstItem.confidences.forEach(item => {
+                            predictions[item.label] = item.confidence;
+                        });
+                    } else {
+                        predictions = firstItem.confidences;
+                    }
                 }
                 // Check for object with class keys: {Cardboard: 0.95, Glass: 0.02, ...}
                 else if (firstItem && typeof firstItem === 'object' && !Array.isArray(firstItem)) {
