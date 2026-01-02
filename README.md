@@ -37,7 +37,13 @@ If you're a recruiter evaluating this portfolio:
 - **Conversation Memory Management**: Separate memory systems for different chatbots prevent context contamination
 - **Deployed on Render**: Cloud-hosted backend with automatic scaling and monitoring
 
-### 4. Sophisticated User Experience
+### 4. Live ML Demo Integration (NEW)
+- **In-Chat Image Classification**: Upload images directly to the chatbot for real-time garbage classification
+- **Backend Proxy Architecture**: Server-side API calls to HuggingFace Spaces bypass CORS restrictions
+- **AI-Interpreted Results**: ML predictions are translated into natural language explanations
+- **ResNet34 Model**: Deep learning model with 94% accuracy, deployed on HuggingFace Spaces
+
+### 5. Sophisticated User Experience
 - **Markdown-to-HTML Formatting**: AI responses are automatically formatted with headings, bold text, links, and bullet points
 - **Animated Typing Indicators**: Real-time visual feedback showing the AI is "thinking"
 - **Drag-and-Drop Positioning**: Recruiters can move the chatbot anywhere on screen
@@ -83,7 +89,7 @@ If you're a recruiter evaluating this portfolio:
 ┌─────────────────────────────────────────────────────────────┐
 │                     Frontend (HTML/CSS/JS)                  │
 │  • Responsive portfolio pages                               │
-│  • Chatbot UI with drag/resize                              │
+│  • Chatbot UI with drag/resize & image upload               │
 │  • Markdown rendering & animations                          │
 └────────────────────┬────────────────────────────────────────┘
                      │
@@ -95,6 +101,7 @@ If you're a recruiter evaluating this portfolio:
 │  │  Primary Agent (Portfolio Assistant)                │   │
 │  │  • Tailors responses by role type                   │   │
 │  │  • Maintains conversation context                   │   │
+│  │  • Interprets ML predictions in natural language    │   │
 │  └─────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │  Evaluation Agent (Code Feedback)                   │   │
@@ -103,21 +110,27 @@ If you're a recruiter evaluating this portfolio:
 │  │  • Triggers fallback AI on errors                   │   │
 │  └─────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────┐   │
+│  │  Image Classification Proxy                         │   │
+│  │  • Server-side calls to HuggingFace Spaces          │   │
+│  │  • Bypasses browser CORS restrictions               │   │
+│  │  • Returns predictions for AI interpretation        │   │
+│  └─────────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────┐   │
 │  │  Fallback AI (Error Correction)                     │   │
 │  │  • Detects malformed responses                      │   │
 │  │  • Automatically reformats output                   │   │
 │  │  • Self-healing mechanism                           │   │
 │  └─────────────────────────────────────────────────────┘   │
-└────────────────────┬────────────────────────────────────────┘
-                     │
-                     │ API Calls
-                     ▼
-┌─────────────────────────────────────────────────────────────┐
-│              Claude API (Anthropic)                         │
-│  • Advanced language model (Sonnet 4.5)                     │
-│  • Natural language understanding                           │
-│  • Context-aware responses                                  │
-└─────────────────────────────────────────────────────────────┘
+└────────────────────┬───────────────────┬────────────────────┘
+                     │                   │
+                     │ API Calls         │ HTTP Requests
+                     ▼                   ▼
+┌────────────────────────────────┐ ┌──────────────────────────┐
+│      Claude API (Anthropic)    │ │  HuggingFace Spaces      │
+│  • Advanced language model     │ │  • Garbage Classification│
+│  • Natural language            │ │  • ResNet34 (94% acc)    │
+│  • Context-aware responses     │ │  • Gradio API endpoint   │
+└────────────────────────────────┘ └──────────────────────────┘
 ```
 
 ### Key Components
@@ -128,7 +141,9 @@ If you're a recruiter evaluating this portfolio:
 | **Backend API** | Flask (Python) | RESTful endpoints, request routing, CORS handling |
 | **AI Framework** | LangChain | Agent orchestration, memory management, tool integration |
 | **LLM** | Claude API (Anthropic) | Natural language processing, conversational responses |
+| **ML Model** | HuggingFace Spaces | Garbage classification API (ResNet34, 94% accuracy) |
 | **Deployment** | Render | Cloud hosting, auto-scaling, continuous deployment |
+| **ML Deployment** | HuggingFace Spaces | Gradio-based ML model serving with CI/CD |
 | **Version Control** | Git/GitHub | Code management, collaboration, deployment triggers |
 
 ---
@@ -144,6 +159,8 @@ If you're a recruiter evaluating this portfolio:
 ### Machine Learning & AI
 - **LangChain**: Multi-agent systems, conversation memory, tool orchestration
 - **Claude API**: Advanced LLM integration, prompt engineering
+- **FastAI/PyTorch**: Transfer learning with ResNet34, 94% accuracy garbage classification
+- **HuggingFace Spaces**: ML model deployment with Gradio API endpoints
 - **Error Handling**: Self-healing AI systems with fallback mechanisms
 - **System Design**: Separate memory contexts for different chatbot types
 
@@ -189,9 +206,15 @@ seattle-university-portfolio/
 │   │   ├── portfolio_su.css   # Seattle University themed styles
 │   │   └── learning_algorithm.css
 │   ├── js/
-│   │   ├── chat.js            # Portfolio chatbot frontend logic
+│   │   ├── chat.js            # Portfolio chatbot frontend logic (with image upload)
 │   │   └── learning_algorithm.js # Code evaluation chatbot frontend
 │   └── images/                # Visual assets
+├── ml-demos/                  # Machine Learning demos (deployed to HuggingFace)
+│   └── garbage-classification/
+│       ├── app.py             # Gradio app for garbage classification
+│       ├── requirements.txt   # FastAI, Gradio dependencies
+│       ├── model_2_conservative_augmentation.pkl  # Trained ResNet34 model
+│       └── .github/workflows/ # CI/CD for HuggingFace Spaces deployment
 ├── README.md                  # This file
 └── render.yaml               # Deployment configuration for Render
 
@@ -200,15 +223,19 @@ seattle-university-portfolio/
 ### Key Files Explained
 
 **Backend (Flask API):**
-- `app.py`: Defines API endpoints (`/chat`, `/evaluate-challenge`), handles CORS, routes requests
+- `app.py`: Defines API endpoints (`/chat`, `/evaluate-challenge`, `/classify-image`), handles CORS, routes requests
 - `agent.py`: Creates two separate AI agents with different system prompts and memory contexts
 - `llm.py`: Configures Claude API connection, sets token limits, creates memory objects
 - `chatservice.py`: Service layer that bridges Flask routes to agent logic
 
 **Frontend (User Interface):**
-- `chat.js`: Implements chatbot UI, handles user input, formats AI responses, manages animations
+- `chat.js`: Implements chatbot UI, handles user input, image uploads, formats AI responses, manages animations
 - `portfolio_su.css`: Seattle University branding, responsive layout, chatbot styling
 - `index_portfolio.html`: Main page structure, content, chatbot HTML elements
+
+**ML Demos (HuggingFace Spaces):**
+- `garbage-classification/app.py`: Gradio interface for ResNet34 garbage classification model
+- Automatically deployed via GitHub Actions CI/CD when changes are pushed
 
 ---
 
@@ -291,6 +318,30 @@ function formatBotMessage(text) {
     return formatted;
 }
 ```
+
+### 6. Backend Proxy for ML Model Integration
+
+**Challenge:** Browsers block direct API calls to HuggingFace Spaces due to CORS (Cross-Origin Resource Sharing) restrictions. The `gradio_client` library also uses WebSocket protocols that fail on certain hosting platforms.
+
+**Solution:** Created a backend proxy endpoint that makes server-to-server HTTP requests, bypassing browser CORS restrictions entirely.
+
+```python
+@app.route("/classify-image", methods=["POST"])
+def classify_image():
+    """Proxy endpoint for HuggingFace Spaces API"""
+    data = request.get_json()
+    image_data = data.get("image")  # Base64 encoded
+
+    # Server-side request - no CORS issues
+    response = http_requests.post(
+        "https://dnguyen44-garbage-classification.hf.space/api/predict",
+        json={"data": [image_data]},
+        timeout=120
+    )
+    return jsonify(response.json())
+```
+
+**Key Learning:** This pattern (backend proxy) is a common solution for integrating third-party ML APIs that don't support CORS headers. It also provides a layer for rate limiting, caching, and error handling.
 
 ---
 
@@ -477,7 +528,7 @@ Expected Graduation: June 2027
 
 ## License
 
-MIT License - Copyright (c) 2025 Duy Nguyen
+MIT License - Copyright (c) 2026 Duy Nguyen
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
@@ -495,6 +546,6 @@ This project is part of Duy Nguyen's academic portfolio for the MS Data Science 
 
 ---
 
-*Built with care by Duy Nguyen | Last Updated: January 2025*
+*Built with care by Duy Nguyen | Last Updated: January 2026*
 
-**Copyright © 2025 Duy Nguyen. Licensed under the MIT License.**
+**Copyright © 2026 Duy Nguyen. Licensed under the MIT License.**
