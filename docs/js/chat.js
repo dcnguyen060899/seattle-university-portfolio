@@ -4,8 +4,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Second Brain RAG Pipeline API Configuration
     // For local development: 'http://localhost:8000/api/v1/demo/rag-pipeline'
-    // For production: Update this to your deployed Second Brain API URL
-    const ragPipelineUrl = 'http://localhost:8000/api/v1/demo/rag-pipeline';
+    // Production: https://second-brain-api-hptf.onrender.com
+    const ragPipelineUrl = 'https://second-brain-api-hptf.onrender.com/api/v1/demo/rag-pipeline';
 
     const chatbotToggle = document.getElementById("chatbot-toggle");
     const chatbotContainer = document.getElementById("chatbot-container");

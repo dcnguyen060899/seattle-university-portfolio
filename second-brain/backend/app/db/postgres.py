@@ -40,15 +40,14 @@ class Base(DeclarativeBase):
 async def init_db() -> None:
     """
     Initialize database connection.
-    Creates tables if they don't exist (for development).
+    Creates tables if they don't exist.
     """
     async with engine.begin() as conn:
         # Import all models to register them
         from app.models import db_models  # noqa: F401
 
-        # Create tables (development only - use Alembic in production)
-        if settings.DEBUG:
-            await conn.run_sync(Base.metadata.create_all)
+        # Create tables if they don't exist (safe for production - idempotent)
+        await conn.run_sync(Base.metadata.create_all)
 
     print(f"PostgreSQL connected: {settings.DATABASE_URL.split('@')[-1]}")
 
