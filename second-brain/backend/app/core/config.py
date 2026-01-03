@@ -53,8 +53,8 @@ class Settings(BaseSettings):
     QDRANT_API_KEY: str | None = None
     QDRANT_COLLECTION_NAME: str = "knowledge_chunks"
 
-    # Redis
-    REDIS_URL: str = "redis://localhost:6379/0"
+    # Redis (optional - caching disabled if not set)
+    REDIS_URL: str = ""
 
     # Authentication
     SECRET_KEY: str = "your-secret-key-change-in-production"

@@ -1,0 +1,33 @@
+# Render Blueprint for Second Brain Backend
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: second-brain-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    region: oregon  # Close to Qdrant (us-west-2) and Neon (us-west-2)
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      # PostgreSQL (Neon)
+      - key: DATABASE_URL
+        sync: false
+      # Qdrant Cloud
+      - key: QDRANT_HOST
+        sync: false
+      - key: QDRANT_PORT
+        value: "6333"
+      - key: QDRANT_API_KEY
+        sync: false
+      # AI Services
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: VOYAGE_API_KEY
+        sync: false
+      # Application
+      - key: DEBUG
+        value: "false"
+      - key: SECRET_KEY
+        generateValue: true

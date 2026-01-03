@@ -16,27 +16,33 @@ from app.core.config import settings
 _redis_client: Optional[redis.Redis] = None
 
 
-async def get_redis_client() -> redis.Redis:
-    """Get the Redis client instance."""
+async def get_redis_client() -> Optional[redis.Redis]:
+    """Get the Redis client instance (may be None if Redis disabled)."""
     global _redis_client
-    if _redis_client is None:
-        raise RuntimeError("Redis client not initialized. Call init_redis() first.")
     return _redis_client
 
 
 async def init_redis() -> None:
-    """Initialize Redis connection."""
+    """Initialize Redis connection (optional - gracefully handles missing Redis)."""
     global _redis_client
 
-    _redis_client = redis.from_url(
-        settings.REDIS_URL,
-        encoding="utf-8",
-        decode_responses=True,
-    )
+    if not settings.REDIS_URL:
+        print("Redis URL not configured - caching disabled")
+        return
 
-    # Test connection
-    await _redis_client.ping()
-    print(f"Redis connected: {settings.REDIS_URL.split('@')[-1] if '@' in settings.REDIS_URL else settings.REDIS_URL}")
+    try:
+        _redis_client = redis.from_url(
+            settings.REDIS_URL,
+            encoding="utf-8",
+            decode_responses=True,
+        )
+
+        # Test connection
+        await _redis_client.ping()
+        print(f"Redis connected: {settings.REDIS_URL.split('@')[-1] if '@' in settings.REDIS_URL else settings.REDIS_URL}")
+    except Exception as e:
+        print(f"Redis connection failed (caching disabled): {e}")
+        _redis_client = None
 
 
 async def close_redis() -> None:
@@ -62,6 +68,9 @@ async def cache_get(key: str) -> Optional[Any]:
         Cached value or None if not found
     """
     client = await get_redis_client()
+    if client is None:
+        return None
+
     value = await client.get(key)
 
     if value is None:
@@ -87,6 +96,8 @@ async def cache_set(
         expire_seconds: TTL in seconds (default 1 hour)
     """
     client = await get_redis_client()
+    if client is None:
+        return
 
     if isinstance(value, (dict, list)):
         value = json.dumps(value)
@@ -97,12 +108,16 @@ async def cache_set(
 async def cache_delete(key: str) -> None:
     """Delete a cached value."""
     client = await get_redis_client()
+    if client is None:
+        return
     await client.delete(key)
 
 
 async def cache_delete_pattern(pattern: str) -> None:
     """Delete all keys matching a pattern."""
     client = await get_redis_client()
+    if client is None:
+        return
 
     cursor = 0
     while True:
@@ -133,6 +148,10 @@ async def check_rate_limit(
         Tuple of (is_allowed, remaining_requests)
     """
     client = await get_redis_client()
+    if client is None:
+        # No rate limiting when Redis is disabled
+        return True, limit
+
     rate_key = f"rate_limit:{key}"
 
     # Increment counter
