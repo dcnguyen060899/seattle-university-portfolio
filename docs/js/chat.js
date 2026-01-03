@@ -503,6 +503,15 @@ document.addEventListener("DOMContentLoaded", function () {
         // Convert markdown subheadings (### Heading) to <h3>
         formatted = formatted.replace(/^### (.+)$/gm, '<h3>$1</h3>');
 
+        // Handle markdown bullet lists BEFORE newline conversion
+        // Convert consecutive lines starting with "- " into proper list
+        formatted = formatted.replace(/^- (.+)$/gm, '<li>$1</li>');
+
+        // Wrap consecutive <li> elements in <ul>
+        formatted = formatted.replace(/(<li>.*<\/li>\n?)+/g, function(match) {
+            return '<ul>' + match.replace(/\n/g, '') + '</ul>';
+        });
+
         // Convert double newlines to paragraph breaks
         formatted = formatted.replace(/\n\n/g, '</p><p>');
 
@@ -512,11 +521,10 @@ document.addEventListener("DOMContentLoaded", function () {
         // Wrap in paragraph tags
         formatted = '<p>' + formatted + '</p>';
 
-        // Handle bullet points (- at start of line)
-        formatted = formatted.replace(/<br>-\s/g, '<br>• ');
-
-        // Handle bullet points (• at start of line)
-        formatted = formatted.replace(/<br>•\s/g, '<br>• ');
+        // Clean up empty paragraphs
+        formatted = formatted.replace(/<p><\/p>/g, '');
+        formatted = formatted.replace(/<p><br>/g, '<p>');
+        formatted = formatted.replace(/<br><\/p>/g, '</p>');
 
         return formatted;
     }

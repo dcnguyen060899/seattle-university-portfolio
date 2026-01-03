@@ -639,6 +639,24 @@ footer p {
     text-decoration: underline;
 }
 
+/* List styling in bot messages */
+.bot-message ul {
+    margin: 8px 0;
+    padding-left: 20px;
+    list-style-type: disc;
+}
+
+.bot-message li {
+    margin: 4px 0;
+    line-height: 1.5;
+    font-size: 13px;
+    color: #333;
+}
+
+.bot-message li strong {
+    color: var(--seattle-red);
+}
+
 /* Streaming content container */
 .bot-message .streaming-content {
     display: block;
