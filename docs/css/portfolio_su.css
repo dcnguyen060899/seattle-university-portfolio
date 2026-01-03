@@ -627,6 +627,11 @@ footer p {
 .bot-message strong {
     color: var(--seattle-red);
     font-weight: 600;
+    display: inline;
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: inherit;
+    margin-bottom: 0;
 }
 
 .bot-message a {
