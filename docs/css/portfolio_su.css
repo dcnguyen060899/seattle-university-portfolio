@@ -624,11 +624,13 @@ footer p {
     color: #333;
 }
 
-.bot-message strong {
+.bot-message strong,
+#chatbot-messages .bot-message strong,
+.bot-message .streaming-content strong {
     color: var(--seattle-red);
     font-weight: 600;
-    display: inline;
-    text-transform: none;
+    display: inline !important;
+    text-transform: none !important;
     letter-spacing: normal;
     font-size: inherit;
     margin-bottom: 0;
