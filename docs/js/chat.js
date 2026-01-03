@@ -503,14 +503,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // Convert markdown subheadings (### Heading) to <h3>
         formatted = formatted.replace(/^### (.+)$/gm, '<h3>$1</h3>');
 
-        // Handle markdown bullet lists BEFORE newline conversion
-        // Convert consecutive lines starting with "- " into proper list
-        formatted = formatted.replace(/^- (.+)$/gm, '<li>$1</li>');
-
-        // Wrap consecutive <li> elements in <ul>
-        formatted = formatted.replace(/(<li>.*<\/li>\n?)+/g, function(match) {
-            return '<ul>' + match.replace(/\n/g, '') + '</ul>';
-        });
+        // Convert markdown bullets to styled bullets BEFORE newline conversion
+        // This works with streaming since we're not using <ul><li> tags
+        formatted = formatted.replace(/^- (.+)$/gm, '• $1');
 
         // Convert double newlines to paragraph breaks
         formatted = formatted.replace(/\n\n/g, '</p><p>');
