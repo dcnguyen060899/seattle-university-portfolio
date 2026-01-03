@@ -1,0 +1,40 @@
+{
+  "name": "duy-portfolio-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for querying Duy Nguyen's portfolio - projects, skills, and experience via Claude Code",
+  "main": "dist/index.js",
+  "bin": {
+    "duy-portfolio-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "claude",
+    "portfolio",
+    "ai",
+    "machine-learning",
+    "data-science"
+  ],
+  "author": "Duy Nguyen <dcnguyen060899@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dcnguyen060899/duy-portfolio-mcp"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0",
+    "ts-node": "^10.9.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

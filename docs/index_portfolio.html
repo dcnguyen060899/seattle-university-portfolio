@@ -244,6 +244,10 @@
     
     <footer>
         <p>&copy; 2025 Seattle University. All rights reserved.</p>
+        <a href="admin.html" class="admin-link">
+            <span class="admin-icon">&#9881;</span>
+            <span class="admin-text">Admin Panel</span>
+        </a>
     </footer>
 
     <!-- Chatbot Popup Structure -->
@@ -256,7 +260,43 @@
         <span id="header-hint">Click to toggle • Drag to move</span>
         <button id="chatbot-toggle">^</button>
       </div>
+      <!-- Pipeline Toggle + Inline Visualization -->
+      <div id="pipeline-toggle-container">
+        <label class="pipeline-toggle-label">
+          <input type="checkbox" id="pipeline-toggle">
+          <span class="toggle-slider"></span>
+          <span class="toggle-text">Show AI Pipeline</span>
+        </label>
+        <!-- Inline pipeline steps (compact, horizontal) -->
+        <div id="pipeline-inline" class="hidden">
+          <div class="pipeline-step-mini" data-step="0">
+            <span class="step-dot"></span>
+            <span class="step-label">Embed</span>
+          </div>
+          <div class="pipeline-step-mini" data-step="1">
+            <span class="step-dot"></span>
+            <span class="step-label">Search</span>
+          </div>
+          <div class="pipeline-step-mini" data-step="2">
+            <span class="step-dot"></span>
+            <span class="step-label">Context</span>
+          </div>
+          <div class="pipeline-step-mini" data-step="3">
+            <span class="step-dot"></span>
+            <span class="step-label">Generate</span>
+          </div>
+          <span id="pipeline-total-time"></span>
+        </div>
+      </div>
       <div id="chatbot-messages"></div>
+      <!-- Retrieved chunks panel (shown below messages when pipeline is on) -->
+      <div id="retrieved-chunks-panel" class="hidden">
+        <div class="chunks-panel-header">
+          <span>📚 Retrieved Context</span>
+          <button id="chunks-collapse-btn">▼</button>
+        </div>
+        <div id="retrieved-chunks"></div>
+      </div>
       <div id="chatbot-input">
         <button id="image-upload-btn" title="Upload image for classification">📷</button>
         <input type="file" id="image-upload-input" accept="image/*" style="display: none;">

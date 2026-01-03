@@ -1,0 +1,22 @@
+[project]
+name = "second-brain-cli"
+version = "0.1.0"
+description = "CLI for Second Brain - AI-Powered Knowledge Retention System"
+authors = [
+    {name = "Duy Nguyen", email = "dnguyen44@seattleu.edu"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "click>=8.1.7",
+    "httpx>=0.26.0",
+    "rich>=13.7.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.scripts]
+brain = "brain.__main__:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

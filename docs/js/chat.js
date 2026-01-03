@@ -1,6 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
     const apiUrl = 'https://uc-berkeley-ml-ai-capstone-work-sample.onrender.com/chat'; // Backend API URL
     const classifyImageUrl = 'https://uc-berkeley-ml-ai-capstone-work-sample.onrender.com/classify-image'; // Backend proxy for HuggingFace
+
+    // Second Brain RAG Pipeline API Configuration
+    // For local development: 'http://localhost:8000/api/v1/demo/rag-pipeline'
+    // For production: Update this to your deployed Second Brain API URL
+    const ragPipelineUrl = 'http://localhost:8000/api/v1/demo/rag-pipeline';
+
     const chatbotToggle = document.getElementById("chatbot-toggle");
     const chatbotContainer = document.getElementById("chatbot-container");
     const chatbotHeader = document.getElementById("chatbot-header");
@@ -10,8 +16,24 @@ document.addEventListener("DOMContentLoaded", function () {
     const imageUploadBtn = document.getElementById("image-upload-btn");
     const imageUploadInput = document.getElementById("image-upload-input");
     const resizeHandle = document.getElementById("chatbot-resize-handle");
+    const pipelineToggle = document.getElementById("pipeline-toggle");
+    const pipelineInline = document.getElementById("pipeline-inline");
+    const retrievedChunksPanel = document.getElementById("retrieved-chunks-panel");
+    const retrievedChunksContainer = document.getElementById("retrieved-chunks");
+    const pipelineTotalTime = document.getElementById("pipeline-total-time");
+    const chunksCollapseBtn = document.getElementById("chunks-collapse-btn");
+    const chunksPanelHeader = document.querySelector(".chunks-panel-header");
+
     let welcomeMessageSent = false; // Flag to track if welcome message is sent
     let pendingImage = null; // Store uploaded image for classification
+    let isPipelineMode = false; // Track if RAG pipeline visualization is enabled
+
+    // Chunks panel collapse toggle
+    if (chunksPanelHeader) {
+        chunksPanelHeader.addEventListener("click", function() {
+            retrievedChunksPanel.classList.toggle("collapsed");
+        });
+    }
 
     // Drag and click functionality for moving chatbot
     let isDragging = false;
@@ -28,6 +50,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const rect = chatbotContainer.getBoundingClientRect();
         dragOffsetX = e.clientX - rect.left;
         dragOffsetY = e.clientY - rect.top;
+
+        // Add dragging class to disable transitions for smooth movement
+        chatbotContainer.classList.add("dragging");
 
         e.preventDefault();
     });
@@ -65,6 +90,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (isDragging) {
             isDragging = false;
             chatbotContainer.style.cursor = "";
+            // Remove dragging class to re-enable transitions
+            chatbotContainer.classList.remove("dragging");
 
             // If no significant movement, treat it as a click to toggle
             if (!hasMoved) {
@@ -127,12 +154,202 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Introduce the chatbot when the page loads
     function sendWelcomeMessage() {
-        const welcomeMessage = "Hello! I'm here to help you understand how Duy Nguyen's skills and experience align with your hiring needs. Ask me about his technical expertise, project experience, or potential contributions to your team.";
+        const welcomeMessage = "Hello! I'm here to help you understand how Duy Nguyen's skills and experience align with your hiring needs. Ask me about his technical expertise, project experience, or potential contributions to your team.\n\nTip: Toggle 'Show AI Pipeline' to see the RAG architecture in action!";
         addMessage('bot', welcomeMessage);
         welcomeMessageSent = true; // Set flag to true after message is sent
     }
-    
+
     // Note: Toggle functionality is now handled by clicking the header (see toggleChatbot function above)
+
+    // ========================================
+    // RAG PIPELINE TOGGLE & VISUALIZATION
+    // ========================================
+
+    // Handle pipeline toggle
+    if (pipelineToggle) {
+        pipelineToggle.addEventListener("change", function() {
+            isPipelineMode = this.checked;
+            if (isPipelineMode) {
+                pipelineInline.classList.remove("hidden");
+                retrievedChunksPanel.classList.remove("hidden");
+                // Reset pipeline state
+                resetPipelineState();
+            } else {
+                pipelineInline.classList.add("hidden");
+                retrievedChunksPanel.classList.add("hidden");
+            }
+        });
+    }
+
+    // Reset pipeline state
+    function resetPipelineState() {
+        const steps = document.querySelectorAll('.pipeline-step-mini');
+        steps.forEach(step => {
+            step.classList.remove('active', 'completed');
+        });
+        pipelineTotalTime.textContent = '';
+        retrievedChunksContainer.innerHTML = '<div style="color: #888; font-size: 11px; text-align: center; padding: 10px;">Ask a question to see retrieved context...</div>';
+    }
+
+    // Call RAG Pipeline API
+    async function callRagPipeline(query) {
+        try {
+            const response = await fetch(ragPipelineUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: query, show_internals: true })
+            });
+
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error("RAG Pipeline error:", error);
+            throw error;
+        }
+    }
+
+    // Animate pipeline steps (new mini format)
+    async function animatePipelineSteps(pipelineSteps, totalDurationMs) {
+        const stepElements = document.querySelectorAll('.pipeline-step-mini');
+
+        // Reset all steps
+        stepElements.forEach(step => {
+            step.classList.remove('active', 'completed');
+        });
+
+        // Animate each step
+        for (let i = 0; i < pipelineSteps.length && i < stepElements.length; i++) {
+            const stepEl = stepElements[i];
+
+            if (stepEl) {
+                // Mark as active
+                stepEl.classList.add('active');
+                stepEl.classList.remove('completed');
+
+                // Wait a bit to show the animation
+                await new Promise(resolve => setTimeout(resolve, 250));
+
+                // Mark as completed
+                stepEl.classList.remove('active');
+                stepEl.classList.add('completed');
+            }
+        }
+
+        // Update total time
+        if (pipelineTotalTime) {
+            pipelineTotalTime.textContent = `${(totalDurationMs / 1000).toFixed(1)}s`;
+        }
+    }
+
+    // Render retrieved chunks (compact format)
+    function renderRetrievedChunks(chunks) {
+        if (!chunks || chunks.length === 0) {
+            retrievedChunksContainer.innerHTML = '<div style="color: #888; font-size: 11px; text-align: center; padding: 10px;">No relevant context found</div>';
+            return;
+        }
+
+        const chunksHtml = chunks.slice(0, 2).map(chunk => {
+            const scorePercent = (chunk.similarity_score * 100).toFixed(0);
+            const content = chunk.content.substring(0, 100) + (chunk.content.length > 100 ? '...' : '');
+            const tags = chunk.tags.slice(0, 3).map(tag => `<span class="chunk-tag">${tag}</span>`).join('');
+
+            return `
+                <div class="chunk-item">
+                    <div class="chunk-score">
+                        <div class="score-bar">
+                            <div class="score-fill" style="width: ${scorePercent}%"></div>
+                        </div>
+                        <span class="score-value">${scorePercent}%</span>
+                    </div>
+                    <div class="chunk-content">${content}</div>
+                    <div class="chunk-tags">${tags}</div>
+                </div>
+            `;
+        }).join('');
+
+        retrievedChunksContainer.innerHTML = chunksHtml;
+
+        // Ensure panel is expanded to show results
+        retrievedChunksPanel.classList.remove("collapsed");
+    }
+
+    // Helper function to display user message with proper styling
+    function displayUserMessage(message) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'user-message';
+        const formattedMessage = message.replace(/\n/g, '<br>');
+        messageDiv.innerHTML = `<span class="message-label">You</span><p>${formattedMessage}</p>`;
+        chatOutput.appendChild(messageDiv);
+        chatOutput.scrollTop = chatOutput.scrollHeight;
+    }
+
+    // Handle RAG pipeline mode message sending
+    async function handleRagPipelineMessage(userMessage) {
+        // Display user message
+        displayUserMessage(userMessage);
+        userInput.value = "";
+        userInput.style.height = "auto";
+
+        // Show pipeline is processing
+        if (isPipelineMode) {
+            resetPipelineState();
+            // Mark first step as active
+            const firstStep = document.querySelector('.pipeline-step-mini[data-step="0"]');
+            if (firstStep) firstStep.classList.add('active');
+        }
+
+        showTypingIndicator();
+
+        try {
+            // Call RAG Pipeline API
+            const ragResponse = await callRagPipeline(userMessage);
+
+            // Animate pipeline steps
+            if (isPipelineMode) {
+                await animatePipelineSteps(ragResponse.pipeline_steps, ragResponse.total_duration_ms);
+                renderRetrievedChunks(ragResponse.retrieved_chunks);
+            }
+
+            removeTypingIndicator();
+
+            // Display the answer
+            const botMessage = formatBotMessage(ragResponse.answer);
+            await streamBotMessage(botMessage);
+
+        } catch (error) {
+            removeTypingIndicator();
+            console.error('RAG Pipeline error:', error);
+
+            // Fallback to regular chat API
+            const fallbackMessage = formatBotMessage(
+                "The AI Pipeline demo requires the Second Brain backend to be running locally.\n\n" +
+                "For recruiters: This demo showcases a RAG (Retrieval-Augmented Generation) architecture that Duy built.\n\n" +
+                "I'll answer your question using the standard chatbot instead..."
+            );
+            await streamBotMessage(fallbackMessage);
+
+            // Fall back to regular API
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: userMessage }),
+                });
+                const data = await response.json();
+                const regularBotMessage = formatBotMessage(data.response);
+                await streamBotMessage(regularBotMessage);
+            } catch (fallbackError) {
+                console.error('Fallback error:', fallbackError);
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'bot-message';
+                errorDiv.innerHTML = '<span class="message-label">Assistant</span><p>Sorry, something went wrong. Please try again later.</p>';
+                chatOutput.appendChild(errorDiv);
+            }
+        }
+    }
 
     // Show resize hint function
     function showResizeHint() {
@@ -163,7 +380,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const typingDiv = document.createElement('div');
         typingDiv.id = 'typing-indicator';
         typingDiv.className = 'bot-message';
-        typingDiv.innerHTML = '<strong>Bot:</strong> <span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>';
+        typingDiv.innerHTML = '<span class="message-label">Assistant</span><span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>';
         chatOutput.appendChild(typingDiv);
         chatOutput.scrollTop = chatOutput.scrollHeight;
     }
@@ -182,7 +399,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Create the message container
             const messageDiv = document.createElement('div');
             messageDiv.className = 'bot-message';
-            messageDiv.innerHTML = '<strong>Bot:</strong> <span class="streaming-content"></span>';
+            messageDiv.innerHTML = '<span class="message-label">Assistant</span><div class="streaming-content"></div>';
             chatOutput.appendChild(messageDiv);
 
             const contentSpan = messageDiv.querySelector('.streaming-content');
@@ -261,11 +478,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const formattedMessage = formatBotMessage(text);
             streamBotMessage(formattedMessage);
         } else {
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('message', sender);
-            messageElement.innerHTML = text;
-            chatOutput.appendChild(messageElement);
-            chatOutput.scrollTop = chatOutput.scrollHeight;
+            // User message with proper styling
+            displayUserMessage(text);
         }
     }
 
@@ -551,7 +765,7 @@ Keep the response concise but informative.`;
         const messageDiv = document.createElement('div');
         messageDiv.className = 'user-message with-image';
 
-        let messageHTML = `<p><strong>You:</strong></p>
+        let messageHTML = `<span class="message-label">You</span>
             <div class="chat-image-container">
                 <img src="${imageDataUrl}" alt="Uploaded for classification" class="chat-uploaded-image">
             </div>`;
@@ -647,32 +861,41 @@ Keep the response concise but informative.`;
             };
             reader.readAsDataURL(pendingImage);
         } else {
-            // No image, just send text message (original behavior)
-            const formattedUserMessage = userMessage.replace(/\n/g, '<br>');
-            chatOutput.innerHTML += `<p><strong>You:</strong><br>${formattedUserMessage}</p>`;
-            userInput.value = "";
-            userInput.style.height = "auto";
+            // No image, just send text message
+            // Check if pipeline mode is enabled
+            if (isPipelineMode) {
+                // Use RAG Pipeline API
+                handleRagPipelineMessage(userMessage);
+            } else {
+                // Original behavior - regular chatbot API
+                displayUserMessage(userMessage);
+                userInput.value = "";
+                userInput.style.height = "auto";
 
-            showTypingIndicator();
+                showTypingIndicator();
 
-            fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ message: userMessage }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                removeTypingIndicator();
-                const botMessage = formatBotMessage(data.response);
-                streamBotMessage(botMessage);
-            })
-            .catch(error => {
-                removeTypingIndicator();
-                console.error('Error:', error);
-                chatOutput.innerHTML += `<p><strong>Bot:</strong> Sorry, something went wrong. Please try again later.</p>`;
-            });
+                fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: userMessage }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    removeTypingIndicator();
+                    const botMessage = formatBotMessage(data.response);
+                    streamBotMessage(botMessage);
+                })
+                .catch(error => {
+                    removeTypingIndicator();
+                    console.error('Error:', error);
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'bot-message';
+                    errorDiv.innerHTML = '<span class="message-label">Assistant</span><p>Sorry, something went wrong. Please try again later.</p>';
+                    chatOutput.appendChild(errorDiv);
+                });
+            }
         }
     }
 
