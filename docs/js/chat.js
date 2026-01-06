@@ -310,8 +310,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         toolCallsList.innerHTML = toolsHtml;
 
-        // Ensure panel is expanded to show results
-        toolCallsPanel.classList.remove("collapsed");
+        // Start collapsed by default - user can click to expand
+        toolCallsPanel.classList.add("collapsed");
     }
 
     // Render retrieved chunks (compact format)
@@ -342,8 +342,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         retrievedChunksContainer.innerHTML = chunksHtml;
 
-        // Ensure panel is expanded to show results
-        retrievedChunksPanel.classList.remove("collapsed");
+        // Start collapsed by default - user can click to expand
+        retrievedChunksPanel.classList.add("collapsed");
     }
 
     // Helper function to display user message with proper styling

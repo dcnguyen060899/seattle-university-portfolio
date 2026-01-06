@@ -393,8 +393,8 @@ footer p {
                 width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1000;
     min-width: 400px;
-    max-width: 550px;
-    max-height: 700px;
+    max-width: 700px;
+    max-height: 90vh;
     overflow: hidden;
 }
 
@@ -1033,11 +1033,11 @@ footer p {
     border-left: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-/* Retrieved Chunks Panel - Collapsible at bottom */
+/* Retrieved Chunks Panel - Collapsible at bottom (collapsed by default) */
 #retrieved-chunks-panel {
     background: linear-gradient(180deg, #f8f9fa 0%, #fff 100%);
     border-top: 1px solid rgba(0, 0, 0, 0.08);
-    max-height: 150px;
+    max-height: 120px;
     overflow: hidden;
     transition: max-height 0.3s ease;
 }
@@ -1081,9 +1081,9 @@ footer p {
 }
 
 #retrieved-chunks {
-    padding: 8px 14px;
+    padding: 6px 12px;
     overflow-y: auto;
-    max-height: 110px;
+    max-height: 80px;
 }
 
 #retrieved-chunks::-webkit-scrollbar {
@@ -1166,11 +1166,11 @@ footer p {
     font-weight: 500;
 }
 
-/* Tool Calls Panel - Blue theme for function calling */
+/* Tool Calls Panel - Blue theme for function calling (compact) */
 #tool-calls-panel {
     background: linear-gradient(180deg, #f0f7ff 0%, #fff 100%);
     border-top: 1px solid rgba(59, 130, 246, 0.15);
-    max-height: 180px;
+    max-height: 120px;
     overflow: hidden;
     transition: max-height 0.3s ease;
 }
@@ -1210,9 +1210,9 @@ footer p {
 }
 
 #tool-calls-list {
-    padding: 8px 14px;
+    padding: 6px 12px;
     overflow-y: auto;
-    max-height: 140px;
+    max-height: 80px;
 }
 
 #tool-calls-list::-webkit-scrollbar {
