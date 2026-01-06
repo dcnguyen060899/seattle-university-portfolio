@@ -444,6 +444,38 @@ async def get_project_details(project_id: str) -> Dict[str, Any]:
 
 async def get_github_activity(include_repos: bool = True, repo_limit: int = 5) -> Dict[str, Any]:
     """Fetch live GitHub activity."""
+    # Static fallback data (used when GitHub API rate limits or fails)
+    fallback_data = {
+        "username": GITHUB_USERNAME,
+        "profile_url": f"https://github.com/{GITHUB_USERNAME}",
+        "public_repos": 15,
+        "followers": 10,
+        "bio": "MS Data Science @ Seattle University | ML/AI Engineer",
+        "data_source": "cached",
+        "note": "Showing cached data (GitHub API rate limited). Visit profile for live stats.",
+        "key_repositories": [
+            {
+                "name": "seattle-university-portfolio",
+                "description": "Portfolio website with AI chatbot, RAG pipeline, and Second Brain demo",
+                "language": "Python/JavaScript",
+                "url": "https://github.com/dcnguyen060899/seattle-university-portfolio"
+            },
+            {
+                "name": "SFU_Faisal_Lab_roi_slab_retrieval_engine",
+                "description": "RAG system for medical imaging - CT/MRI scan retrieval",
+                "language": "Python",
+                "url": "https://github.com/dcnguyen060899/SFU_Faisal_Lab_roi_slab_retrieval_engine"
+            },
+            {
+                "name": "garbage-classification",
+                "description": "Deep learning waste classification with 94% accuracy",
+                "language": "Python",
+                "url": "https://huggingface.co/spaces/dnguyen44/garbage-classification"
+            }
+        ],
+        "tech_stack_summary": ["Python", "PyTorch", "FastAPI", "React", "PostgreSQL", "Qdrant", "Neo4j"]
+    }
+
     try:
         async with httpx.AsyncClient() as client:
             # Get user profile
@@ -454,7 +486,8 @@ async def get_github_activity(include_repos: bool = True, repo_limit: int = 5) -
             )
 
             if user_response.status_code != 200:
-                return {"error": "Could not fetch GitHub profile", "fallback": True}
+                # Return useful fallback data instead of error
+                return fallback_data
 
             user_data = user_response.json()
 
@@ -466,6 +499,7 @@ async def get_github_activity(include_repos: bool = True, repo_limit: int = 5) -
                 "following": user_data.get("following", 0),
                 "created_at": user_data.get("created_at"),
                 "bio": user_data.get("bio"),
+                "data_source": "live"
             }
 
             if include_repos:
@@ -495,12 +529,9 @@ async def get_github_activity(include_repos: bool = True, repo_limit: int = 5) -
             return result
 
     except Exception as e:
-        return {
-            "error": str(e),
-            "fallback": True,
-            "profile_url": f"https://github.com/{GITHUB_USERNAME}",
-            "message": "Live GitHub data unavailable, but you can view the profile directly"
-        }
+        # Return fallback data on any error
+        fallback_data["error_detail"] = str(e)
+        return fallback_data
 
 
 async def get_skills_assessment(requirements: str) -> Dict[str, Any]:
