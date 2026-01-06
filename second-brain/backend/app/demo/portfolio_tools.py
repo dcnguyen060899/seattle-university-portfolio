@@ -6,6 +6,7 @@ providing richer, more interactive responses for recruiters.
 """
 
 import httpx
+import hashlib
 import os
 from typing import Any, Dict, List, Optional
 from datetime import datetime
@@ -13,6 +14,11 @@ from datetime import datetime
 # GitHub configuration
 GITHUB_USERNAME = "dcnguyen060899"
 GITHUB_API_BASE = "https://api.github.com"
+
+# Admin authentication (password hash for security - never store plaintext)
+# Password: Motherlover12311! -> SHA-256 hash
+ADMIN_PASSWORD_HASH = hashlib.sha256("Motherlover12311!".encode()).hexdigest()
+ADMIN_KEY = "portfolio-admin-2025"
 
 # Portfolio data (structured for tool access)
 PORTFOLIO_DATA = {
@@ -382,6 +388,20 @@ PORTFOLIO_TOOLS = [
         "input_schema": {
             "type": "object",
             "properties": {}
+        }
+    },
+    {
+        "name": "authenticate_admin",
+        "description": "Authenticate to access admin credentials like admin_key. Use this when someone asks for admin access, admin key, or admin credentials. You MUST ask the user for their password first before calling this tool.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "description": "The admin password provided by the user"
+                }
+            },
+            "required": ["password"]
         }
     }
 ]
@@ -805,6 +825,32 @@ async def get_publications_research() -> Dict[str, Any]:
     }
 
 
+async def authenticate_admin(password: str) -> Dict[str, Any]:
+    """
+    Authenticate admin user and return admin credentials if valid.
+    Uses SHA-256 hash comparison for security.
+    """
+    # Hash the provided password
+    provided_hash = hashlib.sha256(password.encode()).hexdigest()
+
+    # Compare with stored hash
+    if provided_hash == ADMIN_PASSWORD_HASH:
+        return {
+            "authenticated": True,
+            "admin_key": ADMIN_KEY,
+            "message": "Authentication successful! Here is your admin key.",
+            "access_level": "full",
+            "admin_portal_url": "https://duyng-portfolio.com/docs/admin.html"
+        }
+    else:
+        return {
+            "authenticated": False,
+            "admin_key": None,
+            "message": "Authentication failed. Incorrect password.",
+            "hint": "Please check your password and try again."
+        }
+
+
 # === Tool Execution Router ===
 
 async def execute_tool(tool_name: str, tool_input: Dict[str, Any]) -> Dict[str, Any]:
@@ -822,6 +868,7 @@ async def execute_tool(tool_name: str, tool_input: Dict[str, Any]) -> Dict[str, 
         "get_work_experience": get_work_experience,
         "search_by_impact": search_by_impact,
         "get_publications_research": get_publications_research,
+        "authenticate_admin": authenticate_admin,
     }
 
     handler = tool_handlers.get(tool_name)
