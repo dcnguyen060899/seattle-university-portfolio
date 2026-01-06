@@ -34,6 +34,27 @@ document.addEventListener("DOMContentLoaded", function () {
     let pendingImage = null; // Store uploaded image for classification
     let isPipelineMode = false; // Track if RAG pipeline visualization is enabled
 
+    // ========================================
+    // UNIFIED CONVERSATION MEMORY
+    // ========================================
+    // This stores all exchanges so both chatbot modes share context
+    let conversationHistory = [];
+    const MAX_HISTORY_LENGTH = 10; // Keep last 10 exchanges to avoid token bloat
+
+    // Add a message to conversation history
+    function addToHistory(role, content) {
+        conversationHistory.push({ role, content });
+        // Trim history if too long
+        if (conversationHistory.length > MAX_HISTORY_LENGTH * 2) {
+            conversationHistory = conversationHistory.slice(-MAX_HISTORY_LENGTH * 2);
+        }
+    }
+
+    // Get recent history for context (formatted for API)
+    function getRecentHistory() {
+        return conversationHistory.slice(-MAX_HISTORY_LENGTH * 2);
+    }
+
     // Chunks panel collapse toggle
     if (chunksPanelHeader) {
         chunksPanelHeader.addEventListener("click", function() {
@@ -211,13 +232,17 @@ document.addEventListener("DOMContentLoaded", function () {
         toolCallsPanel.classList.add("hidden");
     }
 
-    // Call RAG Pipeline API
+    // Call RAG Pipeline API with conversation history
     async function callRagPipeline(query) {
         try {
             const response = await fetch(ragPipelineUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query: query, show_internals: true })
+                body: JSON.stringify({
+                    query: query,
+                    show_internals: true,
+                    conversation_history: getRecentHistory()
+                })
             });
 
             if (!response.ok) {
@@ -363,6 +388,12 @@ document.addEventListener("DOMContentLoaded", function () {
         userInput.value = "";
         userInput.style.height = "auto";
 
+        // Add user message to conversation history (skip ADMIN_AUTH prefix for cleaner history)
+        const historyMessage = userMessage.startsWith('ADMIN_AUTH:')
+            ? '[User submitted admin password]'
+            : userMessage;
+        addToHistory('user', historyMessage);
+
         // Show pipeline is processing
         if (isPipelineMode) {
             resetPipelineState();
@@ -397,11 +428,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 const cleanAnswer = answerText.replace('[AUTH_REQUIRED]', '').trim();
                 const botMessage = formatBotMessage(cleanAnswer);
                 await streamBotMessage(botMessage);
+                // Add to history (without the tag)
+                addToHistory('assistant', cleanAnswer);
                 showPasswordInput();
             } else {
                 // Display the answer normally
                 const botMessage = formatBotMessage(answerText);
                 await streamBotMessage(botMessage);
+                // Add bot response to conversation history
+                addToHistory('assistant', answerText);
             }
 
         } catch (error) {
@@ -1024,6 +1059,12 @@ Keep the response concise but informative.`;
                     const botMessage = formatBotMessage(data.response);
                     await streamBotMessage(botMessage);
 
+                    // Add to conversation history with rich context for follow-up questions
+                    // This is KEY for synergy between image classification and Second Brain
+                    const userHistoryEntry = `[User uploaded an image for garbage classification. The image was classified as ${mlContext.results.top_prediction} with ${mlContext.results.confidence} confidence. User asked: "${userMessage || 'What type of waste is this?'}". This is Duy's Deep Learning project using ResNet34 transfer learning (Seattle University DATA 5100).]`;
+                    addToHistory('user', userHistoryEntry);
+                    addToHistory('assistant', data.response);
+
                 } catch (error) {
                     removeTypingIndicator();
                     console.error('Classification error:', error);
@@ -1056,6 +1097,9 @@ Keep the response concise but informative.`;
                 userInput.value = "";
                 userInput.style.height = "auto";
 
+                // Add user message to history
+                addToHistory('user', userMessage);
+
                 showTypingIndicator();
 
                 fetch(apiUrl, {
@@ -1070,6 +1114,8 @@ Keep the response concise but informative.`;
                     removeTypingIndicator();
                     const botMessage = formatBotMessage(data.response);
                     streamBotMessage(botMessage);
+                    // Add bot response to history
+                    addToHistory('assistant', data.response);
                 })
                 .catch(error => {
                     removeTypingIndicator();

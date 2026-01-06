@@ -35,10 +35,20 @@ DEMO_USER_EMAIL = "demo@second-brain.local"
 
 # === Schemas ===
 
+class ConversationMessage(BaseModel):
+    """A message in the conversation history."""
+    role: str = Field(..., description="'user' or 'assistant'")
+    content: str = Field(..., description="Message content")
+
+
 class RAGQueryRequest(BaseModel):
     """Request for RAG pipeline demonstration."""
     query: str = Field(..., min_length=1, max_length=500)
     show_internals: bool = Field(default=True, description="Show pipeline internals")
+    conversation_history: List[ConversationMessage] = Field(
+        default=[],
+        description="Previous conversation messages for context continuity"
+    )
 
 
 class RetrievedChunk(BaseModel):
@@ -667,10 +677,22 @@ ADMIN AUTHENTICATION PROTOCOL:
 
 Be concise and professional. This is a technical demo for recruiters."""
 
-        messages = [{
+        # Build messages with conversation history for context continuity
+        messages = []
+
+        # Add conversation history (previous exchanges) for context
+        if request.conversation_history:
+            for hist_msg in request.conversation_history[-10:]:  # Last 10 messages max
+                messages.append({
+                    "role": hist_msg.role,
+                    "content": hist_msg.content
+                })
+
+        # Add current query with RAG context
+        messages.append({
             "role": "user",
             "content": f"Context from knowledge base:\n{assembled_context}\n\nQuestion: {request.query}"
-        }]
+        })
 
         # Initial call with tools
         try:
