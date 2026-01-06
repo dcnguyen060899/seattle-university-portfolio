@@ -655,6 +655,13 @@ async def demonstrate_rag_pipeline_enhanced(
 You have access to tools that can fetch live data about Duy's portfolio, GitHub activity, skills, and more.
 Use tools when they would provide more accurate or up-to-date information than the context alone.
 
+IMPORTANT - Admin Authentication Flow:
+- If someone asks about "admin key", "admin access", or "admin panel credentials", ask them for the password first.
+- If someone sends what looks like a password (a string with mixed characters, numbers, special symbols like "!" or "@"),
+  OR if they say "password is...", "authenticate with...", "my password:", etc.,
+  IMMEDIATELY call the authenticate_admin tool with that password. Do NOT ask clarifying questions.
+- Example: If user sends "Motherlover12311!" - this IS a password attempt, call authenticate_admin right away.
+
 Be concise and professional. This is a technical demo for recruiters."""
 
         messages = [{
