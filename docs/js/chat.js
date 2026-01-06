@@ -390,9 +390,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
             removeTypingIndicator();
 
-            // Display the answer
-            const botMessage = formatBotMessage(ragResponse.answer);
-            await streamBotMessage(botMessage);
+            // Check if authentication is required
+            const answerText = ragResponse.answer;
+            if (answerText.includes('[AUTH_REQUIRED]')) {
+                // Remove the tag from display and show password input
+                const cleanAnswer = answerText.replace('[AUTH_REQUIRED]', '').trim();
+                const botMessage = formatBotMessage(cleanAnswer);
+                await streamBotMessage(botMessage);
+                showPasswordInput();
+            } else {
+                // Display the answer normally
+                const botMessage = formatBotMessage(answerText);
+                await streamBotMessage(botMessage);
+            }
 
         } catch (error) {
             removeTypingIndicator();
@@ -450,6 +460,100 @@ document.addEventListener("DOMContentLoaded", function () {
                 headerHint.classList.remove("show");
             }, 4000);
         }
+    }
+
+    // ========================================
+    // ADMIN AUTHENTICATION UI
+    // ========================================
+
+    let isPasswordMode = false;
+
+    // Show password input field for admin authentication
+    function showPasswordInput() {
+        if (isPasswordMode) return; // Already showing
+        isPasswordMode = true;
+
+        const inputArea = document.getElementById('chatbot-input');
+
+        // Create password input container
+        const passwordContainer = document.createElement('div');
+        passwordContainer.id = 'password-input-container';
+        passwordContainer.className = 'password-input-container';
+        passwordContainer.innerHTML = `
+            <div class="password-prompt">
+                <span class="password-icon">🔐</span>
+                <span class="password-label">Admin Authentication</span>
+            </div>
+            <div class="password-input-row">
+                <input type="password" id="admin-password-input" placeholder="Enter admin password..." autocomplete="off">
+                <button id="password-submit-btn" title="Submit">✓</button>
+                <button id="password-cancel-btn" title="Cancel">✕</button>
+            </div>
+        `;
+
+        // Insert before the regular input area
+        inputArea.parentNode.insertBefore(passwordContainer, inputArea);
+
+        // Hide regular input area
+        inputArea.style.display = 'none';
+
+        // Get new elements
+        const passwordInput = document.getElementById('admin-password-input');
+        const submitBtn = document.getElementById('password-submit-btn');
+        const cancelBtn = document.getElementById('password-cancel-btn');
+
+        // Focus on password input
+        passwordInput.focus();
+
+        // Submit password handler
+        function submitPassword() {
+            const password = passwordInput.value.trim();
+            if (password) {
+                // Remove password UI
+                hidePasswordInput();
+                // Send with ADMIN_AUTH: prefix so backend knows it's a password
+                handleRagPipelineMessage('ADMIN_AUTH: ' + password);
+            }
+        }
+
+        // Cancel handler
+        function cancelPassword() {
+            hidePasswordInput();
+            // Inform user
+            const cancelMsg = formatBotMessage("Authentication cancelled. Feel free to ask about other aspects of Duy's portfolio!");
+            streamBotMessage(cancelMsg);
+        }
+
+        // Event listeners
+        submitBtn.addEventListener('click', submitPassword);
+        cancelBtn.addEventListener('click', cancelPassword);
+
+        // Enter to submit, Escape to cancel
+        passwordInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                submitPassword();
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                cancelPassword();
+            }
+        });
+    }
+
+    // Hide password input and restore normal input
+    function hidePasswordInput() {
+        isPasswordMode = false;
+
+        const passwordContainer = document.getElementById('password-input-container');
+        if (passwordContainer) {
+            passwordContainer.remove();
+        }
+
+        const inputArea = document.getElementById('chatbot-input');
+        inputArea.style.display = 'flex';
+
+        // Focus back on regular input
+        userInput.focus();
     }
 
     // Function to show typing indicator

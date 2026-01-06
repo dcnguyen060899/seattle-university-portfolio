@@ -1311,6 +1311,93 @@ footer p {
     text-decoration: line-through;
 }
 
+/* ===== PASSWORD INPUT UI (Admin Authentication) ===== */
+.password-input-container {
+    background: linear-gradient(180deg, #FEF3C7 0%, #FFF 100%);
+    border: 1px solid #F59E0B;
+    border-radius: 8px;
+    padding: 12px;
+    margin: 0 10px 10px 10px;
+}
+
+.password-prompt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #92400E;
+}
+
+.password-icon {
+    font-size: 16px;
+}
+
+.password-label {
+    letter-spacing: 0.5px;
+}
+
+.password-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.password-input-row input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.password-input-row input:focus {
+    border-color: #F59E0B;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+}
+
+.password-input-row input::placeholder {
+    color: #9CA3AF;
+}
+
+.password-input-row button {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.password-input-row button:active {
+    transform: scale(0.95);
+}
+
+#password-submit-btn {
+    background: #10B981;
+    color: white;
+}
+
+#password-submit-btn:hover {
+    background: #059669;
+}
+
+#password-cancel-btn {
+    background: #EF4444;
+    color: white;
+}
+
+#password-cancel-btn:hover {
+    background: #DC2626;
+}
+
 /* Additional styling for links */
 a {
     color: var(--seattle-red);
