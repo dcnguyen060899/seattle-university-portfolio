@@ -379,8 +379,8 @@ footer p {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    width: 380px;
-    height: 520px;
+    width: 420px;
+    height: 550px;
     background-color: var(--seattle-white);
     border: none;
     border-radius: 16px;
@@ -392,8 +392,8 @@ footer p {
                 box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
                 width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1000;
-    min-width: 340px;
-    max-width: 500px;
+    min-width: 400px;
+    max-width: 550px;
     max-height: 700px;
     overflow: hidden;
 }
@@ -1164,6 +1164,151 @@ footer p {
     color: var(--seattle-red);
     border-radius: 8px;
     font-weight: 500;
+}
+
+/* Tool Calls Panel - Blue theme for function calling */
+#tool-calls-panel {
+    background: linear-gradient(180deg, #f0f7ff 0%, #fff 100%);
+    border-top: 1px solid rgba(59, 130, 246, 0.15);
+    max-height: 180px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+#tool-calls-panel.hidden {
+    display: none;
+}
+
+#tool-calls-panel.collapsed {
+    max-height: 36px;
+}
+
+.tool-calls-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 14px;
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.08) 0%, transparent 100%);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+    font-size: 11px;
+    font-weight: 600;
+    color: #3B82F6;
+}
+
+#tools-collapse-btn {
+    background: none;
+    border: none;
+    color: #3B82F6;
+    cursor: pointer;
+    font-size: 10px;
+    padding: 2px 6px;
+    transition: transform 0.2s ease;
+}
+
+#tool-calls-panel.collapsed #tools-collapse-btn {
+    transform: rotate(-90deg);
+}
+
+#tool-calls-list {
+    padding: 8px 14px;
+    overflow-y: auto;
+    max-height: 140px;
+}
+
+#tool-calls-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+#tool-calls-list::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.3);
+    border-radius: 2px;
+}
+
+.tool-call-item {
+    background: white;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border-left: 3px solid #3B82F6;
+    box-shadow: 0 1px 3px rgba(59, 130, 246, 0.1);
+}
+
+.tool-call-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.tool-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1E40AF;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tool-name::before {
+    content: "⚡";
+    font-size: 10px;
+}
+
+.tool-duration {
+    font-size: 10px;
+    color: #6B7280;
+    background: #F3F4F6;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.tool-input {
+    font-size: 10px;
+    color: #6B7280;
+    font-family: 'Monaco', 'Consolas', monospace;
+    background: #F8FAFC;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.tool-result-preview {
+    font-size: 10px;
+    color: #059669;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.tool-result-preview::before {
+    content: "✓";
+    font-weight: bold;
+}
+
+/* Tools step styling - blue when active */
+#tools-step.active .step-dot,
+#tools-step.completed .step-dot {
+    background: #3B82F6 !important;
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.5) !important;
+}
+
+#tools-step.active .step-label,
+#tools-step.completed .step-label {
+    color: #3B82F6 !important;
+}
+
+#tools-step.skipped .step-dot {
+    background: #D1D5DB !important;
+    box-shadow: none !important;
+}
+
+#tools-step.skipped .step-label {
+    color: #9CA3AF !important;
+    text-decoration: line-through;
 }
 
 /* Additional styling for links */

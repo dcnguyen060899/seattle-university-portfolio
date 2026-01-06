@@ -2,10 +2,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const apiUrl = 'https://uc-berkeley-ml-ai-capstone-work-sample.onrender.com/chat'; // Backend API URL
     const classifyImageUrl = 'https://uc-berkeley-ml-ai-capstone-work-sample.onrender.com/classify-image'; // Backend proxy for HuggingFace
 
-    // Second Brain RAG Pipeline API Configuration
-    // For local development: 'http://localhost:8000/api/v1/demo/rag-pipeline'
+    // Second Brain RAG Pipeline API Configuration (Enhanced with Function Calling)
+    // For local development: 'http://localhost:8000/api/v1/demo/rag-pipeline-enhanced'
     // Production: https://second-brain-api-hptf.onrender.com
-    const ragPipelineUrl = 'https://second-brain-api-hptf.onrender.com/api/v1/demo/rag-pipeline';
+    const ragPipelineUrl = 'https://second-brain-api-hptf.onrender.com/api/v1/demo/rag-pipeline-enhanced';
 
     const chatbotToggle = document.getElementById("chatbot-toggle");
     const chatbotContainer = document.getElementById("chatbot-container");
@@ -24,6 +24,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const chunksCollapseBtn = document.getElementById("chunks-collapse-btn");
     const chunksPanelHeader = document.querySelector(".chunks-panel-header");
 
+    // Tool calls panel elements
+    const toolCallsPanel = document.getElementById("tool-calls-panel");
+    const toolCallsList = document.getElementById("tool-calls-list");
+    const toolsCollapseBtn = document.getElementById("tools-collapse-btn");
+    const toolsPanelHeader = document.querySelector(".tool-calls-panel-header");
+
     let welcomeMessageSent = false; // Flag to track if welcome message is sent
     let pendingImage = null; // Store uploaded image for classification
     let isPipelineMode = false; // Track if RAG pipeline visualization is enabled
@@ -32,6 +38,13 @@ document.addEventListener("DOMContentLoaded", function () {
     if (chunksPanelHeader) {
         chunksPanelHeader.addEventListener("click", function() {
             retrievedChunksPanel.classList.toggle("collapsed");
+        });
+    }
+
+    // Tool calls panel collapse toggle
+    if (toolsPanelHeader) {
+        toolsPanelHeader.addEventListener("click", function() {
+            toolCallsPanel.classList.toggle("collapsed");
         });
     }
 
@@ -154,7 +167,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Introduce the chatbot when the page loads
     function sendWelcomeMessage() {
-        const welcomeMessage = "Hello! I'm here to help you understand how Duy Nguyen's skills and experience align with your hiring needs. Ask me about his technical expertise, project experience, or potential contributions to your team.\n\nTip: Toggle 'Show AI Pipeline' to see the RAG architecture in action!";
+        const welcomeMessage = "Hello! I'm Duy's portfolio assistant with **live access** to his GitHub, project data, and more.\n\nTry asking:\n- \"Show me Duy's GitHub activity\"\n- \"What projects use PyTorch?\"\n- \"Is Duy available for internships?\"\n\nTip: Toggle **'Show Second Brain'** to see the RAG + Function Calling architecture in action!";
         addMessage('bot', welcomeMessage);
         welcomeMessageSent = true; // Set flag to true after message is sent
     }
@@ -172,11 +185,13 @@ document.addEventListener("DOMContentLoaded", function () {
             if (isPipelineMode) {
                 pipelineInline.classList.remove("hidden");
                 retrievedChunksPanel.classList.remove("hidden");
+                // Tool calls panel stays hidden until tools are used
                 // Reset pipeline state
                 resetPipelineState();
             } else {
                 pipelineInline.classList.add("hidden");
                 retrievedChunksPanel.classList.add("hidden");
+                toolCallsPanel.classList.add("hidden");
             }
         });
     }
@@ -185,10 +200,15 @@ document.addEventListener("DOMContentLoaded", function () {
     function resetPipelineState() {
         const steps = document.querySelectorAll('.pipeline-step-mini');
         steps.forEach(step => {
-            step.classList.remove('active', 'completed');
+            step.classList.remove('active', 'completed', 'skipped');
         });
         pipelineTotalTime.textContent = '';
         retrievedChunksContainer.innerHTML = '<div style="color: #888; font-size: 11px; text-align: center; padding: 10px;">Ask a question to see retrieved context...</div>';
+        // Reset tool calls panel
+        if (toolCallsList) {
+            toolCallsList.innerHTML = '<div style="color: #888; font-size: 11px; text-align: center; padding: 10px;">No tools called yet...</div>';
+        }
+        toolCallsPanel.classList.add("hidden");
     }
 
     // Call RAG Pipeline API
@@ -211,26 +231,44 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Animate pipeline steps (new mini format)
-    async function animatePipelineSteps(pipelineSteps, totalDurationMs) {
+    // Map step names to element indices
+    const stepNameToIndex = {
+        "Query Embedding": 0,
+        "Vector Search": 1,
+        "Context Assembly": 2,
+        "Tools": 3,
+        "LLM Generation": 4
+    };
+
+    // Animate pipeline steps (new mini format with 5 steps)
+    async function animatePipelineSteps(pipelineSteps, totalDurationMs, toolsUsed) {
         const stepElements = document.querySelectorAll('.pipeline-step-mini');
 
         // Reset all steps
         stepElements.forEach(step => {
-            step.classList.remove('active', 'completed');
+            step.classList.remove('active', 'completed', 'skipped');
         });
 
-        // Animate each step
-        for (let i = 0; i < pipelineSteps.length && i < stepElements.length; i++) {
-            const stepEl = stepElements[i];
+        // Animate each step based on step name
+        for (let i = 0; i < pipelineSteps.length; i++) {
+            const step = pipelineSteps[i];
+            const stepIndex = stepNameToIndex[step.step_name];
 
-            if (stepEl) {
+            if (stepIndex !== undefined && stepElements[stepIndex]) {
+                const stepEl = stepElements[stepIndex];
+
+                // Check if this is the Tools step and was skipped
+                if (step.step_name === "Tools" && step.data && step.data.skipped) {
+                    stepEl.classList.add('skipped');
+                    continue;
+                }
+
                 // Mark as active
                 stepEl.classList.add('active');
-                stepEl.classList.remove('completed');
+                stepEl.classList.remove('completed', 'skipped');
 
                 // Wait a bit to show the animation
-                await new Promise(resolve => setTimeout(resolve, 250));
+                await new Promise(resolve => setTimeout(resolve, 200));
 
                 // Mark as completed
                 stepEl.classList.remove('active');
@@ -242,6 +280,38 @@ document.addEventListener("DOMContentLoaded", function () {
         if (pipelineTotalTime) {
             pipelineTotalTime.textContent = `${(totalDurationMs / 1000).toFixed(1)}s`;
         }
+    }
+
+    // Render tool calls in the panel
+    function renderToolCalls(toolCalls) {
+        if (!toolCalls || toolCalls.length === 0) {
+            toolCallsPanel.classList.add("hidden");
+            return;
+        }
+
+        toolCallsPanel.classList.remove("hidden");
+
+        const toolsHtml = toolCalls.map(tool => {
+            const inputStr = JSON.stringify(tool.tool_input);
+            const inputPreview = inputStr.length > 50 ? inputStr.substring(0, 50) + '...' : inputStr;
+            const resultKeys = Object.keys(tool.tool_result || {}).slice(0, 3).join(', ');
+
+            return `
+                <div class="tool-call-item">
+                    <div class="tool-call-header">
+                        <span class="tool-name">${tool.tool_name}</span>
+                        <span class="tool-duration">${tool.duration_ms.toFixed(0)}ms</span>
+                    </div>
+                    <div class="tool-input">${inputPreview}</div>
+                    <div class="tool-result-preview">Result: ${resultKeys || 'data returned'}</div>
+                </div>
+            `;
+        }).join('');
+
+        toolCallsList.innerHTML = toolsHtml;
+
+        // Ensure panel is expanded to show results
+        toolCallsPanel.classList.remove("collapsed");
     }
 
     // Render retrieved chunks (compact format)
@@ -304,13 +374,18 @@ document.addEventListener("DOMContentLoaded", function () {
         showTypingIndicator();
 
         try {
-            // Call RAG Pipeline API
+            // Call Enhanced RAG Pipeline API with function calling
             const ragResponse = await callRagPipeline(userMessage);
 
-            // Animate pipeline steps
+            // Animate pipeline steps (including Tools step)
             if (isPipelineMode) {
-                await animatePipelineSteps(ragResponse.pipeline_steps, ragResponse.total_duration_ms);
+                await animatePipelineSteps(ragResponse.pipeline_steps, ragResponse.total_duration_ms, ragResponse.tools_used);
                 renderRetrievedChunks(ragResponse.retrieved_chunks);
+
+                // Render tool calls if any were made
+                if (ragResponse.tool_calls && ragResponse.tool_calls.length > 0) {
+                    renderToolCalls(ragResponse.tool_calls);
+                }
             }
 
             removeTypingIndicator();
@@ -325,9 +400,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Fallback to regular chat API
             const fallbackMessage = formatBotMessage(
-                "The AI Pipeline demo requires the Second Brain backend to be running locally.\n\n" +
-                "For recruiters: This demo showcases a RAG (Retrieval-Augmented Generation) architecture that Duy built.\n\n" +
-                "I'll answer your question using the standard chatbot instead..."
+                "The Second Brain backend is starting up. This demo showcases:\n\n" +
+                "- **RAG Architecture**: Vector search + LLM generation\n" +
+                "- **Function Calling**: 12 live tools for GitHub stats, skills matching, and more\n" +
+                "- **Real-time Pipeline**: Watch the AI reasoning step-by-step\n\n" +
+                "Trying the standard chatbot instead..."
             );
             await streamBotMessage(fallbackMessage);
 

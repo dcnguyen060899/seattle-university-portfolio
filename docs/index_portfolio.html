@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/portfolio_su.css?v=20260103b">
+    <link rel="stylesheet" href="css/portfolio_su.css?v=20260106b">
     <link rel="icon" type="image/x-icon" href="seattleu_2.ico?v=2">
     <title>Duy Nguyen - Portfolio</title>
 </head>
@@ -265,7 +265,7 @@
         <label class="pipeline-toggle-label">
           <input type="checkbox" id="pipeline-toggle">
           <span class="toggle-slider"></span>
-          <span class="toggle-text">Show AI Pipeline</span>
+          <span class="toggle-text">Show Second Brain</span>
         </label>
         <!-- Inline pipeline steps (compact, horizontal) -->
         <div id="pipeline-inline" class="hidden">
@@ -281,7 +281,11 @@
             <span class="step-dot"></span>
             <span class="step-label">Context</span>
           </div>
-          <div class="pipeline-step-mini" data-step="3">
+          <div class="pipeline-step-mini" data-step="3" id="tools-step">
+            <span class="step-dot"></span>
+            <span class="step-label">Tools</span>
+          </div>
+          <div class="pipeline-step-mini" data-step="4">
             <span class="step-dot"></span>
             <span class="step-label">Generate</span>
           </div>
@@ -297,6 +301,14 @@
         </div>
         <div id="retrieved-chunks"></div>
       </div>
+      <!-- Tool calls panel (shown when tools are used) -->
+      <div id="tool-calls-panel" class="hidden">
+        <div class="tool-calls-panel-header">
+          <span>⚡ Function Calls</span>
+          <button id="tools-collapse-btn">▼</button>
+        </div>
+        <div id="tool-calls-list"></div>
+      </div>
       <div id="chatbot-input">
         <button id="image-upload-btn" title="Upload image for classification">📷</button>
         <input type="file" id="image-upload-input" accept="image/*" style="display: none;">
@@ -306,7 +318,7 @@
     </div>
 
     <!-- Include JavaScript files -->
-    <script src="js/chat.js?v=20260103"></script>
+    <script src="js/chat.js?v=20260106"></script>
     <script src="js/sidebar_port.js"></script>
     
 </body>

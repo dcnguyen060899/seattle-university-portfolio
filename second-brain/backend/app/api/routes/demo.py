@@ -497,3 +497,271 @@ async def seed_demo_data(db: AsyncSession = Depends(get_db)):
         "knowledge_items": count,
         "message": "Demo data ready for showcase"
     }
+
+
+# === Function Calling Enhanced Endpoint ===
+
+class ToolCall(BaseModel):
+    """A tool call made by the LLM."""
+    tool_name: str
+    tool_input: Dict[str, Any]
+    tool_result: Dict[str, Any]
+    duration_ms: float
+
+
+class EnhancedRAGResponse(BaseModel):
+    """Enhanced RAG response with function calling support."""
+    query: str
+    answer: str
+    pipeline_steps: List[RAGPipelineStep]
+    retrieved_chunks: List[RetrievedChunk]
+    tool_calls: List[ToolCall]
+    total_duration_ms: float
+    embedding_dimension: int
+    model_used: str
+    tools_used: bool
+
+
+@router.get("/tools")
+async def list_available_tools():
+    """List all available function calling tools."""
+    from app.demo.portfolio_tools import PORTFOLIO_TOOLS
+    return {
+        "tools_count": len(PORTFOLIO_TOOLS),
+        "tools": [
+            {
+                "name": tool["name"],
+                "description": tool["description"]
+            }
+            for tool in PORTFOLIO_TOOLS
+        ]
+    }
+
+
+@router.post("/rag-pipeline-enhanced", response_model=EnhancedRAGResponse)
+async def demonstrate_rag_pipeline_enhanced(
+    request: RAGQueryRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    🔬 Enhanced RAG Pipeline with Function Calling
+
+    This endpoint demonstrates a 5-step RAG pipeline:
+
+    1. Query Embedding - Convert question to vector
+    2. Vector Search - Find similar knowledge chunks
+    3. Context Assembly - Prepare retrieved context
+    4. Tool Execution - Execute function calls if needed
+    5. LLM Generation - Generate final answer
+
+    Claude can call tools to fetch live data (GitHub stats, project details, etc.)
+    """
+    from app.demo.portfolio_tools import PORTFOLIO_TOOLS, execute_tool
+    import json
+
+    start_time = time.time()
+    pipeline_steps = []
+    tool_calls = []
+
+    # Get demo user and ensure data
+    user = await get_or_create_demo_user(db)
+    await ensure_demo_seeded(db, user)
+
+    # === STEP 1: Query Embedding ===
+    step1_start = time.time()
+    embedding_service = get_embedding_service()
+    query_embedding = await embedding_service.embed([request.query], input_type="query")
+
+    if not query_embedding:
+        raise HTTPException(status_code=500, detail="Embedding generation failed")
+
+    step1_duration = (time.time() - step1_start) * 1000
+    pipeline_steps.append(RAGPipelineStep(
+        step_name="Query Embedding",
+        description=f"Converted query to {settings.EMBEDDING_DIMENSION}-dimensional vector",
+        duration_ms=round(step1_duration, 2),
+        data={
+            "input_text": request.query,
+            "embedding_model": "voyage-2",
+            "dimensions": settings.EMBEDDING_DIMENSION,
+            "vector_preview": query_embedding[0][:5] + ["..."] if request.show_internals else None
+        }
+    ))
+
+    # === STEP 2: Vector Search ===
+    step2_start = time.time()
+    search_results = await search_vectors(
+        query_vector=query_embedding[0],
+        user_id=str(user.id),
+        limit=5,
+        score_threshold=0.3,
+    )
+    step2_duration = (time.time() - step2_start) * 1000
+
+    retrieved_chunks = []
+    for r in search_results:
+        retrieved_chunks.append(RetrievedChunk(
+            content=r["payload"].get("content", ""),
+            similarity_score=round(r["score"], 4),
+            tags=r["payload"].get("tags", []),
+            source=r["payload"].get("source", "unknown"),
+            chunk_id=str(r["id"])[:8]
+        ))
+
+    pipeline_steps.append(RAGPipelineStep(
+        step_name="Vector Search",
+        description=f"Found {len(retrieved_chunks)} relevant chunks",
+        duration_ms=round(step2_duration, 2),
+        data={
+            "database": "Qdrant",
+            "search_type": "Cosine Similarity",
+            "results_found": len(retrieved_chunks),
+            "score_threshold": 0.3,
+            "top_score": retrieved_chunks[0].similarity_score if retrieved_chunks else 0
+        }
+    ))
+
+    # === STEP 3: Context Assembly ===
+    step3_start = time.time()
+    context_parts = [chunk.content for chunk in retrieved_chunks]
+    assembled_context = "\n\n---\n\n".join(context_parts)
+    context_tokens = len(assembled_context.split())
+    step3_duration = (time.time() - step3_start) * 1000
+
+    pipeline_steps.append(RAGPipelineStep(
+        step_name="Context Assembly",
+        description=f"Assembled {len(context_parts)} chunks ({context_tokens} words)",
+        duration_ms=round(step3_duration, 2),
+        data={
+            "chunks_used": len(context_parts),
+            "context_words": context_tokens,
+            "context_preview": assembled_context[:200] + "..." if request.show_internals else None
+        }
+    ))
+
+    # === STEP 4: Tool Execution (Function Calling) ===
+    step4_start = time.time()
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+    model = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
+
+    if not api_key:
+        answer = "AI service not configured."
+        tools_used = False
+    else:
+        client = anthropic.Anthropic(api_key=api_key)
+
+        system_prompt = """You are Duy Nguyen's portfolio assistant demonstrating a RAG system with function calling.
+
+You have access to tools that can fetch live data about Duy's portfolio, GitHub activity, skills, and more.
+Use tools when they would provide more accurate or up-to-date information than the context alone.
+
+Be concise and professional. This is a technical demo for recruiters."""
+
+        messages = [{
+            "role": "user",
+            "content": f"Context from knowledge base:\n{assembled_context}\n\nQuestion: {request.query}"
+        }]
+
+        # Initial call with tools
+        try:
+            response = client.messages.create(
+                model=model,
+                max_tokens=1024,
+                system=system_prompt,
+                tools=PORTFOLIO_TOOLS,
+                messages=messages
+            )
+
+            # Handle tool use loop
+            while response.stop_reason == "tool_use":
+                # Process all tool uses in this response
+                tool_use_blocks = [block for block in response.content if block.type == "tool_use"]
+
+                tool_results = []
+                for tool_use in tool_use_blocks:
+                    tool_start = time.time()
+
+                    # Execute the tool
+                    result = await execute_tool(tool_use.name, tool_use.input)
+
+                    tool_duration = (time.time() - tool_start) * 1000
+
+                    tool_calls.append(ToolCall(
+                        tool_name=tool_use.name,
+                        tool_input=tool_use.input,
+                        tool_result=result,
+                        duration_ms=round(tool_duration, 2)
+                    ))
+
+                    tool_results.append({
+                        "type": "tool_result",
+                        "tool_use_id": tool_use.id,
+                        "content": json.dumps(result)
+                    })
+
+                # Continue conversation with tool results
+                messages.append({"role": "assistant", "content": response.content})
+                messages.append({"role": "user", "content": tool_results})
+
+                response = client.messages.create(
+                    model=model,
+                    max_tokens=1024,
+                    system=system_prompt,
+                    tools=PORTFOLIO_TOOLS,
+                    messages=messages
+                )
+
+            # Extract final text answer
+            answer = ""
+            for block in response.content:
+                if hasattr(block, "text"):
+                    answer += block.text
+
+            tools_used = len(tool_calls) > 0
+
+        except Exception as e:
+            answer = f"Error: {str(e)}"
+            tools_used = False
+
+    step4_duration = (time.time() - step4_start) * 1000
+
+    # Add Tools step to pipeline
+    pipeline_steps.append(RAGPipelineStep(
+        step_name="Tools",
+        description=f"Executed {len(tool_calls)} tool calls" if tool_calls else "No tools needed",
+        duration_ms=round(step4_duration if tool_calls else 0, 2),
+        data={
+            "tools_called": [tc.tool_name for tc in tool_calls],
+            "tools_available": len(PORTFOLIO_TOOLS),
+            "total_tool_time_ms": sum(tc.duration_ms for tc in tool_calls) if tool_calls else 0
+        } if tool_calls else {"skipped": True, "reason": "No tools needed for this query"}
+    ))
+
+    # === STEP 5: LLM Generation ===
+    # Note: Generation happened in step 4 as part of the tool loop
+    # We just record the final generation timing here
+    pipeline_steps.append(RAGPipelineStep(
+        step_name="LLM Generation",
+        description=f"Generated response using {model}",
+        duration_ms=round(step4_duration, 2),  # Combined with tools
+        data={
+            "model": model,
+            "max_tokens": 1024,
+            "response_length": len(answer),
+            "with_tools": tools_used
+        }
+    ))
+
+    total_duration = (time.time() - start_time) * 1000
+
+    return EnhancedRAGResponse(
+        query=request.query,
+        answer=answer,
+        pipeline_steps=pipeline_steps,
+        retrieved_chunks=retrieved_chunks,
+        tool_calls=tool_calls,
+        total_duration_ms=round(total_duration, 2),
+        embedding_dimension=settings.EMBEDDING_DIMENSION,
+        model_used=model,
+        tools_used=tools_used
+    )

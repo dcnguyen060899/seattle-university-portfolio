@@ -168,6 +168,49 @@ PORTFOLIO_DATA = {
                 "focus": "Medical AI / RAG Systems"
             }
         ]
+    },
+    "experience": [
+        {
+            "role": "Data Science Volunteer / ML Engineer",
+            "organization": "SFU Blueprint (for MOSAIC)",
+            "period": "2023 - 2024",
+            "type": "Production",
+            "highlights": [
+                "Built AI immigration chatbot serving 660K+ users",
+                "Designed Neo4j knowledge graph architecture",
+                "Achieved 90% accuracy in query validation",
+                "Recognized Top 4 in SFU CS Diversity Award"
+            ]
+        },
+        {
+            "role": "Research Assistant",
+            "organization": "SFU Faisal Lab",
+            "period": "2024",
+            "type": "Research",
+            "highlights": [
+                "Developed RAG system for medical image retrieval",
+                "Natural language to JSON schema translation",
+                "CT/MRI scan retrieval optimization"
+            ]
+        }
+    ],
+    "research": {
+        "independent": [
+            {
+                "title": "Duy Integral Theorem",
+                "description": "Novel mathematical framework for understanding generalization in neural networks",
+                "status": "Independent research",
+                "link": "index_independent_research.html"
+            }
+        ],
+        "lab_experience": [
+            {
+                "institution": "Simon Fraser University",
+                "lab": "Faisal Lab",
+                "focus": "Medical AI / RAG Systems",
+                "contribution": "RAG system for CT/MRI scan retrieval"
+            }
+        ]
     }
 }
 
@@ -290,6 +333,55 @@ PORTFOLIO_TOOLS = [
                 }
             },
             "required": ["technologies"]
+        }
+    },
+    {
+        "name": "get_education_details",
+        "description": "Get detailed education history including current program, certifications, and research experience.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "include_coursework": {
+                    "type": "boolean",
+                    "description": "Include relevant coursework areas",
+                    "default": True
+                }
+            }
+        }
+    },
+    {
+        "name": "get_work_experience",
+        "description": "Get detailed work experience including roles, organizations, and key achievements.",
+        "input_schema": {
+            "type": "object",
+            "properties": {}
+        }
+    },
+    {
+        "name": "search_by_impact",
+        "description": "Find projects that demonstrate specific types of impact like scale, cost savings, accuracy, or awards.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "impact_type": {
+                    "type": "string",
+                    "enum": ["scale", "cost_savings", "accuracy", "awards", "production"],
+                    "description": "Type of impact to search for"
+                },
+                "min_value": {
+                    "type": "number",
+                    "description": "Minimum threshold (e.g., 100000 for users, 90 for accuracy %)"
+                }
+            },
+            "required": ["impact_type"]
+        }
+    },
+    {
+        "name": "get_publications_research",
+        "description": "Get information about research work, independent research, and academic contributions.",
+        "input_schema": {
+            "type": "object",
+            "properties": {}
         }
     }
 ]
@@ -558,6 +650,130 @@ async def compare_technologies(technologies: List[str]) -> Dict[str, Any]:
     }
 
 
+async def get_education_details(include_coursework: bool = True) -> Dict[str, Any]:
+    """Get detailed education history."""
+    result = {
+        "current_education": PORTFOLIO_DATA["education"]["current"],
+        "certifications": PORTFOLIO_DATA["education"]["certifications"],
+        "research_experience": PORTFOLIO_DATA["education"]["research"]
+    }
+
+    if include_coursework:
+        result["relevant_coursework"] = [
+            "Machine Learning & Deep Learning",
+            "Statistical Methods and Causal Inference",
+            "Natural Language Processing",
+            "Computer Vision",
+            "Data Engineering & MLOps"
+        ]
+
+    return result
+
+
+async def get_work_experience() -> Dict[str, Any]:
+    """Get work experience details."""
+    return {
+        "experiences": PORTFOLIO_DATA["experience"],
+        "total_positions": len(PORTFOLIO_DATA["experience"]),
+        "experience_types": list(set(exp["type"] for exp in PORTFOLIO_DATA["experience"])),
+        "summary": "Production ML systems and research experience"
+    }
+
+
+async def search_by_impact(impact_type: str, min_value: float = None) -> Dict[str, Any]:
+    """Search projects by impact type."""
+    results = []
+
+    for project_id, project in PORTFOLIO_DATA["projects"].items():
+        metrics = project.get("metrics", {})
+
+        if impact_type == "scale":
+            if "users_served" in metrics:
+                users = metrics["users_served"]
+                if min_value is None or users >= min_value:
+                    results.append({
+                        "project": project["name"],
+                        "metric": f"{users:,} users served",
+                        "type": "scale"
+                    })
+            if "records_analyzed" in metrics:
+                records = metrics["records_analyzed"]
+                if min_value is None or records >= min_value:
+                    results.append({
+                        "project": project["name"],
+                        "metric": f"{records:,} records analyzed",
+                        "type": "scale"
+                    })
+            if "measurements" in metrics:
+                measurements = metrics["measurements"]
+                if min_value is None or measurements >= min_value:
+                    results.append({
+                        "project": project["name"],
+                        "metric": f"{measurements:,} measurements analyzed",
+                        "type": "scale"
+                    })
+
+        elif impact_type == "cost_savings":
+            if "savings" in metrics:
+                results.append({
+                    "project": project["name"],
+                    "metric": metrics["savings"],
+                    "type": "cost_savings"
+                })
+
+        elif impact_type == "accuracy":
+            if "accuracy" in metrics:
+                acc = metrics["accuracy"]
+                acc_val = float(acc.replace("%", "")) if isinstance(acc, str) else acc
+                if min_value is None or acc_val >= min_value:
+                    results.append({
+                        "project": project["name"],
+                        "metric": f"{acc} accuracy",
+                        "type": "accuracy"
+                    })
+            if "r_squared" in metrics:
+                r2 = metrics["r_squared"] * 100
+                if min_value is None or r2 >= min_value:
+                    results.append({
+                        "project": project["name"],
+                        "metric": f"{r2}% variance explained (R²)",
+                        "type": "accuracy"
+                    })
+
+        elif impact_type == "awards":
+            if "recognition" in metrics:
+                results.append({
+                    "project": project["name"],
+                    "metric": metrics["recognition"],
+                    "type": "award"
+                })
+
+        elif impact_type == "production":
+            if project["type"] == "production":
+                results.append({
+                    "project": project["name"],
+                    "metric": project["impact"],
+                    "type": "production",
+                    "status": project["status"]
+                })
+
+    return {
+        "impact_type": impact_type,
+        "min_value": min_value,
+        "results_count": len(results),
+        "projects": results
+    }
+
+
+async def get_publications_research() -> Dict[str, Any]:
+    """Get publications and research information."""
+    return {
+        "independent_research": PORTFOLIO_DATA["research"]["independent"],
+        "lab_experience": PORTFOLIO_DATA["research"]["lab_experience"],
+        "note": "Additional publications expected during MS program at Seattle University"
+    }
+
+
 # === Tool Execution Router ===
 
 async def execute_tool(tool_name: str, tool_input: Dict[str, Any]) -> Dict[str, Any]:
@@ -571,6 +787,10 @@ async def execute_tool(tool_name: str, tool_input: Dict[str, Any]) -> Dict[str, 
         "get_availability": get_availability,
         "get_impact_metrics": get_impact_metrics,
         "compare_technologies": compare_technologies,
+        "get_education_details": get_education_details,
+        "get_work_experience": get_work_experience,
+        "search_by_impact": search_by_impact,
+        "get_publications_research": get_publications_research,
     }
 
     handler = tool_handlers.get(tool_name)
