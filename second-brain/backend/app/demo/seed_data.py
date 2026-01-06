@@ -14,9 +14,14 @@ PORTFOLIO_KNOWLEDGE = [
         and achieved 95.9% variance explanation in flight analysis.
 
         He is seeking Summer 2026 data science or AI/ML engineering internships where he can apply
-        production experience while developing expertise in causal reasoning and scalable analytics.""",
+        production experience while developing expertise in causal reasoning and scalable analytics.
+
+        Background: Duy is originally from Vietnam (Vietnamese nationality). He previously studied
+        at Simon Fraser University in Vancouver, Canada as an international student (temporary resident,
+        NOT Canadian). He is now in the United States pursuing his Master's degree at Seattle University
+        on an F-1 student visa, eligible for CPT/OPT work authorization.""",
         "source": "portfolio",
-        "tags": ["about", "introduction", "background", "seattle-university"],
+        "tags": ["about", "introduction", "background", "seattle-university", "vietnam", "international"],
         "context": {"category": "about", "priority": "high"}
     },
 
@@ -186,10 +191,14 @@ PORTFOLIO_KNOWLEDGE = [
 
         Location: Open to relocation, remote-friendly
 
+        Work Authorization: F-1 Student Visa (eligible for CPT during studies, OPT after graduation).
+        Duy is an international student from Vietnam (NOT from Canada). He previously studied at
+        Simon Fraser University in Vancouver as a temporary resident, but is Vietnamese by nationality.
+
         What makes Duy unique: Production ML experience (660K+ users served),
         strong statistical foundation, and ability to quantify business impact.""",
         "source": "portfolio",
-        "tags": ["career", "internship", "job-search", "goals"],
+        "tags": ["career", "internship", "job-search", "goals", "work-authorization", "visa"],
         "context": {"category": "career", "priority": "high"}
     },
 

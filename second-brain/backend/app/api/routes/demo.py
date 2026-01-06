@@ -497,15 +497,49 @@ async def get_architecture_diagram():
     }
 
 
+class SeedRequest(BaseModel):
+    """Request for seeding demo data."""
+    force: bool = Field(default=False, description="Force reseed by clearing existing data first")
+
+
 @router.post("/seed")
-async def seed_demo_data(db: AsyncSession = Depends(get_db)):
-    """Seed demo data for the showcase."""
+async def seed_demo_data(
+    request: SeedRequest = SeedRequest(),
+    db: AsyncSession = Depends(get_db)
+):
+    """Seed demo data for the showcase. Use force=true to clear and reseed."""
     user = await get_or_create_demo_user(db)
+
+    # If force reseed, delete existing notes first
+    if request.force:
+        from app.db.qdrant import get_qdrant_client
+        from sqlalchemy import delete
+
+        # Delete from Qdrant
+        try:
+            qdrant = get_qdrant_client()
+            # Delete all points for this user
+            qdrant.delete(
+                collection_name="notes",
+                points_selector={
+                    "filter": {
+                        "must": [{"key": "user_id", "match": {"value": str(user.id)}}]
+                    }
+                }
+            )
+        except Exception as e:
+            print(f"Qdrant cleanup error: {e}")
+
+        # Delete from PostgreSQL
+        await db.execute(delete(Note).where(Note.user_id == user.id))
+        await db.commit()
+
     count = await ensure_demo_seeded(db, user)
     return {
         "status": "success",
         "knowledge_items": count,
-        "message": "Demo data ready for showcase"
+        "message": f"Demo data {'reseeded' if request.force else 'ready'} for showcase",
+        "force_reseed": request.force
     }
 
 

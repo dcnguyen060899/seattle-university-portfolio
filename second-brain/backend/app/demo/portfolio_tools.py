@@ -37,7 +37,9 @@ PORTFOLIO_DATA = {
         "start_date": "June 2026",
         "duration": "10-12 weeks",
         "location_preference": "Open to relocation, remote-friendly",
-        "visa_status": "Authorized to work in US",
+        "work_authorization": "F-1 Student Visa (eligible for CPT/OPT)",
+        "nationality": "Vietnamese (from Vietnam)",
+        "note": "International student from Vietnam. Previously studied at Simon Fraser University in Vancouver, Canada as a temporary resident, now pursuing MS at Seattle University in the US.",
     },
     "projects": {
         "mosaic": {
