@@ -20,11 +20,12 @@
             padding: 0;
         }
 
-        body {
+        html, body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
             background-color: #f5f5f5;
             color: #333;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         /* Header */
@@ -635,15 +636,17 @@
             font-weight: 500;
             box-shadow: 0 4px 16px rgba(0,0,0,0.15);
             z-index: 1001;
-            transform: translateX(120%);
-            transition: transform 0.3s;
+            transform: translateX(calc(100% + 50px));
+            transition: transform 0.3s, visibility 0.3s;
             display: flex;
             align-items: center;
             gap: 10px;
+            visibility: hidden;
         }
 
         .toast.active {
             transform: translateX(0);
+            visibility: visible;
         }
 
         .toast.success {
