@@ -246,7 +246,7 @@ This portfolio runs on self-funded production infrastructure, demonstrating end-
 | **Namecheap** | Domain registration | $1.25/mo |
 | **GitHub Pages** | Static file hosting | Free |
 
-**Total: ~$60-80/month (~$720-960/year)**
+**Total: ~ $60-80/month (~$720-960/year)**
 
 ### Why Self-Fund Production Infrastructure?
 
