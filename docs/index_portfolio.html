@@ -27,29 +27,20 @@
                 </div>
             </div>
         </div>
-        <section id="about">                                                                                                                                                                                                    
-      <h2>About Me</h2>                                                                                                                                                                                                             
-            <p>
-                I'm Duy Nguyen, an MS Data Science student at Seattle University (GPA 4.0 - College of Science and Engineering Dean’s Graduate Student Honor Roll for Winter 2026),                                                                                                                                     
-                interested in building data systems that, honestly and hopefully, can be useful to some degree such that it is reliable enough to actually be used                                                                                                                                
-                in research and clinical settings. That's my ultimate goal!                                                                                                                                                                             
-            </p>                                                                                                                                                                                                                
-                                                                                                                                                                                                                                
-            <p>                                                                                                                                                                                                                 
-                At Seattle University, I hold two research positions. With Dr. Brian Fischer
-                in the Mathematics department, I'm working on the data infrastructure side, trying to                                                                                                                                    
-                design ETL pipelines and normalized databases to make decades of proprietary                                                                                                                                 
-                neuroscience recordings queryable and reproducible for ongoing barn owl auditory                                                                                                                                
-                research. With Dr. Wenjing Yang, I'm investigating a quieter problem in medical                                                                                                                                 
-                AI: most RAG pipelines for clinical imaging skip measuring whether the retrieval                                                                                                                                
-                step actually works. I'm trying to quantify that gap on mammography data and                                                                                                                                    
-                understand what it takes to fix it.                                                                                                                                                                             
-            </p>                                                                                                                                                                                                                
-                                                                                                                                                                                                                                
-            <p>                                                                                                                                                                                                                 
-                I'm looking for <strong>Summer 2026 data science or AI/ML engineering internships</strong>
-                where I can work on problems that have clear stakes and clear feedback.
-            </p>                                                                                                                                                                                                                
+    <section id="about">                        
+        <h2>About Me</h2>                                                                                                               
+            <p>                                                                                                                       
+                I'm Duy Nguyen, an MS Data Science student at Seattle University (GPA 4.0 — College of Science and Engineering Dean's Graduate Student Honor Roll, Winter 2026).                                                                                            
+                My focus is building data systems that researchers can actually use: pipelines that are auditable, databases that reproduce the original analysis exactly, and infrastructure that outlasts the person who built it.
+            </p>                                                                                                                      
+
+            <p>                                                                                                                       
+                At Seattle University, I hold two research positions. With Dr. Brian Fischer (Mathematics), I designed a 7-table normalized MySQL database for barn owl auditory neuroscience by ingesting data from two researchers across 110 neurons, 8 owls, and ~261 experiments stored as 14,000+ files in six proprietary formats with no consistent structure. I identified 8 data quality problems, built a 6-phase ETL pipeline to resolve them, and implemented 4 separate loaders to handle the completely different internal .mat file formats each researcher used. The fitting methods alone cover two-sided asymmetric Gaussians, rate-level sigmoids with 5 physiological parameters, Akima spline interpolation, and SVD for response separability. The end result: a 40-line analysis loop that previously required 228 file loads now runs as a single SQL query. With Dr. Wenjing Yang, I'm working on a separate problem in medical AI — most RAG pipelines for clinical imaging skip measuring whether the retrieval step actually works. I'm quantifying that gap on mammography data.
+            </p>
+
+            <p>                             
+                I'm looking for <strong>Summer 2026 data science or AI/ML engineering internships</strong> where the work has clear stakes and the feedback is real.
+            </p>                                                                                                                      
         </section>
 
         <!-- HERO METRICS - Key Impact Numbers -->
