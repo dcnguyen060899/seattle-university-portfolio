@@ -34,16 +34,25 @@
                 My focus is building data systems that researchers can actually use: pipelines that are auditable, databases that reproduce the original analysis exactly, and infrastructure that outlasts the person who built it.
             </p>                                                                                                                      
 
-            <p>                                                                                                                       
-                At Seattle University, I hold two research positions. With Dr. Brian Fischer (Mathematics), I designed a 7-table normalized MySQL database for barn owl auditory neuroscience by ingesting data from two researchers across 110 neurons, 8 owls, and ~261 experiments stored as 14,000+ files in six proprietary formats with no consistent structure. I identified 8 data quality problems, built a 6-phase ETL pipeline to resolve them, and implemented 4 separate loaders to handle the completely different internal .mat file formats each researcher used. The fitting methods alone cover two-sided asymmetric Gaussians, rate-level sigmoids with 5 physiological parameters, Akima spline interpolation, and SVD for response separability. The end result: a 40-line analysis loop that previously required 228 file loads now runs as a single SQL query. 
-                With Dr. Wenjing Yang, I'm investigating a quieter problem in medical                                                                                                                      
-                AI: most vision RAG pipelines for clinical imaging skip measuring whether the retrieval                                                                                                                                
-                step actually works. I'm trying to quantify that gap on mammography data and                                                                                                                                    
-                understand what it takes to fix it.  
+            <p>
+                At Seattle University, I hold two research positions. With Dr. Brian Fischer (Mathematics), I designed a 7-table normalized MySQL database for barn owl auditory neuroscience by ingesting data from two researchers across 110 neurons, 8 owls, and ~261 experiments stored as 14,000+ files in six proprietary formats with no consistent structure. I identified 8 data quality problems, built a 6-phase ETL pipeline to resolve them, and implemented 4 separate loaders to handle the completely different internal .mat file formats each researcher used. The fitting methods alone cover two-sided asymmetric Gaussians, rate-level sigmoids with 5 physiological parameters, Akima spline interpolation, and SVD for response separability. The end result: a 40-line analysis loop that previously required 228 file loads now runs as a single SQL query.
+                With Dr. Wenjing Yang, I'm investigating a quieter problem in medical
+                AI: most vision RAG pipelines for clinical imaging skip measuring whether the retrieval
+                step actually works. I'm trying to quantify that gap on mammography data and
+                understand what it takes to fix it.
+            </p>
 
-            <p>                             
+            <p>
+                Working on a five-person data cleaning team for the same neuroscience project, I treat AI tools as a coordination problem, not a coding problem. When teammates ran three different (and silently divergent) versions of a shared renaming script across 36 raw data folders, the bottleneck shifted from writing code to <em>verifying it across people</em>. I used Claude Code as a delegation layer: built a Python audit script that walks any teammate's OneDrive upload, checks every file against the supervisor's eight stated requirements, and traces each violation back to the exact line in the source notebook that produced it. On one batch I surfaced <strong>164 systematic violations across 16 folders</strong> — leftover <code>.gen</code> files, wrong canonical extensions, preserved trial files that should have been deleted — and produced a markdown evidence report with file lists, teammate attribution, and code-level root causes the team could act on immediately. In parallel, I shipped a single deterministic pipeline (<code>plan_renames.py</code> → manifest → <code>apply_renames.py</code>) that produces uniform output across all 35 viable dates with zero violations, replacing the patchwork of ad-hoc scripts.
+            </p>
+
+            <p>
+                My philosophy is that using AI tools isn't the risk — the harder problem is managing a system where <em>everyone</em> uses them and small inconsistencies compound silently across the team's output. I lean on AI heavily for my own throughput, but I spend the saved time on the parts that don't scale: writing the verification layer, tracing root causes back to specific lines of code, framing findings so teammates can self-correct without friction, and making sure the supervisor sees one coherent story instead of seven contradicting drafts. In the AI era, the senior contribution isn't producing more output — it's making sure the team's combined output is actually correct, reproducible, and aligned with the goal.
+            </p>
+
+            <p>
                 I'm looking for <strong>Summer 2026 data science or AI/ML engineering internships</strong> where the work has clear stakes and the feedback is real.
-            </p>                                                                                                                      
+            </p>
         </section>
 
         <!-- HERO METRICS - Key Impact Numbers -->
