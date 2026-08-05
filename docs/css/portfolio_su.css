@@ -1654,3 +1654,105 @@ a:hover {
         width: 100%;
     }
 }
+
+/* =============================================================
+   ABOUT — progressive disclosure ("Read more")
+   The About section leads with a short version; the long-form
+   evidence sits behind a native <details>. Chosen over a JS
+   toggle deliberately:
+     - works with JS disabled or still loading
+     - keyboard + screen-reader accessible with no ARIA wiring
+     - content stays in the DOM when collapsed, so in-page find
+       and search indexing still see it (browsers auto-expand
+       <details> on Ctrl+F where supported)
+   Typography intentionally mirrors .news-more in news.css (mono,
+   uppercase, letterspaced) so the two disclosure affordances on
+   the page read as one system. The font stack is written out
+   rather than referencing --news-mono, because this rule must
+   stand alone on pages that do not load news.css.
+   ============================================================= */
+.about-more {
+    margin: 0.35rem 0 1.25rem;
+    padding-left: 20px;             /* matches `section p` indent */
+}
+
+.about-more-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: fit-content;
+    padding: 0.3rem 0;
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--seattle-dark-gray);
+    cursor: pointer;
+    list-style: none;               /* kill the default disclosure triangle */
+    transition: color 160ms ease;
+}
+
+/* Safari/Chrome still paint a marker without this. */
+.about-more-toggle::-webkit-details-marker { display: none; }
+.about-more-toggle::marker { content: ''; }
+
+.about-more-toggle:hover,
+.about-more-toggle:focus-visible {
+    color: var(--seattle-red);
+}
+
+.about-more-toggle:focus-visible {
+    outline: 2px solid var(--seattle-red);
+    outline-offset: 3px;
+    border-radius: 1px;
+}
+
+.about-more-label {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
+}
+
+/* Swap the label on open. Only one is ever in the accessibility
+   tree, since display:none removes it. */
+.about-more .is-less { display: none; }
+.about-more[open] .is-more { display: none; }
+.about-more[open] .is-less { display: inline; }
+
+.about-more-chevron {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: translateY(-2px) rotate(45deg);   /* points down = expands */
+    transition: transform 200ms ease;
+}
+
+.about-more[open] .about-more-chevron {
+    transform: translateY(1px) rotate(-135deg);  /* points up = collapses */
+}
+
+/* The revealed body. The left border is the same hairline idea as
+   the news timeline: it marks this as supporting detail rather
+   than a peer of the paragraphs above it. */
+.about-more-body {
+    margin-top: 0.9rem;
+    border-left: 2px solid var(--seattle-gray);
+    animation: about-more-in 260ms ease both;
+}
+
+.about-more-body p:first-child { margin-top: 0; }
+
+/* `section p` already supplies padding-left: 20px, which reads as
+   the gap from the rule above. */
+
+@keyframes about-more-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .about-more-body { animation: none; }
+    .about-more-chevron,
+    .about-more-toggle { transition: none; }
+}

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A dated record of Duy Nguyen's research at Seattle University: a controlled replication of a retrieval-augmented mammography report-generation pipeline, and the experiment it became.">
+    <!-- portfolio_su.css MUST load first: it declares the --seattle-* tokens
+         news.css references by name, and news.css overrides several of its
+         rules (section p padding, the global red `a`). Order is load-bearing. -->
+    <link rel="stylesheet" href="css/portfolio_su.css?v=20260106d">
+    <link rel="stylesheet" href="css/news.css?v=20260805">
+    <link rel="icon" type="image/x-icon" href="seattleu_2.ico?v=2">
+    <title>Research News - Duy Nguyen</title>
+</head>
+<body>
+    <!-- 2px fixed left-edge scroll-progress stroke, in --seattle-red.
+         Driven by CSS scroll timeline where supported, else by the
+         inline script at the end of this file. -->
+    <div class="news-progress" aria-hidden="true"></div>
+
+    <header>
+        <a href="index_portfolio.html" class="logo-link">
+            <div class="logo">
+                <img src="images/seattle_university.png" alt="Seattle University">
+            </div>
+        </a>
+        <nav>
+            <a href="index_portfolio.html">Portfolio</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="news">
+            <span class="news-eyebrow">Research news</span>
+            <h2 class="news-heading">News archive</h2>
+            <p class="news-intro">
+                A dated record of what I have been working on, newest first. Most of it is one
+                project: a critical replication of a published retrieval-augmented mammography
+                report-generation pipeline, and the controlled experiment it turned into.
+            </p>
+
+            <ol class="news-list">
+
+                <li class="news-row">
+                    <div class="news-date"><time datetime="2026-08">August 2026</time></div>
+                    <div class="news-body">
+                        <p>
+                            Submitted <em>Separation Without Transfer: The Retrieval Encoder's
+                            Substrate, Not the VLM Decoder, Decides Whether Contrastive Fine-Tuning Transfers
+                            in Mammography Report Generation</em> to the Pacific Symposium on Biocomputing (PSB) 2027,
+                            with Dr. Wenjing Yang as co-author. The paper is under review.
+                        </p>
+                        <span class="news-meta">PSB 2027 &middot; under review</span>
+                    </div>
+                </li>
+
+                <li class="news-row">
+                    <div class="news-date"><time datetime="2026-07">July 2026</time></div>
+                    <div class="news-body">
+                        <p>
+                            Before submitting, I re-derived every number in the paper directly from
+                            the raw prediction files and stored embeddings, and assembled a
+                            reproducibility package &mdash; checksummed input data, an end-to-end
+                            rebuild script, and the executed notebooks &mdash; so each figure and
+                            table can be regenerated from source.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="news-row">
+                    <div class="news-date is-repeat"><time datetime="2026-07">July 2026</time></div>
+                    <div class="news-body">
+                        <p>
+                            Found the geometric signature behind the encoder effect: the same
+                            fine-tuning recipe collapses the held-out effective rank of the three
+                            out-of-domain encoders' embeddings (10.5 to 1.1, 9.1 to 2.4, 20.2 to
+                            2.5) while expanding the mammography-native encoder's from 7.2 to 13.3.
+                            Collapse versus expansion separates the encoders whose training-set
+                            class separation carries over to held-out data from those where it
+                            does not.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="news-row">
+                    <div class="news-date is-repeat"><time datetime="2026-07">July 2026</time></div>
+                    <div class="news-body">
+                        <p>
+                            Tested whether the effect was specific to the label the encoder was
+                            fine-tuned on by scoring the untrained, finer five-class BI-RADS
+                            category instead of the three-class suspicion label. The gain held on
+                            both retrieval-sensitive decoders (accuracy +23.2% and +14.6%;
+                            quadratic weighted kappa 0.100 to 0.302), though nearly all of it
+                            landed on the majority BI-RADS categories rather than the clinically
+                            decisive ones.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="news-row">
+                    <div class="news-date is-repeat"><time datetime="2026-07">July 2026</time></div>
+                    <div class="news-body">
+                        <p>
+                            Added a fourth encoder, BioCLIP (organism / tree-of-life images), which
+                            shares the other out-of-domain encoders' architecture and fine-tuning
+                            schedule but not their pretraining domain. That completed the design:
+                            four retrieval-encoder substrates, each evaluated frozen and
+                            fine-tuned, crossed with three frozen VLM decoders &mdash; 24
+                            evaluation cells. Began drafting the paper in the PSB conference
+                            format.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="news-row">
+                    <div class="news-date is-repeat"><time datetime="2026-07">July 2026</time></div>
+                    <div class="news-body">
+                        <p>
+                            Confirmed the headline result. Fine-tuning the mammography-native
+                            encoder (Mammo-CLIP) produced the only arm to clear the held-out
+                            majority-class retrieval floor of P@1 = 0.487, moving from 0.513 frozen
+                            to 0.585 fine-tuned; the same recipe applied to the generic web-image
+                            and biomedical-figure encoders inflated training-set separation but
+                            left held-out retrieval tied with that floor. The retrieval gain
+                            propagated into the generated reports on the two retrieval-sensitive
+                            decoders (suspicion accuracy +20.7% and +15.6% relative to the frozen
+                            baseline), while MedGemma did not respond to it. Wrote up the full
+                            analysis in a 37-page technical report for my advisor,
+                            Dr. Wenjing Yang.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="news-row">
+                    <div class="news-date"><time datetime="2026-06">June 2026</time></div>
+                    <div class="news-body">
+                        <p>
+                            Audited my evaluation code against the paper I was replicating and
+                            found that its published precision, recall and F1 are computed as
+                            weighted averages while its text describes them as macro-averaged
+                            &mdash; the two are not the same metric. My own evaluator follows the
+                            paper's stated methodology, so every subsequent comparison is run
+                            within my own pipeline rather than against its published numbers
+                            directly.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="news-row">
+                    <div class="news-date"><time datetime="2026-05">May 2026</time></div>
+                    <div class="news-body">
+                        <p>
+                            Fine-tuned the retrieval encoder for the first time and found a warning
+                            sign: its training-set class separation grew far more than its held-out
+                            separation. That overfitting signal is what motivated testing the same
+                            fine-tuning recipe on encoders pretrained on different image domains.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="news-row">
+                    <div class="news-date is-repeat"><time datetime="2026-05">May 2026</time></div>
+                    <div class="news-body">
+                        <p>
+                            Completed the retrieval-augmented (RAG few-shot) evaluation across all
+                            three VLM decoders on the 1,000-study VinDr-Mammo held-out test split,
+                            using the retrieval encoder from the paper I was replicating.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="news-row">
+                    <div class="news-date"><time datetime="2026-04">April 2026</time></div>
+                    <div class="news-body">
+                        <p>
+                            Built the VinDr-Mammo preprocessing and retrieval pipeline &mdash; each
+                            of the four views resized to 512&times;512 and merged into a single
+                            composite, then BI-RADS mapped to a three-class suspicion label &mdash;
+                            matching the replicated paper's stated methodology exactly, including
+                            correcting places where its released code did not follow its own
+                            description.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="news-row">
+                    <div class="news-date is-repeat"><time datetime="2026-04">April 2026</time></div>
+                    <div class="news-body">
+                        <p>
+                            On a second research position, with Dr. Brian Fischer, designed a
+                            7-table normalized MySQL schema (owl, recording session, neuron,
+                            experiment, tuning parameters, spike reliability, ILD conditions
+                            tested) for his lab's barn owl auditory-neuroscience recordings
+                            &mdash; roughly 14,000 raw files in six proprietary formats, 110
+                            neurons across 8 owls, about 261 experiments &mdash; and built the
+                            6-phase ETL pipeline that loads it. An analysis loop that previously
+                            required 228 individual file loads now runs as a single SQL query.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="news-row">
+                    <div class="news-date"><time datetime="2026-03">March 2026</time></div>
+                    <div class="news-body">
+                        <p>
+                            Began a critical replication of a published retrieval-augmented
+                            mammography report-generation pipeline: explored the CBIS-DDSM dataset
+                            first, then switched to VinDr-Mammo (5,000 studies) to match the
+                            paper's own dataset, and set up evaluation of three vision-language
+                            model decoders (MedGemma, Qwen2.5-VL, LLaVA-Med) across several
+                            prompting conditions using the paper's own frozen retrieval encoder.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="news-row">
+                    <div class="news-date is-repeat"><time datetime="2026-03">March 2026</time></div>
+                    <div class="news-body">
+                        <p>
+                            Joined Dr. Brian Fischer's lab as a research assistant, working on a
+                            database for barn owl sound-localization recordings.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="news-row">
+                    <div class="news-date"><time datetime="2026-02">February 2026</time></div>
+                    <div class="news-body">
+                        <p>
+                            Started a literature review on retrieval-augmented generation for
+                            vision-language systems, the starting point for the mammography
+                            replication project.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="news-row">
+                    <div class="news-date"><time datetime="2026-01">January 2026</time></div>
+                    <div class="news-body">
+                        <p>
+                            Built and shipped a retrieval-augmented &ldquo;second brain&rdquo;
+                            system for this site's
+                            <a href="https://github.com/dcnguyen060899/seattle-university-portfolio">chatbot</a>.
+                        </p>
+                    </div>
+                </li>
+
+            </ol>
+
+            <p class="news-note">
+                A note on the clinical labels: VinDr-Mammo carries radiologist BI-RADS assessments,
+                not biopsy-confirmed pathology. The suspicion and BI-RADS results above are
+                agreement with a radiologist's reading, not diagnostic accuracy.
+            </p>
+
+            <div class="news-more-wrap">
+                <a class="news-more" href="index_portfolio.html">Back to portfolio</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Seattle University. All rights reserved.</p>
+    </footer>
+
+    <script>
+    // Drives the left-edge scroll-progress stroke on browsers without CSS
+    // scroll timelines (Safari, Firefox). Chromium/Edge run it in pure CSS
+    // via `animation-timeline: scroll(root block)` and return early here.
+    (function () {
+        var bar = document.querySelector('.news-progress');
+        if (!bar) return;
+        if (window.CSS && CSS.supports && CSS.supports('animation-timeline: scroll()')) return;
+
+        var ticking = false;
+
+        function update() {
+            var doc = document.documentElement;
+            var max = doc.scrollHeight - doc.clientHeight;
+            var ratio = max > 0 ? doc.scrollTop / max : 0;
+            if (ratio < 0) ratio = 0;
+            if (ratio > 1) ratio = 1;
+            bar.style.setProperty('--news-progress', ratio);
+            ticking = false;
+        }
+
+        function onScroll() {
+            if (!ticking) {
+                ticking = true;
+                window.requestAnimationFrame(update);
+            }
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll, { passive: true });
+        update();
+    })();
+    </script>
+</body>
+</html>

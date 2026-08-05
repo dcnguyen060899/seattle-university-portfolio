@@ -1,0 +1,434 @@
+/* =============================================================
+   news.css — dated research-news timeline (Seattle University)
+
+   DESIGN: white/near-white page + black ink + a single Seattle
+   red accent. Calm and near-monochrome. Structure is borrowed
+   from the scrollytelling reference; palette and fonts are NOT.
+
+   Constraint (honored exactly): exactly ONE accent, no second
+   accent, no gradients, no shadows, no card fills. Effects come
+   from type, space, motion, and that one color.
+
+   THE ACCENT BUDGET — --seattle-red appears in exactly 3 places:
+     1. link :hover / :focus-visible (and the :focus-visible ring)
+        with --seattle-red-dark reserved for :active
+     2. the 2px fixed left-edge scroll-progress stroke
+     3. ONE structural accent: the 2px leading rule above the
+        news list, echoing the weight of the progress stroke
+   There is deliberately no ::selection accent and no red heading;
+   either would have been a fourth use.
+
+   DEPENDENCY — REQUIRED LOAD ORDER
+   This file declares NO hex values. Every color is referenced by
+   name from the --seattle-* custom properties already declared on
+   :root in css/portfolio_su.css (two :root blocks, lines 1-7 and
+   365-375, which merge). portfolio_su.css MUST be loaded BEFORE
+   news.css on every page that uses these styles, including
+   news.html:
+
+     <link rel="stylesheet" href="css/portfolio_su.css?v=...">
+     <link rel="stylesheet" href="css/news.css?v=...">
+
+   news.css also overrides several portfolio_su.css rules that
+   would otherwise leak in (section p / section ul padding-left,
+   the global red `a`). Those overrides only win if news.css is
+   second.
+
+   DARK MODE: portfolio_su.css contains no prefers-color-scheme
+   block, and neither does any other stylesheet in docs/css. The
+   site is light-only by design. A dark theme here would apply to
+   the news timeline and nothing else, so none is defined. This
+   is a deliberate omission, not an oversight.
+
+   TOKENS ADDED HERE: only non-color ones (type scale, spacing
+   rhythm, the two existing font stacks aliased for reuse) plus
+   semantic aliases that point at the SU tokens by name. No new
+   hue is introduced anywhere in this file.
+   ============================================================= */
+
+/* ---------- Local aliases: names only, never new hexes ---------- */
+.news,
+.news-progress {
+  /* semantic aliases -> SU brand tokens (referenced, not redefined) */
+  --news-ink:        var(--seattle-black);      /* primary type      */
+  --news-ink-soft:   var(--seattle-dark-gray);  /* secondary, dates  */
+  --news-rule:       var(--seattle-gray);       /* hairlines         */
+  --news-accent:     var(--seattle-red);        /* THE one color     */
+  --news-accent-alt: var(--seattle-red-dark);   /* :active only      */
+
+  /* fonts — the stacks the site already uses, aliased for reuse.
+     No webfont, no CDN: both are system-available. */
+  --news-font: 'Helvetica Neue', Arial, sans-serif;
+  --news-mono: 'Monaco', 'Consolas', monospace;
+
+  /* derived, non-color */
+  --news-hairline: 1px solid var(--news-rule);
+  --news-date-col: 10rem;
+  --news-gap: 2rem;
+  --news-row-pad: 1.35rem;
+}
+
+/* =============================================================
+   SCROLL PROGRESS — a 2px stroke down the left edge
+   z-index 1001 so it clears the fixed header and the chatbot
+   container, both of which sit at z-index 1000 in
+   portfolio_su.css. Drivable two ways, same result:
+     - pure CSS scroll timeline where supported (no JS at all)
+     - or JS setting the --news-progress custom property (0..1)
+   Non-supporting browser with no JS: scaleY(0), simply absent.
+   ============================================================= */
+.news-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 2px;
+  height: 100vh;
+  height: 100dvh;
+  background-color: var(--news-accent);
+  transform-origin: 0 0;
+  transform: scaleY(var(--news-progress, 0));
+  transition: transform 80ms linear;
+  z-index: 1001;
+  pointer-events: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  .news-progress {
+    animation: news-progress-grow linear both;
+    animation-timeline: scroll(root block);
+  }
+}
+
+@keyframes news-progress-grow {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+/* =============================================================
+   SCOPE + SECTION FRAME
+   .news is the wrapper. Scoping everything under it keeps these
+   rules from touching the rest of the portfolio, and keeps the
+   chatbot markup entirely untouched.
+   ============================================================= */
+.news {
+  font-family: var(--news-font);
+  color: var(--news-ink);
+  max-width: 46rem;
+  margin: 0 auto;
+}
+
+/* Undo portfolio_su.css `section p { padding-left: 20px }` and
+   `section ul { padding-left: 40px }` inside the news scope.
+   Class specificity (0,1,1) and (0,1,0) beat those (0,0,2). */
+.news p,
+.news-body p {
+  padding-left: 0;
+}
+
+/* ---------- Eyebrow: mono, uppercase, tracked out ---------- */
+.news-eyebrow {
+  display: block;
+  font-family: var(--news-mono);
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--news-ink-soft);
+  margin: 0 0 0.75rem;
+}
+
+/* ---------- Heading ----------
+   Deliberately BLACK, not the site's usual red h2. A red heading
+   would be a fourth use of the accent and would break the calm
+   the reference file mandates. Use <h2 class="news-heading">.
+   Doubled selector (0,2,0) so it also beats portfolio_su.css's
+   `h2:first-of-type { margin-top: 20px }` at (0,1,1). */
+.news-heading,
+.news .news-heading {
+  font-family: var(--news-font);
+  font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: var(--news-ink);
+  margin: 0 0 0.85rem;
+
+  /* neutralize portfolio_su.css h2: red, padding-left, red border */
+  padding: 0;
+  border-bottom: 0;
+}
+
+.news-intro {
+  font-size: clamp(0.95rem, 1.05vw, 1.02rem);
+  line-height: 1.6;
+  color: var(--news-ink-soft);
+  margin: 0 0 2rem;
+  max-width: 54ch;
+}
+
+/* ---------- Closing note (archive page) ----------
+   A caveat/footnote that sits BELOW the list — smaller and softer than
+   the body text, no rule of its own so it does not read as another
+   entry. Added for news.html's clinical-labels note. No new hue: it
+   reuses --news-ink-soft, same as .news-intro and the date eyebrow. */
+.news-note {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--news-ink-soft);
+  margin: 1.5rem 0 0;
+  max-width: 60ch;
+}
+
+/* =============================================================
+   THE LIST
+   ONE structural accent: the 2px leading rule. Everything below
+   it is hairline gray.
+   ============================================================= */
+.news-list {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;              /* beats `section ul { padding-left: 40px }` */
+  border-top: 2px solid var(--news-accent);
+}
+
+/* Rule BETWEEN rows only: none above the first, none after the last. */
+.news-row + .news-row {
+  border-top: var(--news-hairline);
+}
+
+.news-row {
+  display: grid;
+  grid-template-columns: var(--news-date-col) minmax(0, 1fr);
+  gap: var(--news-gap);
+  align-items: baseline;
+  padding: var(--news-row-pad) 0;
+}
+
+/* ---------- Date cell ---------- */
+.news-date {
+  font-family: var(--news-font);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+  color: var(--news-ink);
+}
+
+.news-date > time {
+  font-style: normal;
+}
+
+/* Consecutive entries in the same month: the cell reads EMPTY,
+   but the month stays in the accessibility tree so a screen
+   reader still announces a date for every entry. */
+.news-date.is-repeat > time {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Body cell ---------- */
+.news-body {
+  font-size: clamp(0.95rem, 1.05vw, 1.02rem);
+  line-height: 1.6;
+  color: var(--news-ink);
+}
+
+.news-body p {
+  margin: 0 0 0.55rem;
+  line-height: 1.6;
+}
+
+.news-body p:last-child {
+  margin-bottom: 0;
+}
+
+.news-body strong {
+  font-weight: 600;
+  color: var(--news-ink);
+}
+
+.news-body em {
+  font-style: italic;
+}
+
+/* Inline code / identifiers stay ink, not accent — the reference
+   tints code with its accent; here that would overspend the budget. */
+.news-body code {
+  font-family: var(--news-mono);
+  font-size: 0.88em;
+  color: var(--news-ink);
+  background: transparent;
+  padding: 0;
+}
+
+/* Optional trailing meta line (venue, status, artifact) */
+.news-meta {
+  display: block;
+  font-family: var(--news-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--news-ink-soft);
+  margin-top: 0.5rem;
+}
+
+/* =============================================================
+   LINKS — black with a 1px underline. No button chrome, no fill.
+   Beats portfolio_su.css `a { color: var(--seattle-red) }`
+   because .news-body a is (0,1,1) against (0,0,1).
+   ============================================================= */
+.news a,
+.news-body a {
+  color: var(--news-ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  text-decoration-color: currentColor;
+  transition: color 160ms ease, text-decoration-color 160ms ease;
+}
+
+.news a:hover,
+.news-body a:hover,
+.news a:focus-visible,
+.news-body a:focus-visible {
+  color: var(--news-accent);
+  text-decoration-color: var(--news-accent);
+}
+
+.news a:active,
+.news-body a:active {
+  color: var(--news-accent-alt);
+  text-decoration-color: var(--news-accent-alt);
+}
+
+/* ---------- Keyboard focus ---------- */
+.news a:focus-visible,
+.news-body a:focus-visible,
+.news-more:focus-visible,
+.news [tabindex]:focus-visible {
+  outline: 2px solid var(--news-accent);
+  outline-offset: 3px;
+  border-radius: 1px;
+}
+
+/* Do not strip focus for mouse users on browsers without
+   :focus-visible — leave the UA default in that case. */
+
+/* =============================================================
+   "Older news" link — a link, not a button. Sits below the feed.
+   ============================================================= */
+.news-more-wrap {
+  margin-top: 1.5rem;
+  padding-top: 1.1rem;
+  border-top: var(--news-hairline);
+}
+
+.news-more {
+  font-family: var(--news-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--news-ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  text-decoration-color: currentColor;
+  transition: color 160ms ease, text-decoration-color 160ms ease;
+}
+
+.news-more:hover,
+.news-more:focus-visible {
+  color: var(--news-accent);
+  text-decoration-color: var(--news-accent);
+}
+
+.news-more:active {
+  color: var(--news-accent-alt);
+  text-decoration-color: var(--news-accent-alt);
+}
+
+/* Year separator for the long archive page — hairline + mono
+   label, no accent. */
+.news-year {
+  font-family: var(--news-mono);
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--news-ink-soft);
+  margin: 2.5rem 0 0.85rem;
+  padding: 0 0 0.6rem;
+  border: 0;
+  border-bottom: var(--news-hairline);
+}
+
+/* =============================================================
+   MOBILE — single column under 640px. The date becomes a small
+   Monaco/Consolas eyebrow above the text. Repeated months stay
+   collapsed for consistency with the desktop rule; the cell is
+   zero-height so it costs no vertical space.
+   ============================================================= */
+@media (max-width: 640px) {
+  .news {
+    max-width: none;
+  }
+
+  .news-row {
+    display: block;
+    padding: 1.15rem 0;
+  }
+
+  .news-date {
+    display: block;
+    font-family: var(--news-mono);
+    font-size: 0.68rem;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--news-ink-soft);
+    margin: 0 0 0.45rem;
+  }
+
+  .news-date.is-repeat {
+    margin: 0;
+  }
+
+  .news-body {
+    font-size: 0.95rem;
+  }
+}
+
+/* =============================================================
+   REDUCED MOTION
+   The progress stroke is scroll-linked (user-driven), so it is
+   kept rather than hidden — but its smoothing transition and the
+   link color transitions are removed so nothing eases on its own.
+   ============================================================= */
+@media (prefers-reduced-motion: reduce) {
+  .news-progress {
+    transition: none;
+  }
+
+  .news a,
+  .news-body a,
+  .news-more {
+    transition: none;
+  }
+
+  .news *,
+  .news *::before,
+  .news *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
