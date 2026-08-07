@@ -39,14 +39,42 @@
 
             <p>
                 At Seattle University, I have held two research positions. With Dr. Brian Fischer (Mathematics), through summer 2026, I designed a 7-table normalized MySQL database for barn owl auditory neuroscience by ingesting data from two researchers across 110 neurons, 8 owls, and ~261 experiments stored as 14,000+ files in six proprietary formats with no consistent structure. I identified 8 data quality problems, built a 6-phase ETL pipeline to resolve them, and implemented 4 separate loaders to handle the completely different internal .mat file formats each researcher used. The fitting methods alone cover two-sided asymmetric Gaussians, rate-level sigmoids with 5 physiological parameters, Akima spline interpolation, and SVD for response separability. The end result: a 40-line analysis loop that previously required 228 file loads now runs as a single SQL query.
-                With Dr. Wenjing Yang, I work on a quieter problem in medical AI: most vision RAG pipelines
-                for clinical imaging never measure whether the retrieval step actually works. Holding three
-                vision&ndash;language decoders frozen and varying only the retrieval encoder across four
-                pretraining substrates, we found that the same contrastive fine-tuning recipe transfers only
-                when the encoder was pretrained in-domain &mdash; the others sharpen their training-set
-                separation while held-out retrieval stays tied with a majority-class baseline that ignores
-                the query entirely. <strong>That result is a first-author paper now under review at the
-                Pacific Symposium on Biocomputing (PSB) 2027.</strong>
+            </p>
+
+            <p>
+                With Dr. Wenjing Yang, I work on a quieter problem in medical AI: most vision RAG
+                pipelines for clinical imaging never measure whether the retrieval step actually
+                works. My economics training made me read that as an identification problem, not a
+                benchmarking one. Prior work bundled its treatments &mdash; fine-tune the language
+                decoder, freeze a generic retrieval encoder, report one aggregate score &mdash; so
+                nothing in the design could say which component earned the number. We inverted it
+                the way an economist would design the study: hold all three vision&ndash;language
+                decoders fixed, vary only the retrieval encoder across four pretraining substrates,
+                give every arm the identical contrastive fine-tuning treatment, and let each encoder
+                serve as its own paired control. What emerged is a heterogeneous treatment effect:
+                the recipe transfers only when the encoder was pretrained in-domain. The others do
+                something subtler &mdash; they sharpen class separation on the training set they
+                were fitted to, while their held-out retrieval never clears a majority-class
+                baseline that ignores the query entirely. <strong>That result is a first-author
+                paper now under review at the Pacific Symposium on Biocomputing (PSB) 2027.</strong>
+            </p>
+
+            <p>
+                The division of labor between economics and the MS in Data Science is the part I
+                would want a reader to notice. Economics supplied the comparisons that mean
+                something: paired contrasts, a floor that prices what guessing is worth &mdash;
+                48.7% of held-out studies are healthy, so a retriever that never looks at the query
+                still scores 0.487 &mdash; and the habit of separating fit on your own sample from
+                signal that transfers. The data science degree supplied the instruments to run that
+                logic inside a neural pipeline: enough command of contrastive objectives and
+                embedding geometry to read the failure mechanically &mdash; fine-tuning collapses
+                the out-of-domain encoders' held-out effective rank from 9&ndash;20 directions to
+                1.1&ndash;2.5, a memorized answer key, while the in-domain encoder expands from 7.2
+                to 13.3 &mdash; and enough probability and statistics to put uncertainty on every
+                claim: Wilson intervals against the floor, paired McNemar tests against each
+                encoder's own frozen state, and a decomposition by clinical management band showing
+                the gains concentrate in routine screening and do not yet reach the biopsy-decisive
+                cases. One training asks the question; the other makes the answer checkable.
             </p>
 
             <p>
