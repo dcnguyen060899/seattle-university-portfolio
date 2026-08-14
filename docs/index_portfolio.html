@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/portfolio_su.css?v=20260805a">
+    <link rel="stylesheet" href="css/portfolio_su.css?v=20260814b">
     <link rel="stylesheet" href="css/news.css?v=20260805">
     <link rel="icon" type="image/x-icon" href="seattleu_2.ico?v=2">
     <title>Duy Nguyen - Portfolio</title>
@@ -30,155 +30,134 @@
                 </div>
             </div>
         </div>
-    <section id="about">                        
-        <h2>About Me</h2>                                                                                                               
-            <p>                                                                                                                       
-                I'm Duy Nguyen, an MS Data Science student at Seattle University (GPA 4.0 — College of Science and Engineering Dean's Graduate Student Honor Roll, Winter 2026).                                                                                            
-                My focus is building data systems that researchers can actually use: pipelines that are auditable, databases that reproduce the original analysis exactly, and infrastructure that outlasts the person who built it.
-            </p>                                                                                                                      
+    <section id="about">
+        <h2>About Me</h2>
 
-            <p>
-                At Seattle University, I have held two research positions. With Dr. Brian Fischer (Mathematics), through summer 2026, I designed a 7-table normalized MySQL database for barn owl auditory neuroscience by ingesting data from two researchers across 110 neurons, 8 owls, and ~261 experiments stored as 14,000+ files in six proprietary formats with no consistent structure. I identified 8 data quality problems, built a 6-phase ETL pipeline to resolve them, and implemented 4 separate loaders to handle the completely different internal .mat file formats each researcher used. The fitting methods alone cover two-sided asymmetric Gaussians, rate-level sigmoids with 5 physiological parameters, Akima spline interpolation, and SVD for response separability. The end result: a 40-line analysis loop that previously required 228 file loads now runs as a single SQL query.
+        <!-- The About is a narrative essay, not a fact sheet. The credentials
+             live in the closing paragraph and on the resume page. -->
+        <article class="about-essay">
+            <h3>An education in the age of AI</h3>
+
+            <p class="about-deck">
+                What I learned as a master's student in the education age of AI &mdash;
+                about anxiety, economics, and the one thing the machines couldn't do
+                for me.
             </p>
 
             <p>
-                With Dr. Wenjing Yang, I work on a quieter problem in medical AI: most vision RAG
-                pipelines for clinical imaging never measure whether the retrieval step actually
-                works. My economics training made me read that as an identification problem, not a
-                benchmarking one. Prior work bundled its treatments &mdash; fine-tune the language
-                decoder, freeze a generic retrieval encoder, report one aggregate score &mdash; so
-                nothing in the design could say which component earned the number. We inverted it
-                the way an economist would design the study: hold all three vision&ndash;language
-                decoders fixed, vary only the retrieval encoder across four pretraining substrates,
-                give every arm the identical contrastive fine-tuning treatment, and let each encoder
-                serve as its own paired control. What emerged is a heterogeneous treatment effect:
-                the recipe transfers only when the encoder was pretrained in-domain. The others do
-                something subtler &mdash; they sharpen class separation on the training set they
-                were fitted to, while their held-out retrieval never clears a majority-class
-                baseline that ignores the query entirely. <strong>That result is a first-author
-                paper now under review at the Pacific Symposium on Biocomputing (PSB) 2027.</strong>
+                I want to tell you about the most productive moment of my education. It
+                didn't happen in a classroom, and it didn't feel productive. It happened
+                during the busiest quarter of my life &mdash; three courses, including the
+                one students warn each other about, and two research jobs &mdash; when a
+                thought started following me home at night: <em>machines are getting cheap
+                at exactly the thing I am working this hard to become.</em> Every hour I
+                spent training my mind, some datacenter was training its replacement
+                &mdash; or so the feeling went. I suspect everyone in this generation of
+                students has met some version of that thought. Most of us do the sensible
+                thing and push it away.
             </p>
 
             <p>
-                The division of labor between economics and the MS in Data Science is the part I
-                would want a reader to notice. Economics supplied the comparisons that mean
-                something: paired contrasts, a floor that prices what guessing is worth &mdash;
-                48.7% of held-out studies are healthy, so a retriever that never looks at the query
-                still scores 0.487 &mdash; and the habit of separating fit on your own sample from
-                signal that transfers. The data science degree supplied the instruments to run that
-                logic inside a neural pipeline: enough command of contrastive objectives and
-                embedding geometry to read the failure mechanically &mdash; fine-tuning collapses
-                the out-of-domain encoders' held-out effective rank from 9&ndash;20 directions to
-                1.1&ndash;2.5, a memorized answer key, while the in-domain encoder expands from 7.2
-                to 13.3 &mdash; and enough probability and statistics to put uncertainty on every
-                claim: Wilson intervals against the floor, paired McNemar tests against each
-                encoder's own frozen state, and a decomposition by clinical management band showing
-                the gains concentrate in routine screening and do not yet reach the biopsy-decisive
-                cases. One training asks the question; the other makes the answer checkable.
+                I couldn't, because of a habit economics gave me: an economist treats
+                anxiety as a modeling assignment. If the fear is real, it has parameters.
+                If it has parameters, you can study it instead of carrying it.
             </p>
 
             <p>
-                Reporting turned out to be the hardest part. Months of work have to become one argument a
-                stranger can follow in twelve pages, and almost all of that happens in revision &mdash;
-                cutting results I was attached to, rewriting the same paragraph until my advisor could read
-                it once and know what it showed, and finding the claims that were true but not quite
-                supported. I found it more stressful than any of the modeling, and more useful to have
-                learned.
+                I should say how I got here, because the road matters to the lesson. I
+                came from Vietnam to study economics in Canada, and the first real thing I
+                ever built was <a href="index_mosaic_chatbot.html">an immigration
+                chatbot</a> &mdash; because I had been the person who needed one.
+                Economics taught me that every honest claim is a comparison, but my
+                questions kept demanding more computation than my training could supply.
+                So I went looking, and I found something beautiful waiting on the other
+                side. Statistics had always carried a dream &mdash; flexible models, rich
+                with parameters, that would let the data finally speak &mdash; and for a
+                century that dream was starved, because the computation didn't exist. Then
+                it did. That's what machine learning is: an old dream that suddenly got an
+                engine. I fell for it completely, and I thought I was leaving economics
+                behind. In truth, economics was just waiting for a better question.
             </p>
 
             <p>
-                The scrollytelling contest turned out to be practice for it. Its readers have no economics
-                training, so an argument either arrives in plain language or it does not arrive at all. A
-                paper is the same problem with one constraint added: a reviewer needs the plain-language
-                version <em>and</em> the evidence beneath it &mdash; the method stated precisely enough to
-                be checked, the result shown to hold. Both are persuasion. In both, the real work is
-                refusing to make the reader do what I should have done for them.
+                The question found me in that overloaded spring, and I gave it the only
+                answer I knew how to give: I scheduled time for it. Literal calendar
+                blocks, in my worst quarter, to build an economic model of whether human
+                work becomes worthless or priceless when machine thinking costs as much as
+                electricity &mdash; and then to turn that model into
+                <a href="https://www.cheap-as-electricity.com" target="_blank">a story
+                anyone with the same knot in their stomach could scroll through on a
+                phone</a>. That story was judged blind, by people who knew nothing about
+                me, and it won.
             </p>
 
             <p>
-                Working on a five-person data cleaning team for the same neuroscience project, I treat AI
-                tools as a coordination problem, not a coding problem. When teammates ran three different
-                (and silently divergent) versions of a shared renaming script across 36 raw data folders,
-                the bottleneck shifted from writing code to <em>verifying it across people</em> &mdash; so I
-                built the layer that catches that: an audit script that traces every violation back to the
-                line of code that produced it, and a deterministic <code>plan &rarr; manifest &rarr; apply</code>
-                pipeline that replaced the ad-hoc scripts with one reproducible path.
+                But here is the part I didn't plan: while I was building a model about the
+                value of human work, my own research was quietly collecting the evidence.
+                In the lab, I used AI every day. It accelerated the code, the experiments,
+                the searching &mdash; honestly, everything. Everything except the part
+                that mattered most. When months of results had to become one coherent
+                argument that could convince skeptical reviewers, the machine had nothing
+                to offer but fluency. It could answer any question I asked precisely
+                &mdash; and only if I knew precisely what to ask. It could write pages,
+                and it could not own a single one of them. The thinking, the judgment of
+                what matters, the responsibility for the claim &mdash; those stayed
+                stubbornly, reassuringly human.
             </p>
 
-            <!-- Progressive disclosure: the short version is enough for a skim; the
-                 evidence is one click away for anyone who wants it. Native <details>
-                 so it needs no JS, stays keyboard-accessible, and is still in the DOM
-                 for in-page search and indexing when collapsed. -->
-            <details class="about-more">
-                <summary class="about-more-toggle">
-                    <!-- Real text nodes, not CSS content: screen readers and
-                         translation tools both handle these reliably. -->
-                    <span class="about-more-label is-more">Read more about how I work</span>
-                    <span class="about-more-label is-less">Show less</span>
-                    <span class="about-more-chevron" aria-hidden="true"></span>
-                </summary>
-
-                <div class="about-more-body">
-                    <p>
-                        I used Claude Code as a delegation layer. The audit script walks any teammate's
-                        OneDrive upload, checks every file against the supervisor's eight stated
-                        requirements, and traces each violation back to the exact line in the source
-                        notebook that produced it. On one batch it surfaced <strong>164 systematic
-                        violations across 16 folders</strong> &mdash; leftover <code>.gen</code> files,
-                        wrong canonical extensions, preserved trial files that should have been deleted
-                        &mdash; with file lists, teammate attribution, and code-level root causes the team
-                        could act on immediately. The replacement pipeline (<code>plan_renames.py</code>
-                        &rarr; manifest &rarr; <code>apply_renames.py</code>) produces uniform output across
-                        all 35 viable dates with zero violations.
-                    </p>
-
-                    <p>
-                        That pattern &mdash; never mutate the raw data, emit a manifest, review it, then
-                        apply &mdash; is now how the team works. Extending it to a second, undocumented
-                        corpus of 870 electrophysiology files left by a former lab member meant every
-                        file's fate had to be <em>argued for</em> before anything moved: 226 staged, 26
-                        archived in place, 561 dropped as provably redundant, 57 held for my supervisor,
-                        reconciling to all 870. Demanding proof instead of a blanket rule is not ceremony
-                        &mdash; one file that every heuristic called a redundant duplicate turned out to be
-                        the only surviving copy of its recording, and was kept because the evidence never
-                        cleared the bar. The same discipline caught an error the project had been carrying
-                        in inherited code: its rule for reading experiment type out of a binary header
-                        recognised only one of the two ways a parameter sweep could be written, so it
-                        mislabeled <strong>22 of 48 files</strong> &mdash; 12 of them into a
-                        plausible-looking but wrong type, with an entire stimulus axis silently deleted.
-                        Deriving the type from the recorded trials instead took agreement with ground truth
-                        from 29/48 to 48/48.
-                    </p>
-
-                    <p>
-                        The part I would defend hardest is that the verification layer points at <em>me</em>
-                        too. I run adversarial audits on my own output &mdash; independent agents on fenced,
-                        non-overlapping questions, each finding then attacked by a second agent whose only
-                        job is to refute it. On that corpus the harness caught a blocking bug in code I had
-                        just written (<strong>154 of 226 rows</strong> describing a 21-point measurement as
-                        zero points), caught me making the exact mistake I had been flagging in my
-                        teammates' work &mdash; judging a file by its filename instead of its contents
-                        &mdash; and made me retract a claim about the data I had already put in writing to
-                        my advisor.
-                    </p>
-
-                    <p>
-                        My philosophy is that using AI tools isn't the risk &mdash; the harder problem is
-                        managing a system where <em>everyone</em> uses them and small inconsistencies
-                        compound silently across the team's output. I lean on AI heavily for my own
-                        throughput, but I spend the saved time on the parts that don't scale: writing the
-                        verification layer, tracing root causes back to specific lines of code, framing
-                        findings so teammates can self-correct without friction, and making sure the
-                        supervisor sees one coherent story instead of seven contradicting drafts. In the AI
-                        era, the hardest part of teamwork isn't producing more output &mdash; it's making
-                        sure the group's combined output is actually correct, reproducible, and aligned
-                        with the goal. That standard is worth little if it only ever points outward.
-                    </p>
-                </div>
-            </details>
+            <p>
+                There's a name for why, and I ended up citing it in the piece itself. The
+                Berkeley computer scientist Michael I. Jordan likes to point out that a
+                market that feeds a city of millions every day &mdash; with no single mind
+                planning it &mdash; is itself a kind of intelligence. Intelligence was
+                never a thing that lived inside one head, and it does not live inside one
+                black box now. It lives between us. Science works exactly this way: my
+                paper does not become knowledge when the model finishes running. It
+                becomes knowledge when a skeptical reviewer &mdash; a stranger who owes me
+                nothing &mdash; reads months of my reasoning, tests my methodology against
+                the gap in the literature I claim it fills, and is convinced. That loop
+                &mdash; thinking, arguing, being believed &mdash; is the intelligence. The
+                machine accelerated my experiments, and I'm glad it did. But acceleration
+                was never the argument. What doesn't survive the reviewer is noise.
+            </p>
 
             <p>
-                I'm looking for <strong>Summer 2027 industry research and data science internships</strong> &mdash; student researcher, research engineer, or data scientist roles &mdash; where the work has clear stakes and the feedback is real.
+                So the model said it, my life confirmed it, and now I'll say it to you
+                plainly. Einstein had to hunt for knowledge &mdash; through libraries,
+                through letters, through the work of other experts. For most of history,
+                access to knowledge was the bottleneck of genius. Your generation inherits
+                the opposite condition: AI is the greatest dictionary ever compiled, and
+                it has made knowledge nearly free. But no dictionary has ever written a
+                sentence. The facts are no longer the prize; the machines have the facts.
+                What's becoming scarce &mdash; and therefore, as any economist will tell
+                you, what's becoming valuable &mdash; is the trained mind that can
+                interpret what the dictionary holds, put it together, and explain it so
+                another human being actually understands. That is precisely the thing an
+                education, done right, builds. Not the notes you'll forget. The cognition
+                you'll keep. In an age of information abundance, we don't need fewer
+                trained minds &mdash; we need more of them than we have ever needed,
+                because someone has to turn all that free knowledge into meaning.
+            </p>
+
+            <p>
+                Two centuries ago, machines learned to weave, and the weavers never
+                recovered. The same century, machines learned to make portraits &mdash;
+                and painting flourished, because the world decided that &ldquo;made by a
+                human&rdquo; was worth paying for. Same shock; opposite endings; the
+                difference was a choice. That choice is in front of us again, and it will
+                be made by the people in rooms like this one. So the future I'd leave you
+                with isn't a forecast, because forecasts are things you obey. It's an
+                equilibrium &mdash; and an equilibrium is something you design.
+            </p>
+        </article>
+
+            <p>
+                I'm an MS Data Science student at Seattle University (GPA 4.0 &mdash;
+                College of Science and Engineering Dean's Graduate Student Honor Roll,
+                Winter 2026), looking for <strong>Summer 2027 industry research and data
+                science internships</strong> &mdash; student researcher, research
+                engineer, or data scientist roles &mdash; where the work has clear
+                stakes and the feedback is real.
             </p>
         </section>
 
