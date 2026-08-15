@@ -1655,33 +1655,3 @@ a:hover {
     }
 }
 
-
-
-/* =============================================================
-   ABOUT — long-form essay
-   The About section is a narrative essay, not a fact sheet, so it
-   needs the two base rules the section never had: a prose measure
-   (the 800px main minus paddings yields ~92ch, far past the
-   60-75ch comfort range) and a paragraph gap of at least one line
-   box (the inherited UA margins collapse to less). Scoped under
-   .about-essay because this file is also loaded by news.html.
-   The 20px padding-left indent is inherited from `section p` so
-   the essay's left edge stays flush with the About Me h2.
-   ============================================================= */
-.about-essay { max-width: 68ch; }
-
-.about-essay p {
-    margin: 0 0 1.15em;
-    line-height: 1.7;
-}
-
-/* Standfirst under the essay title: quieter than body text, same
-   role as .news-intro but with literal values — the news tokens
-   are undefined outside .news (they live on the .news scope). */
-#about .about-deck {
-    font-size: 1.05rem;
-    line-height: 1.55;
-    color: var(--seattle-dark-gray);
-    font-style: italic;
-    max-width: 54ch;
-}

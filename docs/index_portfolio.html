@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/portfolio_su.css?v=20260814b">
+    <link rel="stylesheet" href="css/portfolio_su.css?v=20260814c">
     <link rel="stylesheet" href="css/news.css?v=20260805">
     <link rel="icon" type="image/x-icon" href="seattleu_2.ico?v=2">
     <title>Duy Nguyen - Portfolio</title>
@@ -33,132 +33,56 @@
     <section id="about">
         <h2>About Me</h2>
 
-        <!-- The About is a narrative essay, not a fact sheet. The credentials
-             live in the closing paragraph and on the resume page. -->
-        <article class="about-essay">
-            <h3>An education in the age of AI</h3>
+        <p>
+            I'm Duy Nguyen, an MS Data Science student at Seattle University
+            (<strong>GPA 4.0</strong> &mdash; College of Science and Engineering Dean's
+            Graduate Student Honor Roll, Winter 2026). I came to data science from
+            economics, and my work sits where the two meet: experimental design and
+            causal reasoning applied to machine learning systems, with every claim
+            made checkable.
+        </p>
 
-            <p class="about-deck">
-                What I learned as a master's student in the education age of AI &mdash;
-                about anxiety, economics, and the one thing the machines couldn't do
-                for me.
-            </p>
+        <p>
+            <strong>Research.</strong> My master's program has carried two research
+            positions at once. With Dr. Wenjing Yang, I designed a controlled study of
+            retrieval-augmented mammography report generation &mdash; four retrieval
+            encoders crossed with three frozen vision-language decoders &mdash; showing
+            that the encoder's pretraining domain, not the decoder, decides whether
+            contrastive fine-tuning transfers. That result is a <strong>first-author
+            paper under review at the Pacific Symposium on Biocomputing (PSB)
+            2027</strong>. With Dr. Brian Fischer, I turned his lab's barn owl
+            auditory-neuroscience archive &mdash; 14,000+ files in six proprietary
+            formats, 110 neurons across 8 owls &mdash; into a 7-table normalized MySQL
+            database and 6-phase ETL pipeline: an analysis that previously took 228
+            file loads now runs as one SQL query.
+        </p>
 
-            <p>
-                I want to tell you about the most productive moment of my education. It
-                didn't happen in a classroom, and it didn't feel productive. It happened
-                during the busiest quarter of my life &mdash; three courses, including the
-                one students warn each other about, and two research jobs &mdash; when a
-                thought started following me home at night: <em>machines are getting cheap
-                at exactly the thing I am working this hard to become.</em> Every hour I
-                spent training my mind, some datacenter was training its replacement
-                &mdash; or so the feeling went. I suspect everyone in this generation of
-                students has met some version of that thought. Most of us do the sensible
-                thing and push it away.
-            </p>
+        <p>
+            <strong>Data storytelling.</strong> My interactive data story
+            <a href="https://www.cheap-as-electricity.com" target="_blank">&ldquo;Will
+            AI Make Human Work Worthless &mdash; or Priceless?&rdquo;</a> &mdash; nine
+            acts in D3.js and Scrollama.js, built on an original nested-CES
+            general-equilibrium model of AI and cognitive labor &mdash; <strong>won the
+            Graduate Division of the CAUSE Student Data Scrollytelling
+            Contest</strong>, judged blind. I built it in the same quarter as three
+            courses and both research jobs.
+        </p>
 
-            <p>
-                I couldn't, because of a habit economics gave me: an economist treats
-                anxiety as a modeling assignment. If the fear is real, it has parameters.
-                If it has parameters, you can study it instead of carrying it.
-            </p>
+        <p>
+            <strong>Earlier work.</strong> Before graduate school, I built the
+            <a href="index_mosaic_chatbot.html">MOSAIC immigration chatbot</a> serving
+            <strong>660,000+ users</strong> (Top 4, SFU CS Diversity Award) and a
+            hospital resource-optimization model projecting <strong>$30.4M annual
+            savings</strong>, selected as Capstone Exemplar for UC Berkeley's ML/AI
+            certificate.
+        </p>
 
-            <p>
-                I should say how I got here, because the road matters to the lesson. I
-                came from Vietnam to study economics in Canada, and the first real thing I
-                ever built was <a href="index_mosaic_chatbot.html">an immigration
-                chatbot</a> &mdash; because I had been the person who needed one.
-                Economics taught me that every honest claim is a comparison, but my
-                questions kept demanding more computation than my training could supply.
-                So I went looking, and I found something beautiful waiting on the other
-                side. Statistics had always carried a dream &mdash; flexible models, rich
-                with parameters, that would let the data finally speak &mdash; and for a
-                century that dream was starved, because the computation didn't exist. Then
-                it did. That's what machine learning is: an old dream that suddenly got an
-                engine. I fell for it completely, and I thought I was leaving economics
-                behind. In truth, economics was just waiting for a better question.
-            </p>
-
-            <p>
-                The question found me in that overloaded spring, and I gave it the only
-                answer I knew how to give: I scheduled time for it. Literal calendar
-                blocks, in my worst quarter, to build an economic model of whether human
-                work becomes worthless or priceless when machine thinking costs as much as
-                electricity &mdash; and then to turn that model into
-                <a href="https://www.cheap-as-electricity.com" target="_blank">a story
-                anyone with the same knot in their stomach could scroll through on a
-                phone</a>. That story was judged blind, by people who knew nothing about
-                me, and it won.
-            </p>
-
-            <p>
-                But here is the part I didn't plan: while I was building a model about the
-                value of human work, my own research was quietly collecting the evidence.
-                In the lab, I used AI every day. It accelerated the code, the experiments,
-                the searching &mdash; honestly, everything. Everything except the part
-                that mattered most. When months of results had to become one coherent
-                argument that could convince skeptical reviewers, the machine had nothing
-                to offer but fluency. It could answer any question I asked precisely
-                &mdash; and only if I knew precisely what to ask. It could write pages,
-                and it could not own a single one of them. The thinking, the judgment of
-                what matters, the responsibility for the claim &mdash; those stayed
-                stubbornly, reassuringly human.
-            </p>
-
-            <p>
-                There's a name for why, and I ended up citing it in the piece itself. The
-                Berkeley computer scientist Michael I. Jordan likes to point out that a
-                market that feeds a city of millions every day &mdash; with no single mind
-                planning it &mdash; is itself a kind of intelligence. Intelligence was
-                never a thing that lived inside one head, and it does not live inside one
-                black box now. It lives between us. Science works exactly this way: my
-                paper does not become knowledge when the model finishes running. It
-                becomes knowledge when a skeptical reviewer &mdash; a stranger who owes me
-                nothing &mdash; reads months of my reasoning, tests my methodology against
-                the gap in the literature I claim it fills, and is convinced. That loop
-                &mdash; thinking, arguing, being believed &mdash; is the intelligence. The
-                machine accelerated my experiments, and I'm glad it did. But acceleration
-                was never the argument. What doesn't survive the reviewer is noise.
-            </p>
-
-            <p>
-                So the model said it, my life confirmed it, and now I'll say it to you
-                plainly. Einstein had to hunt for knowledge &mdash; through libraries,
-                through letters, through the work of other experts. For most of history,
-                access to knowledge was the bottleneck of genius. Your generation inherits
-                the opposite condition: AI is the greatest dictionary ever compiled, and
-                it has made knowledge nearly free. But no dictionary has ever written a
-                sentence. The facts are no longer the prize; the machines have the facts.
-                What's becoming scarce &mdash; and therefore, as any economist will tell
-                you, what's becoming valuable &mdash; is the trained mind that can
-                interpret what the dictionary holds, put it together, and explain it so
-                another human being actually understands. That is precisely the thing an
-                education, done right, builds. Not the notes you'll forget. The cognition
-                you'll keep. In an age of information abundance, we don't need fewer
-                trained minds &mdash; we need more of them than we have ever needed,
-                because someone has to turn all that free knowledge into meaning.
-            </p>
-
-            <p>
-                Two centuries ago, machines learned to weave, and the weavers never
-                recovered. The same century, machines learned to make portraits &mdash;
-                and painting flourished, because the world decided that &ldquo;made by a
-                human&rdquo; was worth paying for. Same shock; opposite endings; the
-                difference was a choice. That choice is in front of us again, and it will
-                be made by the people in rooms like this one. So the future I'd leave you
-                with isn't a forecast, because forecasts are things you obey. It's an
-                equilibrium &mdash; and an equilibrium is something you design.
-            </p>
-        </article>
-
-            <p>
-                I'm an MS Data Science student at Seattle University (GPA 4.0 &mdash;
-                College of Science and Engineering Dean's Graduate Student Honor Roll,
-                Winter 2026), looking for <strong>Summer 2027 industry research and data
-                science internships</strong> &mdash; student researcher, research
-                engineer, or data scientist roles &mdash; where the work has clear
-                stakes and the feedback is real.
-            </p>
+        <p>
+            I'm looking for <strong>Summer 2027 industry research and data science
+            internships</strong> &mdash; student researcher, research engineer, or data
+            scientist roles &mdash; where the work has clear stakes and the feedback is
+            real.
+        </p>
         </section>
 
         <!-- RESEARCH NEWS - Latest dated entries; full archive at news.html -->
