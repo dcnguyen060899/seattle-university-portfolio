@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="An essay by Duy Nguyen: why the slow entry-level hiring market is a skills mismatch rather than a disappearance, and why experimental design and causal inference are becoming the scarce complement to AI work in high-stakes domains.">
+    <!-- portfolio_su.css MUST load first: it declares the --seattle-* tokens
+         news.css references by name, and news.css overrides several of its
+         rules (section p padding, the global red `a`). Order is load-bearing. -->
+    <link rel="stylesheet" href="css/portfolio_su.css?v=20260814c">
+    <link rel="stylesheet" href="css/news.css?v=20260805">
+    <link rel="icon" type="image/x-icon" href="seattleu_2.ico?v=2">
+    <title>AI Didn't Take Your Job. It Created One Nobody Is Trained For - Duy Nguyen</title>
+
+    <!-- Scoped to this essay only, and deliberately NOT added to the shared
+         stylesheets. news.css styles a dated timeline, not long-form prose,
+         and portfolio_su.css's global `h3` rule would otherwise leak a 20px
+         indent into the body. No new color is introduced: everything below
+         points at the --news-* aliases news.css already declares. The 2px
+         leading rule is the same single structural accent .news-list spends
+         on the archive page, so the accent budget (link hover, progress
+         stroke, one rule) is unchanged. -->
+    <style>
+    .news .essay {
+        border-top: 2px solid var(--news-accent);
+        padding-top: 1.6rem;
+    }
+
+    .news .essay h3 {
+        font-family: var(--news-font);
+        font-size: clamp(1.02rem, 1.3vw, 1.12rem);
+        font-weight: 600;
+        line-height: 1.3;
+        letter-spacing: -0.01em;
+        color: var(--news-ink);
+        margin: 2.4rem 0 0.8rem;
+        padding: 0;
+    }
+
+    .news .essay p {
+        font-size: clamp(0.95rem, 1.05vw, 1.02rem);
+        line-height: 1.7;
+        margin: 0 0 1.05rem;
+        max-width: 62ch;
+    }
+
+    .news .essay .essay-lede {
+        font-size: clamp(1rem, 1.15vw, 1.1rem);
+    }
+
+    .news .essay ol.essay-plan {
+        list-style: decimal;
+        padding-left: 1.4rem;
+        margin: 0 0 1.05rem;
+        max-width: 62ch;
+    }
+
+    .news .essay ol.essay-plan li {
+        font-size: clamp(0.95rem, 1.05vw, 1.02rem);
+        line-height: 1.7;
+        margin-bottom: 0.95rem;
+        padding-left: 0.25rem;
+    }
+
+    .news .essay ol.essay-plan li:last-child {
+        margin-bottom: 0;
+    }
+
+    .news .essay strong {
+        font-weight: 600;
+        color: var(--news-ink);
+    }
+    </style>
+</head>
+<body>
+    <!-- 2px fixed left-edge scroll-progress stroke, in --seattle-red.
+         Driven by CSS scroll timeline where supported, else by the
+         inline script at the end of this file. -->
+    <div class="news-progress" aria-hidden="true"></div>
+
+    <header>
+        <a href="index_portfolio.html" class="logo-link">
+            <div class="logo">
+                <img src="images/seattle_university.png" alt="Seattle University">
+            </div>
+        </a>
+        <nav>
+            <a href="index_portfolio.html">Portfolio</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="news">
+            <span class="news-eyebrow">Essay</span>
+            <h2 class="news-heading">AI Didn&rsquo;t Take Your Job. It Created One Nobody Is Trained For.</h2>
+            <p class="news-intro">
+                Why I think the slow entry-level market is a mismatch rather than a
+                disappearance, what my own research taught me about the skill that is
+                actually scarce, and a plan you can start this year.
+            </p>
+
+            <div class="essay">
+
+                <p class="essay-lede">
+                    If you graduated this year into a market that felt shut, I understand the
+                    conclusion you probably drew. Listings thin out. Replies stop coming. In the
+                    quiet a story fills the gap: AI took the jobs, and everyone told to learn to
+                    code, or to model, or to analyze arrived a few years too late.
+                </p>
+
+                <p>
+                    I do not read it that way. AI is not taking work away from people so much as it
+                    is changing which work is scarce, and it is doing that faster than any
+                    curriculum can follow.
+                </p>
+
+                <p>
+                    Here is the mechanism as I understand it. In the short run AI has driven down
+                    the cost of a large block of routine cognitive work, and when the cost of
+                    something falls you need fewer hands for it, so firms hire more slowly into
+                    those roles and retire the older versions. That part is real. If your training
+                    pointed at that work, so is the pain. But the same capability is quietly
+                    creating a job that barely existed a few years ago and that almost nobody has
+                    been trained for. Demand climbs. Supply is close to nothing. And from the
+                    outside, a shortage of qualified people is hard to tell apart from a shortage
+                    of jobs. The slow hiring is the short-run story. The shortage is the long-run
+                    one, and it is the one you are graduating into.
+                </p>
+
+                <h3>In a million years</h3>
+
+                <p>
+                    In a million years, would anyone have guessed that an econometrician&rsquo;s
+                    training would have anything to do with a computer scientist building AI?
+                </p>
+
+                <p>
+                    For most of the history of both fields it did not. The economist had the
+                    identification tools: how to tell a real effect from a confounded one, how to
+                    design a comparison that settles a question instead of decorating it. What she
+                    lacked was a way into the systems worth asking about. The computer scientist
+                    had the opposite problem: the systems, and a benchmark culture that treats a
+                    higher number as a finding.
+                </p>
+
+                <p>
+                    AI knocked that wall down from the economist&rsquo;s side first. Coding is
+                    easier now than it has ever been. Someone who can state what she wants measured
+                    can stand up a working pipeline in days rather than quarters. The barrier that
+                    kept her out of the machine room is the one that fell fastest.
+                </p>
+
+                <p>
+                    That matters because of where AI is going next: fields where being right is not
+                    a leaderboard question. Radiology, lending, child welfare, drug safety. There
+                    the question stops being &ldquo;does the model score
+                    higher&rdquo; and becomes &ldquo;does this system, on these patients, improve
+                    the decision, and how would we know if it quietly did not.&rdquo; That is an
+                    experiment, and designing one is econometrics.
+                </p>
+
+                <h3>The hard parts of my own project were econometric problems in ML clothing</h3>
+
+                <p>
+                    I can say that concretely because I spent this year inside it. I am a graduate
+                    student at Seattle University, and my research is a controlled experiment on a
+                    retrieval-augmented mammography report-generation pipeline: a system that pulls
+                    up similar prior studies and hands them to a vision-language model before it
+                    writes its report. It crosses four retrieval encoders, each evaluated frozen
+                    and again after contrastive fine-tuning, against three frozen decoders, and it
+                    is under review at the Pacific Symposium on Biocomputing 2027 with my advisor,
+                    Dr. Wenjing Yang.
+                </p>
+
+                <p>
+                    Almost none of the difficulty lived in the model code. It lived in the parts an
+                    economist would recognize on sight.
+                </p>
+
+                <p>
+                    Start with the null. If most studies in a screening population fall
+                    into one category, a system that ignores the query and returns that category
+                    every time will look accurate. So the honest benchmark is the do-nothing one,
+                    built from nothing but how common the labels are. Clear that first,
+                    then talk. Naming the counterfactual is roughly the first thing an economics
+                    course teaches, and still not standard in machine learning benchmarking.
+                </p>
+
+                <p>
+                    Then identification. My encoders differ in the image domain they were
+                    pretrained on, the thing I set out to study. They also differ in input
+                    resolution. The two are entangled, so a difference between encoders cannot be
+                    pinned on pretraining domain alone. The right move was not to bury that but to
+                    state it in the paper and mark the claim as provisional. Reporting the limit of
+                    what your design can identify is not a weakness. It is most of the discipline.
+                </p>
+
+                <p>
+                    Then heterogeneity, which mattered most. Aggregate accuracy went up. But when I
+                    broke the gain out by category, nearly all of it landed on routine screening
+                    cases, not on the band where a radiologist decides whether to biopsy. An
+                    average that improves while the decisive subgroup does not is a familiar object
+                    in program evaluation: a headline effect carried by the group that needed it
+                    least. Reporting the aggregate alone would have been true and misleading at
+                    once, in a domain where that is how someone gets hurt.
+                </p>
+
+                <p>
+                    None of that is exotic. It is the standard equipment of a field that spent
+                    decades being told its effects were not real.
+                </p>
+
+                <h3>Why the pair is scarce</h3>
+
+                <p>
+                    Economists have a word for what is happening: complementarity. A technology
+                    that substitutes for one skill raises the value of the skills it cannot
+                    perform. AI writes the code. AI does not decide what the comparison should be,
+                    which subgroup the effect has to show up in, or which confound sinks the
+                    result. Those judgments are the complement. The market is short of people who
+                    can build a system and interrogate it with equal seriousness, because the two
+                    halves have never been taught in the same building.
+                </p>
+
+                <p>
+                    I came at this from the other side too. Alongside the clinical work I built
+                    a nested-CES general-equilibrium model of AI and cognitive labor and turned it
+                    into an interactive data story, &ldquo;Will AI Make Human Work Worthless
+                    &mdash; or Priceless?&rdquo;, which won the Graduate Division of the CAUSE
+                    Student Data Scrollytelling Contest. The two projects look unrelated. They ask
+                    one question twice: what happens to human judgment when the mechanical part of
+                    thinking gets cheap.
+                </p>
+
+                <h3>What I would actually do, starting now</h3>
+
+                <p>
+                    If you want something more useful than encouragement, here is the plan I would
+                    hand myself twelve months back. It is a year of work, not a life sentence.
+                </p>
+
+                <ol class="essay-plan">
+                    <li>
+                        <strong>Pick one high-stakes domain and learn its stakes.</strong> One, and
+                        stay in it. Learn what a missed case costs a real person, in that
+                        person&rsquo;s terms. Stakes are what turn a metric into a decision, and
+                        you cannot borrow them from someone else&rsquo;s paper.
+                    </li>
+                    <li>
+                        <strong>Take the causal sequence seriously, and take it for the
+                        grade.</strong> Econometrics, causal inference, design of experiments,
+                        applied regression, panel data and difference-in-differences, instrumental
+                        variables, program evaluation. Pair it with the machine learning and
+                        statistical computing sequence. The pairing is the scarce good. Either half
+                        alone is common.
+                    </li>
+                    <li>
+                        <strong>Let AI close the coding gap instead of fearing it.</strong> This
+                        hybrid is newly possible because the implementation barrier collapsed. Hand
+                        the model your boilerplate and your plotting, and spend the hours you get
+                        back on the design, which is the part it cannot do for you.
+                    </li>
+                    <li>
+                        <strong>Build one rigorous project end to end, and publish how you did
+                        it.</strong> Not five demos. One study, with the question stated up front,
+                        the analysis committed to before you look, an honest null model, a subgroup
+                        breakdown, and a limitations paragraph you did not enjoy writing. Then
+                        write it up in public, including what failed. One project defended honestly
+                        says more than a portfolio of things that always worked.
+                    </li>
+                    <li>
+                        <strong>If you cannot be the hybrid, go find the other half.</strong> A
+                        statistician who walks into the ML lab, or an engineer who brings an
+                        economist into the design meeting before the experiment runs instead of
+                        after it fails, produces the same scarce good. Collaboration is the fast
+                        path, and it is open to you now.
+                    </li>
+                </ol>
+
+                <h3>The part I want you to keep</h3>
+
+                <p>
+                    I am not going to promise you a market. I cannot see anyone&rsquo;s hiring
+                    plans, and I will not pretend the next year is easy. Hiring has slowed, and
+                    saying otherwise would be a comfortable lie.
+                </p>
+
+                <p>
+                    Here is what I keep running into. Every time this research got hard, the hard
+                    part was not the model. It was a question about design, about what we are
+                    entitled to claim. Those questions multiply as AI moves into places where being
+                    wrong is expensive, and nobody is producing the people who can answer them fast
+                    enough.
+                </p>
+
+                <p>
+                    So the silence you are hearing is not the market telling you it does not need
+                    people. It is the market not yet knowing how to ask for what it needs. Go learn
+                    to be the answer to a question no one has finished writing down.
+                </p>
+
+            </div>
+
+            <div class="news-more-wrap">
+                <a class="news-more" href="news.html">Research news</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Seattle University. All rights reserved.</p>
+    </footer>
+
+    <script>
+    // Drives the left-edge scroll-progress stroke on browsers without CSS
+    // scroll timelines (Safari, Firefox). Chromium/Edge run it in pure CSS
+    // via `animation-timeline: scroll(root block)` and return early here.
+    (function () {
+        var bar = document.querySelector('.news-progress');
+        if (!bar) return;
+        if (window.CSS && CSS.supports && CSS.supports('animation-timeline: scroll()')) return;
+
+        var ticking = false;
+
+        function update() {
+            var doc = document.documentElement;
+            var max = doc.scrollHeight - doc.clientHeight;
+            var ratio = max > 0 ? doc.scrollTop / max : 0;
+            if (ratio < 0) ratio = 0;
+            if (ratio > 1) ratio = 1;
+            bar.style.setProperty('--news-progress', ratio);
+            ticking = false;
+        }
+
+        function onScroll() {
+            if (!ticking) {
+                ticking = true;
+                window.requestAnimationFrame(update);
+            }
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll, { passive: true });
+        update();
+    })();
+    </script>
+</body>
+</html>
