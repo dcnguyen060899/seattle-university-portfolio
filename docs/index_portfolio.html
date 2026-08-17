@@ -5,8 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/portfolio_su.css?v=20260814c">
     <link rel="stylesheet" href="css/news.css?v=20260805">
-    <link rel="icon" type="image/x-icon" href="seattleu_2.ico?v=2">
+    <link rel="icon" type="image/x-icon" href="seattleu_2.ico?v=3">
     <title>Duy Nguyen - Portfolio</title>
+
+    <!-- Scoped tagline style; not added to the shared stylesheets. Uses only
+         existing --seattle-* tokens, no new colors. -->
+    <style>
+    .headline-tagline {
+        max-width: 40rem;
+        margin: 1.1rem auto 0;
+        padding: 0 1.25rem;
+        text-align: center;
+        font-size: clamp(1rem, 1.4vw, 1.15rem);
+        line-height: 1.55;
+        color: var(--seattle-black);
+    }
+
+    .headline-tagline .tagline-role {
+        font-weight: 700;
+    }
+
+    .headline-tagline .tagline-detail {
+        color: var(--seattle-dark-gray);
+    }
+    </style>
 </head>
 <body>
     <!-- 2px fixed left-edge scroll-progress stroke, in --seattle-red -->
@@ -30,6 +52,13 @@
                 </div>
             </div>
         </div>
+
+        <p class="headline-tagline">
+            <span class="tagline-role">AI evaluation researcher</span> &mdash;
+            <span class="tagline-detail">causal inference and experimental design for
+            clinical AI systems, beginning with mammography.</span>
+        </p>
+
     <section id="about">
         <h2>About Me</h2>
 
