@@ -4,7 +4,6 @@ let playing = false;
 let selectedNodes = [];
 let codeProgress = 0;
 let currentMode = 'learn'; // 'learn', 'practice', 'challenge'
-let challengeSubmitted = false;
 let playInterval;
 
 // Maximum number of steps
@@ -30,10 +29,7 @@ const codeEditor = document.getElementById('code-editor');
 const codeProgressLevel = document.getElementById('code-progress-level');
 const codeProgressBar = document.getElementById('code-progress-bar');
 const challengeSection = document.getElementById('challenge-section');
-const challengeEditor = document.getElementById('challenge-editor');
-const challengeFeedback = document.getElementById('challenge-feedback');
-const challengeFeedbackText = document.getElementById('challenge-feedback-text');
-const solutionSection = document.getElementById('solution-section');
+const challengeEditor = document.getElementById('challenge-editor');   // Challenge mode itself lives in js/challenge_mode.js
 
 // Control buttons
 const resetBtn = document.getElementById('reset-btn');
@@ -52,9 +48,6 @@ const completeBtn = document.getElementById('complete-btn');
 const resetCodeBtn = document.getElementById('reset-code-btn');
 const checkCodeBtn = document.getElementById('check-code-btn');
 
-// Challenge buttons
-const clearChallengeBtn = document.getElementById('clear-challenge-btn');
-const submitChallengeBtn = document.getElementById('submit-challenge-btn');
 
 // Step explanations
 const stepExplanations = [
@@ -219,10 +212,6 @@ function attachEventListeners() {
     completeBtn.addEventListener('click', () => loadCodeTemplate(3));
     resetCodeBtn.addEventListener('click', resetCode);
     checkCodeBtn.addEventListener('click', checkCode);
-    
-    // Challenge buttons
-    clearChallengeBtn.addEventListener('click', clearChallenge);
-    submitChallengeBtn.addEventListener('click', submitChallenge);
 }
 
 // Set active mode
@@ -249,6 +238,9 @@ function setMode(mode) {
         codeSection.classList.add('hidden');
         challengeSection.classList.remove('hidden');
         resetAnimation();
+        if (window.ChallengeMode && typeof window.ChallengeMode.enter === 'function') {
+            window.ChallengeMode.enter();
+        }
     }
 }
 
@@ -310,39 +302,6 @@ function handleNodeClick(nodeId) {
         }, 1000);
     }
 }
-
-// Helper to check if the step is complete
-function isStepComplete() {
-    const correctNodes = stepHighlightMap[currentStep] || [];
-    // The step is complete if:
-    // 1. There is at least one correct node required, and
-    // 2. Every required node is selected, and
-    // 3. No extra nodes are selected.
-    return correctNodes.length > 0 &&
-           correctNodes.every(id => selectedNodes.includes(id)) &&
-           selectedNodes.length === correctNodes.length;
-}
-
-
-// Check if selected node is correct for current step
-function checkNodeSelection(nodeId) {
-    const correctNodes = stepHighlightMap[currentStep] || [];
-    if (correctNodes.includes(nodeId)) {
-        // Count how many correct nodes are selected so far
-        const selectedCorrectCount = selectedNodes.filter(id => correctNodes.includes(id)).length;
-        const totalRequired = correctNodes.length;
-        const remaining = totalRequired - selectedCorrectCount;
-        
-        if (remaining > 0) {
-            showFeedback(`Correct! ${remaining} more node${remaining > 1 ? 's' : ''} left to select.`, 2000);
-        } else {
-            showFeedback("All correct nodes selected!", 2000);
-        }
-    } else {
-        showFeedback("Not quite. Think about which nodes we need to compare at this step.", 2000);
-    }
-}
-
 
 // Clear selected nodes
 function clearSelectedNodes() {
@@ -492,284 +451,6 @@ function updateCodeProgress() {
     codeProgressBar.style.width = `${(codeProgress / 3) * 100}%`;
 }
 
-// Challenge functions
-function clearChallenge() {
-    challengeEditor.value = '';
-    challengeFeedback.classList.add('hidden');
-    solutionSection.classList.add('hidden');
-    challengeSubmitted = false;
-}
-
-function submitChallenge() {
-    const userSolution = challengeEditor.value;
-    challengeSubmitted = true;
-    
-    // Show thinking animation
-    const thinkingAnimation = document.getElementById('thinking-animation');
-    
-    // Hide previous feedback and show thinking animation
-    challengeFeedback.classList.remove('hidden');
-    challengeFeedbackText.innerHTML = '';
-    thinkingAnimation.classList.remove('hidden');
-    solutionSection.classList.add('hidden');
-    
-    // API endpoint - check if on production domains
-    const isProduction = window.location.hostname === 'ucberkeley-ml-ai-capstone.com' ||
-                         window.location.hostname === 'duyng-portfolio.com' ||
-                         window.location.hostname === 'www.duyng-portfolio.com';
-    const apiUrl = isProduction
-        ? 'https://uc-berkeley-ml-ai-capstone-work-sample.onrender.com/evaluate-challenge'
-        : '/evaluate-challenge';
-    
-    fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            code: userSolution,
-            challenge_type: 'fuzzySubtree'
-        }),
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Hide thinking animation
-        thinkingAnimation.classList.add('hidden');
-        
-        let responseText = data.response || '';
-        
-        // Create a container for formatted feedback
-        const formattedFeedback = document.createElement('div');
-        formattedFeedback.className = 'formatted-feedback';
-        
-        // Format the text with nice styling
-        const formattedHtml = formatEvaluationText(responseText);
-        formattedFeedback.innerHTML = formattedHtml;
-        
-        // Replace content
-        challengeFeedbackText.innerHTML = '';
-        challengeFeedbackText.appendChild(formattedFeedback);
-        
-        // Show solution section
-        solutionSection.classList.remove('hidden');
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        thinkingAnimation.classList.add('hidden');
-        challengeFeedbackText.textContent = 'Error evaluating solution. Please try again.';
-    });
-}
-
-// Helper function to format evaluation text
-function formatEvaluationText(text) {
-    // Create a container for evaluation content
-    let formattedHtml = '<div class="evaluation-content">';
-    
-    // Extract score
-    const scoreRegex = /Score:\s*(\d+)\/100/;
-    const scoreMatch = text.match(scoreRegex);
-    if (scoreMatch) {
-        formattedHtml += `<h3 class="evaluation-score">Score: ${scoreMatch[1]}/100</h3>`;
-        // Remove score from text to avoid duplication
-        text = text.replace(scoreRegex, '');
-    }
-    
-    // Define sections to look for
-    const sectionTitles = [
-        "Correctness:",
-        "Key Concepts:",
-        "Edge Cases:",
-        "Code Quality:",
-        "Suggestions for Improvement:"
-    ];
-    
-    // Split the text by section headers
-    let remainingText = text;
-    sectionTitles.forEach((sectionTitle, index) => {
-        if (remainingText.includes(sectionTitle)) {
-            // Get position of this section
-            const sectionStart = remainingText.indexOf(sectionTitle);
-            
-            // Find start of next section (if any)
-            let sectionEnd = remainingText.length;
-            for (let i = index + 1; i < sectionTitles.length; i++) {
-                const nextSectionPos = remainingText.indexOf(sectionTitles[i]);
-                if (nextSectionPos > -1) {
-                    sectionEnd = nextSectionPos;
-                    break;
-                }
-            }
-            
-            // Extract section content
-            const sectionText = remainingText.substring(sectionStart, sectionEnd).trim();
-            const contentText = sectionText.replace(sectionTitle, '').trim();
-            
-            // Add section header
-            formattedHtml += `<h3 class="evaluation-section">${sectionTitle}</h3>`;
-            
-            // Handle suggestions section differently
-            if (sectionTitle === "Suggestions for Improvement:") {
-                // Check if there are numbered items
-                const lines = contentText.split('\n');
-                const numberedItems = lines.filter(line => /^\d+\./.test(line.trim()));
-                
-                if (numberedItems.length > 0) {
-                    // It's a list
-                    formattedHtml += '<ul>';
-                    numberedItems.forEach(item => {
-                        // Extract content without the number
-                        const itemContent = item.replace(/^\d+\.\s*/, '').trim();
-                        formattedHtml += `<li>${itemContent}</li>`;
-                    });
-                    formattedHtml += '</ul>';
-                } else {
-                    // Regular paragraph
-                    formattedHtml += `<p>${contentText}</p>`;
-                }
-            } else {
-                // Regular paragraph
-                formattedHtml += `<p>${contentText}</p>`;
-            }
-            
-            // Update remaining text
-            remainingText = remainingText.substring(sectionEnd);
-        }
-    });
-    
-    formattedHtml += '</div>';
-    return formattedHtml;
-}
-
-// Helper function to format the feedback nicely
-function formatFeedback(data) {
-    console.log("Data received in formatFeedback:", data);
-    
-    // Create container
-    const feedbackContainer = document.createElement('div');
-    feedbackContainer.className = 'formatted-feedback';
-    
-    try {
-        // Handle special case where data is a string from LangChain that contains JSON
-        if (typeof data === 'string' && data.includes('action_input')) {
-            try {
-                // This handles LangChain output format
-                const parsedData = JSON.parse(data);
-                if (parsedData.action_input) {
-                    // The actual feedback is in action_input as a string
-                    const feedbackData = JSON.parse(parsedData.action_input);
-                    // Now process the inner data
-                    return formatFeedback(feedbackData);
-                }
-            } catch (e) {
-                console.error("Error parsing LangChain string:", e);
-                // Continue with the string as-is
-            }
-        }
-        
-        // Case 1: If data has score and feedback properties (your current format)
-        if (data.score !== undefined && data.feedback) {
-            // Display overall score
-            const scoreHeader = document.createElement('h3');
-            scoreHeader.textContent = `🎯 Overall Score: ${data.score}/100`;
-            feedbackContainer.appendChild(scoreHeader);
-            
-            // Display each feedback category
-            if (typeof data.feedback === 'object') {
-                const categoryMapping = {
-                    'correctness': 'Correctness',
-                    'keyConcepts': 'Key Concepts', 
-                    'edgeCases': 'Edge Cases',
-                    'codeQuality': 'Code Quality'
-                };
-                
-                Object.entries(data.feedback).forEach(([key, value]) => {
-                    const displayTitle = categoryMapping[key] || key;
-                    
-                    const categoryHeader = document.createElement('h4');
-                    categoryHeader.textContent = `✅ ${displayTitle}:`;
-                    feedbackContainer.appendChild(categoryHeader);
-                    
-                    const feedbackText = document.createElement('p');
-                    feedbackText.textContent = value;
-                    feedbackContainer.appendChild(feedbackText);
-                });
-            }
-        }
-        // Case 2: Plain text or markdown response
-        else if (typeof data === 'string') {
-            const feedbackText = document.createElement('div');
-            feedbackText.innerHTML = renderMarkdown(data);
-            feedbackContainer.appendChild(feedbackText);
-        }
-        // Case 3: Other structured data (fallback)
-        else {
-            // Default handling for other structures
-            Object.entries(data).forEach(([key, value]) => {
-                if (key !== 'suggestions' && key !== 'Suggestions') {
-                    const header = document.createElement('h4');
-                    header.textContent = `${key}:`;
-                    feedbackContainer.appendChild(header);
-                    
-                    const content = document.createElement('p');
-                    content.textContent = typeof value === 'object' ? JSON.stringify(value) : value;
-                    feedbackContainer.appendChild(content);
-                }
-            });
-            
-            // Handle suggestions separately
-            const suggestions = data.suggestions || data.Suggestions;
-            if (suggestions) {
-                const suggestionsHeader = document.createElement('h4');
-                suggestionsHeader.textContent = `💡 Improvement Suggestions:`;
-                feedbackContainer.appendChild(suggestionsHeader);
-                
-                const list = document.createElement('ul');
-                if (Array.isArray(suggestions)) {
-                    suggestions.forEach(suggestion => {
-                        const item = document.createElement('li');
-                        item.textContent = suggestion;
-                        list.appendChild(item);
-                    });
-                } else {
-                    const item = document.createElement('li');
-                    item.textContent = suggestions;
-                    list.appendChild(item);
-                }
-                feedbackContainer.appendChild(list);
-            }
-        }
-    } catch (error) {
-        console.error("Error in formatFeedback:", error);
-        const errorMsg = document.createElement('p');
-        errorMsg.textContent = "Error formatting feedback. Please try again.";
-        feedbackContainer.appendChild(errorMsg);
-    }
-    
-    // Update the UI
-    challengeFeedbackText.innerHTML = '';
-    challengeFeedbackText.appendChild(feedbackContainer);
-    solutionSection.classList.remove('hidden');
-}
-
-// Helper function to render basic markdown
-function renderMarkdown(text) {
-    if (!text) return '';
-    
-    // Convert headers (###)
-    text = text.replace(/###\s+(.*?)(?=\n|$)/g, '<h3>$1</h3>');
-    
-    // Convert bold (**text**)
-    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    
-    // Convert italic (*text*)
-    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    
-    // Convert line breaks
-    text = text.replace(/\n/g, '<br>');
-    
-    return text;
-}
-
 // Utility functions
 function showFeedback(message, duration = 0) {
     feedbackMessage.classList.remove('hidden');
@@ -824,10 +505,21 @@ function setupCodeEditor() {
     
     codeEditors.forEach(editor => {
         if (!editor) return;
-        
+
+        // Escape, then Tab, leaves the editor (Tab alone indents).
+        let allowTabOut = false;
+
         // Handle tab key presses for indentation
         editor.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                allowTabOut = true;
+                return;
+            }
             if (e.key === 'Tab') {
+                if (allowTabOut || e.ctrlKey || e.metaKey || e.altKey) {
+                    allowTabOut = false;
+                    return; // let focus move to the next element
+                }
                 e.preventDefault(); // Prevent moving to next element
                 
                 // Get cursor position
@@ -841,12 +533,16 @@ function setupCodeEditor() {
                 
                 // Move cursor after the inserted spaces
                 this.selectionStart = this.selectionEnd = start + 4;
+            } else {
+                allowTabOut = false;
             }
         });
-        
+
         // Add autoindent on Enter key
         editor.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
+                // Ctrl/Cmd+Enter and Ctrl/Cmd+Shift+Enter are shortcuts (run tests / AI feedback); never insert a newline.
+                if (e.ctrlKey || e.metaKey) return;
                 e.preventDefault();
                 
                 const start = this.selectionStart;

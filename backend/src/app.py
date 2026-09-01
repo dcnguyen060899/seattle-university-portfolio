@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, send_from_directory
-from flask_cors import CORS
+from evaluation import init_evaluation
 from dotenv import load_dotenv
 import os
 from chatservice import ChatService
@@ -11,15 +11,7 @@ import time
 
 load_dotenv()
 app = Flask(__name__, static_folder='../../docs', static_url_path='/')
-CORS(app)  # Initialize CORS with the Flask app
-
-# Add specific CORS configuration for the evaluate-challenge endpoint
-CORS(app, resources={r"/evaluate-challenge": {"origins": [
-    "http://duyng-portfolio.com",
-    "https://duyng-portfolio.com",
-    "http://ucberkeley-ml-ai-capstone.com",
-    "https://ucberkeley-ml-ai-capstone.com"
-]}})
+init_evaluation(app)  # /evaluate-challenge routes + the single CORS() configuration (evaluation/__init__.py)
 
 api_key = os.getenv("ANTHROPIC_API_KEY")
 chat_service = ChatService(api_key=api_key)
@@ -105,98 +97,6 @@ def chat():
     response_content = chat_service.get_response(user_message)
     return jsonify({"response": response_content})
 
-import json
-
-@app.route("/evaluate-challenge", methods=["POST"])
-def evaluate_challenge():
-    try:
-        data = request.get_json()
-        user_solution = data.get("code", "")
-        challenge_type = data.get("challenge_type", "")
-        
-        # Prompt asking for text format - very explicit instructions
-        evaluation_prompt = f"""
-        Evaluate this solution for the {challenge_type} algorithm challenge:
-
-        ```javascript
-        {user_solution}
-        ```
-
-        Check for:
-        1. Correctness - Does it implement the required algorithm properly?
-        2. Key concepts - Does it handle the core requirements (e.g., tracking differences in fuzzy matching)?
-        3. Edge cases - Does it handle null/empty inputs and other edge cases?
-        4. Code quality - Is the code well-structured and efficient?
-
-        CRITICAL FORMATTING REQUIREMENT:
-        You MUST respond with ONLY plain text in this EXACT format. Do NOT use JSON, do NOT use a dictionary structure, do NOT use markdown code blocks. Just plain text:
-
-        Score: X/100
-
-        Correctness: [Your detailed feedback here as plain text]
-
-        Key Concepts: [Your detailed feedback here as plain text]
-
-        Edge Cases: [Your detailed feedback here as plain text]
-
-        Code Quality: [Your detailed feedback here as plain text]
-
-        Suggestions for Improvement:
-        1. [First suggestion]
-        2. [Second suggestion]
-        3. [Third suggestion]
-
-        Again: PLAIN TEXT ONLY, not JSON or dict format.
-        """
-        
-        try:
-            # Get response using evaluation agent
-            response_content = chat_service.get_evaluation_response(evaluation_prompt)
-
-            # Helper function to format dict/JSON to text
-            def format_evaluation_dict(eval_dict):
-                formatted = f"Score: {eval_dict.get('Score', 'N/A')}\n\n"
-                formatted += f"Correctness: {eval_dict.get('Correctness', '')}\n\n"
-                formatted += f"Key Concepts: {eval_dict.get('Key Concepts', '')}\n\n"
-                formatted += f"Edge Cases: {eval_dict.get('Edge Cases', '')}\n\n"
-                formatted += f"Code Quality: {eval_dict.get('Code Quality', '')}\n\n"
-
-                suggestions = eval_dict.get('Suggestions for Improvement', [])
-                formatted += "Suggestions for Improvement:\n"
-                if isinstance(suggestions, list):
-                    for i, suggestion in enumerate(suggestions, 1):
-                        formatted += f"{i}. {suggestion}\n"
-                else:
-                    formatted += str(suggestions)
-                return formatted
-
-            # Handle different response formats
-            if isinstance(response_content, dict):
-                # Direct dict response
-                response_content = format_evaluation_dict(response_content)
-            elif isinstance(response_content, str):
-                # Try to parse if it's JSON string
-                try:
-                    import json
-                    parsed = json.loads(response_content)
-                    if isinstance(parsed, dict):
-                        # Check if it has evaluation fields
-                        if 'Score' in parsed or 'Correctness' in parsed:
-                            response_content = format_evaluation_dict(parsed)
-                except (json.JSONDecodeError, ValueError):
-                    # Not JSON, use as is (already plain text)
-                    pass
-
-            return jsonify({"response": response_content})
-            
-        except Exception as e:
-            print(f"Chat service error: {str(e)}")
-            return jsonify({"response": f"Error evaluating solution: {str(e)}"}), 500
-            
-    except Exception as e:
-        print(f"Error in evaluate-challenge: {str(e)}")
-        return jsonify({"response": f"Error: {str(e)}"}), 500
-        
 @app.route("/api-check", methods=["GET"])
 def api_check():
     try:

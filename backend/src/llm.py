@@ -9,9 +9,10 @@ load_dotenv()
 
 # LLM
 llm = ChatAnthropic(
-    anthropic_api_key = os.getenv("ANTHROPIC_API_KEY"),
-    model = os.getenv("ANTHROPIC_MODEL"),
-    max_tokens = 4096,  # Increased limit for long-form responses like cover letters
+    anthropic_api_key=os.getenv("ANTHROPIC_API_KEY") or "",
+    model=os.getenv("ANTHROPIC_MODEL", "claude-sonnet-5"),
+    max_tokens=4096,  # long-form answers (cover letters); the app boots without a key
+    model_kwargs={"thinking": {"type": "disabled"}},   # Sonnet 5 thinks by default; the extra thinking block breaks the ReAct parser in langchain-anthropic 0.1.11
 )
 
 # Embeddings for Vector Search Index (commented out - not currently used)
@@ -21,6 +22,4 @@ llm = ChatAnthropic(
 
 #Memory that uses all conversation 
 memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
-
-# Create separate memory for evaluation agent to avoid mixing with portfolio chat
-evaluation_memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+# evaluation_memory removed: the evaluation backend lives in evaluation/ and uses the anthropic SDK directly
