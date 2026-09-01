@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Subtree Algorithm Learning</title>
+    <link rel="icon" type="image/x-icon" href="seattleu_2.ico?v=3">
+    <title>Interactive Subtree Algorithm Learning - Seattle University</title>
     <link rel="stylesheet" href="css/learning_algorithm.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Berkeley-styled Header -->
+    <!-- Seattle University header (matches the other portfolio pages) -->
     <header>
-        <a href="https://em-executive.berkeley.edu/professional-certificate-machine-learning-artificial-intelligence" class="logo-link">
+        <a href="https://www.seattleu.edu/science-engineering/discover-data-science/" class="logo-link">
             <div class="logo">
-                <img src="images/UC_Berkeley.png" alt="Berkeley Engineering and Haas logo">
+                <img src="images/seattle_university.png" alt="Seattle University logo">
             </div>
         </a>
         <nav>
-            <a href="index_portfolio.html">Portfolio</a>
+            <a href="index_portfolio.html">Back to Portfolio</a>
         </nav>
     </header>
 
@@ -25,13 +26,13 @@
         <!-- Problem Statement Section -->
         <div class="problem-statement">
             <h2>Problem: Subtree of Another Tree</h2>
-            
+
             <div class="problem-description">
                 <p>Given the roots of two binary trees <code>root</code> and <code>subRoot</code>, return <code>true</code> if there is a subtree of <code>root</code> with the same structure and node values of <code>subRoot</code> and <code>false</code> otherwise.</p>
-                
+
                 <p>A subtree of a binary tree <code>tree</code> is a tree that consists of a node in <code>tree</code> and all of this node's descendants. The tree <code>tree</code> could also be considered as a subtree of itself.</p>
             </div>
-            
+
             <div class="problem-examples">
                 <div class="example">
                     <h3>Example 1:</h3>
@@ -41,7 +42,7 @@
                         <p class="example-explanation">The subtree with root 2 in the main tree matches the structure and values of subRoot.</p>
                     </div>
                 </div>
-                
+
                 <div class="example">
                     <h3>Example 2:</h3>
                     <div class="example-content">
@@ -51,7 +52,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="problem-constraints">
                 <h3>Constraints:</h3>
                 <ul>
@@ -59,12 +60,12 @@
                     <li>-100 ≤ root.val, subRoot.val ≤ 100</li>
                 </ul>
             </div>
-            
+
             <div class="problem-complexity">
                 <h3>Recommended Time & Space Complexity:</h3>
                 <p>You should aim for a solution as good or better than <code>O(m * n)</code> time and <code>O(m + n)</code> space, where <code>n</code> and <code>m</code> are the number of nodes in <code>root</code> and <code>subRoot</code>, respectively.</p>
             </div>
-            
+
             <div class="problem-hints">
                 <h3>Hints <button id="toggle-hints" class="hint-toggle">Show Hints</button></h3>
                 <div id="hints-container" class="hints-container hidden">
@@ -83,19 +84,19 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Mode Selection -->
         <div class="mode-selection">
             <button id="learn-mode" class="mode-btn active">Learn Mode</button>
             <button id="practice-mode" class="mode-btn">Practice Mode</button>
             <button id="challenge-mode" class="mode-btn">Challenge Mode</button>
         </div>
-        
+
         <div class="content-area">
             <!-- Tree Visualization Area -->
             <div class="visualization-section">
                 <h2>Tree Visualization</h2>
-                
+
                 <div class="trees-container">
                     <!-- Main Tree -->
                     <div class="tree">
@@ -104,44 +105,44 @@
                             <!-- Node 1 -->
                             <circle id="node1" cx="90" cy="30" r="15" class="node" data-node-id="node1"></circle>
                             <text x="90" y="34" text-anchor="middle" font-size="12">1</text>
-                            
+
                             <!-- Edge to Node 2 -->
                             <line x1="80" y1="40" x2="55" y2="65" class="edge"></line>
-                            
+
                             <!-- Node 2 -->
                             <circle id="node2" cx="50" cy="70" r="15" class="node" data-node-id="node2"></circle>
                             <text x="50" y="74" text-anchor="middle" font-size="12">2</text>
-                            
+
                             <!-- Edge to Node 3 -->
                             <line x1="100" y1="40" x2="125" y2="65" class="edge"></line>
-                            
+
                             <!-- Node 3 -->
                             <circle id="node3" cx="130" cy="70" r="15" class="node" data-node-id="node3"></circle>
                             <text x="130" y="74" text-anchor="middle" font-size="12">3</text>
-                            
+
                             <!-- Edge to Node 4 -->
                             <line x1="40" y1="80" x2="25" y2="105" class="edge"></line>
-                            
+
                             <!-- Node 4 -->
                             <circle id="node4Main" cx="20" cy="110" r="15" class="node" data-node-id="node4Main"></circle>
                             <text x="20" y="114" text-anchor="middle" font-size="12">4</text>
-                            
+
                             <!-- Edge to Node 5 -->
                             <line x1="60" y1="80" x2="75" y2="105" class="edge"></line>
-                            
+
                             <!-- Node 5 -->
                             <circle id="node5Main" cx="80" cy="110" r="15" class="node" data-node-id="node5Main"></circle>
                             <text x="80" y="114" text-anchor="middle" font-size="12">5</text>
-                            
+
                             <!-- Edge to Node 6 -->
                             <line x1="10" y1="120" x2="0" y2="145" class="edge"></line>
-                            
+
                             <!-- Node 6 -->
                             <circle id="node6" cx="0" cy="150" r="15" class="node" data-node-id="node6"></circle>
                             <text x="0" y="154" text-anchor="middle" font-size="12">6</text>
                         </svg>
                     </div>
-                    
+
                     <!-- Subtree -->
                     <div class="tree">
                         <h3>Subtree</h3>
@@ -149,34 +150,34 @@
                             <!-- Node 2 -->
                             <circle id="subRoot" cx="60" cy="30" r="15" class="node" data-node-id="subRoot"></circle>
                             <text x="60" y="34" text-anchor="middle" font-size="12">2</text>
-                            
+
                             <!-- Edge to Node 4 -->
                             <line x1="50" y1="40" x2="35" y2="65" class="edge"></line>
-                            
+
                             <!-- Node 4 -->
                             <circle id="node4Sub" cx="30" cy="70" r="15" class="node" data-node-id="node4Sub"></circle>
                             <text x="30" y="74" text-anchor="middle" font-size="12">4</text>
-                            
+
                             <!-- Edge to Node 5 -->
                             <line x1="70" y1="40" x2="85" y2="65" class="edge"></line>
-                            
+
                             <!-- Node 5 -->
                             <circle id="node5Sub" cx="90" cy="70" r="15" class="node" data-node-id="node5Sub"></circle>
                             <text x="90" y="74" text-anchor="middle" font-size="12">5</text>
                         </svg>
                     </div>
                 </div>
-                
+
                 <!-- Explanation Box -->
                 <div class="explanation-box">
                     <h3>Current Step</h3>
                     <p id="step-explanation">Start with isSubtree(root, subRoot) where root is node 1 and subRoot is node 2. We check if the entire trees are identical.</p>
-                    
+
                     <div id="hint-box" class="hint-box hidden">
                         <p><strong>Hint:</strong> <span id="hint-text">We start by comparing the root of the main tree with the root of the subtree.</span></p>
                     </div>
                 </div>
-                
+
                 <!-- Controls -->
                 <div class="controls">
                     <div class="main-controls">
@@ -186,28 +187,28 @@
                         <button id="next-btn" class="control-btn"><i class="fas fa-chevron-right"></i></button>
                         <button id="end-btn" class="control-btn"><i class="fas fa-step-forward"></i></button>
                     </div>
-                    
+
                     <div class="secondary-controls">
                         <button id="hint-btn" class="control-btn"><i class="fas fa-question-circle"></i></button>
                         <button id="code-toggle-btn" class="control-btn"><i class="fas fa-code"></i></button>
                     </div>
                 </div>
-                
+
                 <!-- Progress Bar -->
                 <div class="progress-container">
                     <div id="progress-bar" class="progress-bar"></div>
                 </div>
-                
+
                 <!-- Feedback Message -->
                 <div id="feedback-message" class="feedback-message hidden">
                     <p id="feedback-text"></p>
                 </div>
             </div>
-            
+
             <!-- Code Implementation Area (Hidden by Default) -->
             <div id="code-section" class="code-section hidden">
                 <h2>Algorithm Implementation</h2>
-                
+
                 <div class="code-header">
                     <div class="code-progress">
                         <div class="progress-text">Current Progress Level: <span id="code-progress-level">0</span> / 3</div>
@@ -215,7 +216,7 @@
                             <div id="code-progress-bar" class="progress-bar"></div>
                         </div>
                     </div>
-                    
+
                     <div class="code-templates">
                         <button id="template-btn" class="template-btn">Template</button>
                         <button id="level1-btn" class="template-btn">Level 1</button>
@@ -223,14 +224,14 @@
                         <button id="complete-btn" class="template-btn">Complete</button>
                     </div>
                 </div>
-                
+
                 <textarea id="code-editor" class="code-editor" placeholder="Implement the isSubtree and isSameTree functions here..."></textarea>
-                
+
                 <div class="code-actions">
                     <button id="reset-code-btn" class="action-btn">Reset</button>
                     <button id="check-code-btn" class="action-btn primary">Check Code</button>
                 </div>
-                
+
                 <div class="code-explanation">
                     <h3>Key Algorithm Insights:</h3>
                     <ul>
@@ -242,79 +243,218 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Challenge Mode Section (Hidden by Default) -->
-        <div id="challenge-section" class="challenge-section hidden">
-            <h2>Challenge: Implement a Variation</h2>
-            <p class="challenge-description">
-                Implement a modification of the isSubtree function that allows for a "fuzzy" match, 
-                where the subtree can differ by at most one node value from the pattern.
-            </p>
-            
-            <textarea id="challenge-editor" class="code-editor" placeholder="function fuzzySubtree(root, subRoot, maxDifferences = 1) {
-              // Your implementation here
-            }"></textarea>
-            
+
+        <!-- Challenge Mode Section (hidden until Challenge mode; rendered by js/challenge_mode.js) -->
+        <section id="challenge-section" class="challenge-section hidden" aria-labelledby="challenge-heading">
+            <h2 id="challenge-heading">Challenge: Build a Variation</h2>
+            <p class="challenge-intro">Pick a challenge, write JavaScript below, run the tests in your browser, then ask the AI tutor for a review and a hint.</p>
+
+            <!-- Challenge tabs (roving tabindex, arrow keys handled by challenge_mode.js) -->
+            <div id="challenge-tabs" class="challenge-tabs" role="tablist" aria-label="Challenges">
+                <button type="button" class="challenge-tab active" role="tab" id="tab-countSubtrees" data-challenge-id="countSubtrees" aria-selected="true" aria-controls="challenge-card" tabindex="0">
+                    <span class="tab-level">Warm-up</span><span class="tab-name">Count Matching Subtrees</span><span class="tab-status" data-status="new"></span>
+                </button>
+                <button type="button" class="challenge-tab" role="tab" id="tab-fuzzySubtree" data-challenge-id="fuzzySubtree" aria-selected="false" aria-controls="challenge-card" tabindex="-1">
+                    <span class="tab-level">Core</span><span class="tab-name">Fuzzy Subtree</span><span class="tab-status" data-status="new"></span>
+                </button>
+                <button type="button" class="challenge-tab" role="tab" id="tab-mirrorSubtree" data-challenge-id="mirrorSubtree" aria-selected="false" aria-controls="challenge-card" tabindex="-1">
+                    <span class="tab-level">Advanced</span><span class="tab-name">Mirror Subtree</span><span class="tab-status" data-status="new"></span>
+                </button>
+            </div>
+            <p id="challenge-status-line" class="challenge-status-line"></p>
+
+            <!-- Problem card: filled from data/challenges.json -->
+            <div id="challenge-card" class="challenge-card" role="tabpanel" aria-labelledby="tab-countSubtrees">
+                <h3 id="challenge-title"></h3>
+                <div id="challenge-description" class="challenge-description"></div>
+                <div id="challenge-examples" class="problem-examples"></div>
+                <details id="challenge-rules" class="challenge-rules">
+                    <summary>Constraints and key concepts</summary>
+                    <ul id="challenge-rules-list"></ul>
+                </details>
+                <p class="challenge-signature">Signature: <code id="challenge-signature"></code></p>
+            </div>
+
+            <!-- Workbench: editor column on the left, tutor aside on the right (two columns from 1100px) -->
+            <div class="challenge-workbench">
+                <div class="challenge-editor-column">
+                    <div class="challenge-editor-header">
+                        <label for="challenge-editor" class="editor-label">Your solution (JavaScript)</label>
+                        <div class="code-templates">
+                            <button type="button" id="load-starter-btn" class="template-btn">Reset to starter</button>
+                            <button type="button" id="load-practice-btn" class="template-btn">Start from my Practice code</button>
+                        </div>
+                    </div>
+                    <div class="editor-wrap">
+                        <textarea id="challenge-editor" class="code-editor" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="editor-keys-help" placeholder="// Write your solution here, or click Reset to starter."></textarea>
+                        <!-- Selection popover: shown by challenge_mode.js when text is selected in the editor -->
+                        <div id="editor-ask-popover" class="editor-ask-popover hidden" role="toolbar" aria-label="Selected lines">
+                            <button type="button" id="editor-ask-btn" class="editor-ask-btn">Ask tutor about Ln 1</button>
+                        </div>
+                    </div>
+                    <p id="editor-keys-help" class="editor-keys-help">Tab indents. Press Esc, then Tab to leave the editor. Ctrl+Enter runs tests. Ctrl+Shift+Enter asks the AI tutor.</p>
+                    <p id="challenge-inline-msg" class="challenge-inline-msg hidden" role="alert"></p>
+
+                    <div class="challenge-actions">
+                        <span></span>
+                        <div class="challenge-actions-right">
+                            <button type="button" id="run-tests-btn" class="action-btn" title="Runs in your browser. No API call. (Ctrl+Enter)">Run tests</button>
+                            <button type="button" id="submit-challenge-btn" class="action-btn primary" title="Runs the tests, then sends your code and results to the AI tutor. (Ctrl+Shift+Enter)">Get AI feedback</button>
+                        </div>
+                    </div>
+
+                    <!-- Pipeline strip: same look as the chatbot's #pipeline-inline -->
+                    <div id="eval-pipeline" class="eval-pipeline hidden" aria-hidden="true">
+                        <div class="eval-pipeline-strip">
+                            <div class="pipeline-step-mini" data-stage="static_checks" title="Parses your code and finds the entry function. Runs in your browser."><span class="step-dot"></span><span class="step-label">Static checks</span></div>
+                            <div class="pipeline-step-mini" data-stage="tests" title="Runs the test catalog in an isolated Web Worker with a 2 s timeout per test. Runs in your browser."><span class="step-dot"></span><span class="step-label">Sandbox tests</span></div>
+                            <div class="pipeline-step-mini" data-stage="retrieval" title="The server matches your failing tests against a catalog of known misconceptions and assembles context for the judge."><span class="step-dot"></span><span class="step-label">Context</span></div>
+                            <div class="pipeline-step-mini" data-stage="judge" title="Claude Sonnet reads your code plus the evidence and returns a structured review."><span class="step-dot"></span><span class="step-label">AI judge</span></div>
+                            <div class="pipeline-step-mini" data-stage="postcheck" title="The review is cross-checked against the test results your browser reported: verdict and scores come from the tests, not from the model."><span class="step-dot"></span><span class="step-label">Consistency</span></div>
+                            <span id="eval-pipeline-time"></span>
+                        </div>
+                        <p id="eval-pipeline-detail" class="eval-pipeline-detail"></p>
+                    </div>
+                    <details id="eval-trace-details" class="eval-trace-details hidden">
+                        <summary>What did the pipeline do?</summary>
+                        <ol id="eval-trace-list"></ol>
+                    </details>
+                </div>
+
+                <!-- Ask the tutor: works at any time in Challenge mode; controls are disabled by the JS when the server has no AI configured -->
+                <aside id="eval-tutor" class="tutor-box" aria-labelledby="tutor-heading">
+                    <div class="tutor-header">
+                        <h4 id="tutor-heading">Ask the tutor</h4>
+                        <span id="tutor-remaining" class="tutor-remaining">5 left</span>
+                    </div>
+                    <p class="tutor-help">Short, Socratic answers about your code and this problem. No full solutions.</p>
+                    <p id="tutor-unavailable" class="tutor-unavailable hidden">AI tutor not configured on this server.</p>
+                    <div id="tutor-quick" class="tutor-quick">
+                        <button type="button" class="tutor-quick-btn" data-mode="explain_problem">Explain this problem</button>
+                        <button type="button" class="tutor-quick-btn" data-mode="suggest_approach">Suggest an approach</button>
+                        <button type="button" class="tutor-quick-btn" data-mode="complexity">Time &amp; space complexity</button>
+                    </div>
+                    <p id="tutor-empty" class="tutor-empty">Highlight lines in your code to ask about them, or use a quick prompt.</p>
+                    <ol id="tutor-thread" class="tutor-thread" aria-live="polite"></ol>
+                    <form id="tutor-form" class="tutor-form">
+                        <div id="tutor-context" class="tutor-context hidden">
+                            <span id="tutor-context-chip" class="tutor-context-chip">Ln 1</span>
+                            <button type="button" id="tutor-context-clear" class="tutor-context-clear" aria-label="Remove selected lines">&times;</button>
+                        </div>
+                        <label for="tutor-input" class="visually-hidden">Ask the tutor</label>
+                        <textarea id="tutor-input" rows="2" maxlength="500" placeholder="Ask about the problem, your approach, or the lines you highlighted..."></textarea>
+                        <div class="tutor-form-row">
+                            <label class="tutor-stuck"><input type="checkbox" id="tutor-stuck"> I'm stuck, go one step further</label>
+                            <button type="submit" id="tutor-send-btn" class="action-btn primary">Ask</button>
+                        </div>
+                        <p class="tutor-keys-help">Enter sends. Shift+Enter for a new line.</p>
+                    </form>
+                </aside>
+            </div>
+
+            <div id="eval-announcer" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
+
+            <!-- Results: filled by challenge_mode.js after Run tests / Get AI feedback -->
             <div id="challenge-feedback" class="challenge-feedback hidden">
-                <div id="thinking-animation" class="thinking-animation hidden">
-                    <span class="dot"></span>
-                    <span class="dot"></span>
-                    <span class="dot"></span>
-                    <div class="thinking-text">Evaluating your solution...</div>
+                <div id="eval-banner" class="banner-degraded hidden" role="status">
+                    <span id="eval-banner-text"></span>
+                    <button type="button" id="retry-ai-btn" class="template-btn hidden">Retry AI feedback</button>
                 </div>
-                
-                <p id="challenge-feedback-text"></p>
-                
-                <div id="solution-section" class="solution-section hidden">
-                    <h4>Example Solution:</h4>
-                    <pre class="solution-code" id="solution-code">function fuzzySubtree(root, subRoot, maxDifferences = 1) {
-                      if (!subRoot) return true;
-                      if (!root) return false;
-                      
-                      // Check if current trees fuzzy match
-                      if (fuzzySameTree(root, subRoot, maxDifferences)) return true;
-                      
-                      // Recursive search in left and right subtrees
-                      return fuzzySubtree(root.left, subRoot, maxDifferences) || 
-                             fuzzySubtree(root.right, subRoot, maxDifferences);
-                    }
-                    
-                    function fuzzySameTree(p, q, maxDifferences, differences = 0) {
-                      // Base cases
-                      if (!p && !q) return true;
-                      if (!p || !q) return false;
-                      
-                      // Value comparison - allow differences up to maxDifferences
-                      if (p.val !== q.val) {
-                        differences++;
-                        if (differences > maxDifferences) return false;
-                      }
-                      
-                      // Check both subtrees recursively, passing the current difference count
-                      return fuzzySameTree(p.left, q.left, maxDifferences, differences) && 
-                             fuzzySameTree(p.right, q.right, maxDifferences, differences);
-                    }</pre>
+                <section id="eval-summary" class="eval-summary" tabindex="-1" aria-labelledby="eval-summary-heading">
+                    <h3 id="eval-summary-heading" class="visually-hidden">Evaluation summary</h3>
+                    <div class="eval-summary-main">
+                        <div class="eval-score"><span id="eval-score-value" class="score-big">-</span><span class="score-denominator">/ 100</span></div>
+                        <div class="eval-summary-text">
+                            <span id="eval-verdict" class="verdict-badge"></span>
+                            <p id="eval-headline"></p>
+                            <p id="eval-tests-summary" class="eval-tests-summary"></p>
+                            <p id="eval-progress-note" class="eval-progress-note"></p>
+                        </div>
+                    </div>
+                    <ul id="eval-rubric" class="rubric-list"></ul>
+                </section>
+                <section id="eval-tests" class="eval-panel" aria-labelledby="eval-tests-heading">
+                    <h4 id="eval-tests-heading">Test cases</h4>
+                    <div class="table-scroll">
+                        <table class="test-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Result</th>
+                                    <th scope="col">Test</th>
+                                    <th scope="col">Checks</th>
+                                    <th scope="col"><span class="visually-hidden">Details</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="eval-tests-body"></tbody>
+                        </table>
+                    </div>
+                </section>
+                <section id="eval-issues" class="eval-panel">
+                    <h4>What's getting in the way</h4>
+                    <ol id="eval-issues-list" class="issue-list"></ol>
+                </section>
+                <section id="eval-strengths" class="eval-panel">
+                    <h4>What's working</h4>
+                    <ul id="eval-strengths-list" class="strength-list"></ul>
+                </section>
+                <section id="eval-guardrails" class="eval-panel hidden">
+                    <h4>Double-check</h4>
+                    <ul id="eval-guardrails-list" class="guardrail-list"></ul>
+                </section>
+            </div>
+
+            <!-- Hint ladder + the tutor's hint -->
+            <section id="eval-hint" class="hint-card" aria-labelledby="eval-hint-heading">
+                <h4 id="eval-hint-heading">Your next step</h4>
+                <p id="eval-hint-ladder-text">Stuck? Run the tests first, then reveal a hint here.</p>
+                <details id="eval-hint-earlier" class="hidden">
+                    <summary>Earlier hints</summary>
+                    <ol id="eval-hint-earlier-list"></ol>
+                </details>
+                <div id="eval-hint-tutor" class="hint-tutor hidden">
+                    <span class="hint-source">From the tutor</span>
+                    <p id="eval-hint-tutor-text"></p>
+                    <p id="eval-hint-question" class="hint-question"></p>
                 </div>
+                <div class="hint-card-actions">
+                    <button type="button" id="reveal-hint-btn" class="template-btn">Reveal hint 1 of 3</button>
+                    <span id="eval-hint-counter" class="hint-counter"></span>
+                </div>
+            </section>
+
+            <!-- Next steps (shown after a review) -->
+            <div id="eval-followup" class="eval-followup hidden">
+                <section id="eval-next" class="eval-panel">
+                    <h4>What to try next</h4>
+                    <ol id="eval-next-list"></ol>
+                    <button type="button" id="eval-next-challenge-btn" class="action-btn primary hidden">Go to the Core challenge</button>
+                </section>
             </div>
-            
-            <div class="challenge-actions">
-                <button id="clear-challenge-btn" class="action-btn">Clear</button>
-                <button id="submit-challenge-btn" class="action-btn primary">Submit Solution</button>
+
+            <!-- Reference solution: a pedagogical lock, unlocked by the JS (solved, 4 attempts, or give up) -->
+            <div id="solution-section" class="solution-section">
+                <div id="solution-lock" class="solution-lock">
+                    <p id="solution-lock-text">Reference solution unlocks when all tests pass or after 4 attempts.</p>
+                    <button type="button" id="give-up-btn" class="template-btn hidden">I give up, show me</button>
+                </div>
+                <details id="solution-details" class="hidden">
+                    <summary>Show reference solution</summary>
+                    <pre id="solution-code" class="solution-code"></pre>
+                    <ul id="solution-notes"></ul>
+                    <p id="solution-stretch" class="solution-stretch"></p>
+                    <button type="button" id="load-solution-btn" class="template-btn">Load into editor</button>
+                </details>
             </div>
-            
-            <div id="challenge-hint" class="hint-box">
-                <p><strong>Hint:</strong> You'll need to modify both functions. Create a 
-                fuzzySameTree function that tracks the number of differing nodes and 
-                allows matches when differences ≤ maxDifferences.</p>
-            </div>
-        </div>
+        </section>
     </main>
-    
+
     <footer>
-        <p>© 2024 UC Berkeley. All rights reserved.</p>
+        <p>&copy; 2025 Seattle University. All rights reserved.</p>
         <a href="index_portfolio.html">Back to Portfolio</a>
     </footer>
-    
+
     <script src="js/learning_algorithm.js"></script>
+    <script src="js/challenge_runner.js"></script>
+    <script src="js/challenge_mode.js"></script>
 </body>
 </html>

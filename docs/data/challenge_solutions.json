@@ -1,0 +1,41 @@
+{
+ "registry_hash": "c90c890e7fa7f954",
+ "solutions": {
+  "countSubtrees": {
+   "accepted_alternatives": [
+    "function countSubtrees(root, subRoot) {\n  if (!root) return 0;\n  // A strict descendant of a matching node has fewer nodes than subRoot,\n  // so once this node matches nothing below it can: return 1 right away.\n  if (isSameTree(root, subRoot)) return 1;\n  return countSubtrees(root.left, subRoot) + countSubtrees(root.right, subRoot);\n}\n\nfunction isSameTree(p, q) {\n  if (!p && !q) return true;\n  if (!p || !q) return false;\n  if (p.val !== q.val) return false;\n  return isSameTree(p.left, q.left) && isSameTree(p.right, q.right);\n}"
+   ],
+   "reference_solution": "function countSubtrees(root, subRoot) {\n  if (!root) return 0;\n  // Count this node if the tree rooted here is identical to subRoot,\n  // then ADD (not OR) the matches found inside both children.\n  const here = isSameTree(root, subRoot) ? 1 : 0;\n  return here + countSubtrees(root.left, subRoot) + countSubtrees(root.right, subRoot);\n}\n\nfunction isSameTree(p, q) {\n  if (!p && !q) return true;\n  if (!p || !q) return false;\n  if (p.val !== q.val) return false;\n  return isSameTree(p.left, q.left) && isSameTree(p.right, q.right);\n}",
+   "solution_notes": [
+    "The recursion returns a number at every node: 0 or 1 for this node plus the two child counts.",
+    "isSameTree is unchanged; it already answers false for an empty pattern, so countSubtrees(root, null) is 0 without a special case.",
+    "OR would stop at the first match; + visits both children and keeps counting."
+   ],
+   "stretch_goal": "Stop descending into a subtree that has fewer nodes than subRoot (count node sizes once up front)."
+  },
+  "fuzzySubtree": {
+   "accepted_alternatives": [
+    "function fuzzySubtree(root, subRoot, maxDifferences = 1) {\n  if (!subRoot) return true;\n  if (!root) return false;\n  if (remainingBudget(root, subRoot, maxDifferences) >= 0) return true;\n  return fuzzySubtree(root.left, subRoot, maxDifferences) ||\n         fuzzySubtree(root.right, subRoot, maxDifferences);\n}\n// Returns the budget left after matching p against q, or -1 if the match fails.\nfunction remainingBudget(p, q, budget) {\n  if (!p && !q) return budget;\n  if (!p || !q) return -1;\n  if (p.val !== q.val) budget -= 1;\n  if (budget < 0) return -1;\n  budget = remainingBudget(p.left, q.left, budget);   // left spends first...\n  if (budget < 0) return -1;\n  return remainingBudget(p.right, q.right, budget);   // ...right sees what is left\n}"
+   ],
+   "reference_solution": "function fuzzySubtree(root, subRoot, maxDifferences = 1) {\n  if (!subRoot) return true;\n  if (!root) return false;\n  // Each candidate gets a FRESH budget: count mismatches over the whole\n  // candidate, then compare once against maxDifferences.\n  if (countMismatches(root, subRoot) <= maxDifferences) return true;\n  return fuzzySubtree(root.left, subRoot, maxDifferences) ||\n         fuzzySubtree(root.right, subRoot, maxDifferences);\n}\n\n// Returns the number of positions whose VALUES differ when p and q have\n// exactly the same shape, or Infinity when the shapes differ.\nfunction countMismatches(p, q) {\n  if (!p && !q) return 0;\n  if (!p || !q) return Infinity;\n  const here = p.val !== q.val ? 1 : 0;\n  return here + countMismatches(p.left, q.left) + countMismatches(p.right, q.right);\n}",
+   "solution_notes": [
+    "The helper answers *how many positions differ*, not *do these match*.",
+    "Infinity encodes a shape mismatch so the <= test rejects it for any budget.",
+    "The count restarts for every candidate because each countMismatches call starts from 0: no shared counter, no copied counter."
+   ],
+   "stretch_goal": "Add an early exit: stop counting once the running total exceeds maxDifferences (the threaded-budget alternative shows one way)."
+  },
+  "mirrorSubtree": {
+   "accepted_alternatives": [
+    "function isMirrorSubtree(root, subRoot) {\n  // Build the mirror image of subRoot once, then the problem is two ordinary isSubtree searches.\n  return isSubtree(root, subRoot) || isSubtree(root, mirrorOf(subRoot));\n}\n\nfunction mirrorOf(node) {\n  if (!node) return null;\n  return { val: node.val, left: mirrorOf(node.right), right: mirrorOf(node.left) };\n}\n\nfunction isSubtree(root, subRoot) {\n  if (!subRoot) return true;\n  if (!root) return false;\n  if (isSameTree(root, subRoot)) return true;\n  return isSubtree(root.left, subRoot) || isSubtree(root.right, subRoot);\n}\n\nfunction isSameTree(p, q) {\n  if (!p && !q) return true;\n  if (!p || !q) return false;\n  if (p.val !== q.val) return false;\n  return isSameTree(p.left, q.left) && isSameTree(p.right, q.right);\n}"
+   ],
+   "reference_solution": "function isMirrorSubtree(root, subRoot) {\n  if (!subRoot) return true;\n  if (!root) return false;\n  // A candidate matches if it equals subRoot OR equals the mirror image of subRoot.\n  if (isSameTree(root, subRoot) || isMirrorTree(root, subRoot)) return true;\n  return isMirrorSubtree(root.left, subRoot) || isMirrorSubtree(root.right, subRoot);\n}\n\nfunction isSameTree(p, q) {\n  if (!p && !q) return true;\n  if (!p || !q) return false;\n  if (p.val !== q.val) return false;\n  return isSameTree(p.left, q.left) && isSameTree(p.right, q.right);\n}\n\n// True when p is exactly the mirror image of q: values equal at the root,\n// p.left mirrors q.right and p.right mirrors q.left, all the way down.\nfunction isMirrorTree(p, q) {\n  if (!p && !q) return true;\n  if (!p || !q) return false;\n  if (p.val !== q.val) return false;\n  return isMirrorTree(p.left, q.right) && isMirrorTree(p.right, q.left);\n}",
+   "solution_notes": [
+    "isMirrorTree has the same three base cases as isSameTree; only the recursive calls cross sides (p.left with q.right, p.right with q.left).",
+    "Because the crossing happens inside the recursion, the swap applies at every level automatically; a flip-equivalent tree fails.",
+    "Building mirror(subRoot) once and running the lesson's isSubtree twice is an equally correct design."
+   ],
+   "stretch_goal": "Compute the mirror image of subRoot once and answer with two calls of the lesson's isSubtree; then compare the number of node visits with the two-helper design."
+  }
+ }
+}

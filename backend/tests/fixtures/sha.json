@@ -1,0 +1,5 @@
+{
+ "note": "SHA-256 over the UTF-8 bytes of `input`, computed by Node (backend/tests/js/challenges.test.mjs); test_schemas.py must reproduce `sha256` from `input`.",
+ "input": "function f(){}\n// é\n",
+ "sha256": "4b7ec801d78aae82247ecbf98e4ef855b53ede129b763d105843885dae1e8e6a"
+}
