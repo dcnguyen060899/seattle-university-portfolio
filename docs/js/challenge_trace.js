@@ -10,9 +10,11 @@
  *
  *   instrument(code)        -> { code, functions: [{ name, start_line, end_line, params }] }   (throws SyntaxError)
  *                              every function gets an index (its position in `functions`) which the rewritten code
- *                              passes to __t.enter(name, index, [args]); the call event records it as `f`, so a call
- *                              maps back to ITS function even when names repeat ("(anonymous)" callbacks, shadowing)
- *   makeTracer(limits)      -> { enter, ret, throw, exit, events(), truncated(), calls() }
+ *                              passes to __sua_tracer__.enter(name, index, [args]); the call event records it as `f`, so a
+ *                              call maps back to ITS function even when names repeat ("(anonymous)" callbacks, shadowing)
+ *                              The injected identifiers (TRACER / CALL_ID / ERR below) carry a "sua" prefix and a
+ *                              trailing "__" so that plain learner names such as __t, __c, _t or t never collide with them.
+ *   makeTracer(limits)      -> { enter, ret, throw, exit, reset, events(), truncated(), calls() }
  *   buildTraceTree(arr, t)  -> { root, nodes: [{ vid, val, index, parent, side }] }
  *   runTrace(code, entry, argTypes, args, limits) -> { ok, error, error_kind, result, events, truncated, functions, nodes, ms }
  *   serialize(v)            -> JSON-safe value (tree node -> { node: vid, tree: "main"|"sub", val })
@@ -24,6 +26,12 @@
   "use strict";
 
   var FN_TYPES = { FunctionDeclaration: 1, FunctionExpression: 1, ArrowFunctionExpression: 1 };
+  // Identifiers injected into the learner's code. Deliberately unlike anything a learner would type (a "sua"
+  // prefix and a double-underscore suffix): a helper named __t, a parameter named __t or a local `let __c` are
+  // all valid learner code and must trace exactly like the untraced run.
+  var TRACER = "__sua_tracer__";
+  var CALL_ID = "__sua_call__";
+  var ERR = "__sua_err__";
 
   function paramNames(params) {
     return params.map(function (p) {
@@ -67,61 +75,71 @@
       return k >= 0 ? k + 2 : node.body.start;
     }
 
-    function visit(node, parent, fnDepth) {
+    // depth: nesting depth of function bodies (orders edits that meet at one offset); traced: whether a
+    // ReturnStatement met here belongs to an instrumented function (false at top level and inside the body
+    // of a generator/async function, whose returns are its own and stay untouched).
+    function visit(node, parent, depth, traced) {
       if (!node || typeof node.type !== "string") return;
-      if (FN_TYPES[node.type] && !node.generator && !node.async) {
+      if (FN_TYPES[node.type]) {
+        if (node.generator || node.async) {
+          // A boundary, not a transparent scope: the function is not instrumented (a generator's return ends the
+          // iteration, an async function's return resolves a promise), so its returns must not be rewritten with the
+          // enclosing function's call id; ordinary functions nested inside it are instrumented like any other.
+          visitChildren(node, parent, depth + 1, false);
+          return;
+        }
         var name = fnName(node, parent);
         var names = paramNames(node.params);
         var argList = "[" + names.map(function (n) { return n === null ? "undefined" : n; }).join(", ") + "]";
-        var depth = fnDepth + 1;
+        var d = depth + 1;
         var index = functions.length;
         functions.push({ name: name, start_line: node.loc.start.line, end_line: node.loc.end.line, params: names });
-        var open = "const __c = __t.enter(" + jsStr(name) + ", " + index + ", " + argList + "); try {";
-        var close = "} catch (__e) { __t.throw(__c, __e); throw __e; } finally { __t.exit(__c); }";
+        var open = "const " + CALL_ID + " = " + TRACER + ".enter(" + jsStr(name) + ", " + index + ", " + argList + "); try {";
+        var close = "} catch (" + ERR + ") { " + TRACER + ".throw(" + CALL_ID + ", " + ERR + "); throw " + ERR + "; } finally { " + TRACER + ".exit(" + CALL_ID + "); }";
         if (node.body.type === "BlockStatement") {
-          addEdit(node.body.start + 1, " " + open + " ", depth, "open");
-          addEdit(node.body.end - 1, " " + close + " ", depth, "close");
+          addEdit(node.body.start + 1, " " + open + " ", d, "open");
+          addEdit(node.body.end - 1, " " + close + " ", d, "close");
           // visit the body statements with this function as the current one
-          visitChildren(node.body, node, depth);
+          visitChildren(node.body, node, d, true);
         } else {
-          // expression-bodied arrow: (x) => expr  ->  (x) => { ...; try { return __t.ret(__c, (expr)); } ... }
+          // expression-bodied arrow: (x) => expr  ->  (x) => { ...; try { return TRACER.ret(CALL_ID, (expr)); } ... }
           // The learner's text between "=>" and the end of the arrow (parentheses included) is kept verbatim.
-          addEdit(arrowEnd(node), " { " + open + " return __t.ret(__c, (", depth, "open");
-          addEdit(node.end, ")); " + close + " }", depth, "close");
-          visit(node.body, node, depth);
+          addEdit(arrowEnd(node), " { " + open + " return " + TRACER + ".ret(" + CALL_ID + ", (", d, "open");
+          addEdit(node.end, ")); " + close + " }", d, "close");
+          visit(node.body, node, d, true);
         }
         // params may contain default-value functions; visit them too (rare)
-        node.params.forEach(function (p) { visit(p, node, depth); });
+        node.params.forEach(function (p) { visit(p, node, d, true); });
         return;
       }
-      if (node.type === "ReturnStatement" && fnDepth > 0) {
+      if (node.type === "ReturnStatement" && traced) {
         // Return edits sit at depth + 0.5: inside their own function's close edit, outside the edits of any function
         // nested in the argument ("return x => x + 1" ends the arrow and the return at the same offset).
         if (node.argument) {
-          addEdit(node.argument.start, "__t.ret(__c, (", fnDepth + 0.5, "open");
-          addEdit(node.argument.end, "))", fnDepth + 0.5, "close");
-          visit(node.argument, node, fnDepth);
+          addEdit(node.argument.start, TRACER + ".ret(" + CALL_ID + ", (", depth + 0.5, "open");
+          addEdit(node.argument.end, "))", depth + 0.5, "close");
+          visit(node.argument, node, depth, traced);
         } else {
-          addEdit(node.start + 6, " __t.ret(__c, undefined)", fnDepth + 0.5, "open");
+          addEdit(node.start + 6, " " + TRACER + ".ret(" + CALL_ID + ", undefined)", depth + 0.5, "open");
         }
         return;
       }
-      visitChildren(node, parent, fnDepth);
+      visitChildren(node, parent, depth, traced);
     }
 
-    function visitChildren(node, parent, fnDepth) {
+    function visitChildren(node, parent, depth, traced) {
       for (var key in node) {
         if (key === "loc" || key === "type" || key === "start" || key === "end") continue;
         var child = node[key];
         if (Array.isArray(child)) {
-          for (var i = 0; i < child.length; i++) if (child[i] && typeof child[i].type === "string") visit(child[i], node, fnDepth);
+          for (var i = 0; i < child.length; i++) if (child[i] && typeof child[i].type === "string") visit(child[i], node, depth, traced);
         } else if (child && typeof child.type === "string") {
-          visit(child, node, fnDepth);
+          visit(child, node, depth, traced);
         }
       }
     }
 
-    visit(ast, null, 0);
+    visit(ast, null, 0, false);
 
     // Apply edits from the end of the source backwards so earlier offsets stay valid. Ties at one offset: apply the
     // OUTER (smaller depth) edit first so the inner edit's text lands before it in the output (a function's close,
@@ -180,6 +198,9 @@
         if (stack.length && stack[stack.length - 1] === id) stack.pop();
         else { var i = stack.lastIndexOf(id); if (i >= 0) stack.splice(i, 1); }
       },
+      // Forgets everything recorded so far (used once the learner's top-level code has run, so the replay starts
+      // with the harness call of the entry function rather than with any call the learner's own script made).
+      reset: function () { events = []; truncated = false; stack = []; nextId = 0; retDone = {}; },
       events: function () { return events; },
       truncated: function () { return truncated; },
       calls: function () { return nextId; },
@@ -216,7 +237,7 @@
 
   function compileTraced(code, entry) {
     if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(entry)) throw new Error("bad entry name");
-    return new Function("__t", '"use strict";\n' + code + "\n;return (typeof " + entry + ' === "function") ? ' + entry + " : undefined;");
+    return new Function(TRACER, '"use strict";\n' + code + "\n;return (typeof " + entry + ' === "function") ? ' + entry + " : undefined;");
   }
 
   // Runs one traced execution. Never throws for learner errors.
@@ -246,6 +267,10 @@
       var factory = compileTraced(inst.code, entry);
       var fn = factory(tracer);
       if (!fn) { out.error = "entry function " + entry + " not found"; out.error_kind = "load"; return out; }
+      // Top-level statements of the learner's script (a self-test such as `countSubtrees(tree, sub);`) ran inside
+      // factory() and were recorded; drop them so the replay's first event is the harness call on the chosen input,
+      // exactly like the normal test run ignores whatever the script did while loading.
+      tracer.reset();
       out.result = serialize(fn.apply(null, callArgs));
       out.ok = true;
     } catch (e) {

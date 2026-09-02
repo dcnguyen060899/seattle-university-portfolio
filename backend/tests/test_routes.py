@@ -2,8 +2,11 @@
 import json
 import re
 
+import pytest
+
 from conftest import FailingJudge, RecordingJudge, make_app, make_client_results
 from evaluation.judge import FakeJudge
+from evaluation.routes import clamp_attempt, clean_hints_used
 from evaluation.registry import CHALLENGES, registry_hash
 from evaluation.registry import tests_hash as _tests_hash   # aliased: a module-level `tests_hash` would be collected
 
@@ -169,3 +172,91 @@ def test_tutor_explain_step_over_http(fake_client, client, old_reference):
     assert r.status_code == 200 and r.get_json()["answer"] == "fuzzySameTree returns true. (AI tutor unavailable)"
     r = fake_client.post("/evaluate-challenge/tutor", json=dict(body, step=dict(step, total="21")))
     assert r.status_code == 400 and r.get_json()["error"]["field"] == "step" and r.get_json()["response"].startswith("Error: ")
+
+
+# --------------------------------------------------------------------------- validation never answers with an HTML 500
+
+BASE_BODY = {"challenge_id": "fuzzySubtree", "code": "function fuzzySubtree() {}"}
+CHUNKED = {"wsgi.input_terminated": True, "HTTP_TRANSFER_ENCODING": "chunked"}   # what a WSGI server sets for a chunked body
+
+
+def test_numeric_junk_is_clamped_not_500(client):
+    """attempt / hints_used coercion never raises (was OverflowError on inf, ValueError on a 5000-digit string)."""
+    assert clamp_attempt("inf") == 1 and clamp_attempt("-inf") == 1 and clamp_attempt("nan") == 1 and clamp_attempt("1e999") == 1
+    assert clamp_attempt(float("inf")) == 1 and clamp_attempt(float("-inf")) == 1 and clamp_attempt(float("nan")) == 1
+    assert clamp_attempt("1" * 5000) == 1 and clamp_attempt(1e300) == 50 and clamp_attempt(10 ** 5000) == 50 and clamp_attempt(-(10 ** 5000)) == 1
+    assert clamp_attempt("3") == 3 and clamp_attempt(" 7 ") == 7 and clamp_attempt("2.9") == 2 and clamp_attempt(2.9) == 2 and clamp_attempt(0) == 1
+    assert clamp_attempt(True) == 1 and clamp_attempt(None) == 1 and clamp_attempt([2]) == 1 and clamp_attempt("") == 1 and clamp_attempt("junk") == 1
+    assert clean_hints_used(["9" * 5000, "\u00b2", "1", 2, "3", 99, True, "1", " 2 ", 2.0, None, "", "1.0"]) == [1, 2, 3]
+    assert clean_hints_used("123") == [] and clean_hints_used(None) == []
+    for attempt in ("inf", "-inf", "nan", "1" * 5000, "1e999", "junk", None, [1]):
+        r = client.post("/evaluate-challenge", json=dict(BASE_BODY, attempt=attempt))
+        assert r.status_code == 200 and r.get_json()["attempt"] == 1, attempt
+    for raw in ("Infinity", "-Infinity", "NaN", "1e999", "9" * 4000):          # what json.loads turns into inf/nan/huge
+        r = client.post("/evaluate-challenge", data='{"attempt": %s, "challenge_id": "fuzzySubtree", "code": "function fuzzySubtree() {}"}' % raw,
+                        content_type="application/json")
+        assert r.status_code == 200 and r.get_json()["attempt"] == (50 if raw.startswith("9") else 1), raw
+    r = client.post("/evaluate-challenge", json=dict(BASE_BODY, hints_used=["9" * 5000, "\u00b2", "3", 1]))
+    assert r.status_code == 200 and r.get_json()["pipeline"]["trace"][0]["detail"] == "fuzzySubtree, attempt 1, hints used: 1,3"
+    r = client.post("/evaluate-challenge/tutor", json=dict(BASE_BODY, mode="explain_problem", attempt="inf", hints_used=["9" * 5000]))
+    assert r.status_code == 200 and r.get_json()["ok"] is True
+
+
+@pytest.mark.parametrize("url", ["/evaluate-challenge", "/evaluate-challenge/tutor"])
+def test_deeply_nested_json_gets_the_envelope(client, url):
+    """json.loads raises RecursionError (not ValueError) on deep nesting: 400 invalid_json, never an HTML 500."""
+    for data in ("[" * 50_000, '{"a":' * 15_000 + "1" + "}" * 15_000, "[" * 40_000 + "]" * 40_000):   # all under the 96 KB cap
+        r = client.post(url, data=data, content_type="application/json")
+        assert r.status_code == 400, (len(data), r.status_code)
+        body = r.get_json()
+        assert body["ok"] is False and body["error"]["code"] == "invalid_json" and body["response"].startswith("Error:")
+        assert r.headers["Content-Type"].startswith("application/json") and re.fullmatch(r"[0-9a-f]{12}", body["request_id"])
+    # a 100000-deep body is above the body cap: the 413 envelope, with a Content-Length and chunked alike
+    r = client.post(url, data="[" * 100_000, content_type="application/json")
+    assert r.status_code == 413 and r.get_json()["error"]["code"] == "payload_too_large"
+    r = client.post(url, data="[" * 100_000, content_type="application/json", environ_overrides=CHUNKED)
+    assert r.status_code == 413 and r.get_json()["error"]["code"] == "payload_too_large"
+
+
+def test_chunked_body_over_the_cap_is_413(client):
+    """Werkzeug only cuts a chunked body (no Content-Length) at max_content_length: a cut body must be the 413
+    envelope, not 400 (unparsable remainder) and not 200 (JSON that completes inside the first 96 KB plus junk)."""
+    big = json.dumps(dict(BASE_BODY, pad="p" * 150_000))
+    for url in ("/evaluate-challenge", "/evaluate-challenge/tutor"):
+        r = client.post(url, data=big, content_type="application/json", environ_overrides=CHUNKED)
+        assert r.status_code == 413, url
+        body = r.get_json()
+        assert body["ok"] is False and body["error"]["code"] == "payload_too_large" and body["response"].startswith("Error:")
+        assert body["error"]["message"] == "request body exceeds 96000 bytes" and r.headers["Content-Type"].startswith("application/json")
+    junk = json.dumps(BASE_BODY) + " " * 100_000 + "}}}garbage"
+    r = client.post("/evaluate-challenge", data=junk, content_type="application/json", environ_overrides=CHUNKED)
+    assert r.status_code == 413 and r.get_json()["error"]["code"] == "payload_too_large"
+    # a chunked body under the cap is still accepted
+    r = client.post("/evaluate-challenge", data=json.dumps(BASE_BODY), content_type="application/json", environ_overrides=CHUNKED)
+    assert r.status_code == 200 and r.get_json()["verdict"] == "UNVERIFIED"
+    r = client.post("/evaluate-challenge", data=json.dumps(dict(BASE_BODY, pad="p" * 90_000)), content_type="application/json",
+                    environ_overrides=CHUNKED)
+    assert r.status_code == 200
+
+
+@pytest.mark.parametrize("url, extra", [("/evaluate-challenge", {}), ("/evaluate-challenge/tutor", {"mode": "explain_problem"})])
+def test_json_content_type_required(client, url, extra):
+    """text/plain and form bodies are CORS 'simple' requests (sent cross-site without a preflight): they get the 400
+    envelope and never an evaluation; application/json with a charset parameter is fine."""
+    payload = json.dumps(dict(BASE_BODY, **extra))
+    for ctype in ("text/plain", "text/plain;charset=UTF-8", "application/x-www-form-urlencoded", "multipart/form-data; boundary=x",
+                  "text/json", "application/octet-stream", None):
+        kwargs = {"content_type": ctype} if ctype else {}
+        r = client.post(url, data=payload, headers={"Origin": "https://evil.example"}, **kwargs)
+        assert r.status_code == 400, (ctype, r.get_json())
+        body = r.get_json()
+        assert body["ok"] is False and body["error"] == {"code": "invalid_request", "message": "Content-Type must be application/json",
+                                                         "field": "content-type"}
+        assert body["response"] == "Error: Content-Type must be application/json" and "verdict" not in body
+        assert r.headers.get("Access-Control-Allow-Origin") is None and r.headers["Cache-Control"] == "no-store"
+    for ctype in ("application/json", "application/json;charset=utf-8", "application/json; charset=UTF-8"):
+        r = client.post(url, data=payload, content_type=ctype)
+        assert r.status_code == 200 and r.get_json()["ok"] is True, (ctype, r.get_json())
+    # a JSON content type with a form body is still just invalid JSON
+    r = client.post(url, data="challenge_id=fuzzySubtree&code=x", content_type="application/json")
+    assert r.status_code == 400 and r.get_json()["error"]["code"] == "invalid_json"

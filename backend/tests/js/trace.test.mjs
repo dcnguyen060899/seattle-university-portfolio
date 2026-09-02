@@ -177,14 +177,14 @@ test("instrument: wraps every function body, attributes returns to the right fun
     ["fuzzySubtree", 2, 8, ["root", "subRoot", "maxDifferences"]],
     ["countMismatches", 9, 14, ["p", "q"]],
   ]);
-  assert.match(inst.code, /__t\.enter\("fuzzySubtree", 0, \[root, subRoot, maxDifferences\]\)/, "enter(name, index, [args]): the index is the function's position in `functions`");
-  assert.match(inst.code, /__t\.enter\("countMismatches", 1, \[p, q\]\)/);
-  assert.equal((inst.code.match(/__t\.ret\(__c, \(/g) || []).length, 7, "seven return statements (4 + 3)");
-  assert.equal((inst.code.match(/finally \{ __t\.exit\(__c\); \}/g) || []).length, 2);
+  assert.match(inst.code, /__sua_tracer__\.enter\("fuzzySubtree", 0, \[root, subRoot, maxDifferences\]\)/, "enter(name, index, [args]): the index is the function's position in `functions`");
+  assert.match(inst.code, /__sua_tracer__\.enter\("countMismatches", 1, \[p, q\]\)/);
+  assert.equal((inst.code.match(/__sua_tracer__\.ret\(__sua_call__, \(/g) || []).length, 7, "seven return statements (4 + 3)");
+  assert.equal((inst.code.match(/finally \{ __sua_tracer__\.exit\(__sua_call__\); \}/g) || []).length, 2);
   // destructured / rest parameters are recorded as undefined; generators and async functions are left alone
   const other = T.instrument("function f({a}, ...r) { return 1; }\nfunction* g() { yield 1; }\nasync function h() { return 2; }");
   assert.deepEqual(other.functions.map((f) => f.name), ["f"]);
-  assert.match(other.code, /__t\.enter\("f", 0, \[undefined, undefined\]\)/);
+  assert.match(other.code, /__sua_tracer__\.enter\("f", 0, \[undefined, undefined\]\)/);
   assert.match(other.code, /function\* g\(\) \{ yield 1; \}/);
   assert.throws(() => T.instrument("function f( {"), SyntaxError);
 });
@@ -192,7 +192,7 @@ test("instrument: wraps every function body, attributes returns to the right fun
 test("instrument: an expression-bodied arrow keeps a parenthesized body, and edits that end at one offset nest correctly (fix round 1, finding 1)", () => {
   // acorn (preserveParens off) reports the INNER expression for "(v) => ({ ... })": the block must open right after "=>"
   const objArrow = T.instrument("const mk = (v) => ({ val: v });");
-  assert.match(objArrow.code, /^const mk = \(v\) => \{ const __c = __t\.enter\("mk", 0, \[v\]\); try \{ return __t\.ret\(__c, \( \(\{ val: v \}\)\)\); \} catch/);
+  assert.match(objArrow.code, /^const mk = \(v\) => \{ const __sua_call__ = __sua_tracer__\.enter\("mk", 0, \[v\]\); try \{ return __sua_tracer__\.ret\(__sua_call__, \( \(\{ val: v \}\)\)\); \} catch/);
   const cases = [
     ["object literal", "const mk = (v, l, r) => ({ val: v, left: l, right: r });\nfunction f(a) { return mk(a, null, null).val; }", 7],
     ["boolean expression on several lines", "const isSame = (p, q) => (\n  (!p && !q) || (!!p && !!q && p === q)\n);\nfunction f(a) { return isSame(a, a) ? 1 : 0; }", 1],
@@ -247,8 +247,8 @@ function isSameTree(p, q) {
   const inst = T.instrument(twoAnon);
   assert.deepEqual(inst.functions.map((f) => [f.name, f.start_line, f.end_line, f.params]),
     [["countSubtrees", 1, 8, ["root", "subRoot"]], ["(anonymous)", 4, 4, ["k"]], ["(anonymous)", 5, 7, ["a", "b"]], ["isSameTree", 9, 14, ["p", "q"]]]);
-  assert.match(inst.code, /__t\.enter\("\(anonymous\)", 1, \[k\]\)/);
-  assert.match(inst.code, /__t\.enter\("\(anonymous\)", 2, \[a, b\]\)/);
+  assert.match(inst.code, /__sua_tracer__\.enter\("\(anonymous\)", 1, \[k\]\)/);
+  assert.match(inst.code, /__sua_tracer__\.enter\("\(anonymous\)", 2, \[a, b\]\)/);
   const cs = byId.get("countSubtrees");
   const t = cs.tests.find((x) => x.id === "cs-06");
   const r = runOk("two anonymous callbacks cs-06", twoAnon, "countSubtrees", cs.arg_types, t.args, t.expected);
@@ -743,4 +743,197 @@ test("ChallengeViz.fmtVal / argDesc / describe", () => {
   assert.equal(V.describe({ k: "ret", fn: "isSameTree", value: false }, { frame: { fn: "isSameTree", args: [null, null] } }), "isSameTree returns false.", "two empty positions returning false: nothing to add");
   assert.equal(V.describe({ k: "ret", fn: "fuzzySubtree", value: false }, { frame: { fn: "fuzzySubtree", args: [{ node: 0, tree: "main", val: 1 }, null, 1] }, entry: "fuzzySubtree" }), "fuzzySubtree returns false. No match was found at or below main node 1.", "an empty pattern rejected: only the value is restated, never the convention");
   assert.equal(V.describe({ k: "ret", fn: "fuzzySubtree", value: false }, { frame: { fn: "fuzzySubtree", args: [null, null, 1] }, entry: "fuzzySubtree" }), "fuzzySubtree returns false. An empty subtree cannot contain the pattern.");
+});
+
+// ---------------------------------------------------------------------------
+// Polish round: tracer robustness (identifier collisions, top-level calls, generator/async boundaries),
+// absent int arguments in captions / the Budget row, and the truncated-trace note
+
+const CS_TYPES = ["tree", "tree"];
+function cs06() { const cs = byId.get("countSubtrees"); return [cs, cs.tests.find((x) => x.id === "cs-06")]; }
+function untracedResult(code, entry, types, args) {
+  const u = worker.runOne(worker.compileLearnerCode(code, entry), { id: "x", args }, types);
+  assert.equal(u.error, null, `untraced run failed: ${u.error}`);
+  return u.actual;
+}
+
+test("polish: learner identifiers __t / __c / __e do not collide with the injected tracer names", () => {
+  const [cs, t] = cs06();
+  const cases = [
+    ["helper named __t", `function __t(p, q) { if (!p && !q) return true; if (!p || !q) return false; if (p.val !== q.val) return false; return __t(p.left, q.left) && __t(p.right, q.right); }
+function countSubtrees(root, subRoot) { if (!root) return 0; return (__t(root, subRoot) ? 1 : 0) + countSubtrees(root.left, subRoot) + countSubtrees(root.right, subRoot); }`],
+    ["parameter named __t", `function isSameTree(__t, q) { if (!__t && !q) return true; if (!__t || !q) return false; if (__t.val !== q.val) return false; return isSameTree(__t.left, q.left) && isSameTree(__t.right, q.right); }
+function countSubtrees(root, subRoot) { if (!root) return 0; return (isSameTree(root, subRoot) ? 1 : 0) + countSubtrees(root.left, subRoot) + countSubtrees(root.right, subRoot); }`],
+    ["local let __c", `function countSubtrees(root, subRoot) { if (!root) return 0; let __c = isSameTree(root, subRoot) ? 1 : 0; return __c + countSubtrees(root.left, subRoot) + countSubtrees(root.right, subRoot); }` + isSameTree],
+    ["__t, __c and __e together, catch parameter __e", `function __t(p, q) { let __c = 0; try { if (!p && !q) return true; if (!p || !q) return false; __c = p.val !== q.val ? 1 : 0; } catch (__e) { return false; } return __c === 0 && __t(p.left, q.left) && __t(p.right, q.right); }
+function countSubtrees(root, subRoot) { const __c = root ? (__t(root, subRoot) ? 1 : 0) : 0; if (!root) return __c; return __c + countSubtrees(root.left, subRoot) + countSubtrees(root.right, subRoot); }`],
+  ];
+  for (const [name, code] of cases) {
+    const r = runOk(name, code, "countSubtrees", cs.arg_types, t.args, t.expected);
+    assert.equal(r.error, null, name);
+    assert.equal(untracedResult(code, "countSubtrees", cs.arg_types, t.args), r.result, `${name}: untraced and traced agree`);
+    const inst = T.instrument(code);
+    assert.match(inst.code, /__sua_tracer__\.enter\(/, name);
+    assert.doesNotMatch(inst.code, /\b__t\.enter\(|const __c = __t\b/, `${name}: the old names are not injected`);
+  }
+  // The finding's divergence probe: `typeof __t` is "undefined" in the traced run too, exactly like the untraced one.
+  const probe = `function countSubtrees(root, subRoot) { if (typeof __t === "object" || typeof __c === "number") { return 42; } return 0; }`;
+  const r = runOk("probe", probe, "countSubtrees", cs.arg_types, t.args);
+  assert.equal(r.result, 0);
+  assert.equal(untracedResult(probe, "countSubtrees", cs.arg_types, t.args), 0);
+});
+
+test("polish: the replay starts with the harness call even when the learner's script calls the entry function at top level", () => {
+  const [cs, t] = cs06();
+  const plain = runOk("plain", countRef, "countSubtrees", cs.arg_types, t.args, t.expected);
+  const selfTest = countRef + `\ncountSubtrees({ val: 1, left: null, right: null }, { val: 1, left: null, right: null });\nisSameTree(null, null);`;
+  const r = runOk("top-level self-test", selfTest, "countSubtrees", cs.arg_types, t.args, t.expected);
+  assert.deepEqual(r.events[0], plain.events[0], "first event = the harness call on the chosen input (main/sub node args, id 0)");
+  assert.deepEqual(r.events[0].args, [{ node: 0, tree: "main", val: -1 }, { node: 0, tree: "sub", val: -2 }]);
+  assert.equal(r.events.length, plain.events.length, "the learner's own top-level calls are not part of the replay");
+  assert.deepEqual(r.events.map((e) => [e.k, e.id, e.fn]), plain.events.map((e) => [e.k, e.id, e.fn]));
+  assert.equal(untracedResult(selfTest, "countSubtrees", cs.arg_types, t.args), t.expected);
+  // a top-level statement that throws still surfaces as a runtime error (the entry never ran); the events recorded
+  // before the throw are kept, since nothing was reset
+  const boom = countRef + `\nisSameTree(null, null).x.y;`;
+  const b = traceVia(boom, "countSubtrees", cs.arg_types, t.args);
+  assert.equal(b.ok, true);
+  assert.equal(b.error_kind, "runtime");
+  assert.match(b.error, /Cannot read propert(y|ies) of undefined/);
+  assert.equal(b.result, null);
+  assert.deepEqual(b.events.map((e) => [e.k, e.fn]), [["call", "isSameTree"], ["ret", "isSameTree"]], "the events of the top-level call that preceded the throw are kept");
+  // makeTracer().reset() forgets everything, including ids
+  const tr = T.makeTracer({ max_events: 2 });
+  const id = tr.enter("a", 0, [1]);
+  tr.enter("b", 1, [2]);
+  tr.enter("c", 2, [3]);
+  assert.equal(tr.truncated(), true);
+  tr.reset();
+  assert.deepEqual(tr.events(), []);
+  assert.equal(tr.truncated(), false);
+  assert.equal(tr.calls(), 0);
+  assert.equal(tr.enter("d", 3, [4]), 0, "ids restart at 0");
+  assert.equal(id, 0);
+});
+
+test("polish: generator and async functions are boundaries: their returns stay theirs, nested ordinary functions are still traced", () => {
+  const [cs, t] = cs06();
+  const gen = `function countSubtrees(root, subRoot) {
+  function* nodes(n) { if (!n) return; yield n; yield* nodes(n.left); yield* nodes(n.right); }
+  let k = 0; for (const n of nodes(root)) if (isSameTree(n, subRoot)) k++;
+  return k;
+}` + isSameTree;
+  const r = runOk("nested generator", gen, "countSubtrees", cs.arg_types, t.args, t.expected);
+  const calls = r.events.filter((e) => e.k === "call" && e.fn === "countSubtrees").length;
+  const rets = r.events.filter((e) => e.k === "ret" && e.fn === "countSubtrees").length;
+  assert.deepEqual([calls, rets], [1, 1], "the generator's returns are not attributed to countSubtrees");
+  assert.deepEqual(r.functions.map((f) => f.name), ["countSubtrees", "isSameTree"], "the generator itself is not instrumented");
+  assert.equal(untracedResult(gen, "countSubtrees", cs.arg_types, t.args), r.result);
+  const instGen = T.instrument(gen);
+  assert.match(instGen.code, /function\* nodes\(n\) \{ if \(!n\) return; yield n;/, "the generator body is untouched");
+  // an async function nested in an instrumented function: same rule
+  const asyncNested = `function countSubtrees(root, subRoot) { async function later(x) { return x; } later(1); if (!root) return 0; return (isSameTree(root, subRoot) ? 1 : 0) + countSubtrees(root.left, subRoot) + countSubtrees(root.right, subRoot); }` + isSameTree;
+  const a = runOk("nested async", asyncNested, "countSubtrees", cs.arg_types, t.args, t.expected);
+  assert.equal(a.events.filter((e) => e.fn === "countSubtrees" && e.k === "call").length, a.events.filter((e) => e.fn === "countSubtrees" && e.k === "ret").length);
+  assert.match(T.instrument(asyncNested).code, /async function later\(x\) \{ return x; \}/);
+  // an ordinary function inside a generator IS instrumented, while the generator's own `return -1` is left alone
+  const inner = `function f(a) { function* g() { const inner = (x) => { return x + 1; }; yield inner(a); return -1; } let s = 0; for (const v of g()) s += v; return s; }`;
+  const i = traceVia(inner, "f", ["int"], [7]);
+  assert.equal(i.ok, true);
+  assert.equal(i.result, 8);
+  assert.deepEqual(i.events.map((e) => [e.k, e.fn]), [["call", "f"], ["call", "inner"], ["ret", "inner"], ["ret", "f"]]);
+  assert.deepEqual(i.functions.map((f) => f.name), ["f", "inner"]);
+  const instInner = T.instrument(inner);
+  assert.match(instInner.code, /return -1; \}/, "the generator's return is not rewritten");
+  assert.match(instInner.code, /return __sua_tracer__\.ret\(__sua_call__, \(x \+ 1\)\)/, "the arrow nested in the generator is");
+  checkEvents("inner in generator", i);
+  // generator methods and async arrows are boundaries too
+  const methods = T.instrument(`class A { *gen() { return 1; } async run() { return 2; } plain() { return 3; } }\nconst later = async () => { return 4; };`);
+  assert.deepEqual(methods.functions.map((f) => f.name), ["plain"]);
+  assert.match(methods.code, /\*gen\(\) \{ return 1; \}/);
+  assert.match(methods.code, /async run\(\) \{ return 2; \}/);
+  assert.match(methods.code, /async \(\) => \{ return 4; \}/);
+});
+
+test("polish: a named int parameter the call did not pass reads 'not passed (default applies)' and the Budget row says default", () => {
+  const fuzzy = byId.get("fuzzySubtree");
+  const t2 = fuzzy.tests.find((x) => x.args.length === 2 && nodeCount(x.args[0]) > 0 && nodeCount(x.args[1]) > 0);   // fz-03
+  const t3 = fuzzy.tests.find((x) => x.args.length === 3 && x.args[2] === 2 && totalNodes(fuzzy, x) <= MAX_NODES);   // fz-07
+  assert.ok(t2 && t3);
+  const ctx = { entry: "fuzzySubtree", hasBudget: true, returnType: "boolean" };
+  const noDefault = `function fuzzySubtree(root, subRoot, maxDifferences) {
+  if (maxDifferences === undefined) maxDifferences = 1;
+  if (!subRoot) return true;
+  if (!root) return false;
+  if (countMismatches(root, subRoot) <= maxDifferences) return true;
+  return fuzzySubtree(root.left, subRoot, maxDifferences) || fuzzySubtree(root.right, subRoot, maxDifferences);
+}
+function countMismatches(p, q) { if (!p && !q) return 0; if (!p || !q) return Infinity; return (p.val !== q.val ? 1 : 0) + countMismatches(p.left, q.left) + countMismatches(p.right, q.right); }`;
+  const r2 = runOk("no-default signature, 2 args", noDefault, "fuzzySubtree", fuzzy.arg_types, t2.args, t2.expected);
+  const s2 = V.buildSteps(R.normalizeTrace(r2), { ...ctx, expected: t2.expected });
+  assert.equal(s2[0].caption, "Call fuzzySubtree(main node 1, pattern node 2, maxDifferences not passed (default applies)) at depth 0.");
+  assert.equal(s2[0].call, "fuzzySubtree(main node 1, pattern node 2, maxDifferences not passed (default applies))");
+  assert.equal(s2[0].budget, "undefined", "the recorded value stays available");
+  assert.ok(s2.every((s) => s.budgetText === "default"), "Budget row: default");
+  assert.doesNotMatch(s2.map((s) => s.caption).join("\n"), /= undefined/);
+  // the same code with three arguments shows the value
+  const r3 = runOk("no-default signature, 3 args", noDefault, "fuzzySubtree", fuzzy.arg_types, t3.args, t3.expected);
+  const s3 = V.buildSteps(R.normalizeTrace(r3), { ...ctx, expected: t3.expected });
+  assert.match(s3[0].caption, /maxDifferences = 2\) at depth 0\.$/);
+  assert.ok(s3.every((s) => s.budgetText === "2" && s.budget === 2));
+  // a signature default is captured after it applied: the value shows
+  const ref = V.buildSteps(traceVia(fuzzyRef, "fuzzySubtree", fuzzy.arg_types, t2.args), ctx);
+  assert.match(ref[0].caption, /maxDifferences = 1\) at depth 0\.$/);
+  assert.equal(ref[0].budgetText, "1");
+  // a two-parameter signature ignores the third argument: nothing to name in the caption, Budget = default
+  const twoParams = `function fuzzySubtree(root, subRoot) { if (!subRoot) return true; if (!root) return false; return countMismatches(root, subRoot) <= 1 || fuzzySubtree(root.left, subRoot) || fuzzySubtree(root.right, subRoot); }
+function countMismatches(p, q) { if (!p && !q) return 0; if (!p || !q) return Infinity; return (p.val !== q.val ? 1 : 0) + countMismatches(p.left, q.left) + countMismatches(p.right, q.right); }`;
+  const sTwo = V.buildSteps(traceVia(twoParams, "fuzzySubtree", fuzzy.arg_types, t3.args), ctx);
+  assert.equal(sTwo[0].call, "fuzzySubtree(main node 1, pattern node 2)");
+  assert.equal(sTwo[0].budget, undefined);
+  assert.equal(sTwo[0].budgetText, "default");
+  // no Budget text at all without has_budget_arg
+  const [cs, t] = cs06();
+  assert.ok(V.buildSteps(traceVia(countRef, "countSubtrees", cs.arg_types, t.args), { entry: "countSubtrees" }).every((s) => s.budgetText === undefined && s.budget === undefined));
+  // argDesc: the raw string "undefined" and a real undefined both count as absent; without a name the value shows
+  assert.equal(V.argDesc([1, "undefined", undefined], ["a", "b", "c"]), "a = 1, b not passed (default applies), c not passed (default applies)");
+  assert.equal(V.argDesc(["undefined"], []), "undefined");
+  assert.equal(V.describe({ k: "call", fn: "h", depth: 1, args: [{ node: 0, tree: "main", val: 1 }, "undefined"] }, { names: ["p", "depth"] }), "Call h(main node 1, depth not passed (default applies)) at depth 1.");
+});
+
+test("polish: a truncated trace's note says where it was cut and how the run ended (traceNotes)", () => {
+  const chain = [];
+  for (let i = 0; i < 100; i++) { chain.push(i); if (i < 99) chain.push(null); }
+  const cap = traceVia(fuzzyRef, "fuzzySubtree", FZ_TYPES, [chain, [500], 0], 600);
+  assert.equal(cap.truncated, true);
+  assert.equal(cap.result, false);
+  const ctx = { entry: "fuzzySubtree", hasBudget: true, returnType: "boolean", expected: false };
+  const steps = V.buildSteps(cap, ctx);
+  assert.deepEqual(V.traceNotes(cap, ctx, steps), ["Trace cut at 600 events; the run finished with final answer false. Expected false: your answer matches the expected result."]);
+  assert.deepEqual(V.traceNotes(cap, { entry: "fuzzySubtree", expected: true }, steps), ["Trace cut at 600 events; the run finished with final answer false. Expected true: your answer differs from the expected result."]);
+  assert.deepEqual(V.traceNotes(cap, { entry: "fuzzySubtree" }, steps), ["Trace cut at 600 events; the run finished with final answer false."]);
+  assert.doesNotMatch(steps[599].caption, /Final answer/, "the last recorded step is mid-run: no final gloss in the caption");
+  // the count challenge from the finding: 800 events, the run finishes with 0 (expected 2)
+  const [cs, t] = cs06();
+  const loop = "function countSubtrees(root, subRoot) {\n  let n = 0;\n  for (let i = 0; i < 400; i++) n += h(i);\n  return n;\n}\nfunction h(i) { return 0; }\n";
+  const lp = traceVia(loop, "countSubtrees", cs.arg_types, t.args, 600);
+  assert.deepEqual(V.traceNotes(lp, { entry: "countSubtrees", expected: t.expected }, V.buildSteps(lp, {})), ["Trace cut at 600 events; the run finished with final answer 0. Expected 2: your answer differs from the expected result."]);
+  // truncated and then an error (unbounded recursion): the cut note, then the throw note
+  const inf = traceVia("function countSubtrees(root, subRoot) { return countSubtrees(root, subRoot) + 1; }", "countSubtrees", cs.arg_types, t.args, 600);
+  assert.equal(inf.ok, true);
+  assert.equal(inf.truncated, true);
+  assert.match(inf.error, /call stack|recursion/i);
+  const infNotes = V.traceNotes(inf, { expected: t.expected }, V.buildSteps(inf, {}));
+  assert.equal(infNotes.length, 2);
+  assert.equal(infNotes[0], "Trace cut at 600 events; the run then stopped with an error.");
+  assert.match(infNotes[1], /^Your code threw: /);
+  // a throw within the recorded events names its step; a clean run and a timeout have no notes
+  const th = traceVia(thrower, "fuzzySubtree", FZ_TYPES, [[1], [1], 1]);
+  const thNotes = V.traceNotes(th, { expected: true }, V.buildSteps(th, { entry: "fuzzySubtree" }));
+  assert.equal(thNotes.length, 1);
+  assert.match(thNotes[0], /^Your code threw at step 2: Cannot read propert(y|ies) of null/);
+  const clean = traceVia(fuzzyRef, "fuzzySubtree", FZ_TYPES, FZ06);
+  assert.deepEqual(V.traceNotes(clean, { expected: false }, V.buildSteps(clean, {})), []);
+  assert.deepEqual(V.traceNotes({ ok: false, error: R.TRACE_TIMEOUT_ERROR, error_kind: "timeout", events: [], truncated: false }, {}, []), []);
+  assert.deepEqual(V.traceNotes(null, null, null), []);
 });

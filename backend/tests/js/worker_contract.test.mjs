@@ -250,3 +250,52 @@ test("worker protocol: messages other than run are ignored", () => {
   w.send(null);
   assert.deepEqual(w.posted, []);
 });
+
+// ---------------------------------------------------------------------------
+// Learner-code isolation (security review, worker finding): a scope that models a classic worker more closely.
+// `self` IS the global object (so `self.x = ...` from learner code creates a global, as in a real worker) and
+// `new Function` is the context's own, so learner code is compiled against THIS global. (makeWorkerScope above
+// passes the host's Function in, which compiles learner code against the host global and would hide the bug.)
+function makeGlobalWorkerScope() {
+  const posted = [];
+  const sandbox = { postMessage(m) { posted.push(structuredClone(m)); }, fetch() { return "should be removed"; }, onmessage: null, console };
+  sandbox.self = sandbox;
+  vm.createContext(sandbox);
+  vm.runInContext(readFileSync(WORKER_PATH, "utf8"), sandbox, { filename: "challenge_worker.js" });
+  return { posted, self: sandbox, send: (data) => sandbox.onmessage({ data }) };
+}
+
+test("worker scope: the captured references and the helpers are private (typeof post === \"undefined\" in learner code)", () => {
+  const w = makeGlobalWorkerScope();
+  assert.equal(w.self.fetch, undefined);
+  const probe = "function fuzzySubtree() { return [typeof post, typeof importScriptsRef, typeof now, typeof traceLib, typeof IS_WORKER, typeof buildTree, typeof handleRun].join(','); }";
+  w.send(runMsg({ code: probe, tests: [{ id: "p", args: [[1], [1]] }] }));
+  assert.deepEqual(w.posted.map((m) => m.type), ["compiled", "result", "done"]);
+  assert.equal(w.posted[1].actual, "undefined,undefined,undefined,undefined,undefined,undefined,undefined");
+  for (const name of ["post", "importScriptsRef", "now", "traceLib", "IS_WORKER", "buildTree", "handleRun", "ENTRY_RE"]) {
+    assert.equal(name in w.self, false, name + " must not be a worker global");
+  }
+});
+
+test("worker scope: learner code cannot clobber the worker's post; the run still reports compiled/result/done", () => {
+  // a global `post` created by learner code (self is the worker global) no longer replaces the reference the worker
+  // reports with: previously this stalled the run (nothing was posted) and the page said the code did not finish loading
+  let w = makeGlobalWorkerScope();
+  w.send(runMsg({ code: "self.post = function () {};\nself.postMessage = function () {};\n" + FUZZY }));
+  assert.deepEqual(w.posted.map((m) => m.type), ["compiled", "result", "result", "result", "done"]);
+  assert.equal(w.posted[0].ok, true);
+  assert.deepEqual(w.posted.slice(1, 4).map((r) => r.actual), [true, false, true]);
+  assert.equal(w.posted[4].run_id, "r-3");
+  // a bare assignment has no binding to hit: a strict-mode ReferenceError at load -> compiled(load) then done
+  // (a number is assigned on purpose: node's vm lets strict code create a global from a function value, browsers do not)
+  w = makeGlobalWorkerScope();
+  w.send(runMsg({ code: "post = 1;\n" + FUZZY }));
+  assert.deepEqual(w.posted.map((m) => m.type), ["compiled", "done"]);
+  assert.equal(w.posted[0].error_kind, "load");
+  assert.match(w.posted[0].error, /post is not defined/);
+  // inside the entry function: that test's error, the other tests still run and done is posted
+  w = makeGlobalWorkerScope();
+  w.send(runMsg({ code: "function fuzzySubtree(root, subRoot) { post = 1; return true; }" }));
+  assert.deepEqual(w.posted.map((m) => m.type), ["compiled", "result", "result", "result", "done"]);
+  for (const r of w.posted.slice(1, 4)) assert.match(r.error, /post is not defined/);
+});

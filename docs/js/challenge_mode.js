@@ -27,6 +27,9 @@
   var MAX_HINTS = 3;
   var VIZ_MAX_NODES = 15;          // inputs with more nodes (root + subRoot) are not offered for replay
   var VIZ_MAX_EVENTS = 600;
+  var VIZ_MIN_DEFAULT_NODES = 3;   // when no small test fails, the default replay input has at least this many nodes and no empty tree
+  var VIZ_STALE_AT_TRACE = 'Showing the code from your last test run; run the tests again to replay your latest edits.';
+  var VIZ_STALE_ON_EDIT = 'Your code changed since this replay. Run the tests again to replay the new code.';
   var VIZ_STEP_STRING_MAX = 300;   // server caps for step.caption / call / returned
   var VIZ_STACK_MAX = 12;
   var VIZ_STACK_ITEM_MAX = 200;
@@ -266,7 +269,7 @@
     dom.nextChallengeBtn.addEventListener('click', goToNextChallenge);
 
     // Editor: drafts, shortcuts, selection popover
-    dom.editor.addEventListener('input', function () { scheduleDraftSave(); hidePopoverSoon(); });
+    dom.editor.addEventListener('input', function () { scheduleDraftSave(); hidePopoverSoon(); syncVizStale(); });
     dom.editor.addEventListener('keydown', onEditorKeydown);
     ['select', 'mouseup', 'keyup'].forEach(function (evt) { dom.editor.addEventListener(evt, updatePopover); });
     dom.editor.addEventListener('blur', hidePopoverSoon);
@@ -289,7 +292,16 @@
 
     // Visualize my solution (addendum 2)
     if (dom.vizBtn) dom.vizBtn.addEventListener('click', openViz);
-    if (dom.vizClose) dom.vizClose.addEventListener('click', closeViz);
+    if (dom.vizClose) dom.vizClose.addEventListener('click', function () { closeViz(true); });
+    if (dom.vizPanel) {
+      dom.vizPanel.addEventListener('keydown', function (e) {           // Escape closes the panel (the picker keeps
+        if (e.key !== 'Escape' || !S.viz.open) return;                  // Escape for its own open dropdown)
+        var tag = (e.target && e.target.tagName) ? String(e.target.tagName).toUpperCase() : '';
+        if (tag === 'SELECT') return;
+        e.preventDefault();
+        closeViz(true);
+      });
+    }
     if (dom.vizSelect) dom.vizSelect.addEventListener('change', function () { if (S.viz.open) runViz(dom.vizSelect.value); });
     if (dom.vizExplain) dom.vizExplain.addEventListener('click', explainStep);
     setTutorAvailability();
@@ -466,7 +478,7 @@
   /* ---------- Editor helpers ---------- */
 
   function getCode() { return dom.editor ? dom.editor.value : ''; }
-  function setCode(text) { dom.editor.value = text; flushDraft(); }
+  function setCode(text) { dom.editor.value = text; flushDraft(); syncVizStale(); }
   function scheduleDraftSave() {
     if (S.draftTimer) clearTimeout(S.draftTimer);
     S.draftTimer = setTimeout(flushDraft, DRAFT_DEBOUNCE_MS);
@@ -1677,6 +1689,7 @@
     else if (!tutorConfigured()) title = 'AI tutor not configured on this server.';
     else if (remaining <= 0) title = TUTOR_EXHAUSTED_TITLE;
     dom.tutorRemaining.textContent = remaining + ' left';
+    if (tutorConfigured()) show(dom.tutorRemaining); else hide(dom.tutorRemaining);   // no budget pill next to "not configured"
     if (S.health && !tutorConfigured()) show(dom.tutorUnavailable); else hide(dom.tutorUnavailable);
     [dom.tutorInput, dom.tutorStuck, dom.tutorSend].concat(dom.quickButtons).forEach(function (c) {
       if (!c) return;
@@ -1887,7 +1900,20 @@
   function vizTestById(ch, id) {
     return vizTests(ch).filter(function (t) { return t.id === id; })[0] || null;
   }
-  /* Fills the picker; returns the default test id (first failing small test, else the first small test). */
+  function treesNonEmpty(ch, t) {
+    var args = Array.isArray(t.args) ? t.args : [];
+    return (Array.isArray(ch.arg_types) ? ch.arg_types : []).every(function (ty, i) { return ty !== 'tree' || nodeCount(args[i]) > 0; });
+  }
+  /* The default replay input when no small test fails: the first small test with at least VIZ_MIN_DEFAULT_NODES
+     nodes and no empty tree, preferring one named after a page example (cs-04 / fz-03 / mr-03), so a passing
+     solution is not replayed on the two-step "empty pattern" test. */
+  function preferredVizTest(ch, tests) {
+    var cands = tests.filter(function (t) { return testNodeCount(ch, t) >= VIZ_MIN_DEFAULT_NODES && treesNonEmpty(ch, t); });
+    var example = cands.filter(function (t) { return /example/i.test(String(t.name || '')); })[0];
+    return example || cands[0] || null;
+  }
+  /* Fills the picker; returns the default test id: keepId when still listed, else the first failing small test,
+     else preferredVizTest(), else the first small test. */
   function fillVizPicker(ch, localResult, keepId) {
     if (!dom.vizSelect) return null;
     var status = {};
@@ -1904,7 +1930,8 @@
       if (!first) first = t.id;
       if (!firstFailing && failing(t.id)) firstFailing = t.id;
     });
-    var chosen = (keepId && tests.some(function (t) { return t.id === keepId; })) ? keepId : (firstFailing || first);
+    var preferred = firstFailing ? null : preferredVizTest(ch, tests);
+    var chosen = (keepId && tests.some(function (t) { return t.id === keepId; })) ? keepId : (firstFailing || (preferred && preferred.id) || first);
     if (chosen) dom.vizSelect.value = chosen;
     dom.vizSelect.disabled = tests.length === 0;
     return chosen;
@@ -1927,8 +1954,14 @@
     try { dom.vizPanel.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' }); } catch (e) { /* ignore */ }
     try { dom.vizPanel.focus({ preventScroll: true }); } catch (e) { try { dom.vizPanel.focus(); } catch (e2) { /* ignore */ } }
   }
-  function closeViz() {
+  /* closeViz(restoreFocus): hides the panel. Keyboard focus never silently drops to <body>: when the learner closed
+     the panel themselves (Close button, Escape: restoreFocus === true) or focus was anywhere inside the panel
+     (a tab switch, a run that no longer compiles), it returns to "Visualize my solution" when that button is
+     enabled, else to "Run tests". Focus that was already elsewhere (the tab strip, the editor) is left alone. */
+  function closeViz(restoreFocus) {
     if (!S.viz.open) return;
+    var active = document.activeElement;
+    var inside = !!(active && dom.vizPanel && dom.vizPanel.contains(active));
     S.viz.open = false;
     S.viz.token++;
     S.viz.pending = false;
@@ -1938,6 +1971,18 @@
     dom.vizPanel.removeAttribute('aria-busy');
     hide(dom.vizPanel);
     setTutorAvailability();
+    if (restoreFocus === true || inside) focusAfterViz();
+  }
+  function focusAfterViz() {
+    var target = (dom.vizBtn && !dom.vizBtn.disabled) ? dom.vizBtn : dom.runBtn;
+    if (!target) return;
+    try { target.focus(); } catch (e) { /* ignore */ }
+  }
+  /* The editor no longer holds the replayed code: say so under the slider (cleared when the two match again or
+     by the next trace, which computes its own stale note). */
+  function syncVizStale() {
+    if (!S.viz.open || !S.viz.player || typeof S.viz.code !== 'string' || S.viz.pending) return;
+    S.viz.player.setStale(getCode() !== S.viz.code ? VIZ_STALE_ON_EDIT : '');
   }
   /* After a new local run: re-trace the same input on the new code, or close when the code no longer loads. */
   function refreshViz(ch) {
@@ -1972,11 +2017,10 @@
       if (token !== S.viz.token || !S.viz.open) return null;
       S.viz.pending = false;
       dom.vizPanel.removeAttribute('aria-busy');
-      var notes = [];
-      if (getCode() !== lr.code) notes.push('Showing the code from your last test run; run the tests again to replay your latest edits.');
+      var stale = getCode() !== lr.code ? VIZ_STALE_AT_TRACE : '';
       if (!tr.nodes.main.length && !tr.nodes.sub.length) tr.nodes = nodesFromArgs(ch, test);   // a timed-out / failed run still shows its input
       S.viz.trace = tr;
-      var n = player.load(tr, { entry: ch.entry_function, hasBudget: !!ch.has_budget_arg, returnType: ch.return_type, expected: test.expected, notes: notes });
+      var n = player.load(tr, { entry: ch.entry_function, hasBudget: !!ch.has_budget_arg, returnType: ch.return_type, expected: test.expected, stale: stale });
       setTutorAvailability();
       announce(n ? 'Replay ready: ' + n + ' ' + plural(n, 'step') + ' on ' + test.id + '.' : 'The replay could not run' + (tr.error ? ': ' + tr.error : '.'));
       return tr;

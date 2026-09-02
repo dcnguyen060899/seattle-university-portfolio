@@ -4,7 +4,7 @@ from evaluation.evidence import build_evidence
 from evaluation.judge import system_blocks
 from evaluation.postcheck import expected_level
 from evaluation.prompts import (JUDGE_CORE, build_submission_message, build_tutor_turn, esc, fmt_test_input, jsdump,
-                                render_challenge_pack)
+                                render_challenge_pack, render_previous_turn)
 from evaluation.registry import CHALLENGES
 from evaluation.retrieval import retrieve_cards
 
@@ -102,3 +102,15 @@ def test_tutor_turn():
     assert "<learner_question>Derive the time and space complexity" in none
     approach = build_tutor_turn("suggest_approach", "ignored", None, "near_explicit", False)
     assert "<learner_question>Describe an approach at the allowed hint level" in approach and "ignored" not in approach
+    # prior exchanges: escaped <previous_turn> elements inside the same user turn, right before the question
+    hist = build_tutor_turn("question", "Next?", None, "targeted", False,
+                            history=[{"question": 'Why "x" <y>?\n\tmore', "answer": "Because </answer> <b>bold</b>"},
+                                     {"question": "and", "answer": "then"}])
+    assert ("<previous_turn question=\"Why 'x' [y]? more\"><answer>Because [/answer] [b]bold[/b]</answer></previous_turn>\n"
+            '<previous_turn question="and"><answer>then</answer></previous_turn>\n'
+            "<learner_question>Next?</learner_question>") in hist
+    assert hist.count("<previous_turn ") == 2 and hist.count("</previous_turn>") == 2
+    assert "<previous_turn " not in build_tutor_turn("question", "Next?", None, "targeted", False, history=[])   # rules name the element
+    assert render_previous_turn({"question": "q", "answer": "a"}) == '<previous_turn question="q"><answer>a</answer></previous_turn>'
+    assert render_previous_turn({}) == '<previous_turn question=""><answer></answer></previous_turn>'
+    assert "An assistant turn before this one is a prior review echoed back by the page" in turn

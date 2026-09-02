@@ -4,6 +4,7 @@ Registered by ``evaluation.init_evaluation(app)``.
 """
 from __future__ import annotations
 
+import math
 import secrets
 
 from flask import Blueprint, current_app, g, jsonify, request
@@ -21,6 +22,8 @@ bp = Blueprint("evaluation", __name__)
 
 MAX_BODY_BYTES = 96_000
 MAX_ATTEMPT = 50
+MAX_NUMERIC_CHARS = 20               # longest string accepted as a number for attempt (no float() of a 96 KB string)
+MAX_HINT_CHARS = 3                   # hints_used entries are 1..3; a digit string longer than this is junk
 MAX_PREVIOUS_IDS = 20
 MAX_HISTORY_TURNS = 3
 MAX_HISTORY_CHARS = 600
@@ -101,7 +104,20 @@ def _rate_limit():
 # --------------------------------------------------------------------------- validation (4.2)
 
 def _json_body() -> dict:
-    body = request.get_json(force=True, silent=True)
+    """The JSON object of a POST body (4.2 steps 1-2). Every failure is a JSON envelope: a non-JSON content type
+    -> 400 ``invalid_request`` (field ``content-type``; ``text/plain`` and form bodies are CORS "simple" requests
+    that would skip the preflight); a body above the cap -> 413 (Werkzeug raises for a declared Content-Length,
+    but a chunked body is only *cut* at ``max_content_length``, so a cut body is reported instead of being parsed
+    as a smaller document); unparsable JSON, including nesting deep enough for a RecursionError -> 400 ``invalid_json``."""
+    if not request.is_json:
+        raise RequestError(400, "invalid_request", "Content-Type must be application/json", "content-type")
+    data = request.get_data(cache=True)
+    if request.content_length is None and len(data) >= MAX_BODY_BYTES:
+        raise RequestEntityTooLarge()
+    try:
+        body = request.get_json(silent=True)
+    except (RecursionError, ValueError):        # silent=True only swallows the decoder's own ValueError
+        body = None
     if not isinstance(body, dict):
         raise RequestError(400, "invalid_json", "request body must be a JSON object")
     return body
@@ -131,23 +147,42 @@ def _code(body: dict) -> str:
 
 
 def clamp_attempt(v) -> int:
+    """``attempt`` clamped to [1, MAX_ATTEMPT]; junk -> 1. Numeric strings are accepted when short; ``inf``/``nan``
+    (JSON ``Infinity``/``1e999`` or the strings) and non-numbers fall back to 1 instead of raising."""
     if isinstance(v, bool):
         return 1
-    try:
-        n = int(float(str(v).strip())) if isinstance(v, str) else int(v)
-    except (TypeError, ValueError):
+    if isinstance(v, str):
+        s = v.strip()
+        if not s or len(s) > MAX_NUMERIC_CHARS:
+            return 1
+        try:
+            v = float(s)
+        except ValueError:
+            return 1
+    if isinstance(v, float):
+        if not math.isfinite(v):
+            return 1
+        v = int(v)
+    if not isinstance(v, int):
         return 1
-    return max(1, min(MAX_ATTEMPT, n))
+    return max(1, min(MAX_ATTEMPT, v))
 
 
 def clean_hints_used(v) -> list:
+    """Ints (or short digit strings) in {1, 2, 3}, deduplicated and sorted; everything else is dropped."""
     out = []
     if isinstance(v, list):
         for h in v:
             if isinstance(h, bool):
                 continue
-            if isinstance(h, str) and h.strip().isdigit():
-                h = int(h.strip())
+            if isinstance(h, str):
+                s = h.strip()
+                if not (1 <= len(s) <= MAX_HINT_CHARS and s.isdigit()):
+                    continue
+                try:
+                    h = int(s)
+                except ValueError:              # "²" passes isdigit() but is not an int
+                    continue
             if isinstance(h, int) and h in (1, 2, 3) and h not in out:
                 out.append(h)
     return sorted(out)

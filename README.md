@@ -620,7 +620,7 @@ No network and no key are needed; `conftest.py` forces `ANTHROPIC_API_KEY` empty
 ```bash
 # from the repository root
 python -m pytest backend/tests -q                   # 206 tests: registry, evidence, retrieval, prompts, judge, post-checks, routes, tutor
-node --test 'backend/tests/js/*.test.mjs'           # 118 tests: worker contract, execution tracer + replay helpers, every reference/known-bad through the real worker
+node --test 'backend/tests/js/*.test.mjs'           # 125 tests: worker contract, execution tracer + replay helpers, every reference/known-bad through the real worker
 python backend/scripts/export_challenges.py --check # docs/data/*.json is in sync with the registry (exit 1 when stale)
 node backend/scripts/verify_challenges.mjs          # references pass, every known-bad fails exactly its expected set, tests < 100 ms
 (cd backend/src && python -c "import app")          # the app still boots without a key
@@ -670,6 +670,8 @@ Then redeploy and open `https://<service>.onrender.com/evaluate-challenge/health
 | `/evaluate-challenge/health` | GET | Capability check and Render warm-up: `ai_configured`, `ai_disabled`, `model`, `effort`, `registry_hash`, per-challenge `tests_hash`, `followup`. No model call, not rate limited |
 | `/evaluate-challenge` | POST | Evaluate a submission with browser test evidence. Always 200 once the body validates (degraded mode included); the legacy `{code, challenge_type}` body is still accepted |
 | `/evaluate-challenge/tutor` | POST | Socratic follow-up: `mode` = `question`, `explain_problem`, `suggest_approach`, `complexity` or `explain_step` (requires `step`: `index`, `total`, `caption`, `call`, `stack`, `returned`), optional `selection` (highlighted lines), `history` (last 3 turns), `stuck`. Judge failures map to 429 / 502 / 503 / 504 |
+
+Both POST routes require `Content-Type: application/json` (any other content type gets the 400 envelope, which also keeps cross-site "simple" requests out) and reject bodies over 96 KB with 413, chunked bodies included.
 | `/classify-image` | POST | Image classification proxy |
 | `/api-check` | GET | Chatbot connectivity check |
 

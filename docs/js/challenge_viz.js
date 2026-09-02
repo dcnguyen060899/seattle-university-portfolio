@@ -1,7 +1,7 @@
 /* docs/js/challenge_viz.js - "Visualize my solution": step-by-step replay of the learner's own code
  * (lead addendum 2, section 3).
  *
- * The pure helpers (layoutTree, levelOrderNodes, buildSteps, describe, fmtVal, emptyMessage) never touch the DOM
+ * The pure helpers (layoutTree, levelOrderNodes, buildSteps, describe, traceNotes, fmtVal, emptyMessage) never touch the DOM
  * and are unit-tested in Node (backend/tests/js/trace.test.mjs). mount() wires the replay panel that docs/learning_algorithm.html
  * ships (#viz-panel and its controls) and is driven by challenge_mode.js, which runs the trace
  * (ChallengeRunner.trace), owns the input picker and the "Explain this step" tutor request.
@@ -24,6 +24,9 @@
 
   function isInt(v) { return typeof v === 'number' && isFinite(v) && Math.floor(v) === v; }
   function isNodeRef(v) { return !!v && typeof v === 'object' && !Array.isArray(v) && ('node' in v); }
+  /* An argument that was not passed: the tracer serializes undefined as the string "undefined", and a call
+     shorter than the parameter list leaves a real undefined behind. */
+  function isAbsent(v) { return v === undefined || v === 'undefined'; }
   function plural(n, one, many) { return n === 1 ? one : (many || one + 's'); }
   function copy(obj) { var out = {}; Object.keys(obj).forEach(function (k) { out[k] = obj[k]; }); return out; }
 
@@ -43,12 +46,16 @@
     if (v.tree === 'sub') return 'pattern node ' + val;
     return 'node ' + val;
   }
-  /* "main node 2, pattern node 2, maxDifferences = 1" (names = the function's parameter names). */
+  /* "main node 2, pattern node 2, maxDifferences = 1" (names = the function's parameter names). A named parameter
+     the call did not pass reads "maxDifferences not passed (default applies)": the tracer captures the arguments
+     before a body-level default (`if (maxDifferences === undefined) maxDifferences = 1;`) runs, so "= undefined"
+     would misreport what the code goes on to use. */
   function argDesc(args, names) {
     return (Array.isArray(args) ? args : []).map(function (a, i) {
       if (isNodeRef(a)) return nodeDesc(a);
       if (a === null) return 'empty';
       var name = (names && typeof names[i] === 'string') ? names[i] : '';
+      if (name && isAbsent(a)) return name + ' not passed (default applies)';
       return (name ? name + ' = ' : '') + fmtVal(a);
     }).join(', ');
   }
@@ -177,7 +184,8 @@
     var marks = {};
     var lastReturned;
     var calls = 0;
-    var budget;
+    var budget;              // the entry call's third argument as recorded (undefined when not passed)
+    var budgetText;          // what the Budget row shows: the value, or "default" when the call did not pass one
     var steps = [];
     var lastIndex = events.length - 1;
     events.forEach(function (ev, k) {
@@ -191,7 +199,10 @@
         byId[ev.id] = frame;
         open.push(frame);
         frame.refs.forEach(function (r) { if (r.tree === 'main') delete marks[r.vid]; });   // a later call clears an old verdict
-        if (k === 0 && ctx.hasBudget) budget = args.length > 2 ? args[2] : undefined;
+        if (k === 0 && ctx.hasBudget) {
+          budget = args.length > 2 ? args[2] : undefined;
+          budgetText = isAbsent(budget) ? 'default' : fmtVal(budget);
+        }
       } else {
         frame = byId[ev.id] || { id: ev.id, fn: ev.fn, fnIndex: null, names: byName[ev.fn] || [], args: [], depth: Math.max(0, open.length - 1), sig: ev.fn + '()', refs: [] };
         names = frame.names;
@@ -209,7 +220,7 @@
         index: k, kind: ev.k, fn: frame.fn, fnIndex: frame.fnIndex, depth: frame.depth, caption: caption, call: frame.sig,
         stack: open.map(function (f) { return f.sig; }), calls: calls,
         returned: lastReturned, returnedText: (lastReturned === undefined) ? '—' : fmtVal(lastReturned),
-        budget: budget, highlight: highlight, visited: { main: copy(visited.main), sub: copy(visited.sub) }, marks: copy(marks),
+        budget: budget, budgetText: budgetText, highlight: highlight, visited: { main: copy(visited.main), sub: copy(visited.sub) }, marks: copy(marks),
         error: ev.k === 'throw' ? (ev.error || '') : null
       });
       if (ev.k !== 'call') {
@@ -218,6 +229,33 @@
       }
     });
     return steps;
+  }
+
+  /* traceNotes(trace, ctx, steps) -> the notes shown under the slider for a loaded trace: a truncated trace says
+     where it was cut AND how the run ended (the tracer keeps executing after the cap, so the final answer is
+     known even though the last recorded step is mid-call); a learner exception names the step it surfaced at. */
+  function traceNotes(trace, ctx, steps) {
+    trace = trace || {};
+    ctx = ctx || {};
+    steps = Array.isArray(steps) ? steps : [];
+    var events = Array.isArray(trace.events) ? trace.events : [];
+    var notes = [];
+    if (trace.truncated) {
+      var cut = 'Trace cut at ' + events.length + ' events;';
+      if (trace.ok && !trace.error) {
+        cut += ' the run finished with final answer ' + fmtVal(trace.result) + '.';
+        if (ctx.expected !== undefined) cut += ' Expected ' + fmtVal(ctx.expected) + ': your answer ' + (sameAnswer(trace.result, ctx.expected) ? 'matches' : 'differs from') + ' the expected result.';
+      } else {
+        cut += ' the run then stopped with an error.';
+      }
+      notes.push(cut);
+    }
+    if (trace.error && trace.ok && trace.error_kind !== 'timeout') {
+      var at = -1;
+      for (var i = 0; i < steps.length; i++) { if (steps[i].kind === 'throw') { at = i; break; } }
+      notes.push('Your code threw' + (at >= 0 ? ' at step ' + (at + 1) : '') + ': ' + trace.error);
+    }
+    return notes;
   }
 
   /* The caption of a replay without steps: a timed-out run (the worker posts its events only at the end, so a
@@ -357,7 +395,7 @@
       next: byId('viz-next'), end: byId('viz-end'), slider: byId('viz-slider'), progress: byId('viz-progress-bar') || panel.querySelector('.progress-bar'),
       note: byId('viz-note'), speedButtons: Array.prototype.slice.call(panel.querySelectorAll('.viz-speed [data-speed]'))
     };
-    var st = { steps: [], index: 0, trace: null, ctx: null, circles: { main: {}, sub: {} }, timer: null, playing: false, speed: 1, notes: [], loaded: false };
+    var st = { steps: [], index: 0, trace: null, ctx: null, circles: { main: {}, sub: {} }, timer: null, playing: false, speed: 1, notes: [], stale: '', loaded: false };
     var onStep = (typeof opts.onStep === 'function') ? opts.onStep : function () {};
     var listeners = [];
     function on(el, type, fn) { if (!el) return; el.addEventListener(type, fn); listeners.push([el, type, fn]); }
@@ -442,7 +480,7 @@
       var rows = step
         ? [['Returned', step.returnedText], ['Depth', String(step.depth)], ['Calls so far', String(step.calls)]]
         : [['Returned', NONE], ['Depth', NONE], ['Calls so far', NONE]];
-      if (st.ctx && st.ctx.hasBudget) rows.push(['Budget', step ? fmtVal(step.budget) : NONE]);
+      if (st.ctx && st.ctx.hasBudget) rows.push(['Budget', step ? (typeof step.budgetText === 'string' ? step.budgetText : fmtVal(step.budget)) : NONE]);
       rows.forEach(function (r) {
         var dt = document.createElement('dt'); dt.textContent = r[0];
         var dd = document.createElement('dd'); dd.textContent = r[1];
@@ -450,7 +488,11 @@
         els.values.appendChild(dd);
       });
     }
-    function renderNote() { setText(els.note, st.notes.join(' ')); }
+    /* The note = the stale-code message (if any) followed by the trace's own notes (truncation, a throw). */
+    function renderNote() { setText(els.note, (st.stale ? [st.stale] : []).concat(st.notes).join(' ')); }
+    /* setStale(text): the code in the editor no longer matches the replayed code (challenge_mode.js calls it on
+       every editor input while the panel is open; '' clears it). Replaced by the next load / setLoading. */
+    function setStale(text) { st.stale = text ? String(text) : ''; renderNote(); }
     function renderStep() {
       var n = total();
       var step = n ? st.steps[st.index] : null;
@@ -513,7 +555,7 @@
       if (st.playing) schedule();
     }
 
-    /* load(trace, ctx): ctx = { entry, hasBudget, returnType, expected, notes: [] }. Renders step 0. */
+    /* load(trace, ctx): ctx = { entry, hasBudget, returnType, expected, stale: '' | message, notes: [] }. Renders step 0. */
     function load(trace, ctx) {
       pause();
       st.trace = trace || {};
@@ -522,14 +564,8 @@
       st.index = 0;
       st.circles = drawTrees(els.mainSvg, els.subSvg, st.trace.nodes);
       st.steps = buildSteps(st.trace, st.ctx);
-      st.notes = (Array.isArray(st.ctx.notes) ? st.ctx.notes : []).slice();
-      var events = Array.isArray(st.trace.events) ? st.trace.events : [];
-      if (st.trace.truncated) st.notes.push('Trace truncated after ' + events.length + ' events.');
-      if (st.trace.error && st.trace.ok && st.trace.error_kind !== 'timeout') {
-        var at = -1;
-        for (var i = 0; i < st.steps.length; i++) { if (st.steps[i].kind === 'throw') { at = i; break; } }
-        st.notes.push('Your code threw' + (at >= 0 ? ' at step ' + (at + 1) : '') + ': ' + st.trace.error);
-      }
+      st.stale = (typeof st.ctx.stale === 'string') ? st.ctx.stale : '';
+      st.notes = (Array.isArray(st.ctx.notes) ? st.ctx.notes : []).concat(traceNotes(st.trace, st.ctx, st.steps));
       renderNote();
       if (!st.steps.length) {                  // timeout / syntax / load failure: one message, in the caption only
         renderEmpty(emptyMessage(st.trace));
@@ -544,6 +580,7 @@
       st.steps = [];
       st.index = 0;
       st.notes = [];
+      st.stale = '';
       renderNote();
       renderEmpty(message || 'Tracing your code...');
     }
@@ -555,6 +592,7 @@
       st.trace = null;
       st.ctx = null;
       st.notes = [];
+      st.stale = '';
       st.circles = { main: {}, sub: {} };
       clearEl(els.mainSvg);
       clearEl(els.subSvg);
@@ -594,7 +632,7 @@
     setControls();
 
     return {
-      load: load, setLoading: setLoading, unload: unload, goTo: goTo, first: first, last: last, next: next, prev: prev,
+      load: load, setLoading: setLoading, setStale: setStale, unload: unload, goTo: goTo, first: first, last: last, next: next, prev: prev,
       play: play, pause: pause, togglePlay: togglePlay, setSpeed: setSpeed, current: current, destroy: destroy,
       steps: function () { return st.steps; }, isPlaying: function () { return st.playing; }, speed: function () { return st.speed; }, els: els
     };
@@ -602,7 +640,7 @@
 
   var api = {
     H_SPACING: H_SPACING, V_SPACING: V_SPACING, RADIUS: RADIUS, PAD: PAD, MIN_VIEW_WIDTH: MIN_VIEW_WIDTH, STEP_INTERVAL_MS: STEP_INTERVAL_MS, SPEEDS: SPEEDS.slice(),
-    fmtVal: fmtVal, argDesc: argDesc, signature: signature, describe: describe, buildSteps: buildSteps, emptyMessage: emptyMessage,
+    fmtVal: fmtVal, argDesc: argDesc, signature: signature, describe: describe, buildSteps: buildSteps, traceNotes: traceNotes, emptyMessage: emptyMessage,
     layoutTree: layoutTree, levelOrderNodes: levelOrderNodes, drawTree: drawTree, drawTrees: drawTrees, mount: mount
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

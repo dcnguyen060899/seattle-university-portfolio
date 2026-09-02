@@ -15,11 +15,17 @@
  * worker -> main:  { type: "trace", run_id, ok, error, error_kind, result, events, truncated, functions, nodes, ms }
  * The tracer (js/challenge_trace.js + js/vendor/acorn.js) is loaded lazily with the importScripts reference
  * captured below, only when the first trace message arrives; a run message never loads it.
+ *
+ * The whole file is one IIFE: learner code is compiled with `new Function` and therefore only sees the worker's
+ * global scope, so the captured references (post, importScriptsRef, now, traceLib) and the helpers are private
+ * bindings it can neither read nor reassign (a top-level `var` would have been a property of the worker global).
+ * Only self.onmessage (browser) and module.exports (Node) are exposed.
  */
-var IS_WORKER = typeof self !== "undefined" && typeof self.postMessage === "function";
-var post = IS_WORKER ? self.postMessage.bind(self) : function () {};          // captured BEFORE learner code runs
-var importScriptsRef = (IS_WORKER && typeof self.importScripts === "function") ? self.importScripts.bind(self) : null;   // captured BEFORE the guard below nulls it
-var now = function () { return (typeof performance !== "undefined" && performance && typeof performance.now === "function") ? performance.now() : Date.now(); };
+(function () {
+const IS_WORKER = typeof self !== "undefined" && typeof self.postMessage === "function";
+const post = IS_WORKER ? self.postMessage.bind(self) : function () {};        // captured BEFORE learner code runs
+const importScriptsRef = (IS_WORKER && typeof self.importScripts === "function") ? self.importScripts.bind(self) : null;   // captured BEFORE the guard below nulls it
+const now = function () { return (typeof performance !== "undefined" && performance && typeof performance.now === "function") ? performance.now() : Date.now(); };
 if (IS_WORKER) {                                                              // accident guard only
   try { self.fetch = undefined; } catch (e) { /* ignore */ }
   try { self.XMLHttpRequest = undefined; } catch (e) { /* ignore */ }
@@ -27,8 +33,8 @@ if (IS_WORKER) {                                                              //
   try { self.importScripts = undefined; } catch (e) { /* ignore */ }
 }
 
-var ENTRY_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
-var ERROR_MAX = 200;
+const ENTRY_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
+const ERROR_MAX = 200;
 
 /* Level-order array -> tree (LeetCode convention, spec 2.2). Nodes are plain {val, left, right}. */
 function buildTree(levelOrder) {
@@ -144,9 +150,9 @@ function handleRun(msg) {
 
 /* ---------- Execution trace (lazy: acorn + challenge_trace.js are loaded on the first trace message) ---------- */
 
-var TRACE_MAX_EVENTS_DEFAULT = 600;
-var TRACE_MAX_EVENTS_CAP = 5000;
-var traceLib = null;
+const TRACE_MAX_EVENTS_DEFAULT = 600;
+const TRACE_MAX_EVENTS_CAP = 5000;
+let traceLib = null;
 
 /* Resolves the tracer library: the CommonJS require in Node, importScripts (relative to this worker's URL)
    in the browser. Throws when neither is available (offline / blocked vendor file). */
@@ -236,3 +242,4 @@ if (IS_WORKER) {
 if (typeof module !== "undefined") {
   module.exports = { buildTree: buildTree, compileLearnerCode: compileLearnerCode, runOne: runOne, serializeActual: serializeActual, definedFunctions: definedFunctions, traceOnce: traceOnce, handleTrace: handleTrace, loadTraceLib: loadTraceLib };
 }
+})();

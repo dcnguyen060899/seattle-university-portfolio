@@ -1747,23 +1747,36 @@ code {
     outline-offset: 4px;
 }
 
-/* Header: heading, input picker, close */
+/* Header: a two-row grid at every width. Row 1 = the heading with Close pinned to the right edge,
+   row 2 = the input picker spanning the full width. Independent of the option label length, so the
+   Close button never wraps to the left under the heading (warm-up labels) or drifts to the picker's row. */
 .viz-header {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "heading close"
+        "input input";
     align-items: center;
     gap: 10px 16px;
     margin-bottom: 12px;
 }
 
 .viz-header h3 {
-    flex: 1 1 auto;
+    grid-area: heading;
+    min-width: 0; /* the heading wraps its text instead of pushing Close out of the row */
     margin: 0;
     padding-left: 0;
     font-size: 1.15rem;
 }
 
+.viz-header #viz-close {
+    grid-area: close;
+    justify-self: end;
+    align-self: start;
+}
+
 .viz-input {
+    grid-area: input;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -2306,18 +2319,8 @@ summary:focus-visible,
         right: 8px;
     }
 
-    /* Visualizer: heading + Close share the first row, the input picker wraps under them;
+    /* Visualizer: the header grid (heading + Close, then the picker) needs no override here;
        trees already stack via .trees-container; the state boxes stack */
-    .viz-header h3 {
-        flex: 1 1 0;
-        min-width: 0; /* the heading wraps its text instead of pushing Close to the next line */
-    }
-
-    .viz-header .viz-input {
-        order: 1;
-        flex-basis: 100%;
-    }
-
     .viz-trees .tree {
         width: 100%;
     }

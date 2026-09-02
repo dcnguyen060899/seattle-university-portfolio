@@ -282,14 +282,14 @@ def run_tutor(challenge: Challenge, req: EvalRequest, tut: TutorRequest, judge, 
         out = _degraded_tutor(challenge, tut, ev, cards, base_level)
     else:
         submission = build_submission_message(challenge, ev, cards, req.attempt, req.hints_used, req.previous, req.learner_state, base_level)
+        # user (submission) -> [assistant: the structurally validated evaluation echo] -> user (tutor turn). Prior
+        # exchanges ride inside the tutor turn as escaped <previous_turn> data: history[].answer is learner text
+        # and must never become an assistant turn the model believes it wrote.
         messages = [submission_message(submission)]
         if tut.evaluation:
             messages.append({"role": "assistant", "content": canonical_json(strip_server_fields(tut.evaluation))})
-        for turn in tut.history:
-            messages.append({"role": "user", "content": turn["question"]})
-            messages.append({"role": "assistant", "content": turn["answer"]})
         messages.append({"role": "user", "content": build_tutor_turn(tut.mode, tut.question, tut.selection, base_level, tut.stuck,
-                                                                     step=tut.step)})
+                                                                     step=tut.step, history=tut.history)})
         jr = judge.tutor(challenge, messages, ev=ev, cards=cards, level=base_level, tutor=tut.as_dict(), attempt=req.attempt)
         if not jr.ok:
             logger.info("evaluation request_id=%s route=tutor challenge=%s attempt=%s mode=%s judge=failed reason=%s judge_ms=%s "
