@@ -73,6 +73,17 @@
         </p>
 
         <p>
+            <strong>Production.</strong> A result that lives in a notebook is not yet
+            a system anyone can run. I'm wrapping that retrieval work in the
+            deployment workflow industry actually runs on: a containerized FastAPI
+            evaluation service on AWS, shipped through GitHub Actions, with MLflow
+            tracking every run against the paper's frozen splits, Airflow re-scoring
+            on a schedule, and ragas and Evidently watching retrieval quality drift
+            after release. Same standard as the research &mdash; every claim
+            checkable &mdash; on infrastructure a team can operate without me.
+        </p>
+
+        <p>
             <strong>Research.</strong> My master's program has carried two research
             positions at once. With Dr. Wenjing Yang, I designed a controlled study of
             retrieval-augmented mammography report generation &mdash; four retrieval
