@@ -17,7 +17,7 @@ import anthropic
 from . import config
 from .evidence import first_failed_test
 from .postcheck import derive_verdict, fallback_hint
-from .prompts import JUDGE_CORE, render_challenge_pack
+from .prompts import JUDGE_CORE, jsdump, render_challenge_pack
 from .schema import TUTOR_SCHEMA, judge_schema
 
 logger = logging.getLogger("evaluation.judge")
@@ -182,6 +182,10 @@ class FakeJudge:
 
     model = "fake-judge"
 
+    @property
+    def effort(self) -> str:                      # reported in the judge trace line like the SDK judge
+        return config.EFFORT
+
     def evaluate(self, challenge, submission: str, *, ev, cards, level, attempt=1, hints_used=(), **_) -> JudgeResult:
         s = ev["summary"]
         verdict = derive_verdict(ev)
@@ -225,7 +229,8 @@ class FakeJudge:
             scores = {"correctness": corr, "edge_cases": corr, "key_concepts": 60, "efficiency": 75, "code_quality": 70}
             fid = first["id"] if first else ""
             title = top.title if top else f"Wrong result on {fid}"
-            expl = (f"Fake judge: {fid} expected {first['expected']!s} but your code returned {first['actual']!s}."
+            got = ("an error: " + first["error"]) if first and first["status"] != "fail" and first["error"] else (jsdump(first["actual"]) if first else "")
+            expl = (f"Fake judge: {fid} expected {jsdump(first['expected'])} but your code returned {got}."
                     if first else "Fake judge: a test failed.")
             if top:
                 expl += f" {top.why}"

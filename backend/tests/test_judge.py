@@ -58,7 +58,9 @@ def test_tutor_call_shape(fuzzy):
     (lambda: sdk_error(anthropic.UnprocessableEntityError, 422), "request_rejected", 502, False),
     (lambda: sdk_error(anthropic.RequestTooLargeError, 413), "request_rejected", 502, False),
     (lambda: sdk_error(anthropic.APIStatusError, 418), "request_rejected", 502, False),
-    (lambda: sdk_error(anthropic.APIStatusError, 502), "upstream_unavailable", 503, True),
+    # a generic APIStatusError is mapped by status code only; the fast retry is reserved for Overloaded /
+    # ServiceUnavailable / InternalServer and connection errors (spec 6.1)
+    (lambda: sdk_error(anthropic.APIStatusError, 502), "upstream_unavailable", 503, False),
     (lambda: anthropic.APITimeoutError(request=sdk_error(anthropic.APIStatusError, 500).request), "timeout", 504, False),
     (lambda: anthropic.APIConnectionError(request=sdk_error(anthropic.APIStatusError, 500).request), "connection_error", 502, True),
     (lambda: RuntimeError("weird"), "unexpected", 500, False),

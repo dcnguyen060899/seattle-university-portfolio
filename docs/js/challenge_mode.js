@@ -50,7 +50,7 @@
   var HINT_SOURCES = ['judge', 'card', 'ladder', 'syntax'];
   var TUTOR_MODES = ['question', 'explain_problem', 'suggest_approach', 'complexity'];
   var QUICK_LABELS = { explain_problem: 'Explain this problem', suggest_approach: 'Suggest an approach', complexity: 'Time & space complexity' };
-  var NOT_RUN_DETAIL = 'AI stages not run: click Get AI feedback for a review.';
+  var NOT_RUN_DETAIL = 'Not run: click Get AI feedback for a review.';
   var UNREACHABLE_BANNER = 'The AI tutor is unreachable right now. Your test results above are still valid.';
   var TUTOR_EXHAUSTED_TITLE = 'Run tests or get new AI feedback to ask more.';
 
@@ -346,9 +346,9 @@
     if (dom.submitBtn && S.phase !== 'requesting_ai') {
       dom.submitBtn.textContent = (h && h.ai_configured === false) ? 'Get feedback (AI tutor not configured)' : 'Get AI feedback';
     }
-    if (dom.tutor) {
-      if (h && h.followup === true) show(dom.tutor); else hide(dom.tutor);
-    }
+    // Addendum B1: the box is shown whenever the server answered the health check; without an AI judge it
+    // carries the muted "not configured" note and disabled controls. Health failed/unreachable -> hidden.
+    if (dom.tutor) { if (h) show(dom.tutor); else hide(dom.tutor); }
     setTutorAvailability();
   }
 
@@ -400,6 +400,11 @@
     else { hide(dom.feedback); hide(dom.followup); hide(dom.hintTutor); }
     if (sess.lastBanner) showBanner(sess.lastBanner.text, sess.lastBanner.retry);
     renderHintCard();
+    // The solution panel always belongs to the current challenge: empty it and collapse it on every switch.
+    dom.solutionDetails.open = false;
+    dom.solutionCode.textContent = '';
+    clear(dom.solutionNotes);
+    dom.solutionStretch.textContent = '';
     updateSolutionLock();
     updateStatusLine();
     updateTabBadges();
@@ -797,10 +802,9 @@
 
   /* ---------- Get AI feedback (guided loop) ---------- */
 
-  function buildRequestBody(localResult) {
+  function buildRequestBody(localResult, previous) {
     var ch = localResult.challenge;
     var st = readState(ch.id);
-    var sess = session(ch.id);
     var body = {
       challenge_id: ch.id,
       challenge_type: ch.id,
@@ -811,14 +815,16 @@
       learner_state: { gave_up: !!st.gaveUp, solution_revealed: !!st.solutionRevealed },
       client_results: localResult.clientResults
     };
-    var prev = sess.aiResult ? sess.aiResult.previousForNext : null;
-    if (prev) body.previous = prev;
+    if (isObj(previous) && Array.isArray(previous.failed_test_ids)) {     // what failed on the previous run + the last AI hint level
+      body.previous = { failed_test_ids: previous.failed_test_ids.slice(0, 20), hint_level: HINT_LEVELS.indexOf(previous.hint_level) >= 0 ? previous.hint_level : null };
+    }
     return body;
   }
 
   function getAiFeedback() {
     if (!S.current || S.phase === 'running_local' || S.phase === 'requesting_ai') return Promise.resolve(null);
     var ch = S.current;
+    var prior = session(ch.id).previous ? { failed_test_ids: session(ch.id).previous.failed_test_ids.slice(), hint_level: session(ch.id).previous.hint_level } : null;
     return runTests().then(function (localResult) {
       if (!localResult || S.current !== ch) return null;
       var sess = session(ch.id);
@@ -834,11 +840,12 @@
       S.phase = 'requesting_ai';
       setBusy(true);
       dom.submitBtn.textContent = 'Reviewing...';
+      ['judge', 'postcheck'].forEach(function (s) { setStage(s, 'idle'); });     // server stages are pending now, not skipped
       setStage('retrieval', 'active', 'Sending your code and test results to the tutor...');
       var coldTimer = setTimeout(function () {
         if (S.phase === 'requesting_ai' && S.current === ch) setStage('retrieval', 'active', 'Waking the tutor server (free hosting sleeps when idle); this can take up to a minute.');
       }, COLD_START_NOTICE_MS);
-      var body = buildRequestBody(localResult);
+      var body = buildRequestBody(localResult, prior);
       var t0 = performance.now();
       return fetchJson(apiBase() + '/evaluate-challenge', { method: 'POST', body: body }, AI_REQUEST_TIMEOUT_MS).then(function (r) {
         clearTimeout(coldTimer);
@@ -856,11 +863,8 @@
           summary: localResult.summary, verdict: localResult.verdict, deterministic: localResult.deterministic, attemptHash: localResult.attemptHash,
           server: v, evaluationRaw: isObj(r.json.evaluation) ? r.json.evaluation : null, wallMs: wall
         };
-        aiResult.previousForNext = {
-          failed_test_ids: localResult.summary.failing_ids.slice(0, 20),
-          hint_level: (v.evaluation && v.evaluation.next_hint) ? v.evaluation.next_hint.level : null
-        };
         sess.aiResult = aiResult;
+        if (sess.previous && v.evaluation && v.evaluation.next_hint) sess.previous.hint_level = v.evaluation.next_hint.level;
         var patch = { aiReviews: st.aiReviews + 1, lastAiCodeHash: localResult.attemptHash, lastEvaluationAt: nowIso(), tutorRemaining: TUTOR_BUDGET, tutorResetAt: nowIso() };
         if (isInt(v.overall)) patch.bestScore = (st.bestScore === null) ? v.overall : Math.max(st.bestScore, v.overall);
         writeState(ch.id, patch);
@@ -875,7 +879,7 @@
         var banners = [];
         var retry = false;
         if (aiResult.source === 'legacy') banners.push('Showing plain-text feedback from an older server version.');
-        if (v.ai && v.ai.degraded) {
+        if (v.ai && v.ai.present && v.ai.degraded) {          // an old backend without an `ai` block is not "degraded", just legacy
           banners.push(v.ai.message || 'The AI tutor could not review this submission; showing rule-based feedback.');
           if (v.ai.reason !== 'not_configured' && v.ai.reason !== 'disabled') retry = true;
         }
@@ -945,9 +949,9 @@
     return out;
   }
   function coerceAi(ai) {
-    if (!isObj(ai)) return { enabled: false, degraded: true, reason: null, message: null, model: null, usage: null };
+    if (!isObj(ai)) return { present: false, enabled: false, degraded: true, reason: null, message: null, model: null, usage: null };
     return {
-      enabled: ai.enabled === true, degraded: ai.degraded === true,
+      present: true, enabled: ai.enabled === true, degraded: ai.degraded === true,
       reason: (typeof ai.reason === 'string') ? ai.reason.slice(0, 40) : null,
       message: (typeof ai.message === 'string') ? ai.message.slice(0, 300) : null,
       model: (typeof ai.model === 'string') ? ai.model.slice(0, 60) : null,
@@ -1143,7 +1147,8 @@
         : n + ' of ' + summary.total + ' ' + plural(n, 'test fails', 'tests fail')) + '; expand the first one to see the input.';
     }
     // Issues
-    var allUndefined = summary.failed > 0 && summary.failed === summary.executed && summary.rows.every(function (r) { return r.status !== 'fail' || r.actual_type === 'undefined'; });
+    // Every failing test came back undefined (spec 8.6 / QA 1: the starter passes cs-01 and returns undefined on the other 11).
+    var allUndefined = failing.length > 0 && failing.every(function (r) { return r.status === 'fail' && r.actual_type === 'undefined'; });
     if (allUndefined) {
       var mr = cards.filter(function (k) { return k.card_id === 'missing_return'; })[0];
       det.issues.push({ title: "Your function doesn't return anything yet", explanation: (mr ? mr.card.symptom + ' ' : '') + 'Every executed test got undefined back.', severity: 'high', evidence: [{ kind: 'test', ref: first.id }], category: 'correctness' });
@@ -1485,8 +1490,7 @@
     var st = readState(ch.id);
     if (solutionUnlocked(st)) {
       hide(dom.solutionLock);
-      show(dom.solutionDetails);
-      if (st.solutionRevealed && dom.solutionCode.textContent === '' && dom.solutionDetails.open) revealSolution();
+      show(dom.solutionDetails);            // collapsed; opening it (the toggle listener) fetches and reveals
     } else {
       show(dom.solutionLock);
       hide(dom.solutionDetails);
@@ -1504,8 +1508,7 @@
     var st = readState(ch.id);
     writeState(ch.id, { gaveUp: true, gaveUpAtAttempt: st.attempts });
     updateSolutionLock();
-    dom.solutionDetails.open = true;      // fires toggle -> revealSolution
-    if (!dom.solutionCode.textContent) revealSolution();
+    dom.solutionDetails.open = true;      // the (async) toggle event calls revealSolution()
     updateStatusLine();
     updateTabBadges();
   }
@@ -1601,8 +1604,8 @@
 
   /* ---------- Ask the tutor (addendum B1-B6) ---------- */
 
-  function tutorVisible() { return !!(S.health && S.health.followup === true); }
-  function tutorConfigured() { return !!(S.health && S.health.ai_configured !== false); }
+  function tutorVisible() { return !!S.health; }
+  function tutorConfigured() { return !!(S.health && S.health.followup === true && S.health.ai_configured !== false); }
   function tutorRemaining() { return S.current ? readState(S.current.id).tutorRemaining : TUTOR_BUDGET; }
   function setTutorAvailability() {
     if (!dom.tutor) return;

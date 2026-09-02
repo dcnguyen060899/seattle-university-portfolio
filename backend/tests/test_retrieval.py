@@ -7,9 +7,11 @@ from evaluation.registry import CHALLENGES, BY_ID
 from evaluation.retrieval import jaccard, retrieve_cards
 
 # Known-bads whose card signature came from a sibling variant (see test_registry.SECONDARY_KNOWN_BAD).
-# Only fuzzySubtree/exact_only ranks another card first (off_by_one_threshold at 6/7 vs ignores_budget at 1/9);
-# countSubtrees/root_value_only still resolves to structure_ignored (6/7).
-NOT_FIRST = {("fuzzySubtree", "exact_only"): "off_by_one_threshold"}
+# Only fuzzySubtree/exact_only ranks another card first: its failing set {fz-04,05,07,09,10,14,16} has Jaccard 1/9
+# with ignores_budget but 6/7 with BOTH global_counter and off_by_one_threshold; the tie is broken by registry
+# order (spec 5.3), so global_counter comes first. countSubtrees/root_value_only still resolves to
+# structure_ignored (6/7).
+NOT_FIRST = {("fuzzySubtree", "exact_only"): "global_counter"}
 
 ERROR_MESSAGES = {
     "null_dereference": "TypeError: Cannot read properties of null (reading 'val')",

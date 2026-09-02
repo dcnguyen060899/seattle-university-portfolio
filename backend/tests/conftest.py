@@ -206,7 +206,9 @@ def good_payload():
     }
 
 
-def make_app(judge=None, per_min=None, burst=None, origins=None):
+def make_app(judge=None, per_min=6000, burst=1000, origins=None):
+    """Bare Flask app with only the blueprint. The bucket is effectively unlimited unless a test passes its own
+    ``per_min``/``burst`` (test_rate_limit_429_with_retry_after), so multi-request tests never trip the limiter."""
     from flask import Flask, jsonify
     app = Flask("evaluation-test")
     app.config["TESTING"] = True

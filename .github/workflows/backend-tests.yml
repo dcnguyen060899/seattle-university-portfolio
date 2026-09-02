@@ -1,0 +1,88 @@
+# GitHub Actions workflow for the Flask backend and the challenge registry
+# (evaluation pipeline v2). It runs the same command set as the README's
+# "Running the tests" section, with no API key anywhere:
+#
+#   pip install ...                  also proves that anthropic<1 resolves next to langchain-anthropic 0.1.11
+#   python -c "import app"           the app boots without ANTHROPIC_API_KEY
+#   python -m pytest tests -q        registry, evidence, retrieval, prompts, judge, post-checks, routes, tutor
+#   node --test ...                  worker contract + every reference / known-bad through the real worker
+#   export_challenges.py --check     docs/data/*.json is in sync with the registry (also run in the Render build)
+#   verify_challenges.mjs            references pass, every known-bad fails exactly its expected set
+
+name: Backend tests
+
+on:
+  push:
+    paths:
+      - 'backend/**'
+      - 'docs/js/challenge_*.js'
+      - 'docs/data/**'
+      - 'render.yaml'
+      - '.github/workflows/backend-tests.yml'
+  pull_request:
+    paths:
+      - 'backend/**'
+      - 'docs/js/challenge_*.js'
+      - 'docs/data/**'
+      - 'render.yaml'
+      - '.github/workflows/backend-tests.yml'
+
+  # Allow manual trigger from GitHub Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      # No key in CI: the suites use degraded mode and the FakeJudge fixtures only.
+      ANTHROPIC_API_KEY: ''
+      # verify_challenges.mjs and challenges.test.mjs spawn this interpreter for the private registry export.
+      PYTHON: python
+      PYTHONDONTWRITEBYTECODE: '1'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            backend/dependencies/requirements.txt
+            backend/dependencies/requirements-dev.txt
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Python dependencies
+        run: pip install -r backend/dependencies/requirements.txt -r backend/dependencies/requirements-dev.txt
+
+      - name: App boots without an API key
+        working-directory: backend/src
+        run: python -c "import app"
+
+      - name: pytest
+        working-directory: backend
+        run: python -m pytest tests -q
+
+      - name: Node tests
+        run: node --test 'backend/tests/js/*.test.mjs'
+
+      - name: Exported challenge data is in sync with the registry
+        run: python backend/scripts/export_challenges.py --check
+
+      - name: Verify challenges through the worker
+        run: node backend/scripts/verify_challenges.mjs

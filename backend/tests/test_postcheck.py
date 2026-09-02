@@ -122,7 +122,9 @@ def test_leak_guard(fuzzy, old_reference, good_payload):
     ev = _ev(fuzzy, old_reference, {"fz-06": True, "fz-15": True})
     cards = retrieve_cards(fuzzy, ev)
     windows = leak_windows(fuzzy, old_reference)
-    helper = "if (!p && !q) return 0; if (!p || !q) return Infinity; const here = p.val !== q.val ? 1 : 0;"
+    # 80 normalized chars of the reference helper body with no sentence terminator inside (the sentence splitter
+    # of 7.4 is `(?<=[.!?])\s+`, so a `? 1 : 0` fragment would be cut in two)
+    helper = "return here + countMismatches(p.left, q.left) + countMismatches(p.right, q.right);"
     assert leaks("Write this: " + helper, windows)
     own = "\n".join(old_reference.split("\n")[:3])
     assert not leaks("Your first lines are: " + own, windows)
@@ -131,7 +133,7 @@ def test_leak_guard(fuzzy, old_reference, good_payload):
 
     payload = copy.deepcopy(good_payload)
     payload["next_hint"]["text"] = "Use this helper: " + helper
-    payload["summary"] = "Fifteen tests pass. The fix is " + helper + " Keep going."
+    payload["summary"] = "Fifteen tests pass. Write " + helper + " there. Keep going."
     payload["strengths"].append("You could write " + helper)
     payload["what_to_try_next"].append("Copy " + alt)
     payload["issues"][0]["explanation"] = "Lines 24-25 copy the count. Compare with " + helper

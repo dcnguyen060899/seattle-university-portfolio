@@ -592,6 +592,7 @@ code {
 
 /* Tabs */
 .challenge-tabs {
+    scroll-margin-top: 100px;
     display: flex;
     gap: 10px;
     margin: 10px 0 6px;

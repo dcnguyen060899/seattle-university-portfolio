@@ -242,13 +242,8 @@
     return union === 0 ? 0 : inter / union;
   }
 
-  /* Python's round(): half to even, so the scores match the server's ranking exactly. */
-  function pyRound(x) {
-    var f = Math.floor(x), d = x - f;
-    if (d > 0.5) return f + 1;
-    if (d < 0.5) return f;
-    return (f % 2 === 0) ? f : f + 1;
-  }
+  /* Half-up rounding (floor(x + 0.5)); the server's retrieval.py uses the same rule so ranks agree on ties. */
+  function roundHalfUp(x) { return Math.floor(x + 0.5); }
 
   function localRetrieve(challenge, cr, k) {
     k = k || 3;
@@ -260,19 +255,19 @@
     var fmt = function (sc) {
       return { card: sc.card, card_id: sc.card.id, title: sc.card.title, matched_by: sc.matched.slice(), similarity: Math.round(sc.sim * 100) / 100, score: sc.score };
     };
-    var uniform = function (rule, pred) {
+    var uniform = function (rule, cardId, pred) {
       var hits = rows.filter(function (r) { return r.status === 'fail' && pred(r); });
       if (hits.length >= 0.8 * executed) {
         var card = null;
-        for (var i = 0; i < cards.length; i++) { if (cards[i].uniform_rule === rule) { card = cards[i]; break; } }
-        if (card) return [fmt({ card: card, matched: hits.map(function (r) { return r.id; }), sim: hits.length / executed, score: 10 })];
+        for (var i = 0; i < cards.length; i++) { if (cards[i].uniform_rule === rule || cards[i].id === cardId) { card = cards[i]; break; } }
+        if (card) return [fmt({ card: card, matched: hits.map(function (r) { return r.id; }), sim: 1, score: 100 })];   // similarity 1.0 like the server
       }
       return null;
     };
-    var u = uniform('actual_undefined', function (r) { return r.actual_type === 'undefined'; });
+    var u = uniform('actual_undefined', 'missing_return', function (r) { return r.actual_type === 'undefined'; });
     if (u) return u;
     if (challenge.return_type === 'integer') {
-      u = uniform('actual_boolean', function (r) { return r.actual_type === 'boolean'; });
+      u = uniform('actual_boolean', 'wrong_return_type', function (r) { return r.actual_type === 'boolean'; });
       if (u) return u;
     }
     var scored = cards.map(function (c, i) { return { card: c, index: i, score: 0, matched: [], sim: 0 }; });
@@ -290,7 +285,7 @@
       if (!Array.isArray(sig) || sig.length === 0) return;
       var sim = jaccard(s.failed_ids, sig);
       if (sim > 0) {
-        sc.score += pyRound(10 * sim);
+        sc.score += roundHalfUp(10 * sim);
         sc.sim = sim;
         sc.matched = s.failed_ids.filter(function (id) { return sig.indexOf(id) >= 0; }).sort();
       }
@@ -298,14 +293,14 @@
     for (var i = 0; i < scored.length; i++) {
       var sc = scored[i];
       if (sc.card.error_pattern && sc.matched.length >= 0.8 * executed) {
-        sc.sim = sc.matched.length / executed;
+        sc.sim = 1;                                  // error cards report similarity 1.0 like the server
         return [fmt(sc)];
       }
     }
     return scored.filter(function (x) { return x.score > 0; })
       .sort(function (a, b) { return (b.score - a.score) || (a.index - b.index); })
       .slice(0, k)
-      .map(function (sc) { if (!sc.sim && sc.matched.length) sc.sim = sc.matched.length / executed; return fmt(sc); });
+      .map(function (sc) { if (!sc.sim && sc.matched.length) sc.sim = 1; return fmt(sc); });
   }
 
   /* ---------- The run ---------- */
@@ -521,7 +516,7 @@
     localRetrieve: localRetrieve,
     summarize: summarize,
     jaccard: jaccard,
-    pyRound: pyRound,
+    roundHalfUp: roundHalfUp,
     STATUSES: Object.keys(STATUSES)
   };
 

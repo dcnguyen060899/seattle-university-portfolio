@@ -4,7 +4,8 @@ import re
 
 from conftest import FailingJudge, make_app, make_client_results
 from evaluation.judge import FakeJudge
-from evaluation.registry import CHALLENGES, registry_hash, tests_hash
+from evaluation.registry import CHALLENGES, registry_hash
+from evaluation.registry import tests_hash as _tests_hash   # aliased: a module-level `tests_hash` would be collected
 
 TOP_LEVEL = {"ok", "request_id", "challenge_id", "attempt", "evaluation_id", "verdict", "overall", "evaluation", "tests",
              "retrieval", "pipeline", "ai", "solution_unlocked", "response"}
@@ -62,7 +63,7 @@ def test_health(client, fake_client):
     body = r.get_json()
     assert body["ok"] is True and body["version"] == "2" and body["ai_configured"] is False and body["ai_disabled"] is False
     assert body["model"] == "claude-sonnet-5" and body["effort"] == "medium" and body["registry_hash"] == registry_hash()
-    assert body["challenges"] == [{"id": c.id, "tests_hash": tests_hash(c)} for c in CHALLENGES]
+    assert body["challenges"] == [{"id": c.id, "tests_hash": _tests_hash(c)} for c in CHALLENGES]
     assert body["followup"] is False and re.fullmatch(r"[0-9a-f]{12}", body["request_id"])
     assert r.headers["Cache-Control"] == "no-store"
     fake = fake_client.get("/evaluate-challenge/health").get_json()
