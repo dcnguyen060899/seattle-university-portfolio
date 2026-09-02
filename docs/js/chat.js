@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const apiUrl = 'https://uc-berkeley-ml-ai-capstone-work-sample.onrender.com/chat'; // Backend API URL
-    const classifyImageUrl = 'https://uc-berkeley-ml-ai-capstone-work-sample.onrender.com/classify-image'; // Backend proxy for HuggingFace
+    const apiUrl = 'https://seattle-university-portfolio.vercel.app/chat'; // Backend API URL
+    const classifyImageUrl = 'https://seattle-university-portfolio.vercel.app/classify-image'; // Backend proxy for HuggingFace
 
     // Second Brain RAG Pipeline API Configuration (Enhanced with Function Calling)
     // For local development: 'http://localhost:8000/api/v1/demo/rag-pipeline-enhanced'

@@ -34,7 +34,7 @@
   var VIZ_STACK_MAX = 12;
   var VIZ_STACK_ITEM_MAX = 200;
   var MAX_ISSUE_CHIPS = 8;
-  var REMOTE_API_BASE = 'https://uc-berkeley-ml-ai-capstone-work-sample.onrender.com';
+  var REMOTE_API_BASE = 'https://seattle-university-portfolio.vercel.app';
 
   var DIMS = ['correctness', 'edge_cases', 'key_concepts', 'efficiency', 'code_quality'];
   var DIM_LABELS = { correctness: 'Correctness', edge_cases: 'Edge cases', key_concepts: 'Key concepts', efficiency: 'Efficiency', code_quality: 'Code quality' };
