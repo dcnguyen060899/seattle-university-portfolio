@@ -1,0 +1,4 @@
+# Root requirements file for Vercel (its Python runtime installs this file).
+# The real list lives with the backend; keep this a pointer so there is one
+# source of truth.
+-r backend/dependencies/requirements.txt

@@ -1,0 +1,13 @@
+# Keep the serverless bundle small: only the Flask backend and the small page
+# assets are needed. The portfolio site itself is served by GitHub Pages.
+second-brain
+ml-demos
+notebook
+presentation
+images
+docs/images
+docs/*.pdf
+duy-portfolio-mcp
+.github
+backend/tests
+.claude

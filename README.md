@@ -659,6 +659,10 @@ The live service was created in the Render dashboard, and `render.yaml` is inten
 
 Then redeploy and open `https://<service>.onrender.com/evaluate-challenge/health` (expect `"ai_configured": true`, `"model": "claude-sonnet-5"` and the `registry_hash` printed by the export script) and `/api-check` (the chatbot on Sonnet 5). One worker keeps the chatbot memory and the rate limiter coherent, four threads keep `/chat` responsive during a judge call, and `--timeout 120` covers the ~51 s worst case of a judge call (gunicorn's 30 s default would kill it mid-call). The `--check` in the build fails the deploy when `docs/data/*.json` is out of sync with the registry. A workspace spend limit in the Anthropic console is the recommended cost guard next to the per-IP limiter.
 
+### Deploy (Vercel)
+
+The backend also runs as a Vercel Python function; `api/index.py` re-exports the Flask app, `vercel.json` rewrites every path to it and sets `maxDuration: 60` (a judge call can take ~50 s), the root `requirements.txt` points at `backend/dependencies/requirements.txt`, and `.vercelignore` keeps the bundle small. In the Vercel "New Project" screen: import the repository, set **Application Preset** to **Other** (the `_config.yml` makes Vercel guess Jekyll), leave **Root Directory** at `./`, leave **Build and Output Settings** untouched, and add `ANTHROPIC_API_KEY` under **Environment Variables** (`ANTHROPIC_MODEL` is optional; the code defaults to `claude-sonnet-5`). Vercel deploys the project's production branch, so the branch that carries `api/` must be merged (or selected as the production branch in Settings > Git). After the deploy, open `https://<project>.vercel.app/evaluate-challenge/health` and expect `"ai_configured": true`; then point the page at it with `<meta name="eval-api-base" content="https://<project>.vercel.app">` in `docs/learning_algorithm.html` (the chatbot URLs in `docs/js/chat.js` are separate). Serverless notes: the chatbot's in-process memory and the per-IP limiter reset whenever a new function instance starts; if the deploy rejects `maxDuration: 60`, lower it to your plan's limit.
+
 ---
 
 ## API Endpoints
