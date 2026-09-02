@@ -1,9 +1,10 @@
-/* docs/js/challenge_mode.js - Challenge mode page logic (spec sections 8.3-8.10, addendum B1-B6).
+/* docs/js/challenge_mode.js - Challenge mode page logic (spec sections 8.3-8.10, addendum B1-B6, addendum 2).
  *
  * Loads data/challenges.json, drives the browser sandbox (ChallengeRunner), renders local and
- * AI results, the hint ladder, the reference-solution lock, the pipeline strip and the
- * selection-aware "Ask the tutor" box. Every piece of text reaches the DOM through
- * textContent / el(); nothing dynamic is ever assigned to innerHTML.
+ * AI results, the hint ladder, the reference-solution lock, the pipeline strip, the
+ * selection-aware "Ask the tutor" box and the "Visualize my solution" replay panel (the trace
+ * comes from ChallengeRunner.trace, the drawing/playback from ChallengeViz). Every piece of text
+ * reaches the DOM through textContent / el(); nothing dynamic is ever assigned to innerHTML.
  *
  * Entry points: window.ChallengeMode.init() (on DOM ready) and window.ChallengeMode.enter()
  * (called by learning_algorithm.js when the learner switches to Challenge mode).
@@ -24,6 +25,12 @@
   var LAST_CHALLENGE_KEY = STORAGE_PREFIX + 'lastChallengeId';
   var TUTOR_BUDGET = 5;
   var MAX_HINTS = 3;
+  var VIZ_MAX_NODES = 15;          // inputs with more nodes (root + subRoot) are not offered for replay
+  var VIZ_MAX_EVENTS = 600;
+  var VIZ_STEP_STRING_MAX = 300;   // server caps for step.caption / call / returned
+  var VIZ_STACK_MAX = 12;
+  var VIZ_STACK_ITEM_MAX = 200;
+  var MAX_ISSUE_CHIPS = 8;
   var REMOTE_API_BASE = 'https://uc-berkeley-ml-ai-capstone-work-sample.onrender.com';
 
   var DIMS = ['correctness', 'edge_cases', 'key_concepts', 'efficiency', 'code_quality'];
@@ -48,7 +55,7 @@
   var EVIDENCE_KINDS = ['test', 'line', 'static'];
   var SCORE_SOURCES = ['tests', 'judge', 'heuristic'];
   var HINT_SOURCES = ['judge', 'card', 'ladder', 'syntax'];
-  var TUTOR_MODES = ['question', 'explain_problem', 'suggest_approach', 'complexity'];
+  var TUTOR_MODES = ['question', 'explain_problem', 'suggest_approach', 'complexity', 'explain_step'];
   var QUICK_LABELS = { explain_problem: 'Explain this problem', suggest_approach: 'Suggest an approach', complexity: 'Time & space complexity' };
   var NOT_RUN_DETAIL = 'Not run: click Get AI feedback for a review.';
   var UNREACHABLE_BANNER = 'The AI tutor is unreachable right now. Your test results above are still valid.';
@@ -65,7 +72,8 @@
     current: null, phase: 'idle', health: null, healthPending: false, loadError: false, loadPromise: null,
     storageOk: true, stateCache: {}, sessions: {}, solutions: null, solutionsPromise: null,
     pendingSelection: null, lastSelection: null, popoverTimer: null, draftTimer: null,
-    replayToken: 0, aiAbort: null, defaultTutorPlaceholder: ''
+    replayToken: 0, aiAbort: null, defaultTutorPlaceholder: '',
+    viz: { player: null, open: false, challengeId: null, testId: null, token: 0, trace: null, code: null, pending: false }
   };
   var dom = {};
 
@@ -205,7 +213,9 @@
     'eval-issues', 'eval-issues-list', 'eval-strengths', 'eval-strengths-list', 'eval-guardrails', 'eval-guardrails-list', 'eval-hint', 'eval-hint-ladder-text',
     'eval-hint-earlier', 'eval-hint-earlier-list', 'eval-hint-tutor', 'eval-hint-tutor-text', 'eval-hint-question', 'reveal-hint-btn', 'eval-hint-counter',
     'eval-followup', 'eval-next', 'eval-next-list', 'eval-next-challenge-btn', 'solution-section', 'solution-lock', 'solution-lock-text', 'give-up-btn',
-    'solution-details', 'solution-code', 'solution-notes', 'solution-stretch', 'load-solution-btn', 'code-editor'];
+    'solution-details', 'solution-code', 'solution-notes', 'solution-stretch', 'load-solution-btn', 'code-editor',
+    'visualize-btn', 'viz-panel', 'viz-input-select', 'viz-close', 'viz-explain-btn',
+    'viz-explain-answer', 'viz-explain-answer-label', 'viz-explain-answer-text', 'viz-explain-answer-question', 'viz-explain-answer-foot'];
   var DOM_KEYS = {
     'challenge-section': 'section', 'challenge-tabs': 'tabs', 'challenge-status-line': 'statusLine', 'challenge-card': 'card', 'challenge-title': 'title',
     'challenge-description': 'description', 'challenge-examples': 'examples', 'challenge-rules': 'rules', 'challenge-rules-list': 'rulesList', 'challenge-signature': 'signature',
@@ -223,7 +233,10 @@
     'eval-hint-question': 'hintQuestion', 'reveal-hint-btn': 'revealBtn', 'eval-hint-counter': 'hintCounter', 'eval-followup': 'followup', 'eval-next': 'nextPanel',
     'eval-next-list': 'nextList', 'eval-next-challenge-btn': 'nextChallengeBtn', 'solution-section': 'solutionSection', 'solution-lock': 'solutionLock',
     'solution-lock-text': 'solutionLockText', 'give-up-btn': 'giveUpBtn', 'solution-details': 'solutionDetails', 'solution-code': 'solutionCode',
-    'solution-notes': 'solutionNotes', 'solution-stretch': 'solutionStretch', 'load-solution-btn': 'loadSolutionBtn', 'code-editor': 'practiceEditor'
+    'solution-notes': 'solutionNotes', 'solution-stretch': 'solutionStretch', 'load-solution-btn': 'loadSolutionBtn', 'code-editor': 'practiceEditor',
+    'visualize-btn': 'vizBtn', 'viz-panel': 'vizPanel', 'viz-input-select': 'vizSelect', 'viz-close': 'vizClose', 'viz-explain-btn': 'vizExplain',
+    'viz-explain-answer': 'vizAnswer', 'viz-explain-answer-label': 'vizAnswerLabel', 'viz-explain-answer-text': 'vizAnswerText',
+    'viz-explain-answer-question': 'vizAnswerQuestion', 'viz-explain-answer-foot': 'vizAnswerFoot'
   };
 
   function init() {
@@ -273,6 +286,12 @@
     dom.quickButtons.forEach(function (btn) {
       btn.addEventListener('click', function () { askTutor('', dom.tutorStuck && dom.tutorStuck.checked, btn.getAttribute('data-mode'), null); });
     });
+
+    // Visualize my solution (addendum 2)
+    if (dom.vizBtn) dom.vizBtn.addEventListener('click', openViz);
+    if (dom.vizClose) dom.vizClose.addEventListener('click', closeViz);
+    if (dom.vizSelect) dom.vizSelect.addEventListener('change', function () { if (S.viz.open) runViz(dom.vizSelect.value); });
+    if (dom.vizExplain) dom.vizExplain.addEventListener('click', explainStep);
     setTutorAvailability();
     setBusy(true);
   }
@@ -391,6 +410,7 @@
     dom.editor.value = (typeof st.draftCode === 'string') ? st.draftCode : (ch.starter_code || '');
     hide(dom.inlineMsg);
     S.replayToken++;
+    closeViz();
     resetPipeline();
     hide(dom.pipeline);
     hide(dom.traceDetails);
@@ -411,6 +431,7 @@
     renderTutorThread();
     updateTutorContext();
     setTutorAvailability();
+    updateVizButton();
     try { window.localStorage.setItem(LAST_CHALLENGE_KEY, id); } catch (e) { S.storageOk = false; }
   }
 
@@ -652,6 +673,7 @@
     var disabled = busy || S.loadError;
     [dom.runBtn, dom.submitBtn, dom.starterBtn, dom.practiceBtn, dom.giveUpBtn, dom.loadSolutionBtn].forEach(function (b) { if (b) b.disabled = disabled; });
     if (dom.submitBtn && !disabled) applyHealth();
+    updateVizButton(busy);
   }
   function showBanner(text, withRetry) {
     if (!dom.banner) return;
@@ -785,6 +807,7 @@
         updateTabBadges();
         updateTutorContext();
         setTutorAvailability();
+        refreshViz(ch);
       }
       S.phase = 'local_done';
       setBusy(false);
@@ -1156,22 +1179,53 @@
       det.nextSteps = ['Start with the base cases and make every branch return a value.', 'Re-run the tests (Ctrl+Enter) after each change.'];
       return det;
     }
-    var timeoutIssueDone = false;
+    // Failing tests that resolve to the SAME misconception card become ONE issue (title and explanation once,
+    // one evidence chip per test in catalog order); tests matching no card keep their own issue. Groups are
+    // collected over every failing row before the max-4 cap so a card's chips are complete.
+    var groups = [];
+    var byCard = {};
+    var timeoutGroup = null;
     failing.forEach(function (r) {
-      if (det.issues.length >= 4) return;
+      var isCorrectness = S.tagDimension[r.test.tag] !== 'edge_cases';
       if (r.status === 'timeout') {
-        if (timeoutIssueDone) return;
-        timeoutIssueDone = true;
-        det.issues.push({ title: 'A test never finished (usually an infinite loop)', explanation: r.id + ' (' + r.test.name + ') produced no result within ' + (runner.PER_TEST_TIMEOUT_MS) + ' ms; the sandbox stopped it and continued.', severity: 'high', evidence: [{ kind: 'test', ref: r.id }], category: 'performance' });
-        if (!det.question) det.question = 'Which loop or call never stops for this input?';
+        if (!timeoutGroup) {
+          timeoutGroup = { title: 'A test never finished (usually an infinite loop)', explanation: r.id + ' (' + r.test.name + ') produced no result within ' + (runner.PER_TEST_TIMEOUT_MS) + ' ms; the sandbox stopped it and continued.', severity: 'high', evidence: [], category: 'performance' };
+          groups.push(timeoutGroup);
+          if (!det.question) det.question = 'Which loop or call never stops for this input?';
+        }
+        timeoutGroup.evidence.push({ kind: 'test', ref: r.id });
         return;
       }
       var card = cards.filter(function (k) { return k.matched_by.indexOf(r.id) >= 0; })[0];
-      if (r.status === 'error') {
-        det.issues.push({ title: card ? card.title : 'Error on ' + r.id, explanation: (card ? card.card.symptom + ' ' : '') + 'Input ' + fmtArgs(r.test, ch) + ' threw: ' + (r.error || 'unknown error') + '.', severity: 'high', evidence: [{ kind: 'test', ref: r.id }], category: 'edge_case' });
-      } else {
-        det.issues.push({ title: card ? card.title : 'Wrong result on ' + r.id, explanation: card ? card.card.symptom : 'Expected ' + jsLit(r.test.expected) + ', got ' + fmtActual(r) + ' for input ' + fmtArgs(r.test, ch) + '.', severity: det.issues.length === 0 ? 'high' : 'medium', evidence: [{ kind: 'test', ref: r.id }], category: (S.tagDimension[r.test.tag] === 'edge_cases') ? 'edge_case' : 'correctness' });
+      if (card) {
+        var g = byCard[card.card_id];
+        if (!g) {
+          g = { title: card.title, explanation: card.card.symptom, severity: null, evidence: [], category: null, correctness: false, error: null };
+          byCard[card.card_id] = g;
+          groups.push(g);
+        }
+        g.evidence.push({ kind: 'test', ref: r.id });
+        if (isCorrectness) g.correctness = true;
+        if (r.status === 'error') {
+          g.severity = 'high';
+          if (!g.error) g.error = 'Input ' + fmtArgs(r.test, ch) + ' threw: ' + (r.error || 'unknown error') + '.';
+        }
+        return;
       }
+      if (r.status === 'error') {
+        groups.push({ title: 'Error on ' + r.id, explanation: 'Input ' + fmtArgs(r.test, ch) + ' threw: ' + (r.error || 'unknown error') + '.', severity: 'high', evidence: [{ kind: 'test', ref: r.id }], category: 'edge_case' });
+      } else {
+        groups.push({ title: 'Wrong result on ' + r.id, explanation: 'Expected ' + jsLit(r.test.expected) + ', got ' + fmtActual(r) + ' for input ' + fmtArgs(r.test, ch) + '.', severity: null, evidence: [{ kind: 'test', ref: r.id }], category: isCorrectness ? 'correctness' : 'edge_case' });
+      }
+    });
+    groups.slice(0, 4).forEach(function (g, i) {
+      det.issues.push({
+        title: g.title,
+        explanation: g.explanation + (g.error ? ' ' + g.error : ''),
+        severity: g.severity || (i === 0 ? 'high' : 'medium'),
+        evidence: g.evidence.slice(0, MAX_ISSUE_CHIPS),
+        category: g.category || (g.correctness ? 'correctness' : 'edge_case')
+      });
     });
     if (!det.question && cards.length) det.question = cards[0].card.question;
     det.nextSteps = ['Expand ' + first.id + ' below and trace it by hand.', 'Re-run the tests (Ctrl+Enter) after each change.'];
@@ -1396,6 +1450,11 @@
     if (ev && ev.complexity && (ev.complexity.time || ev.complexity.space)) steps.push('Complexity as written: ' + (ev.complexity.time || '?') + ' time, ' + (ev.complexity.space || '?') + ' space' + (ev.complexity.note ? ' (' + ev.complexity.note + ')' : '') + '.');
     if (!steps.length) steps.push('Run the tests, then get AI feedback for a review.');
     steps.slice(0, 5).forEach(function (s) { dom.nextList.appendChild(el('li', null, renderInline(s))); });
+    if (verdict === 'PASS' && canVisualize(session(ch.id))) {
+      var chip = el('button', { type: 'button', 'class': 'evidence-chip viz-chip', title: 'Replays your code step by step on one test input' }, 'Watch your solution run');
+      chip.addEventListener('click', openViz);
+      dom.nextList.appendChild(el('li', null, ['See it in action: ', chip]));
+    }
   }
   function updateNextChallengeButton(result) {
     var ch = result.challenge;
@@ -1625,6 +1684,13 @@
       if (title) c.setAttribute('title', title); else c.removeAttribute('title');
     });
     if (dom.popoverBtn) dom.popoverBtn.disabled = !(tutorVisible() && tutorConfigured());
+    if (dom.vizExplain) {                     // "Explain this step": only when the tutor is available, needs a loaded step
+      if (tutorVisible() && tutorConfigured()) show(dom.vizExplain); else hide(dom.vizExplain);
+      var cur = (S.viz.open && S.viz.player) ? S.viz.player.current() : null;
+      disableKeepingFocus(dom.vizExplain, !(enabled && cur && cur.step));
+      var vt = title || (S.viz.pending ? 'Tracing your code...' : (!cur ? 'Replay a step first.' : 'Asks the AI tutor about this step (uses one tutor question)'));
+      dom.vizExplain.setAttribute('title', vt);
+    }
   }
   function renderTutorThread() {
     if (!dom.tutorThread) return;
@@ -1661,13 +1727,17 @@
     if (!dom.tutorInput || dom.tutorInput.disabled) return;
     askTutor(dom.tutorInput.value, dom.tutorStuck && dom.tutorStuck.checked, 'question', S.pendingSelection);
   }
-  function buildTutorBody(mode, question, selection) {
+  /* extra (optional): { step: {index, total, caption, call, stack, returned}, code, onStart, onDone } for mode
+     explain_step, where the step, the selection and client_results all refer to the code of the traced run
+     (addendum 2, section 3/4); onStart() fires when the request is sent, onDone(lastTurn, remaining) when the
+     answer or the error turn has been added to the thread. */
+  function buildTutorBody(mode, question, selection, extra) {
     var ch = S.current;
     var st = readState(ch.id);
     var sess = session(ch.id);
     var body = {
       challenge_id: ch.id,
-      code: getCode(),
+      code: (extra && typeof extra.code === 'string') ? extra.code : getCode(),
       attempt: Math.max(1, st.attempts),
       hints_used: hintsUsed(st),
       mode: mode,
@@ -1678,9 +1748,10 @@
     };
     if (mode === 'question') body.question = question;
     if (selection) body.selection = { start_line: selection.start_line, end_line: selection.end_line, text: String(selection.text || '').slice(0, 2000) };
+    if (extra && isObj(extra.step)) body.step = extra.step;
     return body;
   }
-  function askTutor(question, stuck, mode, selection) {
+  function askTutor(question, stuck, mode, selection, extra) {
     mode = TUTOR_MODES.indexOf(mode) >= 0 ? mode : 'question';
     var ch = S.current;
     if (!ch || !tutorVisible() || !tutorConfigured()) return Promise.resolve(null);
@@ -1694,6 +1765,10 @@
       if (question.length < 3) { pushTutorError('Ask a question of at least 3 characters.'); return Promise.resolve(null); }
       if (question.length > 500) question = question.slice(0, 500);
       youText = question;
+    } else if (mode === 'explain_step') {
+      if (!extra || !isObj(extra.step)) return Promise.resolve(null);
+      question = '';
+      youText = 'Explain step ' + extra.step.index + ' of ' + extra.step.total;
     } else {
       question = '';
       youText = QUICK_LABELS[mode] || mode;
@@ -1702,7 +1777,8 @@
     dropTutorErrors(sess);
     sess.tutor.thread.push({ role: 'you', text: youText, selection: selection ? { start_line: selection.start_line, end_line: selection.end_line, text: String(selection.text || '').slice(0, 2000) } : null });
     sess.tutor.pending = true;
-    var body = buildTutorBody(mode, question, selection);
+    if (extra && typeof extra.onStart === 'function') extra.onStart();
+    var body = buildTutorBody(mode, question, selection, extra);
     body.stuck = !!stuck;
     if (mode === 'question') dom.tutorInput.value = '';
     S.pendingSelection = null;
@@ -1739,6 +1815,7 @@
         renderTutorThread();
         setTutorAvailability();
         if (mode === 'question' && dom.tutorInput && !dom.tutorInput.disabled) dom.tutorInput.focus();
+        if (extra && typeof extra.onDone === 'function') extra.onDone(sess.tutor.thread[sess.tutor.thread.length - 1], readState(ch.id).tutorRemaining);
       }
       return j;
     });
@@ -1754,6 +1831,226 @@
     sess.tutor.thread = sess.tutor.thread.filter(function (t) { return t.role !== 'error'; });
   }
 
+  /* ---------- Visualize my solution (addendum 2, section 3) ---------- */
+
+  function vizSupported() {
+    return !!(window.ChallengeViz && typeof window.ChallengeViz.mount === 'function' && window.ChallengeRunner && typeof window.ChallengeRunner.trace === 'function' && dom.vizPanel);
+  }
+  /* Disables a panel control without dropping keyboard focus to <body>: focus moves to the panel first, where the
+     replay shortcuts keep working (ChallengeViz does the same for the playback controls). */
+  function disableKeepingFocus(node, flag) {
+    if (!node) return;
+    flag = !!flag;
+    if (flag && !node.disabled && document.activeElement === node && dom.vizPanel) {
+      try { dom.vizPanel.focus({ preventScroll: true }); } catch (e) { try { dom.vizPanel.focus(); } catch (e2) { /* ignore */ } }
+    }
+    node.disabled = flag;
+  }
+  /* The trees of a test input for a trace that carries no node metadata (the worker posts its nodes with the final
+     message, so a timed-out run has none): built from the test args with the worker's level-order convention. */
+  function nodesFromArgs(ch, test) {
+    var nodes = { main: [], sub: [] };
+    var slots = ['main', 'sub'];
+    var args = Array.isArray(test.args) ? test.args : [];
+    var k = 0;
+    if (!window.ChallengeViz || typeof window.ChallengeViz.levelOrderNodes !== 'function') return nodes;
+    (Array.isArray(ch.arg_types) ? ch.arg_types : []).forEach(function (ty, i) {
+      if (ty !== 'tree') return;
+      if (k < slots.length) nodes[slots[k]] = window.ChallengeViz.levelOrderNodes(args[i]);
+      k++;
+    });
+    return nodes;
+  }
+  /* The latest local run compiled and defined the entry function. */
+  function canVisualize(sess) {
+    var lr = sess && sess.localResult;
+    var c = lr && lr.clientResults ? lr.clientResults.compile : null;
+    return !!(vizSupported() && c && c.ok === true && c.entry_found === true);
+  }
+  function updateVizButton(busy) {
+    if (!dom.vizBtn) return;
+    var sess = S.current ? session(S.current.id) : null;
+    dom.vizBtn.disabled = !!busy || S.loadError || S.phase === 'running_local' || S.phase === 'requesting_ai' || !canVisualize(sess);
+  }
+  function nodeCount(arr) {
+    return Array.isArray(arr) ? arr.filter(function (x) { return x !== null && x !== undefined; }).length : 0;
+  }
+  function testNodeCount(ch, t) {
+    var n = 0;
+    var args = Array.isArray(t.args) ? t.args : [];
+    (Array.isArray(ch.arg_types) ? ch.arg_types : []).forEach(function (ty, i) { if (ty === 'tree') n += nodeCount(args[i]); });
+    return n;
+  }
+  function vizTests(ch) {
+    return (Array.isArray(ch.tests) ? ch.tests : []).filter(function (t) { return isObj(t) && typeof t.id === 'string' && testNodeCount(ch, t) <= VIZ_MAX_NODES; });
+  }
+  function vizTestById(ch, id) {
+    return vizTests(ch).filter(function (t) { return t.id === id; })[0] || null;
+  }
+  /* Fills the picker; returns the default test id (first failing small test, else the first small test). */
+  function fillVizPicker(ch, localResult, keepId) {
+    if (!dom.vizSelect) return null;
+    var status = {};
+    if (localResult && localResult.summary) localResult.summary.rows.forEach(function (r) { status[r.id] = r.status; });
+    var failing = function (id) { return status[id] === 'fail' || status[id] === 'error' || status[id] === 'timeout'; };
+    clear(dom.vizSelect);
+    var tests = vizTests(ch);
+    var first = null, firstFailing = null;
+    tests.forEach(function (t) {
+      var opt = document.createElement('option');
+      opt.value = t.id;
+      opt.textContent = t.id + ' \u00b7 ' + (t.name || '') + (failing(t.id) ? ' (failing)' : '');
+      dom.vizSelect.appendChild(opt);
+      if (!first) first = t.id;
+      if (!firstFailing && failing(t.id)) firstFailing = t.id;
+    });
+    var chosen = (keepId && tests.some(function (t) { return t.id === keepId; })) ? keepId : (firstFailing || first);
+    if (chosen) dom.vizSelect.value = chosen;
+    dom.vizSelect.disabled = tests.length === 0;
+    return chosen;
+  }
+  function ensurePlayer() {
+    if (!S.viz.player && vizSupported()) S.viz.player = window.ChallengeViz.mount({ panel: dom.vizPanel, onStep: function () { setTutorAvailability(); } });
+    return S.viz.player;
+  }
+  function openViz() {
+    var ch = S.current;
+    if (!ch || !dom.vizPanel) return;
+    var sess = session(ch.id);
+    if (!canVisualize(sess) || !ensurePlayer()) return;
+    var def = fillVizPicker(ch, sess.localResult, S.viz.challengeId === ch.id ? S.viz.testId : null);
+    S.viz.open = true;
+    S.viz.challengeId = ch.id;
+    show(dom.vizPanel);
+    if (def) runViz(def);
+    else { S.viz.player.setLoading('No small test input is available for this challenge.'); }
+    try { dom.vizPanel.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' }); } catch (e) { /* ignore */ }
+    try { dom.vizPanel.focus({ preventScroll: true }); } catch (e) { try { dom.vizPanel.focus(); } catch (e2) { /* ignore */ } }
+  }
+  function closeViz() {
+    if (!S.viz.open) return;
+    S.viz.open = false;
+    S.viz.token++;
+    S.viz.pending = false;
+    S.viz.trace = null;
+    if (S.viz.player) S.viz.player.unload();
+    renderExplainAnswer(null);
+    dom.vizPanel.removeAttribute('aria-busy');
+    hide(dom.vizPanel);
+    setTutorAvailability();
+  }
+  /* After a new local run: re-trace the same input on the new code, or close when the code no longer loads. */
+  function refreshViz(ch) {
+    updateVizButton();
+    if (!S.viz.open) { S.viz.testId = null; return; }        // a closed panel reopens on the spec default after new code ran
+    if (S.current !== ch) return;
+    var sess = session(ch.id);
+    if (!canVisualize(sess)) { closeViz(); return; }
+    var id = fillVizPicker(ch, sess.localResult, S.viz.testId);
+    if (id) runViz(id); else S.viz.player.setLoading('No small test input is available for this challenge.');
+  }
+  function runViz(testId) {
+    var ch = S.current;
+    var player = S.viz.player;
+    if (!ch || !player || !S.viz.open) return Promise.resolve(null);
+    var sess = session(ch.id);
+    var lr = sess.localResult;
+    var test = vizTestById(ch, testId);
+    if (!lr || !test) return Promise.resolve(null);
+    var token = ++S.viz.token;
+    S.viz.testId = test.id;
+    S.viz.code = lr.code;
+    S.viz.pending = true;
+    // The picker stays enabled while the trace runs (disabling the focused element drops keyboard focus to <body>);
+    // a change during a trace simply starts a newer one and the token above discards the older result.
+    if (dom.vizSelect) dom.vizSelect.value = test.id;
+    dom.vizPanel.setAttribute('aria-busy', 'true');
+    renderExplainAnswer(null);
+    player.setLoading('Tracing your code on ' + test.id + '...');
+    setTutorAvailability();
+    return window.ChallengeRunner.trace(ch, lr.code, test.args, { max_events: VIZ_MAX_EVENTS }).then(function (tr) {
+      if (token !== S.viz.token || !S.viz.open) return null;
+      S.viz.pending = false;
+      dom.vizPanel.removeAttribute('aria-busy');
+      var notes = [];
+      if (getCode() !== lr.code) notes.push('Showing the code from your last test run; run the tests again to replay your latest edits.');
+      if (!tr.nodes.main.length && !tr.nodes.sub.length) tr.nodes = nodesFromArgs(ch, test);   // a timed-out / failed run still shows its input
+      S.viz.trace = tr;
+      var n = player.load(tr, { entry: ch.entry_function, hasBudget: !!ch.has_budget_arg, returnType: ch.return_type, expected: test.expected, notes: notes });
+      setTutorAvailability();
+      announce(n ? 'Replay ready: ' + n + ' ' + plural(n, 'step') + ' on ' + test.id + '.' : 'The replay could not run' + (tr.error ? ': ' + tr.error : '.'));
+      return tr;
+    });
+  }
+  /* "Explain this step": the current step + the current function's line range go to the tutor (mode explain_step). */
+  function explainStep() {
+    var ch = S.current;
+    var player = S.viz.player;
+    if (!ch || !player || !S.viz.open) return;
+    var cur = player.current();
+    if (!cur || !cur.step) return;
+    var step = cur.step;
+    var code = (typeof S.viz.code === 'string') ? S.viz.code : getCode();
+    var stepBody = {
+      index: cur.index + 1, total: cur.total,
+      caption: str(step.caption, VIZ_STEP_STRING_MAX), call: str(step.call, VIZ_STEP_STRING_MAX),
+      stack: step.stack.slice(-VIZ_STACK_MAX).map(function (s) { return String(s).slice(0, VIZ_STACK_ITEM_MAX); }),
+      returned: str(step.returnedText, VIZ_STEP_STRING_MAX)
+    };
+    var selection = null;
+    var fns = (S.viz.trace && Array.isArray(S.viz.trace.functions)) ? S.viz.trace.functions : [];
+    // The frame's OWN function (by the index the tracer recorded), not the first function with the same name:
+    // "(anonymous)" callbacks and shadowed helpers would otherwise select the wrong lines.
+    var fn = (isInt(step.fnIndex) && fns[step.fnIndex]) ? fns[step.fnIndex] : (fns.filter(function (f) { return f.name === step.fn; })[0] || null);
+    if (fn) {
+      var lines = code.split('\n');
+      var a = fn.start_line, b = fn.end_line;
+      if (isInt(a) && isInt(b) && a >= 1 && b >= a && b <= lines.length) selection = { start_line: a, end_line: b, text: lines.slice(a - 1, b).join('\n').slice(0, 2000) };
+    }
+    var where = { index: stepBody.index, total: stepBody.total };
+    askTutor('', dom.tutorStuck && dom.tutorStuck.checked, 'explain_step', selection, {
+      step: stepBody, code: code,
+      onStart: function () { renderExplainAnswer('pending', where); },
+      onDone: function (turn, remaining) {
+        if (!S.viz.open) return;
+        if (turn && turn.role === 'tutor') renderExplainAnswer('answer', { index: where.index, total: where.total, text: turn.text, question: turn.question, level: turn.level, degraded: turn.degraded, remaining: remaining });
+        else renderExplainAnswer('error', { index: where.index, total: where.total, text: (turn && turn.text) || "The tutor didn't answer; try again." });
+      }
+    });
+  }
+  /* The "Explain this step" answer is mirrored under the caption: the tutor thread lives in the workbench above
+     the panel and is off-screen while the learner watches the replay. kind: 'pending' | 'answer' | 'error' | null. */
+  function renderExplainAnswer(kind, info) {
+    var box = dom.vizAnswer;
+    if (!box) return;
+    if (!kind) {
+      box.className = 'viz-explain-answer hidden';
+      [dom.vizAnswerLabel, dom.vizAnswerText, dom.vizAnswerQuestion, dom.vizAnswerFoot].forEach(function (n) { clear(n); });
+      return;
+    }
+    var where = 'step ' + info.index + ' of ' + info.total;
+    box.className = 'viz-explain-answer' + (kind === 'pending' ? ' is-pending' : (kind === 'error' ? ' is-error' : ''));
+    if (dom.vizAnswerLabel) dom.vizAnswerLabel.textContent = (kind === 'pending') ? 'Asking the tutor about ' + where + '\u2026' : 'Tutor on ' + where;
+    if (dom.vizAnswerText) { clear(dom.vizAnswerText); if (kind !== 'pending') appendChildren(dom.vizAnswerText, renderInline(info.text)); }
+    if (dom.vizAnswerQuestion) dom.vizAnswerQuestion.textContent = (kind === 'answer' && info.question) ? info.question : '';
+    if (dom.vizAnswerFoot) {
+      var foot = [];
+      if (kind === 'answer') {
+        if (info.level) foot.push(String(info.level).replace('_', ' '));
+        if (info.degraded) foot.push('rule-based answer');
+        if (isInt(info.remaining)) foot.push(info.remaining + ' tutor ' + plural(info.remaining, 'question') + ' left');
+      }
+      foot.push(kind === 'error' ? 'Not counted against your tutor questions.' : 'Also shown in Ask the tutor.');
+      dom.vizAnswerFoot.textContent = foot.join(' \u00b7 ');
+    }
+    if (kind === 'pending') return;
+    var active = document.activeElement;
+    if (active === dom.vizPanel || active === dom.vizExplain) {          // keyboard users land on the answer, not on <body>
+      try { box.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+    }
+    try { box.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'nearest' }); } catch (e) { /* ignore */ }
+  }
+
   /* ---------- Public API ---------- */
 
   window.ChallengeMode = {
@@ -1764,7 +2061,7 @@
     revealNextHint: revealNextHint, updateSolutionLock: updateSolutionLock, giveUp: giveUp, revealSolution: revealSolution, askTutor: askTutor, buildTutorBody: buildTutorBody,
     setStage: setStage, resetPipeline: resetPipeline, replayTrace: replayTrace, announce: announce, selectEditorLine: selectEditorLine, readState: readState, writeState: writeState,
     updateStatusLine: updateStatusLine, updateTabBadges: updateTabBadges, el: el, renderInline: renderInline, apiBase: apiBase, selectionLines: selectionLines,
-    starterBlocks: starterBlocks, state: S
+    starterBlocks: starterBlocks, openViz: openViz, closeViz: closeViz, runViz: runViz, explainStep: explainStep, canVisualize: canVisualize, vizTests: vizTests, state: S
   };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

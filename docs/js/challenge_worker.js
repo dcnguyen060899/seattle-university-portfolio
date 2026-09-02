@@ -9,9 +9,16 @@
  * worker -> main:  { type: "compiled", run_id, ok, error, error_kind, entry_found, defined_functions }
  *                  { type: "result", run_id, index, id, actual, actual_type, error, ms }  (per test)
  *                  { type: "done", run_id, total_ms }
+ *
+ * Execution replay (lead addendum 2, section 2): one traced run of the entry function on one input.
+ * main -> worker:  { type: "trace", run_id, code, entry, arg_types, args, max_events }
+ * worker -> main:  { type: "trace", run_id, ok, error, error_kind, result, events, truncated, functions, nodes, ms }
+ * The tracer (js/challenge_trace.js + js/vendor/acorn.js) is loaded lazily with the importScripts reference
+ * captured below, only when the first trace message arrives; a run message never loads it.
  */
 var IS_WORKER = typeof self !== "undefined" && typeof self.postMessage === "function";
 var post = IS_WORKER ? self.postMessage.bind(self) : function () {};          // captured BEFORE learner code runs
+var importScriptsRef = (IS_WORKER && typeof self.importScripts === "function") ? self.importScripts.bind(self) : null;   // captured BEFORE the guard below nulls it
 var now = function () { return (typeof performance !== "undefined" && performance && typeof performance.now === "function") ? performance.now() : Date.now(); };
 if (IS_WORKER) {                                                              // accident guard only
   try { self.fetch = undefined; } catch (e) { /* ignore */ }
@@ -135,14 +142,97 @@ function handleRun(msg) {
   post({ type: "done", run_id: runId, total_ms: Math.round((now() - tAll) * 1000) / 1000 });
 }
 
+/* ---------- Execution trace (lazy: acorn + challenge_trace.js are loaded on the first trace message) ---------- */
+
+var TRACE_MAX_EVENTS_DEFAULT = 600;
+var TRACE_MAX_EVENTS_CAP = 5000;
+var traceLib = null;
+
+/* Resolves the tracer library: the CommonJS require in Node, importScripts (relative to this worker's URL)
+   in the browser. Throws when neither is available (offline / blocked vendor file). */
+function loadTraceLib() {
+  if (traceLib) return traceLib;
+  var lib = null;
+  if (!IS_WORKER && typeof module !== "undefined" && typeof require === "function") {
+    lib = require("./challenge_trace.js");
+  } else {
+    if (typeof self !== "undefined" && self.ChallengeTrace) lib = self.ChallengeTrace;
+    else {
+      if (!importScriptsRef) throw new Error("visualizer unavailable offline");
+      var base = "";
+      try { base = (self.location && typeof self.location.href === "string") ? self.location.href : ""; } catch (e) { base = ""; }
+      var url = function (rel) { try { return (base && typeof URL === "function") ? new URL(rel, base).href : rel; } catch (e) { return rel; } };
+      importScriptsRef(url("vendor/acorn.js"), url("challenge_trace.js"));
+      lib = (typeof self !== "undefined" && self.ChallengeTrace) ? self.ChallengeTrace : (typeof ChallengeTrace !== "undefined" ? ChallengeTrace : null);
+    }
+  }
+  if (!lib || typeof lib.runTrace !== "function") throw new Error("visualizer unavailable offline");
+  traceLib = lib;
+  return traceLib;
+}
+
+/* Builds the trace response for one message without posting it (pure apart from the lazy load). */
+function traceOnce(msg) {
+  var runId = typeof msg.run_id === "string" ? msg.run_id : String(msg.run_id);
+  var code = typeof msg.code === "string" ? msg.code : "";
+  var entry = typeof msg.entry === "string" ? msg.entry : "";
+  var argTypes = Array.isArray(msg.arg_types) ? msg.arg_types : [];
+  var args = Array.isArray(msg.args) ? msg.args : [];
+  var maxEvents = Number(msg.max_events);
+  if (!Number.isInteger(maxEvents) || maxEvents < 1) maxEvents = TRACE_MAX_EVENTS_DEFAULT;
+  if (maxEvents > TRACE_MAX_EVENTS_CAP) maxEvents = TRACE_MAX_EVENTS_CAP;
+  var out = { type: "trace", run_id: runId, ok: false, error: null, error_kind: null, result: null, events: [], truncated: false, functions: [], nodes: { main: [], sub: [] }, ms: 0 };
+  var lib;
+  try {
+    lib = loadTraceLib();
+  } catch (e) {
+    out.error = "visualizer unavailable offline";
+    out.error_kind = "load";
+    return out;
+  }
+  if (!ENTRY_RE.test(entry)) {
+    out.error = "bad entry name";
+    out.error_kind = "load";
+    return out;
+  }
+  var r;
+  try {
+    r = lib.runTrace(code, entry, argTypes, args, { max_events: maxEvents });
+  } catch (e) {
+    out.error = errorText(e);
+    out.error_kind = "instrument";
+    return out;
+  }
+  out.ok = r.ok === true;
+  out.error = (typeof r.error === "string") ? r.error.slice(0, ERROR_MAX) : null;
+  out.error_kind = (typeof r.error_kind === "string") ? r.error_kind : null;
+  out.result = (r.result === undefined) ? null : r.result;
+  out.events = Array.isArray(r.events) ? r.events : [];
+  out.truncated = r.truncated === true;
+  out.functions = Array.isArray(r.functions) ? r.functions : [];
+  out.nodes = (r.nodes && typeof r.nodes === "object") ? { main: Array.isArray(r.nodes.main) ? r.nodes.main : [], sub: Array.isArray(r.nodes.sub) ? r.nodes.sub : [] } : { main: [], sub: [] };
+  out.ms = (typeof r.ms === "number" && Number.isFinite(r.ms)) ? r.ms : 0;
+  return out;
+}
+
+function handleTrace(msg) {
+  var out = traceOnce(msg);
+  try {
+    post(out);
+  } catch (e) {                      // a value the structured clone rejects: report instead of dying silently
+    post({ type: "trace", run_id: out.run_id, ok: false, error: "the trace could not be sent: " + errorText(e), error_kind: "load", result: null, events: [], truncated: false, functions: [], nodes: { main: [], sub: [] }, ms: 0 });
+  }
+}
+
 if (IS_WORKER) {
   self.onmessage = function (ev) {
     var msg = ev && ev.data;
-    if (!msg || msg.type !== "run") return;
-    handleRun(msg);
+    if (!msg) return;
+    if (msg.type === "run") handleRun(msg);
+    else if (msg.type === "trace") handleTrace(msg);
   };
 }
 
 if (typeof module !== "undefined") {
-  module.exports = { buildTree: buildTree, compileLearnerCode: compileLearnerCode, runOne: runOne, serializeActual: serializeActual, definedFunctions: definedFunctions };
+  module.exports = { buildTree: buildTree, compileLearnerCode: compileLearnerCode, runOne: runOne, serializeActual: serializeActual, definedFunctions: definedFunctions, traceOnce: traceOnce, handleTrace: handleTrace, loadTraceLib: loadTraceLib };
 }

@@ -1,8 +1,8 @@
-"""HTTP contracts (spec 4 / 10.1 test_routes.py; A2 removes the signature tests)."""
+"""HTTP contracts (spec 4 / 10.1 test_routes.py; A2 removes the signature tests; ADDENDUM_VIS 4 explain_step)."""
 import json
 import re
 
-from conftest import FailingJudge, make_app, make_client_results
+from conftest import FailingJudge, RecordingJudge, make_app, make_client_results
 from evaluation.judge import FakeJudge
 from evaluation.registry import CHALLENGES, registry_hash
 from evaluation.registry import tests_hash as _tests_hash   # aliased: a module-level `tests_hash` would be collected
@@ -68,6 +68,9 @@ def test_health(client, fake_client):
     assert r.headers["Cache-Control"] == "no-store"
     fake = fake_client.get("/evaluate-challenge/health").get_json()
     assert fake["ai_configured"] is True and fake["followup"] is True and fake["model"] == "fake-judge"
+    # the explain_step addition does not change the health contract
+    assert set(body) == set(fake) == {"ok", "version", "request_id", "ai_configured", "ai_disabled", "model", "effort",
+                                      "registry_hash", "challenges", "followup"}
 
 
 def test_rate_limit_429_with_retry_after(old_reference):
@@ -130,3 +133,39 @@ def test_every_challenge_accepts_its_starter(client):
         body = r.get_json()
         assert r.status_code == 200 and body["verdict"] == "FAIL" and body["retrieval"][0]["card_id"] == "missing_return"
         assert body["evaluation"]["next_hint"]["source"] == "card"
+
+
+def test_grouped_degraded_issues_over_http(client, count):
+    """Several failing tests that resolve to one card render ONE issue with one chip per test (was N identical issues)."""
+    kb = next(k for k in count.known_bad if k.id == "or_instead_of_sum")
+    cr = make_client_results(count, kb.code, {tid: 1 for tid in kb.expected_failing_ids})
+    r = client.post("/evaluate-challenge", json={"challenge_id": "countSubtrees", "code": kb.code, "client_results": cr, "attempt": 2})
+    body = r.get_json()
+    assert r.status_code == 200 and body["verdict"] == "PARTIAL" and body["ai"]["degraded"] is True
+    issues = body["evaluation"]["issues"]
+    assert [i["title"] for i in issues] == ["OR instead of sum"]
+    assert [e["ref"] for e in issues[0]["evidence"]] == ["cs-06", "cs-07", "cs-08", "cs-11"]
+    assert all(e["kind"] == "test" for e in issues[0]["evidence"]) and body["response"].count("OR instead of sum") <= 1
+    # the grouped evaluation survives the tutor's structural validation when the page echoes it back
+    judge = RecordingJudge()
+    tut = make_app(judge=judge).test_client()
+    r = tut.post("/evaluate-challenge/tutor", json={"challenge_id": "countSubtrees", "code": kb.code, "client_results": cr, "attempt": 2,
+                                                   "mode": "suggest_approach", "evaluation": body["evaluation"]})
+    assert r.status_code == 200
+    prior = json.loads(judge.tutor_calls[-1]["messages"][1]["content"])
+    assert [e["ref"] for e in prior["issues"][0]["evidence"]] == ["cs-06", "cs-07", "cs-08", "cs-11"]
+
+
+def test_tutor_explain_step_over_http(fake_client, client, old_reference):
+    step = {"index": 5, "total": 21, "caption": "fuzzySameTree returns true.", "call": "fuzzySameTree(main node 4, pattern node 8, maxDifferences = 1)",
+            "stack": ["fuzzySubtree(main node 1, pattern node 2, maxDifferences = 1)"], "returned": "true"}
+    body = {"challenge_id": "fuzzySubtree", "code": old_reference, "mode": "explain_step", "step": step}
+    r = fake_client.post("/evaluate-challenge/tutor", json=body)
+    assert r.status_code == 200 and re.fullmatch(r"[0-9a-f]{12}", r.headers["X-Request-Id"]) and r.headers["Cache-Control"] == "no-store"
+    out = r.get_json()
+    assert set(out) == {"ok", "request_id", "answer", "hint_level", "socratic_question", "redirected", "ai", "response"}
+    assert "Step 5 of 21: fuzzySameTree returns true." in out["answer"] and out["ai"]["model"] == "fake-judge"
+    r = client.post("/evaluate-challenge/tutor", json=body)                       # degraded server
+    assert r.status_code == 200 and r.get_json()["answer"] == "fuzzySameTree returns true. (AI tutor unavailable)"
+    r = fake_client.post("/evaluate-challenge/tutor", json=dict(body, step=dict(step, total="21")))
+    assert r.status_code == 400 and r.get_json()["error"]["field"] == "step" and r.get_json()["response"].startswith("Error: ")

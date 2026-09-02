@@ -1726,6 +1726,386 @@ code {
     margin-top: 12px;
 }
 
+/* ==========================================================================
+   Visualizer (section#viz-panel): step-by-step replay of the learner's code.
+   Reuses the Learn-mode classes (.trees-container/.tree, .node/.edge,
+   .explanation-box, .controls/.control-btn/.play-btn, .progress-container)
+   so both replays share one visual language. The SVGs are drawn by
+   js/challenge_viz.js, which sets their viewBox; the panel is driven by
+   challenge_mode.js.
+   ========================================================================== */
+.viz-panel {
+    padding: 15px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    margin-bottom: 15px;
+    scroll-margin-top: 100px;
+}
+
+.viz-panel:focus-visible {
+    outline-offset: 4px;
+}
+
+/* Header: heading, input picker, close */
+.viz-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
+    margin-bottom: 12px;
+}
+
+.viz-header h3 {
+    flex: 1 1 auto;
+    margin: 0;
+    padding-left: 0;
+    font-size: 1.15rem;
+}
+
+.viz-input {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 8px;
+    font-size: 0.85rem;
+    min-width: 0; /* long option labels must not widen the header row (390 px) */
+    max-width: 100%;
+}
+
+.viz-input label {
+    color: var(--text-muted);
+}
+
+#viz-input-select {
+    min-width: 0; /* shrinks below its intrinsic (option text) width on narrow screens */
+    max-width: 100%;
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--text);
+    font-size: 0.85rem;
+}
+
+#viz-input-select:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.viz-input-note {
+    flex-basis: 100%;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Trees: same bordered box as Learn mode; the SVGs scale with their viewBox */
+.viz-trees {
+    margin-bottom: 15px;
+}
+
+.viz-trees .tree {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.viz-trees .tree h3 {
+    padding-left: 0;
+    font-size: 1rem;
+}
+
+#viz-main-svg,
+#viz-sub-svg {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    height: auto; /* the intrinsic ratio follows the viewBox that the JS sets */
+    max-height: 320px; /* a deep chain stays on screen; the SVG keeps its ratio (meet) inside the box */
+    margin: 0 auto;
+    overflow: visible;
+}
+
+.viz-trees .node {
+    cursor: default;
+}
+
+.viz-trees text {
+    pointer-events: none;
+    user-select: none;
+}
+
+.viz-trees .viz-empty {
+    fill: var(--text-muted);
+    font-size: 12px;
+}
+
+/* Node states during the replay (in addition to Learn mode's .highlighted/.selected). Each state reads on its
+   own: visited = grey fill; returned true = green fill + green ring; returned false = light fill + DASHED red
+   ring; current = pink fill + SOLID 3 px red ring. Order matters: .current wins when a node carries several. */
+.node.visited {
+    fill: #EEEEEE;
+}
+
+.node.returned-true {
+    fill: var(--node-selected-fill);
+    stroke: var(--node-selected-stroke);
+    stroke-width: 2px;
+}
+
+.node.returned-false {
+    fill: #F7F7F7;
+    stroke: var(--seattle-red);
+    stroke-width: 2px;
+    stroke-dasharray: 4 3;
+}
+
+.node.current {
+    fill: var(--node-highlight-fill);
+    stroke: var(--node-highlight-stroke);
+    stroke-width: 3px;
+    stroke-dasharray: none;
+}
+
+/* Legend under the trees: the swatches carry the same classes as the tree nodes */
+.viz-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    list-style: none;
+    margin: -6px 0 15px;
+    padding: 0 4px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.viz-legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.viz-legend-swatch {
+    width: 18px;
+    height: 18px;
+    flex: none;
+    overflow: visible;
+}
+
+.viz-legend .node {
+    cursor: default;
+    transition: none;
+}
+
+/* Current step */
+.viz-explanation {
+    margin-bottom: 15px;
+}
+
+.viz-explanation-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 6px 8px;
+}
+
+.viz-explanation-header h3 {
+    margin-bottom: 6px;
+}
+
+.viz-step-counter {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    padding: 1px 8px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fff;
+    white-space: nowrap;
+}
+
+.viz-call {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+    overflow-wrap: anywhere;
+}
+
+.viz-call:empty {
+    display: none;
+}
+
+.viz-explanation .template-btn {
+    margin: 10px 0 0 20px;
+}
+
+/* The "Explain this step" answer, mirrored under the caption (the thread in Ask the tutor keeps a copy) */
+.viz-explain-answer {
+    margin: 10px 0 0 20px;
+    padding: 8px 10px;
+    border-left: 3px solid var(--seattle-red);
+    border-radius: 6px;
+    background: #fff;
+    font-size: 0.9rem;
+    overflow-wrap: anywhere;
+    scroll-margin: 100px 0 16px; /* scrolled into view under the fixed header, never flush with the viewport bottom */
+}
+
+.viz-explain-answer.is-pending {
+    border-left-color: var(--border);
+    color: var(--text-muted);
+}
+
+.viz-explain-answer.is-error {
+    border-left-color: var(--seattle-red-dark);
+    background: #FBEAEA;
+}
+
+.viz-explain-answer p {
+    padding-left: 0;
+    margin: 0;
+}
+
+.viz-explain-answer p:empty {
+    display: none;
+}
+
+.viz-explain-answer .viz-explain-answer-label {
+    margin-bottom: 4px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: var(--seattle-red);
+    font-weight: 600;
+}
+
+.viz-explain-answer.is-pending .viz-explain-answer-label {
+    color: var(--text-muted);
+}
+
+.viz-explain-answer .hint-question {
+    margin-top: 6px;
+    color: var(--text-muted);
+}
+
+.viz-explain-answer .viz-explain-answer-foot {
+    margin-top: 6px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Call stack + values */
+.viz-state {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.viz-stack,
+.viz-values {
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface-muted);
+}
+
+.viz-state h4 {
+    color: var(--seattle-black);
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+}
+
+#viz-stack {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+#viz-stack li {
+    padding: 2px 8px;
+    border-left: 3px solid transparent;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    overflow-wrap: anywhere;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+#viz-stack li.is-current {
+    font-weight: 700;
+    border-left-color: var(--seattle-red);
+    background: #fff;
+}
+
+#viz-stack:empty::before {
+    content: "(no active call)";
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+#viz-values {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 4px 12px;
+    margin: 0;
+    font-size: 0.85rem;
+}
+
+#viz-values dt {
+    color: var(--text-muted);
+}
+
+#viz-values dd {
+    margin: 0;
+    font-family: var(--mono);
+    overflow-wrap: anywhere;
+}
+
+/* Controls: Learn-mode buttons on the left, speed switch on the right */
+.viz-controls {
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.viz-speed {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.viz-speed .template-btn.active {
+    background-color: var(--seattle-red);
+    color: var(--seattle-white);
+}
+
+.viz-speed .template-btn.active:hover {
+    background-color: var(--seattle-red-dark);
+}
+
+.viz-slider {
+    display: block;
+    width: 100%;
+    margin: 0 0 8px;
+    accent-color: var(--seattle-red);
+    cursor: pointer;
+}
+
+.viz-panel .progress-container {
+    margin-bottom: 10px;
+}
+
+.viz-note {
+    font-size: 0.85rem;
+    color: var(--seattle-red-dark);
+    margin: 0;
+}
+
+.viz-note:empty {
+    display: none;
+}
+
 /* Screen-reader only */
 .visually-hidden {
     position: absolute;
@@ -1925,6 +2305,30 @@ summary:focus-visible,
     .editor-ask-popover {
         right: 8px;
     }
+
+    /* Visualizer: heading + Close share the first row, the input picker wraps under them;
+       trees already stack via .trees-container; the state boxes stack */
+    .viz-header h3 {
+        flex: 1 1 0;
+        min-width: 0; /* the heading wraps its text instead of pushing Close to the next line */
+    }
+
+    .viz-header .viz-input {
+        order: 1;
+        flex-basis: 100%;
+    }
+
+    .viz-trees .tree {
+        width: 100%;
+    }
+
+    .viz-state {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .viz-controls {
+        justify-content: center;
+    }
 }
 
 /* Reduced motion */
@@ -1948,7 +2352,8 @@ summary:focus-visible,
     .challenge-tab,
     .evidence-chip,
     .tutor-quick-btn,
-    .node {
+    .node,
+    #viz-stack li {
         transition: none;
     }
 }

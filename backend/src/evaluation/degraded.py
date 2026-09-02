@@ -2,12 +2,13 @@
 
 Used when no judge is configured, when the model call failed, and for the deterministic parts of the
 tutor's degraded answers.  The scores go through the same caps as the judge's (7.2) with
-``source: "heuristic"`` for the judge-owned dimensions.
+``source: "heuristic"`` for the judge-owned dimensions.  Issues are grouped per misconception card
+(``group_test_issues``): one issue per card with one evidence chip per failing test, not one issue per test.
 """
 from __future__ import annotations
 
 from .evidence import first_failed_test
-from .postcheck import compute_scores, derive_verdict, expected_level, fallback_hint
+from .postcheck import MAX_ISSUES, compute_scores, derive_verdict, expected_level, fallback_hint
 from .prompts import fmt_test_input, jsdump
 from .registry import TAG_DIMENSION, TAG_LABELS, Challenge
 
@@ -50,6 +51,41 @@ def heuristic_scores(ev: dict, cards) -> dict:
     }
 
 
+def group_test_issues(challenge: Challenge, ev: dict, cards, max_issues: int = MAX_ISSUES) -> list:
+    """One issue per misconception card (every failing test that resolves to it becomes an evidence chip, in
+    catalog order) plus one "Wrong result on {id}" issue per failing test that matches no card.
+
+    Groups are collected over ALL failing rows first, so a card's chip list is complete even when the
+    ``max_issues`` cap drops later groups; issues are emitted in order of their first test in the catalog.
+    """
+    groups: dict = {}
+    for row in ev["tests"]:
+        if row["status"] not in ("fail", "error", "timeout"):
+            continue
+        card = next((c["card"] for c in cards if row["id"] in c["matched_by"]), None)
+        key = ("card", card.id) if card is not None else ("test", row["id"])
+        dim = "edge_case" if TAG_DIMENSION.get(row["tag"]) == "edge_cases" else "correctness"
+        g = groups.get(key)
+        if g is None:
+            if card is not None:
+                title, explanation = card.title, f"{card.symptom} {card.why}"
+            else:
+                tc = challenge.test_by_id[row["id"]]
+                title = f"Wrong result on {row['id']}"
+                explanation = (f"Expected {jsdump(row['expected'])} but your function returned {_got(row)} "
+                               f"for input {fmt_test_input(challenge, tc)}.")
+            groups[key] = {"title": title, "category": dim, "explanation": explanation, "refs": [row["id"]]}
+        else:
+            g["refs"].append(row["id"])
+            if dim == "correctness":
+                g["category"] = "correctness"          # a group that touches a correctness test is a correctness issue
+    issues = []
+    for g in list(groups.values())[:max_issues]:
+        issues.append({"title": g["title"], "category": g["category"], "severity": "high" if not issues else "medium",
+                       "explanation": g["explanation"], "evidence": [{"kind": "test", "ref": r} for r in g["refs"]]})
+    return issues
+
+
 def build(challenge: Challenge, ev: dict, cards, attempt: int, hints_used=()):
     """Return ``(evaluation, guardrails)`` built from evidence only."""
     verdict = derive_verdict(ev)
@@ -78,22 +114,7 @@ def build(challenge: Challenge, ev: dict, cards, attempt: int, hints_used=()):
                        "explanation": summary + " Fix that first; the tests only run once the code loads.",
                        "evidence": [{"kind": "static", "ref": failed_static[0] if failed_static else "S03"}]})
     else:
-        for row in ev["tests"]:
-            if row["status"] not in ("fail", "error", "timeout"):
-                continue
-            card = next((c["card"] for c in cards if row["id"] in c["matched_by"]), None)
-            tc = challenge.test_by_id[row["id"]]
-            if card is not None:
-                title, explanation = card.title, f"{card.symptom} {card.why}"
-            else:
-                title = f"Wrong result on {row['id']}"
-                explanation = (f"Expected {jsdump(row['expected'])} but your function returned {_got(row)} "
-                               f"for input {fmt_test_input(challenge, tc)}.")
-            issues.append({"title": title, "category": "edge_case" if TAG_DIMENSION.get(row["tag"]) == "edge_cases" else "correctness",
-                           "severity": "high" if not issues else "medium", "explanation": explanation,
-                           "evidence": [{"kind": "test", "ref": row["id"]}]})
-            if len(issues) >= 4:
-                break
+        issues = group_test_issues(challenge, ev, cards)
 
     strengths = []
     for tag, agg in ev["by_tag"].items():

@@ -1,5 +1,6 @@
-"""Flask blueprint (spec 4, addendum A2/A5/A6): health, evaluate, tutor; request validation (4.2);
-error envelope and rate limiting (4.5).  Registered by ``evaluation.init_evaluation(app)``.
+"""Flask blueprint (spec 4, addendum A2/A5/A6; ADDENDUM_VIS 4 for the tutor's ``explain_step`` mode and the
+``step`` object): health, evaluate, tutor; request validation (4.2); error envelope and rate limiting (4.5).
+Registered by ``evaluation.init_evaluation(app)``.
 """
 from __future__ import annotations
 
@@ -25,6 +26,9 @@ MAX_HISTORY_TURNS = 3
 MAX_HISTORY_CHARS = 600
 MAX_SELECTION_CHARS = 2000
 MIN_QUESTION, MAX_QUESTION = 3, 500
+# replay step (ADDENDUM_VIS 4): caption/call/returned <= 300 chars, stack <= 12 frames of <= 200 chars
+MAX_STEP_TEXT, MAX_STEP_STACK, MAX_STEP_FRAME_CHARS, MAX_STEP_TOTAL = 300, 12, 200, 100_000
+STEP_TEXT_FIELDS = ("caption", "call", "returned")
 
 
 class RequestError(Exception):
@@ -201,6 +205,36 @@ def _selection(v, code_lines: int):
     return {"start_line": a, "end_line": b, "text": text}
 
 
+def _step(v):
+    """Validate the optional replay ``step`` object; returns a cleaned dict or None, raises RequestError (field step)."""
+    if v is None:
+        return None
+    if not isinstance(v, dict):
+        raise RequestError(400, "invalid_request", "step must be an object", "step")
+    idx, total = v.get("index"), v.get("total")
+    if any(isinstance(x, bool) or not isinstance(x, int) for x in (idx, total)):
+        raise RequestError(400, "invalid_request", "step.index and step.total must be integers", "step")
+    if not (1 <= total <= MAX_STEP_TOTAL) or not (0 <= idx <= total):
+        raise RequestError(400, "invalid_request", f"step must satisfy 0 <= index <= total and 1 <= total <= {MAX_STEP_TOTAL}", "step")
+    out = {"index": idx, "total": total}
+    for key in STEP_TEXT_FIELDS:
+        text = v.get(key, "")
+        if text is None:
+            text = ""
+        if not isinstance(text, str) or len(text) > MAX_STEP_TEXT:
+            raise RequestError(400, "invalid_request", f"step.{key} must be a string of at most {MAX_STEP_TEXT} characters", "step")
+        out[key] = text
+    stack = v.get("stack", [])
+    if stack is None:
+        stack = []
+    if (not isinstance(stack, list) or len(stack) > MAX_STEP_STACK
+            or not all(isinstance(f, str) and len(f) <= MAX_STEP_FRAME_CHARS for f in stack)):
+        raise RequestError(400, "invalid_request", f"step.stack must be a list of at most {MAX_STEP_STACK} strings of at most "
+                           f"{MAX_STEP_FRAME_CHARS} characters", "step")
+    out["stack"] = list(stack)
+    return out
+
+
 def _history(v) -> list:
     if not isinstance(v, list):
         return []
@@ -225,10 +259,13 @@ def parse_tutor_request(body: dict):
         if not isinstance(q, str) or not (MIN_QUESTION <= len(q.strip()) <= MAX_QUESTION):
             raise RequestError(400, "invalid_request", f"question must be {MIN_QUESTION} to {MAX_QUESTION} characters", "question")
         question = q.strip()
+    step = _step(body.get("step"))
+    if mode == "explain_step" and step is None:
+        raise RequestError(400, "invalid_request", "step is required for mode explain_step", "step")
     tut = TutorRequest(
         mode=mode, question=question, selection=_selection(body.get("selection"), code_line_count(req.code)),
         evaluation=sanitize_evaluation(body.get("evaluation"), challenge) if body.get("evaluation") is not None else None,
-        history=_history(body.get("history")), stuck=bool(body.get("stuck", False)),
+        history=_history(body.get("history")), stuck=bool(body.get("stuck", False)), step=step,
     )
     return challenge, req, tut
 

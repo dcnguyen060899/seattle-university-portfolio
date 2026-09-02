@@ -214,13 +214,50 @@ def filter_issues(issues, ev: dict, verdict: str, max_issues: int = MAX_ISSUES):
 
 # --------------------------------------------------------------------------- 7.4 leak guard
 
+# Normalization drops sentence punctuation and inline-markdown decoration (backticks, asterisks, quotes) before the
+# windows are cut and before a text is checked, so a solution written one line per sentence, or in backticked pieces
+# cut shorter than a window, normalizes to the same string as the reference and cannot slip between the windows.
+_DECORATION = re.compile(r"[.!?,;:`*\"']")
+_SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
+_FENCE_BLOCK = re.compile(r"```.*?(?:```|\Z)", re.S)
+FENCED = re.compile(r"```")
+FUNC_DEF = re.compile(r"\bfunction\s+\w+\s*\([^)]*\)\s*\{")              # a function header (7.5 hint guard)
+FUNC_BODY = re.compile(r"\bfunction\s+\w+\s*\([^)]*\)\s*\{.*?\}", re.S)   # a header with a body (prose guard)
+LEAK_WINDOW, LEAK_STEP = 40, 5          # 40-char windows every 5 chars: a single reference line is a leak on its own
+GUARDED_LEVELS = ("conceptual", "targeted", "near_explicit")
+LEVEL_RANK = {"conceptual": 1, "targeted": 2, "near_explicit": 3, "extension": 3}
+WITHHELD = "(part withheld: it quoted the solution)"
+
+
 def _norm(s) -> str:
-    return re.sub(r"\s+", " ", s or "").strip().lower()
+    return re.sub(r"\s+", " ", _DECORATION.sub("", s or "")).strip().lower()
 
 
-def leak_windows(challenge: Challenge, learner_code: str, window: int = 60, step: int = 10) -> set:
+def sanctioned_texts(challenge: Challenge, level) -> list:
+    """Curated texts the page or the fallback hint itself shows by ``level`` (so quoting them is not a leak there):
+    ladder hints up to the level's rank (hint 1 at conceptual, 2 at targeted, 3 from near_explicit on), every
+    card's ``why`` (the conceptual fallback) and, from targeted on, the cards' ``fix_direction`` (the targeted and
+    near_explicit fallbacks).  Nothing is sanctioned when ``level`` is ``None``."""
+    rank = LEVEL_RANK.get(level, 0)
+    out = [h.text for h in challenge.hints if h.level <= rank]
+    if rank >= 1:
+        out += [c.why for c in challenge.card_by_id.values()]
+    if rank >= 2:
+        out += [c.fix_direction for c in challenge.card_by_id.values()]
+    return out
+
+
+def leak_windows(challenge: Challenge, learner_code: str, level: str | None = None,
+                 window: int = LEAK_WINDOW, step: int = LEAK_STEP) -> set:
+    """Windows of the normalized reference (and accepted alternatives) that are leaks in text shown at ``level``.
+
+    Excluded: anything in the starter code, the signature, the learner's own code and, when ``level`` is given, the
+    ``sanctioned_texts`` of that level (the ladder and the cards quote the reference's key expressions at their own
+    levels by design; a judge hint that says what the page's own hint says is not a leak).
+    """
     sources = [challenge.reference_solution, *challenge.accepted_alternatives]
-    exclusions = _norm(challenge.starter_code) + "\n" + _norm(challenge.signature) + "\n" + _norm(learner_code)
+    exclusions = "\n".join(_norm(x) for x in (challenge.starter_code, challenge.signature, learner_code,
+                                                *sanctioned_texts(challenge, level)))
     out = set()
     for src in sources:
         r = _norm(src)
@@ -234,20 +271,94 @@ def leaks(text, windows: set) -> bool:
     return any(w in t for w in windows) if t else False
 
 
-def redact(text, windows: set):
-    """Sentence-level redaction; returns ``(text, redacted_count)`` and never blanks the field silently."""
-    parts = [p for p in re.split(r"(?<=[.!?])\s+", text or "") if p]
-    kept = [p for p in parts if not leaks(p, windows)]
-    if not parts:
+def _fence_guard_fails(block: str, level) -> bool:
+    """The 7.5 fence rule for one fenced block: any fence at conceptual/targeted, > 3 code lines at near_explicit."""
+    if level in ("conceptual", "targeted"):
+        return True
+    if level == "near_explicit":
+        return len([ln for ln in block.splitlines() if ln.strip() and not ln.strip().startswith("```")]) > 3
+    return False
+
+
+def prose_code_guard_fails(text: str, level) -> bool:
+    """Code guard for prose (summary, issue explanations, list items, tutor answers): a fenced block the level forbids
+    or a function definition with a body.  A bare header such as "your `function go(p, q) {` on line 3" is a quote of
+    the learner's own code, not a solution, and passes; nothing is guarded at ``extension`` (PASS unlocks the solution).
+    """
+    if level not in GUARDED_LEVELS or not text:
+        return False
+    return bool(FUNC_BODY.search(text)) or any(_fence_guard_fails(m.group(0), level) for m in _FENCE_BLOCK.finditer(text))
+
+
+def _units(text: str) -> list:
+    """``(start, end, is_fence)`` spans of ``text``: fenced blocks stay whole, the prose around them is split at
+    sentence ends (``[.!?]`` + whitespace); whitespace-only pieces are skipped."""
+    out = []
+
+    def prose(a, b):
+        seg, start = text[a:b], 0
+        for m in _SENTENCE_END.finditer(seg):
+            if seg[start:m.start()].strip():
+                out.append((a + start, a + m.start(), False))
+            start = m.end()
+        if seg[start:].strip():
+            out.append((a + start, b, False))
+
+    pos = 0
+    for m in _FENCE_BLOCK.finditer(text):
+        prose(pos, m.start())
+        out.append((m.start(), m.end(), True))
+        pos = m.end()
+    prose(pos, len(text))
+    return out
+
+
+def redact(text, windows: set, level=None):
+    """Unit-level redaction; returns ``(text, redacted_count)`` and never blanks the field silently.
+
+    Units are sentences and fenced blocks.  A unit is withheld when a leak window overlaps it in the normalized text
+    of the WHOLE field (so a solution written one line per sentence is caught although no single sentence holds a
+    whole window), and, when ``level`` is one of the guarded hint levels, when it is a fenced block that level
+    forbids or part of a function definition with a body (``prose_code_guard_fails``).
+    """
+    text = text or ""
+    units = _units(text)
+    if not units:
         return "", 0
-    return (" ".join(kept) if kept else "(part withheld: it quoted the solution)"), len(parts) - len(kept)
+    pieces = [text[a:b].strip() for a, b, _ in units]
+    spans, joined, pos = [], [], 0
+    for n in (_norm(p) for p in pieces):
+        if joined and n:
+            pos += 1
+        spans.append((pos, pos + len(n)))
+        if n:
+            joined.append(n)
+            pos += len(n)
+    t = " ".join(joined)
+    drop = [False] * len(units)
+
+    def mark(i, j, table):
+        for k, (a, b) in enumerate(table):
+            if a < j and i < b:
+                drop[k] = True
+
+    for w in windows:
+        i = t.find(w)
+        while i >= 0:
+            mark(i, i + len(w), spans)
+            i = t.find(w, i + 1)
+    if level in GUARDED_LEVELS:
+        raw = [(a, b) for a, b, _ in units]
+        for a, b, is_fence in units:
+            if is_fence and _fence_guard_fails(text[a:b], level):
+                mark(a, b, raw)
+        for m in FUNC_BODY.finditer(text):
+            mark(m.start(), m.end(), raw)
+    kept = [p for k, p in enumerate(pieces) if not drop[k]]
+    return (" ".join(kept) if kept else WITHHELD), len(units) - len(kept)
 
 
 # --------------------------------------------------------------------------- 7.5 / 7.6 hints
-
-FENCED = re.compile(r"```")
-FUNC_DEF = re.compile(r"\bfunction\s+\w+\s*\([^)]*\)\s*\{")
-
 
 def code_guard_fails(text: str, level: str) -> bool:
     if level in ("conceptual", "targeted"):
@@ -333,12 +444,12 @@ def enforce_hint(hint, level: str, challenge: Challenge, ev: dict, cards, window
 
 # --------------------------------------------------------------------------- 7.7 entry point
 
-def _str_list(items, cap: int, limit: int, windows=None) -> list:
+def _str_list(items, cap: int, limit: int, windows=None, level=None) -> list:
     out = []
     for s in items or []:
         if not isinstance(s, str) or not s.strip():
             continue
-        if windows is not None and leaks(s, windows):
+        if windows is not None and (leaks(s, windows) or prose_code_guard_fails(s, level)):
             continue
         out.append(s.strip()[:cap])
         if len(out) >= limit:
@@ -352,21 +463,21 @@ def postprocess(model_out: dict, ev: dict, challenge: Challenge, attempt: int, c
     model_out = model_out if isinstance(model_out, dict) else {}
     verdict = derive_verdict(ev)
     level = expected_level(attempt, verdict)
-    windows = leak_windows(challenge, learner_code)
+    windows = leak_windows(challenge, learner_code, level)
     flags_in = [f for f in (model_out.get("flags") or []) if f in FLAGS]
     flags = list(dict.fromkeys(flags_in))
     scores, adjusted = compute_scores(model_out.get("scores"), ev, verdict, flags, challenge.rubric, judge_source)
     issues, dropped = filter_issues(model_out.get("issues"), ev, verdict)
     hint, hint_reason = enforce_hint(model_out.get("next_hint"), level, challenge, ev, cards, windows, hints_used)
     tags = [t for t in dict.fromkeys(model_out.get("misconception_tags") or []) if t in challenge.card_by_id][:MAX_TAGS]
-    strengths = _str_list(model_out.get("strengths"), CAP_LIST_ITEM, MAX_LIST, windows)
-    what_next = _str_list(model_out.get("what_to_try_next"), CAP_LIST_ITEM, MAX_LIST, windows)
-    summary, n1 = redact(str(model_out.get("summary") or "")[:CAP_SUMMARY], windows)
-    progress, n2 = redact(str(model_out.get("progress_note") or "")[:CAP_PROGRESS], windows)
-    enc, n3 = redact(str(model_out.get("encouragement") or "")[:CAP_ENCOURAGEMENT], windows)
+    strengths = _str_list(model_out.get("strengths"), CAP_LIST_ITEM, MAX_LIST, windows, level)
+    what_next = _str_list(model_out.get("what_to_try_next"), CAP_LIST_ITEM, MAX_LIST, windows, level)
+    summary, n1 = redact(str(model_out.get("summary") or "")[:CAP_SUMMARY], windows, level)
+    progress, n2 = redact(str(model_out.get("progress_note") or "")[:CAP_PROGRESS], windows, level)
+    enc, n3 = redact(str(model_out.get("encouragement") or "")[:CAP_ENCOURAGEMENT], windows, level)
     total_redactions = n1 + n2 + n3
     for it in issues:
-        it["explanation"], n = redact(it["explanation"], windows)
+        it["explanation"], n = redact(it["explanation"], windows, level)
         total_redactions += n
     cx = model_out.get("complexity") if isinstance(model_out.get("complexity"), dict) else {}
     complexity = {k: str(cx.get(k) or "")[:CAP_COMPLEXITY] for k in ("time", "space", "note")}

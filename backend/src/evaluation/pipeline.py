@@ -12,7 +12,7 @@ from . import config, degraded
 from .evidence import build_evidence, first_failed_test
 from .judge import EMPTY_USAGE, USER_MESSAGES, JudgeResult, degraded_reason, submission_message
 from .postcheck import (derive_verdict, expected_level, fallback_hint, leak_windows, leaks, overall_score,
-                        postprocess, strip_server_fields)
+                        postprocess, prose_code_guard_fails, strip_server_fields)
 from .prompts import build_submission_message, build_tutor_turn, fmt_test_input, jsdump
 from .registry import HINT_LEVELS, Challenge, canonical_json
 from .retrieval import public_retrieval, retrieve_cards
@@ -22,6 +22,7 @@ logger = logging.getLogger("evaluation")
 STAGES = ("validate", "static_checks", "tests", "retrieval", "judge", "postcheck")
 TRACE_STATUSES = ("ok", "skipped", "degraded", "error")
 DECLINE_PREFIX = "I can't hand over the solution, but here is the next step: "
+STEP_UNAVAILABLE = "(AI tutor unavailable)"       # degraded explain_step answer = the step caption + this suffix
 CAP_ANSWER, CAP_TUTOR_QUESTION = 900, 300
 
 
@@ -45,9 +46,11 @@ class TutorRequest:
     evaluation: dict | None = None           # already sanitized (server-only fields stripped)
     history: list = field(default_factory=list)
     stuck: bool = False
+    step: dict | None = None                 # validated replay step (ADDENDUM_VIS 4); required for mode explain_step
 
     def as_dict(self) -> dict:
-        return {"mode": self.mode, "question": self.question, "selection": self.selection, "stuck": self.stuck}
+        return {"mode": self.mode, "question": self.question, "selection": self.selection, "stuck": self.stuck,
+                "step": self.step}
 
 
 def _ms(t0: float) -> int:
@@ -255,6 +258,10 @@ def _degraded_tutor(challenge: Challenge, tut: TutorRequest, ev: dict, cards, ba
         return {"answer": answer[:CAP_ANSWER], "hint_level": base_level, "socratic_question": "", "redirected": False}
     if tut.mode == "complexity":
         return {"answer": "Not analysed (AI tutor unavailable).", "hint_level": base_level, "socratic_question": "", "redirected": False}
+    if tut.mode == "explain_step":
+        caption = str((tut.step or {}).get("caption") or "").strip()
+        answer = (caption + " " + STEP_UNAVAILABLE).strip()
+        return {"answer": answer[:CAP_ANSWER], "hint_level": base_level, "socratic_question": "", "redirected": False}
     level = raise_level(base_level, derive_verdict(ev))
     fb = fallback_hint(level, cards, challenge, ev)
     return {"answer": fb["text"][:CAP_ANSWER], "hint_level": level, "socratic_question": fb["question"][:CAP_TUTOR_QUESTION], "redirected": False}
@@ -281,7 +288,8 @@ def run_tutor(challenge: Challenge, req: EvalRequest, tut: TutorRequest, judge, 
         for turn in tut.history:
             messages.append({"role": "user", "content": turn["question"]})
             messages.append({"role": "assistant", "content": turn["answer"]})
-        messages.append({"role": "user", "content": build_tutor_turn(tut.mode, tut.question, tut.selection, base_level, tut.stuck)})
+        messages.append({"role": "user", "content": build_tutor_turn(tut.mode, tut.question, tut.selection, base_level, tut.stuck,
+                                                                     step=tut.step)})
         jr = judge.tutor(challenge, messages, ev=ev, cards=cards, level=base_level, tutor=tut.as_dict(), attempt=req.attempt)
         if not jr.ok:
             logger.info("evaluation request_id=%s route=tutor challenge=%s attempt=%s mode=%s judge=failed reason=%s judge_ms=%s "
@@ -294,8 +302,9 @@ def run_tutor(challenge: Challenge, req: EvalRequest, tut: TutorRequest, judge, 
         answer = str(data.get("answer") or "").strip()
         q = str(data.get("socratic_question") or "").strip()
         hl = data.get("hint_level")
-        windows = leak_windows(challenge, req.code)
-        if not answer or leaks(answer, windows):
+        windows = leak_windows(challenge, req.code, max_level)
+        # 7.4 leak guard + the prose code guard (a fenced block the level forbids, or a whole function) -> decline
+        if not answer or leaks(answer, windows) or prose_code_guard_fails(answer, max_level):
             fb = fallback_hint(max_level, cards, challenge, ev)
             answer = DECLINE_PREFIX + fb["text"]
             replaced = True
@@ -309,11 +318,12 @@ def run_tutor(challenge: Challenge, req: EvalRequest, tut: TutorRequest, judge, 
 
     body = {"ok": True, "request_id": request_id, **out, "ai": ai_block(judge, jr), "response": out["answer"]}
     u = (jr.usage if jr else None) or {}
-    logger.info("evaluation request_id=%s route=tutor challenge=%s attempt=%s mode=%s selection=%s stuck=%s level=%s "
+    logger.info("evaluation request_id=%s route=tutor challenge=%s attempt=%s mode=%s selection=%s step=%s stuck=%s level=%s "
                 "answer_replaced=%s judge=%s judge_ms=%s anthropic_request_id=%s model=%s in=%s out=%s cache_read=%s "
                 "cache_write=%s degraded=%s total_ms=%s ip=%s",
                 request_id, challenge.id, req.attempt, tut.mode,
-                f"{tut.selection['start_line']}-{tut.selection['end_line']}" if tut.selection else "-", tut.stuck,
+                f"{tut.selection['start_line']}-{tut.selection['end_line']}" if tut.selection else "-",
+                f"{tut.step['index']}/{tut.step['total']}" if tut.step else "-", tut.stuck,
                 out["hint_level"], replaced, "skipped" if judge is None else "ok", jr.ms if jr else 0,
                 (jr.anthropic_request_id if jr else None) or "-", body["ai"]["model"] or "-",
                 u.get("input_tokens", 0), u.get("output_tokens", 0), u.get("cache_read_input_tokens", 0),

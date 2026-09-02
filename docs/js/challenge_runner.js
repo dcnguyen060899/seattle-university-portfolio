@@ -7,6 +7,7 @@
  *   attemptHash(str)     sha256Hex of the code with comments and all whitespace stripped
  *   localRetrieve(...)   misconception-card retrieval, identical rules to server 5.3
  *   summarize(...)       catalog-ordered rows + counts for rendering
+ *   trace(...)           one traced run of the learner's code on one input (addendum 2, "Visualize my solution")
  *
  * Loadable in Node (module.exports) for the smoke tests; no DOM access at load time.
  */
@@ -500,6 +501,120 @@
     });
   }
 
+  /* ---------- Execution trace (addendum 2, section 2): a fresh worker, one traced run, the same 2 s watchdog ---------- */
+
+  var TRACE_MAX_EVENTS = 600;
+  var TRACE_MAX_EVENTS_CAP = 5000;
+  var TRACE_ERROR_KINDS = { syntax: 1, instrument: 1, load: 1, runtime: 1, timeout: 1 };
+  var TRACE_TIMEOUT_ERROR = 'Timed out after ' + PER_TEST_TIMEOUT_MS + ' ms';
+  var traceSeq = 0;
+
+  function isIntAtLeast(v, min) { return typeof v === 'number' && isFinite(v) && Math.floor(v) === v && v >= min; }
+  function emptyTrace(error, kind) {
+    return { ok: false, error: error, error_kind: kind, result: null, events: [], truncated: false, functions: [], nodes: { main: [], sub: [] }, ms: 0 };
+  }
+  /* JSON-safe primitives only (the worker's serialize() already produced them; this is belt and braces). */
+  function tracePrimitive(v) {
+    if (v === undefined) return 'undefined';
+    if (v === null) return null;
+    var t = typeof v;
+    if (t === 'boolean') return v;
+    if (t === 'number') return isFinite(v) ? v : String(v);
+    if (t === 'string') return v.slice(0, 40);
+    try { return String(v).slice(0, 40); } catch (e) { return '[unprintable]'; }
+  }
+  /* A traced value: a primitive or the { node, tree, val } descriptor of a tree node. */
+  function traceValue(v) {
+    if (v !== null && typeof v === 'object' && !Array.isArray(v) && ('node' in v || 'val' in v)) {
+      var out = { node: isIntAtLeast(v.node, 0) ? v.node : null, val: tracePrimitive(v.val) };
+      if (v.tree === 'main' || v.tree === 'sub') out.tree = v.tree;
+      return out;
+    }
+    return tracePrimitive(v);
+  }
+  function normalizeTrace(msg) {
+    var out = emptyTrace(null, null);
+    out.ok = msg.ok === true;
+    out.error = (typeof msg.error === 'string') ? msg.error.slice(0, 200) : null;
+    out.error_kind = (typeof msg.error_kind === 'string' && TRACE_ERROR_KINDS[msg.error_kind]) ? msg.error_kind : null;
+    out.result = (msg.result === undefined) ? null : traceValue(msg.result);
+    out.truncated = msg.truncated === true;
+    out.ms = (typeof msg.ms === 'number' && isFinite(msg.ms)) ? Math.max(0, msg.ms) : 0;
+    (Array.isArray(msg.events) ? msg.events.slice(0, TRACE_MAX_EVENTS_CAP) : []).forEach(function (e) {
+      if (!e || typeof e !== 'object' || !isIntAtLeast(e.id, 0)) return;
+      var fn = (typeof e.fn === 'string') ? e.fn.slice(0, 80) : '?';
+      if (e.k === 'call') {
+        var call = { k: 'call', id: e.id, fn: fn, depth: isIntAtLeast(e.depth, 0) ? e.depth : 0, args: (Array.isArray(e.args) ? e.args.slice(0, 10) : []).map(traceValue) };
+        if (isIntAtLeast(e.f, 0)) call.f = e.f;     // index into `functions`: the call's own function, even when names repeat
+        out.events.push(call);
+      } else if (e.k === 'ret') {
+        out.events.push({ k: 'ret', id: e.id, fn: fn, value: traceValue(e.value) });
+      } else if (e.k === 'throw') {
+        out.events.push({ k: 'throw', id: e.id, fn: fn, error: (typeof e.error === 'string') ? e.error.slice(0, 200) : 'error' });
+      }
+    });
+    (Array.isArray(msg.functions) ? msg.functions.slice(0, 200) : []).forEach(function (f) {
+      if (!f || typeof f.name !== 'string' || !isIntAtLeast(f.start_line, 1) || !isIntAtLeast(f.end_line, f.start_line)) return;
+      out.functions.push({
+        name: f.name.slice(0, 80), start_line: f.start_line, end_line: f.end_line,
+        params: (Array.isArray(f.params) ? f.params.slice(0, 10) : []).map(function (x) { return (typeof x === 'string') ? x.slice(0, 40) : null; })
+      });
+    });
+    ['main', 'sub'].forEach(function (t) {
+      var arr = (msg.nodes && Array.isArray(msg.nodes[t])) ? msg.nodes[t].slice(0, 10000) : [];
+      arr.forEach(function (n) {
+        if (!n || !isIntAtLeast(n.vid, 0)) return;
+        out.nodes[t].push({ vid: n.vid, val: tracePrimitive(n.val), index: isIntAtLeast(n.index, 0) ? n.index : 0, parent: isIntAtLeast(n.parent, 0) ? n.parent : null, side: (n.side === 'L' || n.side === 'R') ? n.side : null });
+      });
+    });
+    return out;
+  }
+
+  /* trace(challenge, code, args, opts) -> Promise<TraceResult>; never rejects.
+     args are the test's raw args (level-order arrays for tree parameters). The worker posts the whole trace in
+     one message at the end, so a watchdog timeout reports no events (error_kind "timeout"). */
+  function trace(challenge, code, args, opts) {
+    opts = opts || {};
+    var maxEvents = isIntAtLeast(opts.max_events, 1) ? Math.min(opts.max_events, TRACE_MAX_EVENTS_CAP) : TRACE_MAX_EVENTS;
+    return new Promise(function (resolve) {
+      code = (typeof code === 'string') ? code : String(code == null ? '' : code);
+      var entry = (challenge && typeof challenge.entry_function === 'string') ? challenge.entry_function : '';
+      var argTypes = (challenge && Array.isArray(challenge.arg_types)) ? challenge.arg_types.slice() : [];
+      if (code.length > MAX_CODE_CHARS) return resolve(emptyTrace('code exceeds ' + MAX_CODE_CHARS + ' characters', 'load'));
+      if (typeof Worker === 'undefined') return resolve(emptyTrace('the sandbox is not available in this browser', 'load'));
+      var worker = null, timer = null, settled = false;
+      var runId = 't-' + (++traceSeq);
+      function done(result) {
+        if (settled) return;
+        settled = true;
+        if (timer) { clearTimeout(timer); timer = null; }
+        if (worker) { try { worker.terminate(); } catch (e) { /* ignore */ } worker = null; }
+        resolve(result);
+      }
+      try {
+        worker = new Worker(workerUrl);
+      } catch (e) {
+        return done(emptyTrace('the sandbox could not be started', 'load'));
+      }
+      worker.onmessage = function (ev) {
+        var msg = ev && ev.data;
+        if (!msg || msg.type !== 'trace' || msg.run_id !== runId) return;
+        done(normalizeTrace(msg));
+      };
+      worker.onerror = function (ev) {
+        try { if (ev && typeof ev.preventDefault === 'function') ev.preventDefault(); } catch (e) { /* ignore */ }
+        done(emptyTrace((ev && ev.message) ? String(ev.message).slice(0, 200) : 'the sandbox stopped unexpectedly', 'load'));
+      };
+      worker.onmessageerror = function () { done(emptyTrace('the sandbox sent an unreadable message', 'load')); };
+      timer = setTimeout(function () { done(emptyTrace(TRACE_TIMEOUT_ERROR, 'timeout')); }, PER_TEST_TIMEOUT_MS + WATCHDOG_SLACK_MS);   // armed BEFORE postMessage
+      try {
+        worker.postMessage({ type: 'trace', run_id: runId, code: code, entry: entry, arg_types: argTypes, args: Array.isArray(args) ? args : [], max_events: maxEvents });
+      } catch (e) {
+        done(emptyTrace('could not send the code to the sandbox', 'load'));
+      }
+    });
+  }
+
   var api = {
     PER_TEST_TIMEOUT_MS: PER_TEST_TIMEOUT_MS,
     TOTAL_TIMEOUT_MS: TOTAL_TIMEOUT_MS,
@@ -509,6 +624,10 @@
     TIMEOUT_ERROR: TIMEOUT_ERROR,
     workerUrl: workerUrl,
     run: run,
+    trace: trace,
+    normalizeTrace: normalizeTrace,
+    TRACE_MAX_EVENTS: TRACE_MAX_EVENTS,
+    TRACE_TIMEOUT_ERROR: TRACE_TIMEOUT_ERROR,
     sha256Hex: sha256Hex,
     sha256Fallback: function (str) { return sha256Fallback(utf8Bytes(String(str == null ? '' : str))); },
     attemptHash: attemptHash,

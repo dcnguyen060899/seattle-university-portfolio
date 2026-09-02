@@ -1,5 +1,5 @@
 """The tutor route (addendum A5/A2/A6): modes, selection handling, history caps, degraded answers, fake judge,
-prompt assembly, post-checks and HTTP error mapping."""
+prompt assembly, post-checks and HTTP error mapping; ADDENDUM_VIS 4: mode explain_step and the step object."""
 import copy
 import json
 
@@ -7,7 +7,7 @@ import pytest
 
 from conftest import FailingJudge, RecordingJudge, make_app, make_client_results
 from evaluation.judge import FakeJudge
-from evaluation.postcheck import postprocess
+from evaluation.postcheck import LEAK_WINDOW, _norm, leak_windows, leaks, postprocess
 from evaluation.prompts import build_submission_message
 from evaluation.registry import BY_ID, canonical_json
 from evaluation.retrieval import retrieve_cards
@@ -21,8 +21,21 @@ def _body(old_reference, **over):
     body = {"challenge_id": "fuzzySubtree", "code": old_reference, "attempt": 2, "hints_used": [1], "mode": "question",
             "question": "Why does my helper return true here?",
             "client_results": make_client_results(fz, old_reference, {"fz-06": True, "fz-15": True}), "stuck": False}
+    if over.get("mode") == "explain_step" and "step" not in over:
+        body["step"] = _step()                                       # explain_step needs a step; tests override it explicitly
     body.update(over)
     return body
+
+
+def _step(**over):
+    """A replay step as challenge_mode.js sends it for the Core challenge (ADDENDUM_VIS 3, 'Explain this step')."""
+    step = {"index": 3, "total": 27, "caption": "Call fuzzySameTree(main node 2, pattern node 2, maxDifferences = 1) at depth 1.",
+            "call": "fuzzySameTree(main node 2, pattern node 2, maxDifferences = 1)",
+            "stack": ["fuzzySubtree(main node 1, pattern node 2, maxDifferences = 1)",
+                      "fuzzySameTree(main node 2, pattern node 2, maxDifferences = 1)"],
+            "returned": "true"}
+    step.update(over)
+    return step
 
 
 def _sel(old_reference, a=13, b=14):
@@ -32,7 +45,7 @@ def _sel(old_reference, a=13, b=14):
 
 # --------------------------------------------------------------------------- fake judge: modes + selection
 
-@pytest.mark.parametrize("mode", ["question", "explain_problem", "suggest_approach", "complexity"])
+@pytest.mark.parametrize("mode", ["question", "explain_problem", "suggest_approach", "complexity", "explain_step"])
 def test_modes_with_fake_judge(fake_client, old_reference, mode):
     r = fake_client.post(URL, json=_body(old_reference, mode=mode, selection=_sel(old_reference)))
     assert r.status_code == 200, r.get_json()
@@ -78,6 +91,109 @@ def test_question_validation(fake_client, old_reference):
     assert r.status_code == 400 and r.get_json()["error"]["code"] == "empty_code"
     r = fake_client.post(URL, json=_body(old_reference, challenge_id="nope"))
     assert r.status_code == 400 and r.get_json()["error"]["code"] == "unknown_challenge"
+
+
+# --------------------------------------------------------------------------- explain_step (ADDENDUM_VIS 4)
+
+def test_explain_step_with_fake_judge(fake_client, old_reference):
+    r = fake_client.post(URL, json=_body(old_reference, mode="explain_step", selection=_sel(old_reference, 10, 18)))
+    assert r.status_code == 200, r.get_json()
+    body = r.get_json()
+    assert body["ok"] is True and body["ai"]["model"] == "fake-judge" and body["ai"]["degraded"] is False
+    assert body["answer"].startswith("Fake tutor (explain_step, hint level targeted).") and "Ln 10-18" in body["answer"]
+    assert "Step 3 of 27: Call fuzzySameTree(main node 2, pattern node 2, maxDifferences = 1) at depth 1." in body["answer"]
+    assert "Your code is inside fuzzySameTree(main node 2, pattern node 2, maxDifferences = 1)." in body["answer"]
+    assert body["socratic_question"].endswith("?") and body["hint_level"] == "targeted" and body["response"] == body["answer"]
+    # the fake judge echoes the step position for any mode that carries a step
+    body = fake_client.post(URL, json=_body(old_reference, step=_step(index=12, total=40))).get_json()
+    assert "Step 12 of 40:" in body["answer"] and "You asked: Why does my helper return true here?" in body["answer"]
+    body = fake_client.post(URL, json=_body(old_reference, mode="explain_step", step=_step(index=27, caption="", call=""))).get_json()
+    assert "Step 27 of 27." in body["answer"] and "Your code is inside" not in body["answer"]
+
+
+def test_explain_step_prompt_assembly(old_reference):
+    judge = RecordingJudge()
+    client = make_app(judge=judge).test_client()
+    step = _step(caption='Call f(<main node "2">) at depth 1.', stack=["a(<x>)", 'b("y")'], returned="Infinity")
+    r = client.post(URL, json=_body(old_reference, mode="explain_step", step=step, selection=_sel(old_reference, 10, 10),
+                                    question="ignored in this mode"))
+    assert r.status_code == 200
+    call = judge.tutor_calls[-1]
+    turn = call["messages"][-1]["content"]
+    lines = turn.split("\n")
+    assert lines[0] == '<tutor mode="explain_step" hint_level="targeted" stuck="false" selection_lines="10">'
+    assert lines[1].startswith("<selected_code>") and lines[1].endswith("</selected_code>")    # a one-line selection
+    assert lines[2] == ('<step index="3" total="27">Call f([main node \'2\']) at depth 1. | '
+                        "call: fuzzySameTree(main node 2, pattern node 2, maxDifferences = 1) | "
+                        "stack: a([x]) > b('y') | returned: Infinity</step>")
+    assert lines[3] == ("<learner_question>Explain what is happening at this step of the learner's OWN code in plain words: which "
+                        "nodes are being compared, what this call will decide and why, and how it relates to the failing test if "
+                        "there is one. Do not reveal the reference. At most 100 words, then one Socratic question.</learner_question>")
+    assert "ignored in this mode" not in turn and turn.endswith("</rules></tutor>") and turn.count("<step ") == 1
+    assert call["tutor"]["mode"] == "explain_step" and call["tutor"]["step"]["index"] == 3 and call["tutor"]["step"]["stack"] == step["stack"]
+    # a step sent with another mode is included as context; no step -> no element; optional strings default to ""
+    client.post(URL, json=_body(old_reference, step={"index": 0, "total": 1}))
+    turn = judge.tutor_calls[-1]["messages"][-1]["content"]
+    assert '<step index="0" total="1"> | call:  | stack:  | returned: </step>' in turn
+    assert "<learner_question>Why does my helper return true here?</learner_question>" in turn
+    client.post(URL, json=_body(old_reference))
+    assert "<step" not in judge.tutor_calls[-1]["messages"][-1]["content"]
+    # the shared submission prefix is unchanged by the mode (cache prefix identical to a question turn)
+    subs = [c["messages"][0] for c in judge.tutor_calls]
+    assert subs[0] == subs[-1]
+
+
+@pytest.mark.parametrize("step, detail", [
+    ("3/27", "must be an object"), ([3, 27], "must be an object"),
+    ({"index": "3", "total": 27}, "integers"), ({"index": 3, "total": 27.0}, "integers"), ({"index": True, "total": 27}, "integers"),
+    ({"index": 3}, "integers"), ({"total": 27}, "integers"),
+    ({"index": -1, "total": 27}, "0 <= index <= total"), ({"index": 28, "total": 27}, "0 <= index <= total"),
+    ({"index": 0, "total": 0}, "0 <= index <= total"), ({"index": 1, "total": 100_001}, "0 <= index <= total"),
+    ({"index": 3, "total": 27, "caption": "x" * 301}, "step.caption"), ({"index": 3, "total": 27, "call": 5}, "step.call"),
+    ({"index": 3, "total": 27, "returned": ["1"]}, "step.returned"),
+    ({"index": 3, "total": 27, "stack": "a > b"}, "step.stack"), ({"index": 3, "total": 27, "stack": ["f()"] * 13}, "step.stack"),
+    ({"index": 3, "total": 27, "stack": ["f()", "g" * 201]}, "step.stack"), ({"index": 3, "total": 27, "stack": [1]}, "step.stack"),
+])
+def test_invalid_step_400(fake_client, old_reference, step, detail):
+    for mode in ("explain_step", "question"):                       # validated whenever present, whatever the mode
+        r = fake_client.post(URL, json=_body(old_reference, mode=mode, step=step))
+        assert r.status_code == 400, (mode, r.get_json())
+        err = r.get_json()["error"]
+        assert err["code"] == "invalid_request" and err["field"] == "step" and detail in err["message"], err
+
+
+def test_step_limits_and_required(fake_client, old_reference):
+    # at the caps: accepted
+    step = _step(caption="c" * 300, call="k" * 300, returned="r" * 300, stack=["s" * 200] * 12, index=27, total=27)
+    assert fake_client.post(URL, json=_body(old_reference, mode="explain_step", step=step)).status_code == 200
+    assert fake_client.post(URL, json=_body(old_reference, mode="explain_step", step={"index": 0, "total": 1})).status_code == 200
+    r = fake_client.post(URL, json=_body(old_reference, mode="explain_step", step={"index": 1, "total": 1, "caption": None, "stack": None}))
+    assert r.status_code == 200 and "Step 1 of 1." in r.get_json()["answer"]
+    # explain_step without a step -> 400 on the step field; other modes do not need one
+    r = fake_client.post(URL, json=_body(old_reference, mode="explain_step", step=None))
+    assert r.status_code == 400 and r.get_json()["error"]["field"] == "step" and "required" in r.get_json()["error"]["message"]
+    body = _body(old_reference, mode="explain_step")
+    del body["step"]
+    assert fake_client.post(URL, json=body).status_code == 400
+    for mode in ("question", "explain_problem", "suggest_approach", "complexity"):
+        assert fake_client.post(URL, json=_body(old_reference, mode=mode, step=None)).status_code == 200, mode
+
+
+def test_explain_step_degraded(client, old_reference):
+    caption = "Call fuzzySameTree(main node 2, pattern node 2, maxDifferences = 1) at depth 1."
+    r = client.post(URL, json=_body(old_reference, mode="explain_step", selection=_sel(old_reference, 10, 18)))
+    body = r.get_json()
+    assert r.status_code == 200 and body["ok"] is True and body["ai"]["degraded"] is True and body["ai"]["reason"] == "not_configured"
+    assert body["answer"] == caption + " (AI tutor unavailable)" and body["response"] == body["answer"]
+    assert body["socratic_question"] == "" and body["redirected"] is False and body["hint_level"] == "targeted"
+    body = client.post(URL, json=_body(old_reference, mode="explain_step", step=_step(caption=""), attempt=1)).get_json()
+    assert body["answer"] == "(AI tutor unavailable)" and body["hint_level"] == "conceptual"
+    body = client.post(URL, json=_body(old_reference, mode="explain_step", step=_step(caption=" " + "c" * 298 + " "))).get_json()
+    assert body["answer"] == "c" * 298 + " (AI tutor unavailable)"                # 300-char caption at the cap, whitespace trimmed
+    # a passing learner: level extension, still just the caption
+    cr = make_client_results(BY_ID["fuzzySubtree"], old_reference)
+    body = client.post(URL, json=_body(old_reference, mode="explain_step", client_results=cr)).get_json()
+    assert body["hint_level"] == "extension" and body["answer"].endswith(" (AI tutor unavailable)")
 
 
 # --------------------------------------------------------------------------- prompt assembly (recording judge)
@@ -234,3 +350,96 @@ def test_tutor_works_for_every_challenge(fake_client):
     for cid, ch in BY_ID.items():
         r = fake_client.post(URL, json={"challenge_id": cid, "code": ch.starter_code, "mode": "suggest_approach"})
         assert r.status_code == 200 and r.get_json()["hint_level"] == "conceptual", cid
+        step = _step(caption=f"Call {ch.entry_function}(main node 1, pattern node 1) at depth 0.", call=f"{ch.entry_function}(...)")
+        r = fake_client.post(URL, json={"challenge_id": cid, "code": ch.starter_code, "mode": "explain_step", "step": step})
+        assert r.status_code == 200 and "Step 3 of 27:" in r.get_json()["answer"], cid
+
+
+# --------------------------------------------------------------------------- leak guard vs. punctuation / code (fix round 1)
+
+def _ref_lines(src):
+    return [ln.strip() for ln in src.splitlines() if ln.strip() and not ln.strip().startswith("//")]
+
+
+def _pieces(lines, limit):
+    out = []
+    for ln in lines:
+        cur = ""
+        for tok in ln.split(" "):
+            if cur and len(cur) + 1 + len(tok) >= limit:
+                out.append(cur)
+                cur = tok
+            else:
+                cur = (cur + " " + tok).strip()
+        if cur:
+            out.append(cur)
+    return out
+
+
+@pytest.mark.parametrize("variant", ["per_line", "pieces<30", "pieces<20", "backticks", "bullets"])
+def test_answer_quoting_the_reference_with_punctuation_is_declined(old_reference, variant):
+    fz = BY_ID["fuzzySubtree"]
+    lines = _ref_lines(fz.reference_solution)
+    text = {"per_line": " ".join(ln + "." for ln in lines),
+            "pieces<30": " ".join(p + "." for p in _pieces(lines, 30)),
+            "pieces<20": " ".join(p + "." for p in _pieces(lines, 20)),
+            "backticks": " ".join("`" + ln + "`." for ln in lines),
+            "bullets": "\n".join("- `" + ln + "`" for ln in lines)}[variant]
+    judge = RecordingJudge(tutor_payload={"answer": ("Sure, here it is. " + text)[:900], "hint_level": "targeted",
+                                          "socratic_question": "Does that help?", "redirected": False})
+    client = make_app(judge=judge).test_client()
+    body = client.post(URL, json=_body(old_reference)).get_json()
+    assert body["answer"].startswith("I can't hand over the solution, but here is the next step: ")
+    assert not leaks(body["answer"], leak_windows(fz, old_reference, "targeted"))
+    for ln in lines:                                                   # no reference line of window size survives
+        if len(_norm(ln)) >= LEAK_WINDOW and _norm(ln) not in _norm(fz.starter_code):
+            assert _norm(ln) not in _norm(body["answer"]), ln
+    assert body["response"] == body["answer"] and body["hint_level"] == "targeted"
+
+
+def test_answer_code_guard(old_reference):
+    """A whole function (even renamed so no leak window matches) or a fenced block the level forbids is declined; a
+    quoted header of the learner's own code and a short snippet at near_explicit are kept; nothing is guarded on PASS."""
+    fz = BY_ID["fuzzySubtree"]
+    renamed = ("function fuzzy(a, b, k = 1) {\n  if (!b) return true;\n  if (!a) return false;\n"
+               "  if (diff(a, b) <= k) return true;\n  return fuzzy(a.left, b, k) || fuzzy(a.right, b, k);\n}")
+    header = "Your `function fuzzySameTree(p, q, maxDifferences, differences = 0) {` on line 13 copies the budget into both calls."
+    two = "Two lines:\n```js\nconst left = go(p.left, q.left);\nconst right = go(p.right, q.right);\n```\nThen add them."
+    judge = RecordingJudge(tutor_payload={"answer": "Here you go:\n```js\n" + renamed + "\n```", "hint_level": "targeted",
+                                          "socratic_question": "See?", "redirected": False})
+    client = make_app(judge=judge).test_client()
+    decline = "I can't hand over the solution, but here is the next step: "
+    assert client.post(URL, json=_body(old_reference)).get_json()["answer"].startswith(decline)          # fenced, targeted
+    judge.tutor_payload["answer"] = "Write " + renamed + " and rerun."
+    assert client.post(URL, json=_body(old_reference)).get_json()["answer"].startswith(decline)          # unfenced, targeted
+    assert client.post(URL, json=_body(old_reference, attempt=3)).get_json()["answer"].startswith(decline)   # near_explicit
+    judge.tutor_payload["answer"] = header
+    body = client.post(URL, json=_body(old_reference)).get_json()
+    assert body["answer"] == header                                                                  # own header quoted
+    judge.tutor_payload["answer"] = two
+    assert client.post(URL, json=_body(old_reference)).get_json()["answer"].startswith(decline)          # any fence at targeted
+    assert client.post(URL, json=_body(old_reference, attempt=3)).get_json()["answer"] == two            # <= 3 lines at near_explicit
+    # a passing submission (extension level): the code guard is off, the leak windows still apply
+    passing = make_client_results(fz, old_reference)
+    judge.tutor_payload["answer"] = "Here you go:\n```js\n" + renamed + "\n```"
+    body = client.post(URL, json=_body(old_reference, client_results=passing)).get_json()
+    assert body["hint_level"] == "targeted" and "function fuzzy(a, b, k = 1)" in body["answer"]   # lower level kept
+    judge.tutor_payload["answer"] = "The reference does:\n```js\n" + fz.reference_solution + "\n```"
+    assert client.post(URL, json=_body(old_reference, client_results=passing)).get_json()["answer"].startswith(decline)
+
+
+def test_ladder_hint_text_is_not_a_leak_at_its_level(old_reference):
+    """The ladder's own hint 2 (unlocked at attempt 2 / targeted) may be echoed by the tutor at that level but not
+    at conceptual."""
+    mirror = BY_ID["mirrorSubtree"]
+    hint2 = next(h.text for h in mirror.hints if h.level == 2)
+    judge = RecordingJudge(tutor_payload={"answer": hint2, "hint_level": "targeted", "socratic_question": "Why?", "redirected": False})
+    client = make_app(judge=judge).test_client()
+    code = mirror.starter_code
+    cr = make_client_results(mirror, code, {t.id: "undefined" for t in mirror.tests})
+    base = {"challenge_id": "mirrorSubtree", "code": code, "hints_used": [], "mode": "question", "question": "How?",
+            "client_results": cr, "stuck": False}
+    body = client.post(URL, json=dict(base, attempt=2)).get_json()
+    assert body["answer"] == hint2 and body["hint_level"] == "targeted"
+    body = client.post(URL, json=dict(base, attempt=1)).get_json()
+    assert body["answer"].startswith("I can't hand over the solution") and body["hint_level"] == "conceptual"

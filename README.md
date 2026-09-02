@@ -74,6 +74,7 @@ A production RAG (Retrieval-Augmented Generation) system demonstrating modern AI
 - **Evidence before opinion**: the verdict and the correctness / edge-case scores are computed from the test results; Claude Sonnet 5 scores concepts, efficiency and code quality inside evidence-derived caps
 - **Structured, guarded output**: JSON-schema output, a leak guard that withholds any sentence quoting the reference solution, and a hint policy fixed by the attempt number (conceptual -> targeted -> near-explicit)
 - **Ask the tutor**: Socratic follow-up questions about the problem, an approach, complexity, or highlighted lines of the learner's own code
+- **Visualize my solution**: a step-by-step replay of the learner's own code on one small test input, captured as a deterministic execution trace in the browser sandbox; "Explain this step" hands the current step to the tutor
 - **Works without a key**: rule-based feedback, retrieved misconception cards and fallback hints when the model is unavailable
 
 ### 6. Production-Grade Architecture
@@ -316,7 +317,11 @@ seattle-university-portfolio/
 │   ├── scripts/
 │   │   ├── export_challenges.py   # Registry -> docs/data/*.json (--check in CI and in the Render build)
 │   │   └── verify_challenges.mjs  # Runs references and known-bad submissions through the real worker
-│   ├── tests/                     # pytest suite (tests/*.py) + Node tests (tests/js/*.test.mjs)
+│   ├── tests/                     # pytest suite (tests/*.py) + Node tests
+│   │   └── js/
+│   │       ├── challenges.test.mjs       # Every reference and known-bad through the real worker
+│   │       ├── worker_contract.test.mjs  # Worker message protocol
+│   │       └── trace.test.mjs            # Execution tracer, worker `trace` protocol, replay steps and captions
 │   ├── .env.example               # Every evaluation env var with its default
 │   └── dependencies/
 │       ├── requirements.txt
@@ -353,9 +358,14 @@ seattle-university-portfolio/
 │   ├── js/
 │   │   ├── chat.js                # Chatbot with RAG integration
 │   │   ├── learning_algorithm.js  # Learn / Practice modes
-│   │   ├── challenge_mode.js      # Challenge mode: results, hints, solution lock, tutor box
-│   │   ├── challenge_runner.js    # Spawns the worker, watchdogs, hashes, local card retrieval
-│   │   ├── challenge_worker.js    # Web Worker sandbox (compiles and runs learner code)
+│   │   ├── challenge_mode.js      # Challenge mode: results, hints, solution lock, tutor box, replay wiring
+│   │   ├── challenge_runner.js    # Spawns the worker, watchdogs, hashes, local card retrieval, trace requests
+│   │   ├── challenge_worker.js    # Web Worker sandbox (compiles and runs learner code; traces it on demand)
+│   │   ├── challenge_trace.js     # acorn instrumentation + tracer, loaded by the worker for a replay
+│   │   ├── challenge_viz.js       # "Visualize my solution": tree layout, replay steps, captions, playback
+│   │   ├── vendor/
+│   │   │   ├── acorn.js           # acorn 8.14.0, vendored so the sandbox never fetches a parser
+│   │   │   └── LICENSE-acorn      # MIT
 │   │   └── sidebar_port.js
 │   └── images/
 │
@@ -496,6 +506,7 @@ BROWSER (docs/)                                      SERVER (backend/src/evaluat
 challenge_mode.js loads data/challenges.json         routes.py    size cap, validation, per-IP rate limit
 challenge_runner.js -> challenge_worker.js           evidence.py  recompute pass/fail from SERVER expected values, static checks
    compile + tests (watchdog) -> client_results      retrieval.py error cards, uniform rules, Jaccard misconception cards
+   trace (acorn-instrumented) -> challenge_viz.js    (replay stays in the browser)
 POST /evaluate-challenge {code, client_results} ---> prompts.py   2 cached system blocks + volatile submission message
                                                      judge.py     claude-sonnet-5, json_schema output, typed error mapping
                                                      postcheck.py verdict/scores from evidence, caps, issue filter, leak guard, hint policy
@@ -517,9 +528,11 @@ POST /evaluate-challenge {code, client_results} ---> prompts.py   2 cached syste
 
 **Ask the tutor.** `POST /evaluate-challenge/tutor` answers short Socratic questions at any point in Challenge mode: free text, three quick prompts (explain the problem, suggest an approach, time and space complexity) and questions about a highlighted range of the learner's own code. Selecting lines in the editor shows an "Ask tutor about Ln 13-14" popover; the page sends `{start_line, end_line, text}` and the prompt tells the model to talk about those lines specifically. The request replays the byte-identical submission message (so the cache prefix is shared with the review), the last evaluation as completed assistant history and up to three previous turns; the answer passes through the same leak guard and a level clamp ("I'm stuck" raises the level by exactly one). Five questions per challenge; the budget refills when a new AI review completes or when tests run on changed code.
 
-**Degraded mode.** Without `ANTHROPIC_API_KEY` (or with `EVAL_AI_DISABLED=1`, or when the model call fails) `/evaluate-challenge` still answers HTTP 200 with the same shape: verdict and evidence scores from the tests, heuristic scores for the judge-owned dimensions (`source: "heuristic"`), one issue per failing test built from the retrieved cards, a fallback hint, `ai.degraded: true` with a fixed `ai.message`, and the judge stage marked `skipped` or `degraded` in `pipeline.trace`. The page shows a banner and keeps the local results; the tutor box shows "AI tutor not configured on this server" with disabled controls.
+**Visualize my solution.** Once a run compiles, "Visualize my solution" replays the learner's own code step by step on one small test input (at most 15 nodes; the first failing one is preselected) in the same visual language as Learn mode: both trees as SVG, the nodes the current call is comparing highlighted (solid red ring), visited nodes greyed, boolean returns marked on the main tree (green = matched, dashed red ring = rejected; a legend under the trees names the states), a "Current step" caption, the call stack, the last returned value, prev / play / next / end controls at 0.5x, 1x or 2x, a step slider and keyboard navigation. The replay is a deterministic execution trace, not model output: on a `trace` message the Web Worker lazily loads the vendored parser (acorn 8.14.0, MIT, `docs/js/vendor/acorn.js` next to its `LICENSE-acorn`), `challenge_trace.js` rewrites every function of the submission so that each call, return and throw is recorded (capped at 600 events, under the same 2 s watchdog), and the worker returns the events plus the node metadata; `challenge_viz.js` turns them into steps and templated captions ("Call countMismatches(main node 2, pattern node 2) at depth 1.", "Final answer: true. Expected false: your answer differs from the expected result."). Nothing is persisted and nothing reaches the server until the learner clicks "Explain this step", which sends the current step (`mode: "explain_step"` with its index, caption, call, stack and returned value, plus the enclosing function as the selection) to `/evaluate-challenge/tutor` and spends one of the five tutor questions; the answer appears under the step caption as well as in the tutor thread, and the button only appears when the tutor is available.
 
-**Fake judge for tests.** `EVAL_FAKE_JUDGE=1` (test only, never set in production) swaps the SDK judge for a `FakeJudge` that returns a deterministic, schema-valid evaluation built from the evidence (all tests pass -> `PASS` with an extension hint; failures -> `PARTIAL` with one issue citing the first failing test and the top card) and a canned tutor answer that echoes the selected line range. `/evaluate-challenge/health` then reports `"model": "fake-judge"`. It lets Playwright drive the whole AI path (pipeline replay, rubric bars, guardrails panel, tutor thread) without a key.
+**Degraded mode.** Without `ANTHROPIC_API_KEY` (or with `EVAL_AI_DISABLED=1`, or when the model call fails) `/evaluate-challenge` still answers HTTP 200 with the same shape: verdict and evidence scores from the tests, heuristic scores for the judge-owned dimensions (`source: "heuristic"`), one issue per retrieved misconception card citing every failing test it explains (failing tests without a card get their own issue), a fallback hint, `ai.degraded: true` with a fixed `ai.message`, and the judge stage marked `skipped` or `degraded` in `pipeline.trace`. The page shows a banner and keeps the local results; the tutor box shows "AI tutor not configured on this server" with disabled controls.
+
+**Fake judge for tests.** `EVAL_FAKE_JUDGE=1` (test only, never set in production) swaps the SDK judge for a `FakeJudge` that returns a deterministic, schema-valid evaluation built from the evidence (all tests pass -> `PASS` with an extension hint; failures -> `PARTIAL` with one issue citing the first failing test and the top card) and a canned tutor answer that echoes the selected line range (and the step index for `explain_step`). `/evaluate-challenge/health` then reports `"model": "fake-judge"`. It lets Playwright drive the whole AI path (pipeline replay, rubric bars, guardrails panel, tutor thread) without a key.
 
 **Legacy compatibility.** The old body `{"code": "...", "challenge_type": "fuzzySubtree"}` still works (no browser results -> verdict `UNVERIFIED`), and every response carries the old plain-text `response` field next to the structured fields.
 
@@ -606,8 +619,8 @@ No network and no key are needed; `conftest.py` forces `ANTHROPIC_API_KEY` empty
 
 ```bash
 # from the repository root
-python -m pytest backend/tests -q                   # 179 tests: registry, evidence, retrieval, prompts, judge, post-checks, routes, tutor
-node --test 'backend/tests/js/*.test.mjs'           # 75 tests: worker contract + every reference/known-bad through the real worker
+python -m pytest backend/tests -q                   # 206 tests: registry, evidence, retrieval, prompts, judge, post-checks, routes, tutor
+node --test 'backend/tests/js/*.test.mjs'           # 118 tests: worker contract, execution tracer + replay helpers, every reference/known-bad through the real worker
 python backend/scripts/export_challenges.py --check # docs/data/*.json is in sync with the registry (exit 1 when stale)
 node backend/scripts/verify_challenges.mjs          # references pass, every known-bad fails exactly its expected set, tests < 100 ms
 (cd backend/src && python -c "import app")          # the app still boots without a key
@@ -619,7 +632,7 @@ To drive the page end to end without a key (Playwright or by hand):
 
 ```bash
 cd backend/src && ANTHROPIC_API_KEY= EVAL_FAKE_JUDGE=1 EVAL_RATE_PER_MIN=600 flask --app app run --port 5055
-# http://localhost:5055/learning_algorithm.html -> Challenge mode -> Get AI feedback / Ask the tutor
+# http://localhost:5055/learning_algorithm.html -> Challenge mode -> Get AI feedback / Ask the tutor / Visualize my solution
 ```
 
 ### Adding a challenge
@@ -656,7 +669,7 @@ Then redeploy and open `https://<service>.onrender.com/evaluate-challenge/health
 | `/chat` | POST | Portfolio chatbot conversation |
 | `/evaluate-challenge/health` | GET | Capability check and Render warm-up: `ai_configured`, `ai_disabled`, `model`, `effort`, `registry_hash`, per-challenge `tests_hash`, `followup`. No model call, not rate limited |
 | `/evaluate-challenge` | POST | Evaluate a submission with browser test evidence. Always 200 once the body validates (degraded mode included); the legacy `{code, challenge_type}` body is still accepted |
-| `/evaluate-challenge/tutor` | POST | Socratic follow-up: `mode` = `question`, `explain_problem`, `suggest_approach` or `complexity`, optional `selection` (highlighted lines), `history` (last 3 turns), `stuck`. Judge failures map to 429 / 502 / 503 / 504 |
+| `/evaluate-challenge/tutor` | POST | Socratic follow-up: `mode` = `question`, `explain_problem`, `suggest_approach`, `complexity` or `explain_step` (requires `step`: `index`, `total`, `caption`, `call`, `stack`, `returned`), optional `selection` (highlighted lines), `history` (last 3 turns), `stuck`. Judge failures map to 429 / 502 / 503 / 504 |
 | `/classify-image` | POST | Image classification proxy |
 | `/api-check` | GET | Chatbot connectivity check |
 

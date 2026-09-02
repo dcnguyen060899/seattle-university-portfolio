@@ -299,6 +299,7 @@
                         <span></span>
                         <div class="challenge-actions-right">
                             <button type="button" id="run-tests-btn" class="action-btn" title="Runs in your browser. No API call. (Ctrl+Enter)">Run tests</button>
+                            <button type="button" id="visualize-btn" class="action-btn" disabled title="Replays your code step by step on one test input (runs in your browser)">Visualize my solution</button>
                             <button type="button" id="submit-challenge-btn" class="action-btn primary" title="Runs the tests, then sends your code and results to the AI tutor. (Ctrl+Shift+Enter)">Get AI feedback</button>
                         </div>
                     </div>
@@ -351,6 +352,89 @@
                     </form>
                 </aside>
             </div>
+
+            <!-- Visualizer: replays the learner's own code step by step on one small test input.
+                 Hidden until "Visualize my solution"; trees are drawn into the SVGs by js/challenge_viz.js
+                 (which sets each viewBox) and the panel is driven by challenge_mode.js. -->
+            <section id="viz-panel" class="viz-panel hidden" aria-labelledby="viz-heading" tabindex="-1">
+                <div class="viz-header">
+                    <h3 id="viz-heading">Your solution, step by step</h3>
+                    <div class="viz-input">
+                        <label for="viz-input-select">Input</label>
+                        <select id="viz-input-select"></select>
+                        <small class="viz-input-note">Large inputs are not listed; the replay is meant for small examples.</small>
+                    </div>
+                    <button type="button" id="viz-close" class="template-btn">Close</button>
+                </div>
+
+                <div class="viz-trees trees-container">
+                    <div class="tree">
+                        <h3>Main Tree</h3>
+                        <svg id="viz-main-svg" viewBox="0 0 200 120" role="img" aria-label="Main tree"></svg>
+                    </div>
+                    <div class="tree">
+                        <h3>Pattern</h3>
+                        <svg id="viz-sub-svg" viewBox="0 0 200 120" role="img" aria-label="Pattern tree"></svg>
+                    </div>
+                </div>
+                <!-- Legend: the swatches carry the same node classes as the trees, so they always match -->
+                <ul class="viz-legend" aria-label="Node colours">
+                    <li><svg class="viz-legend-swatch" viewBox="0 0 22 22" aria-hidden="true" focusable="false"><circle class="node current" cx="11" cy="11" r="8"></circle></svg>current call</li>
+                    <li><svg class="viz-legend-swatch" viewBox="0 0 22 22" aria-hidden="true" focusable="false"><circle class="node visited" cx="11" cy="11" r="8"></circle></svg>visited</li>
+                    <li><svg class="viz-legend-swatch" viewBox="0 0 22 22" aria-hidden="true" focusable="false"><circle class="node returned-true" cx="11" cy="11" r="8"></circle></svg>returned true (matched)</li>
+                    <li><svg class="viz-legend-swatch" viewBox="0 0 22 22" aria-hidden="true" focusable="false"><circle class="node returned-false" cx="11" cy="11" r="8"></circle></svg>returned false (rejected)</li>
+                </ul>
+
+                <div class="viz-explanation explanation-box">
+                    <div class="viz-explanation-header">
+                        <h3>Current step</h3>
+                        <span id="viz-step-counter" class="viz-step-counter">Step 0 / 0</span>
+                    </div>
+                    <p id="viz-caption" aria-live="polite"></p>
+                    <p id="viz-call" class="viz-call"></p>
+                    <!-- Shown by challenge_mode.js only when the AI tutor is available; counts against the tutor budget -->
+                    <button type="button" id="viz-explain-btn" class="template-btn hidden" title="Asks the AI tutor about this step (uses one tutor question)">Explain this step</button>
+                    <!-- The tutor's answer to "Explain this step", mirrored here by challenge_mode.js (Ask the tutor keeps the thread copy) -->
+                    <div id="viz-explain-answer" class="viz-explain-answer hidden" tabindex="-1">
+                        <p id="viz-explain-answer-label" class="viz-explain-answer-label"></p>
+                        <p id="viz-explain-answer-text"></p>
+                        <p id="viz-explain-answer-question" class="hint-question"></p>
+                        <p id="viz-explain-answer-foot" class="viz-explain-answer-foot"></p>
+                    </div>
+                </div>
+
+                <div class="viz-state">
+                    <div class="viz-stack">
+                        <h4>Call stack</h4>
+                        <ol id="viz-stack"></ol>
+                    </div>
+                    <div class="viz-values">
+                        <h4>Values</h4>
+                        <dl id="viz-values"></dl>
+                    </div>
+                </div>
+
+                <div class="controls viz-controls">
+                    <div class="main-controls">
+                        <button type="button" id="viz-reset" class="control-btn"><i class="fas fa-step-backward" aria-hidden="true"></i><span class="visually-hidden">First step</span></button>
+                        <button type="button" id="viz-prev" class="control-btn"><i class="fas fa-chevron-left" aria-hidden="true"></i><span class="visually-hidden">Previous step</span></button>
+                        <button type="button" id="viz-play" class="control-btn play-btn"><i class="fas fa-play" aria-hidden="true"></i><span class="visually-hidden">Play</span></button>
+                        <button type="button" id="viz-next" class="control-btn"><i class="fas fa-chevron-right" aria-hidden="true"></i><span class="visually-hidden">Next step</span></button>
+                        <button type="button" id="viz-end" class="control-btn"><i class="fas fa-step-forward" aria-hidden="true"></i><span class="visually-hidden">Last step</span></button>
+                    </div>
+                    <div class="viz-speed" role="group" aria-label="Playback speed">
+                        <button type="button" class="template-btn" data-speed="0.5" aria-pressed="false">0.5x</button>
+                        <button type="button" class="template-btn active" data-speed="1" aria-pressed="true">1x</button>
+                        <button type="button" class="template-btn" data-speed="2" aria-pressed="false">2x</button>
+                    </div>
+                </div>
+
+                <input type="range" id="viz-slider" class="viz-slider" min="0" max="0" step="1" value="0" aria-label="Step">
+                <div class="progress-container">
+                    <div id="viz-progress-bar" class="progress-bar"></div>
+                </div>
+                <p id="viz-note" class="viz-note"></p>
+            </section>
 
             <div id="eval-announcer" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
 
@@ -456,5 +540,6 @@
     <script src="js/learning_algorithm.js"></script>
     <script src="js/challenge_runner.js"></script>
     <script src="js/challenge_mode.js"></script>
+    <script src="js/challenge_viz.js"></script>
 </body>
 </html>

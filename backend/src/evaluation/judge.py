@@ -261,6 +261,12 @@ class FakeJudge:
             rng = f"Ln {a}-{b}" if a != b else f"Ln {a}"
             snippet = (sel.get("text") or "").strip().splitlines()[0][:80] if (sel.get("text") or "").strip() else ""
             parts.append(f"You highlighted {rng}" + (f": `{snippet}`." if snippet else "."))
+        step = tutor.get("step")
+        if step:
+            caption = (step.get("caption") or "").strip()
+            parts.append(f"Step {step['index']} of {step['total']}" + (f": {caption[:160]}" if caption else "."))
+            if mode == "explain_step" and (step.get("call") or "").strip():
+                parts.append(f"Your code is inside {(step.get('call') or '').strip()[:120]}.")
         if mode == "question":
             parts.append(f"You asked: {tutor.get('question', '')[:160]}")
         if mode == "explain_problem":

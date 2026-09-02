@@ -1,10 +1,15 @@
-"""Pipeline orchestration, trace, legacy text, telemetry (spec 7.8-7.10 / 10.1 test_pipeline.py)."""
+"""Pipeline orchestration, trace, legacy text, telemetry (spec 7.8-7.10 / 10.1 test_pipeline.py); degraded issue
+grouping per misconception card (one issue per card, one evidence chip per failing test)."""
 import logging
 import re
 
 from conftest import FailingJudge, RecordingJudge, make_client_results
+from evaluation.degraded import group_test_issues
+from evaluation.evidence import build_evidence
 from evaluation.judge import FakeJudge
 from evaluation.pipeline import STAGES, TRACE_STATUSES, EvalRequest, render_legacy_text, run_evaluation
+from evaluation.prompts import fmt_test_input
+from evaluation.retrieval import retrieve_cards
 
 HEADERS = ["Score:", "Correctness:", "Key Concepts:", "Edge Cases:", "Code Quality:", "Suggestions for Improvement:"]
 
@@ -131,6 +136,66 @@ def test_telemetry_line_has_no_code_or_model_text(fuzzy, old_reference, caplog):
                 "retrieval=split_budget", "judge=ok", "model=fake-judge", "ip=203.0.113.9", "cache_read=0", "hint_replaced=-"):
         assert key in line
     assert "fuzzySameTree" not in line and r["evaluation"]["summary"] not in line
+
+
+# --------------------------------------------------------------------------- degraded issues grouped per card
+
+def _or_bug(count):
+    kb = next(k for k in count.known_bad if k.id == "or_instead_of_sum")
+    assert kb.expected_failing_ids == ("cs-06", "cs-07", "cs-08", "cs-11")
+    return kb.code, {tid: 1 for tid in kb.expected_failing_ids}          # `left || right` caps every count at 1
+
+
+def test_degraded_issues_group_tests_of_one_card(count):
+    code, actuals = _or_bug(count)
+    card = count.card_by_id["or_instead_of_sum"]
+    for judge in (None, FailingJudge("timeout")):
+        r = run_evaluation(count, _req(count, code, actuals), judge)
+        assert r["verdict"] == "PARTIAL" and r["retrieval"][0]["card_id"] == "or_instead_of_sum"
+        issues = r["evaluation"]["issues"]
+        assert len(issues) == 1, [i["title"] for i in issues]
+        assert issues[0] == {"title": "OR instead of sum", "category": "correctness", "severity": "high",
+                             "explanation": f"{card.symptom} {card.why}",
+                             "evidence": [{"kind": "test", "ref": t} for t in ("cs-06", "cs-07", "cs-08", "cs-11")]}
+        # the legacy text still leads Key Concepts with that explanation, once (card.why also appears in the targeted hint)
+        text = r["response"]
+        assert text.count(f"{card.symptom} {card.why}") == 1 and f"Key Concepts: {card.symptom} {card.why} {card.question}" in text
+        assert "Tests: 8/12 passed; first failure cs-06: expected 2, got 1." in text
+
+
+def test_degraded_issues_keep_uncarded_tests_and_cap(fuzzy, old_reference):
+    # fz-01 matches no retrieved card -> its own "Wrong result" issue; fz-06 and fz-15 share the split_budget card
+    r = run_evaluation(fuzzy, _req(fuzzy, old_reference, {"fz-01": False, "fz-06": True, "fz-15": True}), None)
+    issues = r["evaluation"]["issues"]
+    assert [i["title"] for i in issues] == ["Wrong result on fz-01", "The budget is copied, not shared"]
+    assert issues[0]["severity"] == "high" and issues[0]["category"] == "edge_case"
+    assert issues[0]["explanation"] == f"Expected true but your function returned false for input {fmt_test_input(fuzzy, fuzzy.test_by_id['fz-01'])}."
+    assert "root = [1,2], subRoot = []" in issues[0]["explanation"]
+    assert issues[0]["evidence"] == [{"kind": "test", "ref": "fz-01"}]
+    assert issues[1]["severity"] == "medium" and issues[1]["category"] == "correctness"
+    assert issues[1]["evidence"] == [{"kind": "test", "ref": "fz-06"}, {"kind": "test", "ref": "fz-15"}]
+    # no cards: one issue per failing test in catalog order, capped at 4
+    failing = ["fz-01", "fz-02", "fz-03", "fz-04", "fz-05", "fz-06"]
+    ev = build_evidence(fuzzy, old_reference, make_client_results(fuzzy, old_reference, {t: "undefined" for t in failing}))
+    issues = group_test_issues(fuzzy, ev, [])
+    assert [i["title"] for i in issues] == [f"Wrong result on {t}" for t in failing[:4]]
+    assert all(len(i["evidence"]) == 1 for i in issues) and [i["severity"] for i in issues] == ["high", "medium", "medium", "medium"]
+    assert "returned undefined for input" in issues[0]["explanation"]
+    # a card group keeps every chip even when its later tests fall beyond the 4-issue cap
+    card_entry = {"card": fuzzy.card_by_id["split_budget"], "card_id": "split_budget", "matched_by": ["fz-04", "fz-15"]}
+    failing = ["fz-01", "fz-02", "fz-03", "fz-04", "fz-05", "fz-06", "fz-15"]
+    ev = build_evidence(fuzzy, old_reference, make_client_results(fuzzy, old_reference, {t: "undefined" for t in failing}))
+    issues = group_test_issues(fuzzy, ev, [card_entry])
+    assert [i["title"] for i in issues] == ["Wrong result on fz-01", "Wrong result on fz-02", "Wrong result on fz-03",
+                                            "The budget is copied, not shared"]
+    assert issues[3]["evidence"] == [{"kind": "test", "ref": "fz-04"}, {"kind": "test", "ref": "fz-15"}]
+    assert issues[3]["category"] == "correctness"
+    # a group made only of edge tests is an edge_case issue; errors and timeouts group like failures
+    ev = build_evidence(fuzzy, old_reference, make_client_results(fuzzy, old_reference, {"fz-01": ("error", "boom"), "fz-02": "timeout"}))
+    cards = retrieve_cards(fuzzy, ev)
+    entry = {"card": fuzzy.card_by_id["null_dereference"], "card_id": "null_dereference", "matched_by": ["fz-01", "fz-02"]}
+    issues = group_test_issues(fuzzy, ev, [entry] + cards)
+    assert len(issues) == 1 and issues[0]["category"] == "edge_case" and [e["ref"] for e in issues[0]["evidence"]] == ["fz-01", "fz-02"]
 
 
 def test_all_challenges_run_degraded(count, mirror):
