@@ -141,9 +141,9 @@
     linear-gradient(to bottom, transparent 0, transparent 100%),
     linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--ground) 82%, transparent) 0,
-      color-mix(in srgb, var(--ground) 82%, transparent) 72%,
-      color-mix(in srgb, var(--ground) 70%, transparent) 100%
+      color-mix(in srgb, var(--ground) 55%, transparent) 0,
+      color-mix(in srgb, var(--ground) 55%, transparent) 72%,
+      color-mix(in srgb, var(--ground) 43%, transparent) 100%
     );
 
   /*
@@ -345,6 +345,35 @@
 .nav[data-nav='over'] .sep,
 .nav[data-nav='over'] .link {
   color: var(--fg);
+}
+
+/*
+  ── THE MARK JOINS THEM, AND THE VEIL GETS 26 POINTS BACK ────────────────
+
+  The note above THE COLLAR THAT IS NOT HERE ends: "If the mark ever resolves
+  --fg here, re-run the bisect before reaching for a collar again — the plateau
+  moves first, and it moves further." This is that, and the prediction held
+  exactly. Bisected against scripts/check-nav-contrast.mjs, same file otherwise:
+
+      plateau     mark --fg-muted     mark --fg
+        82%           pass              pass
+        80%           pass              pass      <- the old floor
+        78%           FAIL              pass
+        70%           FAIL              pass
+        62%           FAIL              pass
+        54%           FAIL              pass
+
+  The links, the wordmark and the separator beside it already resolve --fg at
+  rest; only the affiliation was still muted, and one muted 10.5px run was
+  holding the whole bar 26 points darker than anything else in it required.
+
+  It is also the better typography. Muted grey over a photograph is hard to
+  read before it is a contrast number, which is why every other element here
+  was already full strength. When the bar sticks to paper --mark-fg goes away
+  and the affiliation is secondary again, which is correct on a flat ground.
+*/
+.nav[data-nav='over'] {
+  --mark-fg: var(--fg);
 }
 
 /*

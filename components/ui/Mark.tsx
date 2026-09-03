@@ -239,7 +239,22 @@ export function Mark({
         style={{ height, lineHeight: 1 }}
         className={cx(
           'inline-flex items-center whitespace-nowrap font-mono text-micro uppercase',
-          'text-[color:var(--fg-muted)]',
+          /*
+            THE ROLE IS A VARIABLE, NOT A LITERAL, and --fg-muted is only its
+            DEFAULT. The affiliation is secondary to the name wherever there is
+            a flat ground to be secondary on, which is every paper surface.
+
+            Over a photograph it is neither secondary nor legible: muted grey on
+            a picture is poor typography before it is a contrast problem, and it
+            was also the single element holding the nav's veil at an 80% floor —
+            the links beside it already resolve --fg, so --fg-muted here was
+            forcing the bar 26 points darker than anything else in it needed.
+            nav.module.css sets --mark-fg under [data-nav='over'] and lets it
+            fall back here when the bar sticks to paper.
+
+            A role, never a hue: check-ground-tokens.mjs still holds.
+          */
+          'text-[color:var(--mark-fg,var(--fg-muted))]',
           className
         )}
       >

@@ -2148,11 +2148,58 @@ async function main() {
     const src = readFileSync(MARK_TSX, 'utf8');
     /* The text form is the branch above the raster return; read the whole
        component and keep every role token it mentions on a text node, which is
-       the conservative superset. */
-    for (const m of src.matchAll(/text-\[color:var\((--[a-z0-9-]+)\)\]/g)) {
-      if (m[1] in M.ROLE_THRESHOLDS) markRoles.push(m[1]);
+       the conservative superset.
+
+       THE CLASS MAY BE A FALLBACK CHAIN, NOT A BARE ROLE. <Mark> writes
+       `var(--mark-fg,var(--fg-muted))`: muted is only the DEFAULT, and a
+       consumer that has a reason to override it sets --mark-fg. The old
+       pattern here required a closing paren immediately after the token, so a
+       chain matched NOTHING and fell through to the hard-coded '--fg-muted'
+       below — the gate then measured a colour the bar does not paint and
+       reported a floor 26 points too high. Capture every var() token in the
+       declaration, in source order, which is fallback order. */
+    for (const m of src.matchAll(/text-\[color:([^\]]+)\]/g)) {
+      for (const v of m[1].matchAll(/var\(\s*(--[a-z0-9-]+)/g)) markRoles.push(v[1]);
     }
   }
+
+  /*
+    RESOLVE THE CHAIN AGAINST THE STYLESHEET THAT OVERRIDES IT.
+
+    `markRoles` is consumed in the REST pass only (the one place it is read
+    resolves every other box with state 'rest'). At rest the bar is over the
+    photograph, and nav.module.css sets --mark-fg there. So: walk the chain in
+    fallback order and stop at the first token this stylesheet actually defines
+    for that state; only if none is defined does the trailing default stand.
+
+    Deliberately narrow. It resolves ONE level, it only accepts a value that is
+    itself a known role, and anything it cannot resolve leaves the conservative
+    default in place — a gate that guesses generously about its own subject is
+    worse than one that is merely strict.
+  */
+  const navSrc = existsSync(NAV_CSS) ? readFileSync(NAV_CSS, 'utf8') : '';
+  /* EVERY rest-state block, not the first one. This selector appears several
+     times in the stylesheet — focus rings, foregrounds, the veil — and the
+     custom property may be declared in any of them. Matching only the first
+     silently resolved nothing and left the strict default standing, which
+     looks identical to "correctly strict" from the outside. */
+  const restBodies = [
+    ...navSrc
+      .replace(/\/\*[\s\S]*?\*\//g, ' ')
+      .matchAll(/\.nav\[data-nav='over'\][^{]*\{([^}]*)\}/g),
+  ].map((m) => m[1]);
+  const resolved = [];
+  for (const tok of markRoles) {
+    if (tok in M.ROLE_THRESHOLDS) { resolved.push(tok); break; }
+    let hit = null;
+    for (const body of restBodies) {
+      const set = new RegExp(`${tok}\\s*:\\s*var\\(\\s*(--[a-z0-9-]+)`).exec(body);
+      if (set && set[1] in M.ROLE_THRESHOLDS) { hit = set[1]; break; }
+    }
+    if (hit) { resolved.push(hit); break; }
+  }
+  markRoles.length = 0;
+  markRoles.push(...resolved);
   if (markRoles.length === 0) markRoles.push('--fg-muted');
 
   const mkInput = (overrides = {}) => ({
