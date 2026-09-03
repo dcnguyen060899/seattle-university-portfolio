@@ -1,175 +1,66 @@
-from flask import Flask, request, jsonify, send_from_directory
-from evaluation import init_evaluation
-from dotenv import load_dotenv
-import os
-from chatservice import ChatService
-import re
-import base64
-import requests as http_requests
+"""Local-development Flask app: the /evaluate-challenge blueprint, and nothing else.
 
-import time
+This module is what you run with `npm run dev:py` and what `backend/tests/` boots.
+On Vercel the entry point is `api/index.py`, which builds an equivalent app; the
+two are kept deliberately identical in surface so that "works locally" means
+something.
 
-load_dotenv()
-app = Flask(__name__, static_folder='../../docs', static_url_path='/')
-init_evaluation(app)  # /evaluate-challenge routes + the single CORS() configuration (evaluation/__init__.py)
+WHAT WAS REMOVED, AND WHY (Addendum B, ruling R-3)
+--------------------------------------------------
+`GET /`               served ../../docs/index_portfolio.html. That directory moved
+                      to public/docs, that page is deleted, and Next.js owns "/".
+`POST /chat`          RETIRED, not ported. It routed over a ~1,400-line `base_qa`
+                      dict and a LangChain ReAct agent. Its only remaining caller
+                      was the chatbot widget in public/docs/index.html, whose
+                      markup and <script src="js/chat.js"> are now gone and whose
+                      js/chat.js is deleted. Retiring it removes the entire
+                      cross-origin/preflight problem instead of managing it.
+                      It also removes a corpus that was factually stale: `base_qa`
+                      advertised a 2026 internship season (availability is Summer
+                      2027 — Addendum A.4), a MOSAIC user count and an accuracy
+                      figure that are both retracted third-party statistics
+                      (Addendum C.2), and a percentage grade where the résumé says
+                      GPA 4.0. None of those strings is repeated here; see
+                      data/corpus/retractions.json.
+`GET /api-check`      called the model on every unauthenticated GET, outside the
+                      rate limiter. `grep -rn api-check public/docs` finds no
+                      caller. An unmetered spend path with no user.
+`POST /classify-image` a proxy to dnguyen44-garbage-classification.hf.space.
+                      Verified 2026-09-02: nothing under public/docs calls it.
+                      public/docs/index_image_classification.html embeds that
+                      Space directly in an <iframe>, so the proxy had no user
+                      either. Removing it drops `requests` from the dependency
+                      chain.
 
-api_key = os.getenv("ANTHROPIC_API_KEY")
-chat_service = ChatService(api_key=api_key)
+static_folder is None, not '../../docs': that path no longer exists (the legacy
+site is public/docs now) and Next.js serves every static asset. Leaving Flask's
+static handler on would publish the same bytes at a second URL space that no
+route table knows about.
+"""
 
-# put questions and answers here
-# put questions and answers here
-base_qa = {
-    # UC Berkeley Capstone Project Q&A (existing)
-    "What was the main goal of your project?": "The main goal of the project was to identify key factors affecting the duration of hospital stays during the COVID-19 pandemic. This involved improving patient care, optimizing resource allocation, and developing targeted strategies to reduce unnecessary extended hospitalizations.",
-    
-    "How did you analyze the data?": "We performed a comprehensive exploratory data analysis (EDA) that included numerical and categorical feature distributions, group-wise statistics, and heatmaps. We also used machine learning models like Gradient Boosting, Random Forest, CatBoost, XGBoost, and Logistic Regression to predict patient length of stay and identify the most impactful features.",
-    
-    "What are the key factors that influence the length of hospital stays?": "The key factors influencing the length of hospital stays include the number of visitors with the patient, the ward type, the admission deposit, the bed grade, the availability of extra rooms in the hospital, the type of admission (e.g., emergency, trauma), the severity of illness, and specific hospital and city codes.",
-    
-    "What were the main insights from the cluster analysis?": "The cluster analysis revealed clear differentiation in hospital quality and patient outcomes across clusters. For example, Cluster 1 indicated premium hospitals with better facilities and higher costs, while Cluster 2 suggested budget hospitals serving lower-income areas. Visitor numbers, resource availability, and patient demographics varied significantly across clusters.",
-    
-    "What were the main recommendations based on the analysis?": "Key recommendations include improving resource allocation in high-demand wards, enhancing trauma and emergency care in high-demand regions, implementing specialized care for medium-stay patients, and revising financial policies around admission deposits. Additionally, enhanced follow-up care for high-risk patients could reduce readmissions and improve overall patient outcomes.",
-    
-    "Which machine learning model performed the best in predicting patient length of stay?": "The deep learning model with LSTM layers outperformed traditional machine learning models, achieving an overall accuracy of 80% and the highest potential savings in cost analysis. It was particularly effective in reducing false positives and false negatives, leading to significant cost savings.",
-    
-    "How did the length of stay correlate with the readmission rate?": "There was a general trend that higher readmission counts were associated with longer lengths of stay. This pattern was particularly evident in trauma cases and patients with severe illnesses, indicating that these patients require more intensive care and are more likely to be readmitted.",
-    
-    "What were the business implications of your findings?": "The findings suggest that implementing the deep learning model could lead to substantial cost savings of approximately $30 million by minimizing misclassification costs. Improved resource allocation, targeted interventions, and enhanced patient care strategies could also optimize hospital operations and improve patient outcomes.",
-    
-    "How can hospitals apply the insights from this project?": "Hospitals can use these insights to optimize resource allocation, reduce the length of patient stays, and lower readmission rates. By implementing the recommended strategies, hospitals can improve operational efficiency, enhance patient care quality, and achieve significant cost savings.",
-    
-    "What were the main challenges you faced during this project?": "The main challenges included dealing with imbalanced data, ensuring model generalization across different hospital types and regions, and accurately predicting outcomes for less common cases. Hyperparameter tuning and feature engineering were also critical to improving model performance.",
-    
-    # Recruiter-Focused Q&A (NEW)
-    "What type of internship roles are you looking for?": "I'm seeking Summer 2026 internships in Data Science, Machine Learning Engineering, or Analytics/Strategy roles. I'm particularly interested in positions that involve production ML systems, large-scale data analysis, or strategic insights using Python and SQL.",
-    
-    "What are your key technical skills?": "I'm proficient in Python and SQL, with strong experience in PyTorch, TensorFlow, scikit-learn, pandas, and NumPy. I've built production ML systems, analyzed datasets with 1.88M+ records, and developed interactive dashboards using Matplotlib, Seaborn, and Plotly. I also have experience with Git/GitHub, Neo4j graph databases, and statistical analysis including A/B testing and experimental design.",
-    
-    "Can you describe your production ML experience?": "I built an AI chatbot serving 660K+ users for MOSAIC immigrant services, implementing Neo4j graph database architecture and achieving 90% accuracy. The system required debugging critical production issues, cross-functional collaboration with 4 engineers, and managing the full development lifecycle from design to deployment. This project was shortlisted Top 4 for SFU CS Diversity Award.",
-    
-    "What large-scale data analysis have you done?": "I analyzed 1.88 million flight measurements using SQL and Python to optimize operational efficiency. Through systematic ANOVA and variance decomposition, I discovered that engine performance accounted for 64% of efficiency variance. I built interactive dashboards to communicate findings and made strategic resource allocation recommendations that challenged conventional assumptions.",
-    
-    "What's your experience with experimental design?": "In my garbage classification project, I systematically tested 4 different approaches to class imbalance, conducting rigorous A/B testing across multiple performance dimensions. I discovered that conservative augmentation parameters outperformed aggressive approaches by 0.5% while reducing training time by 10%. This demonstrates my ability to design controlled experiments and use data to challenge assumptions.",
-    
-    "Do you have analytics or business strategy experience?": "Yes, through multiple projects I've demonstrated strategic thinking. In the UC Berkeley healthcare capstone, I projected $30.4M annual savings through predictive analytics. In marketing optimization, I identified optimal customer contact windows (6-8 minutes) to maximize conversion. I excel at translating complex analysis into clear business recommendations for cross-functional stakeholders.",
-    
-    "What machine learning frameworks do you use?": "I'm experienced with PyTorch, TensorFlow, scikit-learn, FastAI, and XGBoost. I've used PyTorch to build CNN architectures (ResNet34, ResNet50) for image classification, achieving 94% accuracy with transfer learning. I've also worked with LlamaIndex and Langchain for RAG architectures in medical documentation automation.",
-    
-    "Can you work with SQL and databases?": "Absolutely. I use SQL extensively for data extraction and analysis. I've processed datasets with 1.88M+ measurements, designed efficient queries for performance optimization, and worked with Neo4j graph databases to model complex entity relationships. I understand both traditional SQL databases and specialized data systems.",
-    
-    "What's your experience with dashboards and visualization?": "I've built interactive dashboards using Matplotlib, Seaborn, and Plotly to visualize operational efficiency trends and enable stakeholders to understand key metrics at a glance. I have exposure to Tableau and focus on creating visualizations that translate complex data into clear, actionable insights for both technical and business audiences.",
-    
-    "Do you have experience working cross-functionally?": "Yes, in my AI Engineer role at Blueprint, I collaborated with 4 engineers, a product lead, and domain experts to deliver a system serving 660K+ users. I've presented findings to diverse stakeholders, translated between technical and business contexts, and demonstrated strong project management in fast-paced environments.",
-    
-    "When are you available for internships?": "I'm available for Summer 2026 internships (May-August), and I can commit to 12-week full-time programs. I'm based in Seattle but open to hybrid or relocation opportunities for strong roles. I'm currently a first-year MS Data Science student at Seattle University, graduating in June 2027.",
-    
-    "What makes you stand out for data science roles?": "My economics background gives me strong causal inference skills beyond typical data science candidates. I maintain 98%+ grades demonstrating learning agility, have production experience serving 660K+ users, and excel at translating analysis into business strategy. I combine statistical rigor with practical implementation and clear communication.",
-    
-    "What makes you stand out for ML engineering roles?": "I've built production ML systems from research to deployment, not just academic projects. My systematic experimentation approach (testing 4 strategies, rigorous evaluation) shows strong engineering mindset. I have experience with full ML lifecycle, PyTorch/TensorFlow proficiency, and understand both model development and production deployment challenges.",
-    
-    "What makes you stand out for analytics roles?": "I bring a resource optimization mindset from my economics background. I've analyzed 1.88M+ measurements for operational insights, created strategic recommendations that challenged assumptions, and excel at presenting complex data clearly. My cross-functional experience shows I can work with diverse teams and translate data into business value.",
-    
-    "Tell me about your computational biology experience": "I built a RAG pipeline for medical documentation using LlamaIndex, automating physician workflows with 50% efficiency improvement. I also competed in Kaggle medical image classification (12th place) using PyTorch. My Neo4j experience with graph databases translates directly to biological network analysis. I understand how to bridge technical and domain-specific contexts.",
-    
-    "What are your strongest programming languages?": "Python and SQL are my strongest languages - I use them daily for data analysis, ML development, and database queries. I'm also proficient in R for statistical analysis and have exposure to C++ through PyTorch. I follow clean code practices, use Git/GitHub for version control, and write well-documented, maintainable code.",
-    
-    "Can you give an example of business impact from your work?": "In the UC Berkeley healthcare capstone, my predictive model projected $30.4M annual cost savings by reducing misclassification costs. In the garbage classification project, I positioned the model for recycling facility deployment with 60% labor cost reduction. I consistently connect technical work to measurable business outcomes.",
-    
-    "How do you handle ambiguity and fast-paced environments?": "In my Blueprint project, I independently prioritized tasks while managing competing deadlines in a fast-paced startup environment. I debugged critical production issues affecting 660K users by systematically identifying root causes. I maintain detail-oriented quality standards while moving quickly, and I'm comfortable with iterative problem-solving when requirements evolve.",
-    
-    "What's your GitHub and portfolio?": "My GitHub is github.com/dcnguyen060899 with live code for all major projects. My portfolio at duyng-portfolio.com showcases interactive demos and project details. My UC Berkeley capstone site at ucberkeley-ml-ai-capstone.com has a full case study. All code is well-documented and demonstrates both technical depth and practical applications."
-}
+try:  # pragma: no cover - local convenience only
+    from dotenv import load_dotenv
 
+    # backend/.env, when it exists. Absent in CI and on Vercel, where the
+    # environment is supplied directly.
+    #
+    # ⚠ ORDER IS LOAD-BEARING. evaluation/config.py reads os.environ at IMPORT
+    # time, so this call has to happen before `from evaluation import ...`
+    # below or a local backend/.env is read too late to have any effect.
+    load_dotenv()
+except ImportError:  # python-dotenv is a dev convenience, not a runtime need
+    pass
 
-@app.route("/")
-def index():
-    return send_from_directory(app.static_folder, 'index_portfolio.html')
-    
-@app.route("/chat", methods=["POST"])
-def chat():
-    data = request.get_json()
-    user_message = data["message"]
+from flask import Flask  # noqa: E402
 
-    if user_message in base_qa:
-        time.sleep(3)
-        return jsonify({"response": base_qa[user_message]})
+from evaluation import init_evaluation  # noqa: E402
 
-    response_content = chat_service.get_response(user_message)
-    return jsonify({"response": response_content})
+app = Flask(__name__, static_folder=None)
 
-@app.route("/api-check", methods=["GET"])
-def api_check():
-    try:
-        # This is a simplified check. Consider a more specific test for API connectivity if necessary.
-        response = chat_service.get_response("Hello")
-        if response:
-            return jsonify(
-                {"status": "success", "message": "API connection is working."}
-            )
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)})
+# Registers the /evaluate-challenge routes AND the single CORS() configuration
+# (see backend/src/evaluation/__init__.py).
+init_evaluation(app)
 
-@app.route("/classify-image", methods=["POST"])
-def classify_image():
-    """
-    Proxy endpoint for HuggingFace Spaces Garbage Classification API
-    Uses direct HTTP requests (server-side, no CORS issues)
-    """
-    try:
-        data = request.get_json()
-        image_data = data.get("image")  # Base64 encoded image (data:image/...;base64,...)
-
-        if not image_data:
-            return jsonify({"error": "No image provided"}), 400
-
-        print(f"Received image data, length: {len(image_data)}")
-
-        # HuggingFace Spaces API - try multiple endpoints
-        hf_base = "https://dnguyen44-garbage-classification.hf.space"
-
-        # Try /api/predict first (works with most Gradio apps)
-        endpoints = [
-            f"{hf_base}/api/predict",
-            f"{hf_base}/run/predict",
-        ]
-
-        result = None
-        last_error = None
-
-        for endpoint in endpoints:
-            try:
-                print(f"Trying endpoint: {endpoint}")
-                response = http_requests.post(
-                    endpoint,
-                    json={"data": [image_data]},
-                    headers={"Content-Type": "application/json"},
-                    timeout=120
-                )
-
-                print(f"Response status: {response.status_code}")
-
-                if response.status_code == 200:
-                    result = response.json()
-                    print(f"Success! Result: {result}")
-                    break
-                else:
-                    last_error = f"{endpoint} returned {response.status_code}: {response.text[:200]}"
-                    print(last_error)
-            except Exception as e:
-                last_error = f"{endpoint} failed: {str(e)}"
-                print(last_error)
-                continue
-
-        if result:
-            return jsonify(result)
-        else:
-            return jsonify({"error": last_error or "All endpoints failed"}), 500
-
-    except Exception as e:
-        print(f"Error in classify-image: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5328)

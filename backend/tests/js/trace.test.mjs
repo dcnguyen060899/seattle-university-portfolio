@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 import { loadPrivateExport, worker } from "../../scripts/verify_challenges.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const JS_DIR = path.resolve(HERE, "..", "..", "..", "docs", "js");
+const JS_DIR = path.resolve(HERE, "..", "..", "..", "public", "docs", "js");
 const WORKER_PATH = path.join(JS_DIR, "challenge_worker.js");
 const require = createRequire(import.meta.url);
 const T = require(path.join(JS_DIR, "challenge_trace.js"));

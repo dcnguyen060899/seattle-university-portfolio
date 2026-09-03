@@ -1,0 +1,231 @@
+[
+  { "id": "cpt:distributed-compute", "label": "Distributed data processing", "family": "infrastructure",
+    "aliases": ["distributed data processing", "distributed computing", "distributed systems", "cluster computing", "large-scale data processing", "large scale data processing", "big data analytics", "big data", "petabyte", "terabyte scale", "parallel processing", "data at scale"],
+    "adjacent": [
+      { "id": "cpt:data-pipeline", "weight": 0.45, "why": "Pipeline engineering shares the shape (extract, transform, load, validate) but not the execution model. An adjacency, never a substitute: Duy's applied pipeline work is single-node." },
+      { "id": "cpt:sql", "weight": 0.3, "why": "Set-oriented thinking transfers; the runtime does not." }
+    ],
+    "negativeGapId": "gap:distributed-production", "note": null },
+
+  { "id": "cpt:hadoop-ecosystem", "label": "Hadoop ecosystem", "family": "tooling",
+    "aliases": ["hadoop", "hdfs", "hive", "hiveql", "beeline", "yarn", "hadoop ecosystem", "hadoop streaming", "emr", "elastic mapreduce"],
+    "adjacent": [{ "id": "cpt:distributed-compute", "weight": 0.9, "why": "Hadoop is the canonical instance of the concept." }],
+    "negativeGapId": "gap:distributed-production", "note": null },
+
+  { "id": "cpt:spark", "label": "Apache Spark", "family": "tooling",
+    "aliases": ["spark", "apache spark", "pyspark", "spark sql", "spark rdd", "rdds", "dataframes", "databricks"],
+    "adjacent": [{ "id": "cpt:distributed-compute", "weight": 0.9, "why": "Spark is a canonical instance of the concept." }],
+    "negativeGapId": "gap:spark-production", "note": null },
+
+  { "id": "cpt:mapreduce", "label": "MapReduce", "family": "method",
+    "aliases": ["mapreduce", "map reduce", "map-reduce", "mapper", "reducer"],
+    "adjacent": [{ "id": "cpt:distributed-compute", "weight": 0.9, "why": "MapReduce is the programming model the concept is usually named through." }],
+    "negativeGapId": "gap:distributed-production", "note": null },
+
+  { "id": "cpt:stream-processing", "label": "Stream processing", "family": "infrastructure",
+    "aliases": ["stream processing", "streaming", "spark streaming", "kafka", "real-time data", "real time data", "event streaming", "micro-batch"],
+    "adjacent": [{ "id": "cpt:distributed-compute", "weight": 0.6, "why": "Streaming engines are distributed engines, but the failure model and the latency budget are a different discipline." }],
+    "negativeGapId": "gap:streaming-production", "note": null },
+
+  { "id": "cpt:nosql", "label": "NoSQL and key-value stores", "family": "tooling",
+    "aliases": ["nosql", "dynamodb", "key-value store", "key value store", "document store", "mongodb", "cassandra", "wide-column"],
+    "adjacent": [{ "id": "cpt:schema-design", "weight": 0.5, "why": "Access-pattern-first modelling is still modelling, but denormalised key design is not relational normalisation." }],
+    "negativeGapId": "gap:nosql-production", "note": null },
+
+  { "id": "cpt:etl", "label": "ETL", "family": "method",
+    "aliases": ["etl", "elt", "extract transform load", "ingestion", "data ingestion", "data wrangling", "batch processing", "data cleaning"],
+    "adjacent": [{ "id": "cpt:data-pipeline", "weight": 0.8, "why": "Near-synonyms; kept apart because a JD that says 'pipeline' often means orchestration, and one that says 'ETL' usually means the transform." }],
+    "negativeGapId": null, "note": null },
+
+  { "id": "cpt:data-pipeline", "label": "Data pipeline engineering", "family": "infrastructure",
+    "aliases": ["data pipeline", "data pipelines", "pipelines", "pipeline engineering", "data engineering", "dataflow"],
+    "adjacent": [{ "id": "cpt:orchestration", "weight": 0.6, "why": "A scheduled pipeline is the common case; an unscheduled one is still a pipeline." }],
+    "negativeGapId": null, "note": null },
+
+  { "id": "cpt:orchestration", "label": "Workflow orchestration", "family": "infrastructure",
+    "aliases": ["airflow", "apache airflow", "dagster", "prefect", "orchestration", "workflow scheduling", "cron pipelines", "dag", "dags"],
+    "adjacent": [], "negativeGapId": "gap:orchestration-production", "note": null },
+
+  { "id": "cpt:schema-design", "label": "Relational schema design", "family": "method",
+    "aliases": ["schema design", "data modeling", "data modelling", "normalization", "normalisation", "er model", "entity relationship", "database design", "dimensional modeling", "foreign key", "foreign keys"],
+    "adjacent": [{ "id": "cpt:sql", "weight": 0.7, "why": "You cannot design one without writing the other." }],
+    "negativeGapId": null, "note": null },
+
+  { "id": "cpt:sql", "label": "SQL", "family": "language",
+    "aliases": ["sql", "postgres", "postgresql", "sqlite", "t-sql", "ansi sql", "queries", "query optimization", "query optimisation", "query tuning", "relational database"],
+    "adjacent": [], "negativeGapId": null,
+    "note": "'mysql' is deliberately NOT an alias here. It is a retraction trigger (ret:fischer-mysql) and letting a JD's 'MySQL' match this concept would route a recruiter toward the engine question the corpus has already settled as SQLite." },
+
+  { "id": "cpt:data-quality", "label": "Data quality and integrity auditing", "family": "practice",
+    "aliases": ["data quality", "data integrity", "data validation", "data governance", "data audits", "great expectations", "referential integrity"],
+    "adjacent": [{ "id": "cpt:code-review", "weight": 0.6, "why": "Both are the habit of checking the thing everyone assumed was fine; the object under review differs." }],
+    "negativeGapId": null, "note": null },
+
+  { "id": "cpt:code-review", "label": "Code review and engineering audit", "family": "practice",
+    "aliases": ["code review", "code reviews", "peer review", "reviewing code", "pull request review", "static analysis", "engineering audit", "audit", "auditing"],
+    "adjacent": [{ "id": "cpt:root-cause", "weight": 0.8, "why": "A review that stops at 'this is wrong' is worth less than one that reaches the line that caused it." }],
+    "negativeGapId": null, "note": null },
+
+  { "id": "cpt:root-cause", "label": "Root-cause analysis", "family": "practice",
+    "aliases": ["root cause", "root-cause analysis", "root cause analysis", "debugging", "incident analysis", "postmortem", "post-mortem", "troubleshooting", "defect analysis"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:python", "label": "Python", "family": "language",
+    "aliases": ["python", "python3", "pandas", "numpy", "scipy", "h5py", "cpython"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:typescript", "label": "TypeScript and JavaScript", "family": "language",
+    "aliases": ["typescript", "javascript", "node.js", "nodejs", "react", "next.js", "nextjs"],
+    "adjacent": [], "negativeGapId": null,
+    "note": "Bare 'js' and bare 'ts' are deliberately excluded: they collide with too many two-letter tokens inside ordinary JD prose to be matched safely on a word boundary." },
+
+  { "id": "cpt:java", "label": "Java and the JVM build chain", "family": "language",
+    "aliases": ["java", "maven", "jvm", "gradle", "jar file"],
+    "adjacent": [], "negativeGapId": "gap:java-production", "note": null },
+
+  { "id": "cpt:experimental-design", "label": "Experimental design", "family": "method",
+    "aliases": ["experimental design", "experiment design", "design of experiments", "controlled experiment", "ablation", "ablations", "factorial design", "control group", "negative control", "randomized", "randomised"],
+    "adjacent": [{ "id": "cpt:causal-inference", "weight": 0.8, "why": "The two are taught together and Duy's economics background is the join." }],
+    "negativeGapId": null, "note": null },
+
+  { "id": "cpt:causal-inference", "label": "Causal inference", "family": "method",
+    "aliases": ["causal inference", "causal", "counterfactual", "identification strategy", "econometrics", "instrumental variable", "difference in differences"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:ab-testing", "label": "A/B testing and online experimentation", "family": "method",
+    "aliases": ["a/b testing", "ab testing", "split testing", "online experimentation", "experimentation platform", "holdout test", "multivariate testing"],
+    "adjacent": [{ "id": "cpt:experimental-design", "weight": 0.7, "why": "Same statistics, different setting. Duy has the offline half and not the online half; the gap says so." }],
+    "negativeGapId": "gap:online-experimentation", "note": null },
+
+  { "id": "cpt:statistics", "label": "Applied statistics", "family": "method",
+    "aliases": ["statistics", "statistical inference", "hypothesis testing", "anova", "regression", "p-value", "confidence interval", "significance", "variance decomposition", "mathematical statistics", "probability"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:ml-modeling", "label": "Machine learning modelling", "family": "method",
+    "aliases": ["machine learning", "supervised learning", "classification", "predictive modeling", "predictive modelling", "model training", "scikit-learn", "sklearn", "xgboost", "gradient boosting", "random forest"],
+    "adjacent": [], "negativeGapId": null,
+    "note": "Bare 'ml' is excluded for the same reason as bare 'js': too short to match safely." },
+
+  { "id": "cpt:deep-learning", "label": "Deep learning", "family": "method",
+    "aliases": ["deep learning", "neural network", "neural networks", "pytorch", "tensorflow", "cnn", "convolutional", "transfer learning", "fine-tuning", "fine tuning", "resnet", "transformer", "transformers", "contrastive learning"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:llm", "label": "LLMs and generative models", "family": "domain",
+    "aliases": ["llm", "llms", "large language model", "large language models", "generative ai", "genai", "foundation model", "prompt engineering", "instruction tuning", "anthropic", "openai"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:rag", "label": "Retrieval-augmented generation", "family": "domain",
+    "aliases": ["rag", "retrieval augmented generation", "retrieval-augmented", "vector search", "vector database", "embeddings", "semantic search", "chromadb", "llamaindex", "langchain", "knowledge retrieval", "retrieval"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:vision-language", "label": "Vision-language models", "family": "domain",
+    "aliases": ["vision language", "vision-language", "vlm", "multimodal", "multi-modal", "image-text", "clip", "captioning"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:medical-ai", "label": "Clinical and medical AI", "family": "domain",
+    "aliases": ["medical ai", "clinical ai", "healthcare ai", "radiology", "mammography", "medical imaging", "clinical nlp", "biomedical", "health data", "hipaa", "digital health"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:computational-neuroscience", "label": "Computational neuroscience", "family": "domain",
+    "aliases": ["neuroscience", "computational neuroscience", "electrophysiology", "neural recordings", "spike train", "neuroinformatics", "scientific data"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:evaluation", "label": "Model evaluation and benchmarking", "family": "method",
+    "aliases": ["evaluation", "evals", "benchmarking", "benchmark", "metrics", "offline evaluation", "model evaluation", "held-out", "test split", "macro-f1", "precision recall", "ragas"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:reproducibility", "label": "Reproducibility", "family": "rigor",
+    "aliases": ["reproducibility", "reproducible", "replication", "deterministic", "checksum", "provenance", "auditability", "versioned experiments"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:research-publication", "label": "Peer-reviewed publication", "family": "rigor",
+    "aliases": ["publication", "publications", "peer-reviewed", "peer reviewed", "first-author", "first author", "conference paper", "manuscript", "neurips", "psb", "published research"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:mlops", "label": "MLOps", "family": "infrastructure",
+    "aliases": ["mlops", "ml ops", "model deployment", "model serving", "experiment tracking", "mlflow", "model registry", "ml platform", "ml infrastructure", "productionize", "productionise", "production ml"],
+    "adjacent": [{ "id": "cpt:ci-cd", "weight": 0.6, "why": "CI/CD is the delivery half of MLOps and Duy has shipped it on a non-ML product." }],
+    "negativeGapId": "gap:mlops-shipped", "note": null },
+
+  { "id": "cpt:model-monitoring", "label": "Model and data drift monitoring", "family": "infrastructure",
+    "aliases": ["drift", "data drift", "model monitoring", "observability", "evidently", "model degradation", "production monitoring"],
+    "adjacent": [], "negativeGapId": "gap:mlops-shipped", "note": null },
+
+  { "id": "cpt:containerization", "label": "Containers", "family": "infrastructure",
+    "aliases": ["docker", "container", "containers", "containerized", "containerised", "dockerfile", "oci image"],
+    "adjacent": [], "negativeGapId": "gap:containers-production", "note": null },
+
+  { "id": "cpt:kubernetes", "label": "Kubernetes", "family": "infrastructure",
+    "aliases": ["kubernetes", "k8s", "eks", "gke", "helm", "kubectl"],
+    "adjacent": [{ "id": "cpt:containerization", "weight": 0.5, "why": "Containers are the prerequisite, not the skill." }],
+    "negativeGapId": "gap:kubernetes",
+    "note": "INTENTIONALLY carried by no claim. It exists so a JD naming Kubernetes routes to a written honest answer instead of matching nothing and going silent." },
+
+  { "id": "cpt:cloud", "label": "Cloud platforms", "family": "infrastructure",
+    "aliases": ["aws", "amazon web services", "gcp", "google cloud", "azure", "cloud", "s3", "ec2", "lambda", "sagemaker", "vercel", "serverless"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:ci-cd", "label": "CI/CD and automated quality gates", "family": "infrastructure",
+    "aliases": ["ci/cd", "ci cd", "continuous integration", "continuous deployment", "github actions", "build pipeline", "automated testing", "test suite", "linting", "type checking"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:api-design", "label": "API and service design", "family": "infrastructure",
+    "aliases": ["api", "rest", "restful", "fastapi", "flask", "microservice", "microservices", "endpoint", "backend service", "http service"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:frontend", "label": "Front-end engineering", "family": "frontend",
+    "aliases": ["frontend", "front-end", "user interface", "css", "tailwind", "responsive design", "web development"],
+    "adjacent": [], "negativeGapId": null,
+    "note": "Bare 'ui' is excluded: it appears inside ordinary words and inside acronyms too often to be a safe word-boundary match." },
+
+  { "id": "cpt:accessibility", "label": "Accessibility", "family": "frontend",
+    "aliases": ["accessibility", "a11y", "wcag", "aria", "screen reader", "contrast ratio", "axe"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:data-viz", "label": "Data visualisation", "family": "communication",
+    "aliases": ["data visualization", "data visualisation", "visualization", "visualisation", "dataviz", "d3.js", "charts", "dashboards", "dashboard", "tableau", "plotly", "matplotlib", "seaborn", "storytelling", "data storytelling"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:stakeholder", "label": "Stakeholder communication", "family": "communication",
+    "aliases": ["stakeholder", "stakeholders", "cross-functional", "cross functional", "requirements gathering", "requirements elicitation", "business partner", "client facing", "client-facing", "non-technical audience", "executive communication", "product partnership"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:technical-writing", "label": "Technical writing", "family": "communication",
+    "aliases": ["technical writing", "documentation", "write-up", "written communication", "documenting", "memo", "latex"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:mentoring", "label": "Mentoring and enablement", "family": "communication",
+    "aliases": ["mentoring", "mentorship", "teaching", "enablement", "onboarding others", "training users", "self-serve", "self-service"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:ownership", "label": "End-to-end ownership", "family": "practice",
+    "aliases": ["ownership", "end to end", "end-to-end", "own the problem", "autonomy", "self-directed", "independently", "zero to one"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:legal-compliance", "label": "Regulatory and legal requirements", "family": "practice",
+    "aliases": ["compliance", "regulatory", "legal requirements", "gdpr", "licensing", "statutory", "responsible ai", "ethics"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:scale-users", "label": "Systems used by many people", "family": "scale",
+    "aliases": ["at scale", "high traffic", "millions of users", "production traffic", "user-facing", "live system", "live users"],
+    "adjacent": [], "negativeGapId": null,
+    "note": "Bare 'scale' is excluded because it collides with cpt:distributed-compute's 'data at scale' and with ordinary prose ('scale the team')." },
+
+  { "id": "cpt:graph-db", "label": "Graph databases", "family": "tooling",
+    "aliases": ["graph database", "neo4j", "knowledge graph", "cypher", "graph data"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:nlp", "label": "Natural language processing", "family": "domain",
+    "aliases": ["nlp", "natural language processing", "text classification", "entity extraction", "tokenization", "tokenisation", "multilingual", "machine translation", "tf-idf", "term frequency"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:economics", "label": "Economic modelling", "family": "domain",
+    "aliases": ["economics", "econometric", "general equilibrium", "labor economics", "labour economics", "market model", "elasticity"],
+    "adjacent": [], "negativeGapId": null, "note": null },
+
+  { "id": "cpt:r-lang", "label": "R", "family": "language",
+    "aliases": ["r language", "rstudio", "tidyverse", "ggplot", "r programming"],
+    "adjacent": [{ "id": "cpt:statistics", "weight": 0.5, "why": "The statistics transfer; the language does not automatically." }],
+    "negativeGapId": "gap:r-language",
+    "note": "INTENTIONALLY carried by no claim, and the aliases are deliberately awkward — a bare 'r' cannot be matched safely. This concept exists so a JD naming R routes to gap:r-language instead of silently matching nothing." }
+]

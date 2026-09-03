@@ -1,0 +1,184 @@
+# The Node verify chain for the Next.js app.
+#
+# NO SECRETS. This workflow references `secrets` nowhere, on purpose. The
+# recruiter agent defaults to AGENT_DEMO_MODE=1 and serves pre-built canned
+# briefs without ANTHROPIC_API_KEY, and the evaluation blueprint degrades to its
+# deterministic path, so the whole pipeline runs on a fork's pull request with
+# zero paid accounts. If a step here ever needs a key, the degradation is broken.
+
+name: CI
+
+on:
+  push:
+    branches: [main, 'rebuild/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: '1'
+  # AGENT_DEMO_MODE is deliberately NOT set. Its default is ON, and CI should
+  # exercise the default a fresh clone gets.
+
+jobs:
+  verify:
+    name: env · lint · types · unit · build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: npm run verify
+        run: npm run verify
+
+      - name: Build
+        run: npm run build
+
+  e2e:
+    name: playwright + axe
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: verify
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # Skips cleanly until playwright.config.ts and tests/e2e/ exist, so this
+      # job is green during the rebuild instead of red for a missing file.
+      - name: Detect the Playwright config
+        id: pw
+        run: |
+          if [ -f playwright.config.ts ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::playwright.config.ts is not in the tree yet — skipping e2e."
+          fi
+
+      - name: Install browsers
+        if: steps.pw.outputs.present == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Run e2e
+        if: steps.pw.outputs.present == 'true'
+        run: npm run test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.pw.outputs.present == 'true'
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  legacy-guard:
+    name: public/docs edit allowlist
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # public/docs is the frozen legacy site. Every file under it is a live URL
+      # that is on a résumé and on LinkedIn. Addendum B ruling R-4 permits edits
+      # to exactly three files and freezes everything else, so a change outside
+      # that allowlist is a defect regardless of what it enables.
+      #
+      # This compares BLOB CONTENT, not paths. `git diff --name-only` would flag
+      # every file in the repository-restructuring PR, because the whole tree
+      # moved from docs/ to public/docs/ in one commit and every path is "new".
+      # Looking up the base blob under BOTH docs/ and public/docs/ makes a pure
+      # move invisible and a real edit visible, which is the distinction that
+      # matters.
+      - name: public/docs content is frozen outside the R-4 allowlist
+        run: |
+          set -uo pipefail
+          base="origin/${{ github.base_ref }}"
+          allow='^public/docs/(index\.html|js/mcp-tools\.js|resume_content\.html)$'
+          bad=""
+          moved=0
+          edited=0
+          while IFS= read -r f; do
+            rel="${f#public/docs/}"
+            # --verify --quiet is load-bearing: plain `git rev-parse` ECHOES THE
+            # ARGUMENT to stdout when a tree path does not exist (exit 128), so
+            # the `||` fallback never fires and every file looks changed.
+            head_blob=$(git rev-parse --verify --quiet "HEAD:$f")
+            base_blob=$(git rev-parse --verify --quiet "$base:public/docs/$rel" \
+                     || git rev-parse --verify --quiet "$base:docs/$rel" || true)
+            if [ -z "$base_blob" ]; then
+              verdict="NEW"
+            elif [ "$head_blob" = "$base_blob" ]; then
+              moved=$((moved + 1))
+              continue
+            else
+              verdict="EDITED"
+            fi
+            edited=$((edited + 1))
+            if printf '%s\n' "$f" | grep -Eq "$allow"; then
+              echo "  allowed  $verdict  $f"
+            else
+              echo "  BLOCKED  $verdict  $f"
+              bad="$bad $f"
+            fi
+          done < <(git ls-tree -r --name-only HEAD -- public/docs)
+
+          echo "unchanged (or purely moved): $moved   changed: $edited"
+          if [ -n "$bad" ]; then
+            echo "::error::public/docs is frozen outside the Addendum B R-4 allowlist."
+            echo "::error::Allowed: index.html, js/mcp-tools.js, resume_content.html."
+            for f in $bad; do echo "::error::  $f"; done
+            exit 1
+          fi
+          echo "ok — no change outside the R-4 allowlist"
+
+      # The three private working files under public/docs/.claude are 404 on
+      # GitHub Pages only because Jekyll hides dot-directories. Next.js serves
+      # them (measured, next@16.3.4). next.config.ts 404s the path and
+      # .vercelignore keeps the bytes out of the deployment; this asserts both
+      # guards are still present, because losing either publishes them.
+      - name: The private-file guards are still in place
+        run: |
+          set -euo pipefail
+          grep -q "/docs/.claude/:path\*" next.config.ts \
+            || { echo "::error::next.config.ts lost the /docs/.claude 404 rewrite"; exit 1; }
+          grep -q "^/public/docs/.claude$" .vercelignore \
+            || { echo "::error::.vercelignore lost the /public/docs/.claude exclusion"; exit 1; }
+          echo "ok — both private-file guards present"
+
+      # .vercelignore uses .gitignore syntax: an UNANCHORED `docs` matches a
+      # directory of that name at any depth, including public/docs, and would
+      # silently drop the entire legacy site from the deployment (Addendum B,
+      # ruling R-11). It deploys green and 404s the résumé.
+      - name: .vercelignore docs pattern is anchored
+        run: |
+          set -euo pipefail
+          if grep -nE '^\s*!?docs(/|$)' .vercelignore; then
+            echo "::error::.vercelignore has an UNANCHORED docs pattern. It must be /docs (R-11)."
+            exit 1
+          fi
+          grep -q '^/docs$' .vercelignore \
+            || { echo "::error::.vercelignore is missing the anchored /docs line"; exit 1; }
+          echo "ok — /docs is anchored"

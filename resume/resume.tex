@@ -1,0 +1,127 @@
+\documentclass[letterpaper,11pt]{article}
+\usepackage[margin=0.36in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+
+% --- ATS-friendly: single column, standard fonts, selectable text, no graphics ---
+\setcounter{secnumdepth}{0}
+\setlist[itemize]{leftmargin=1.2em, itemsep=0pt, topsep=0pt, parsep=0pt}
+\titleformat{\section}{\normalsize\bfseries}{}{0em}{}[\vspace{-0.6em}\rule{\textwidth}{0.6pt}]
+\titlespacing{\section}{0pt}{2pt}{2pt}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+
+% role: title | dates ; org/context (italic) --- and a no-subline variant
+\newcommand{\role}[3]{\vspace{1pt}\textbf{#1}\hfill #2\\[1pt]\textit{#3}\\[1pt]}
+\newcommand{\rolens}[2]{\vspace{1pt}\textbf{#1}\hfill #2\\[1pt]}
+
+\begin{document}
+
+%==================== HEADER ====================
+\begin{center}
+  {\LARGE\bfseries Duy Nguyen}\\[4pt]
+  Seattle, WA \ \textbullet\ \ \href{mailto:dnguyen44@seattleu.edu}{dnguyen44@seattleu.edu}
+  \ \textbullet\ \ \href{https://www.linkedin.com/in/duwe-ng}{linkedin.com/in/duwe-ng}
+  \ \textbullet\ \ \href{https://github.com/dcnguyen060899}{github.com/dcnguyen060899}
+\end{center}
+
+%==================== SUMMARY ====================
+\section{Summary}
+Data scientist and MS candidate who designs and runs rigorous ML experiments---and
+builds the data pipelines they run on. Recent research isolated the retrieval
+\emph{encoder}, not costly decoder fine-tuning, as the performance lever in
+medical-imaging RAG; the result is a first-author paper under review at PSB 2027. I own
+problems end to end: experiment design, modeling, evaluation, and reporting. Of those
+four, reporting has been the hardest to learn --- it is where months of shared work have
+to be revised into a single coherent argument, and where a deadline leaves the least room
+to get it wrong.
+
+%==================== EDUCATION ====================
+\section{Education}
+\role{M.S.\ in Data Science --- Seattle University}{Expected Jun 2027}{Seattle, WA}
+\vspace{-3pt}
+\rolens{Certificate, Machine Learning \& AI --- UC Berkeley (Online)}{Jul 2024}
+\vspace{-3pt}
+\role{B.A.\ in Economics, Data Analysis Concentration --- Simon Fraser University}{May 2023}{Burnaby, BC, Canada}
+
+%==================== EXPERIENCE ====================
+\section{Experience}
+
+\role{Graduate Research Assistant --- Medical Vision--Language RAG}{Spring 2026 -- Present}%
+{Seattle University \ \textbar\ \ Advisor: Dr.\ Wenjing Yang}
+\begin{itemize}
+  \item Replicated and audited a published mammography-RAG benchmark on VinDr-Mammo
+    (20{,}000 images / 5{,}000 patients) in \textbf{Python} and \textbf{PyTorch},
+    uncovering a metric-labeling artifact (weighted scores published as ``macro'') that
+    corrected how the reference numbers must be interpreted and compared.
+  \item Designed and ran a 24-cell controlled experiment (4 encoder substrates $\times$
+    frozen/fine-tuned $\times$ 3 vision--language models) with \textbf{HuggingFace
+    Transformers}, \textbf{ChromaDB}, and \textbf{scikit-learn} to isolate the causal
+    driver of generated-report quality.
+  \item Isolated the retrieval \emph{encoder} as the lever: replacing the frozen OpenCLIP
+    retriever with a domain-native, supervised-contrastively fine-tuned Mammo-CLIP encoder---%
+    decoder frozen throughout---raised suspicion macro-F1 0.35 to 0.48 (\textbf{+0.13}) and
+    BI-RADS (+0.10) on LLaVA-Med; the fine-tuning step alone accounts for +0.11
+    (Qwen2.5-VL) and +0.06 (LLaVA-Med), with retrieval-insensitive MedGemma as a
+    negative control.
+  \item Automated evaluation with reproducible, self-verifying generators
+    (\textbf{Python}/\textbf{pandas}) that recompute 100+ reported metrics byte-exact
+    from raw model predictions; authored a 37-page report, condensed into a first-author
+    manuscript submitted to the Pacific Symposium on Biocomputing (PSB) 2027, under review.
+\end{itemize}
+
+\role{Research Data Engineer}{Spring 2026 -- Present}%
+{Computational Neuroscience Lab (Prof.\ Brian Fischer), Seattle University}
+\begin{itemize}
+  \item Supported an NIH CRCNS-funded computational neuroscience project, full-time over the summer and continuing,
+    (NIH-CRCNS-Fischer) on barn owl sound localization by building data infrastructure
+    for neural recordings.
+  \item Engineered an end-to-end \textbf{ETL} pipeline in \textbf{Python}
+    (\textbf{pandas}, \textbf{SciPy}, \textbf{h5py}) converting 5+ proprietary
+    electrophysiology formats (XDPHYS \texttt{.iid/.itd/.bf}, MATLAB \texttt{.mat},
+    headerless CSV) into a normalized \textbf{SQLite} database of 195 neurons and
+    1{,}325 recording passes, with a second researcher's spike-reliability dataset
+    staged and schema-provisioned for load.
+  \item Designed the relational schema and ER model (documented in \textbf{LaTeX}) with
+    foreign-key constraints and explicit data-quality rules (missing-data handling,
+    tracked exclusions, path remapping), consolidating scattered lab files into one
+    queryable source of truth.
+  \item Tuned queries and ETL to meet ${<}200$\,ms query and ${<}30$\,s full-load
+    targets, letting lab students self-serve neuron-level queries that previously
+    required manual file handling.
+  \item Ran \textbf{SQL}/SQLite schema and data-integrity audits that caught and
+    corrected issues (all-zero rows, weak-tuning exclusions) before downstream analysis.
+\end{itemize}
+
+
+%==================== HONORS & PROJECTS ====================
+\newpage
+\section{Honors \& Projects}
+
+\role{Winner, Graduate Division ---
+  \href{https://www.causeweb.org/cause/contests/data-scrollytelling}{CAUSE Student Data
+  Scrollytelling Contest}}{2026}%
+{Consortium for the Advancement of Undergraduate Statistics Education}
+\begin{itemize}
+  \item ``Will AI Make Human Work Worthless---or Priceless?'': a nine-act interactive data
+    story (\textbf{D3.js}, \textbf{Scrollama.js}) with scroll-driven animation and a
+    reader-controlled parameter widget, translating an original nested-CES
+    general-equilibrium model of AI and cognitive labor into a narrative for
+    non-specialists. Judged on narrative, data interpretation, scrollytelling, and visual
+    design.
+\end{itemize}
+
+%==================== SKILLS ====================
+\section{Skills}
+\textbf{Programming:} Python, SQL, JavaScript \\[1pt]
+\textbf{ML / AI:} PyTorch, HuggingFace Transformers, scikit-learn, Retrieval-Augmented
+Generation (RAG), vision--language models, QLoRA / parameter-efficient fine-tuning \\[1pt]
+\textbf{Data:} pandas, NumPy, SciPy, SQLite, ETL design, relational schema / ER design,
+data quality \\[1pt]
+\textbf{Tools:} Jupyter, Git, LaTeX, D3.js, Scrollama.js, Google Colab (A100 GPU), Ollama
+
+\end{document}

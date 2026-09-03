@@ -1,0 +1,100 @@
+[
+{
+ "id":"dsp:fischer-database",
+ "question":"What database engine did the barn-owl ETL load, and at what scale?",
+ "positions":[
+  {"sourceId":"src:resume-2026-08","sourceDate":"2026-08","locator":"git show 234cbcd:docs/resume_content.html line 289","value":"a normalized SQLite database of 195 neurons and 1,325 recording passes, with a second researcher's spike-reliability dataset staged and schema-provisioned for load"},
+  {"sourceId":"src:news-html","sourceDate":"2026-04","locator":"public/docs/news.html — April 2026 entry","value":"a 7-table normalized MySQL database and a 6-phase ETL pipeline over roughly 14,000 raw files in six proprietary formats, 110 neurons across 8 owls, about 261 experiments; an analysis that previously took 228 file loads now runs as one SQL query"},
+  {"sourceId":"src:iccl-db","sourceDate":"2026-09-02","locator":"sqlite3 'file:...iccl_demo.db?mode=ro' — direct query against the shipped database","value":"SQLite; 7 tables and 5 views; 195 neurons, 7 owls, 38 sessions, 1,325 experiments, 1,265 tuning rows; the second researcher's two tables present and holding zero rows"}
+ ],
+ "resolution":"owner-resolved",
+ "reconciledAs":"The two written accounts described two different phases of the same project. The direct query settles which is current.",
+ "resolvedValue":"SQLite, 7 tables, 5 views, 195 neurons across 7 owls, 38 recording sessions, 1,325 recording passes across 13 paradigm types, 1,265 tuning-parameter rows, 30,147 raw files curated to 1,579.",
+ "resolvedOn":"2026-09-02",
+ "leaning":null,
+ "agentGuidance":"CLOSED — answer from the claims, not from this record. The current figures are in clm:fischer-db-shape, clm:fischer-db-scale, clm:fischer-paradigms and clm:fischer-raw-archive, each carrying a verification date and a re-derivation command. If a recruiter has seen the older figures somewhere, say plainly that the earlier write-up described an earlier phase, that the database was queried directly on 2 September 2026, and that the current counts are the ones on the page.",
+ "raisedOn":"2026-09-02",
+ "blocksClaims":[]
+},
+{
+ "id":"dsp:fischer-formats",
+ "question":"Five or more proprietary formats, or six?",
+ "positions":[
+  {"sourceId":"src:resume-2026-08","sourceDate":"2026-08","locator":"git show 234cbcd:docs/resume_content.html line 289","value":"5+ proprietary electrophysiology formats"},
+  {"sourceId":"src:news-html","sourceDate":"2026-04","locator":"public/docs/news.html — April 2026 entry","value":"six proprietary formats"}
+ ],
+ "resolution":"reconciled",
+ "reconciledAs":"'5+' is satisfied by six, so the two statements are compatible. The raw archive independently carries six distinct scientific extensions. The corpus asserts the conservative '5+' because the '6' appears inside the same paragraph that was wrong about every other figure and inherits its uncertainty.",
+ "resolvedValue":"5+ proprietary electrophysiology formats",
+ "resolvedOn":"2026-09-02",
+ "leaning":null,
+ "agentGuidance":"Say '5+ proprietary electrophysiology formats'. Do not volunteer 'six'. Both statements are true; the conservative one is the one the corpus licenses.",
+ "raisedOn":"2026-09-02",
+ "blocksClaims":[]
+},
+{
+ "id":"dsp:fischer-start",
+ "question":"Did the barn-owl role start in March 2026 or in the spring 2026 quarter?",
+ "positions":[
+  {"sourceId":"src:news-html","sourceDate":"2026-03","locator":"public/docs/news.html — March 2026 entry","value":"March 2026 — joined the lab as a research assistant"},
+  {"sourceId":"src:resume-2026-08","sourceDate":"2026-08","locator":"git show 234cbcd:docs/resume_content.html line 282","value":"Spring 2026 to July 2026"}
+ ],
+ "resolution":"reconciled",
+ "reconciledAs":"A quarter-boundary difference, not a substantive one: the university's winter quarter ends in mid-March, so 'March 2026' and 'spring 2026' name the same few weeks. The end date is a separate matter and is simply stale — the role is ongoing into the autumn 2026 quarter.",
+ "resolvedValue":"Spring 2026 to the present, ongoing",
+ "resolvedOn":"2026-09-02",
+ "leaning":null,
+ "agentGuidance":"Say the role began in spring 2026 and is ongoing. Do not print a July 2026 end date: it is stale and contradicts the current state of the work.",
+ "raisedOn":"2026-09-02",
+ "blocksClaims":[]
+},
+{
+ "id":"dsp:vindr-unit",
+ "question":"Is the mammography dataset 5,000 studies or 20,000 images?",
+ "positions":[
+  {"sourceId":"src:resume-2026-08","sourceDate":"2026-08","locator":"git show 234cbcd:docs/resume_content.html line 272","value":"20,000 images / 5,000 patients"},
+  {"sourceId":"src:news-html","sourceDate":"2026-03","locator":"public/docs/news.html — March 2026 entry","value":"VinDr-Mammo (5,000 studies)"}
+ ],
+ "resolution":"reconciled",
+ "reconciledAs":"The same corpus at two granularities: four views per study, 5,000 studies, one study per patient, therefore 20,000 images. Both statements are true.",
+ "resolvedValue":"5,000 studies (20,000 images) from 5,000 patients",
+ "resolvedOn":"2026-09-02",
+ "leaning":null,
+ "agentGuidance":"Say '5,000 studies (20,000 images)'. Both figures are correct and they describe the same dataset.",
+ "raisedOn":"2026-09-02",
+ "blocksClaims":[]
+},
+{
+ "id":"dsp:data5100-label",
+ "question":"Which course was the garbage-classification project for?",
+ "positions":[
+  {"sourceId":"src:imgclass-html","sourceDate":"2025-12","locator":"public/docs/index_image_classification.html line 27","value":"DATA 5100: Deep Learning, Seattle University, Fall 2025"},
+  {"sourceId":"src:su-catalog","sourceDate":"2026-09-02","locator":"https://catalog.seattleu.edu/ — MSDS required course list","value":"DATA 5100 is Foundations of Data Science"},
+  {"sourceId":"src:data5100-html","sourceDate":"2025-12","locator":"public/docs/index_data5100_project.html line 27","value":"DATA 5100: Foundation of Data Science, Seattle University, Fall 2025"}
+ ],
+ "resolution":"unresolved",
+ "reconciledAs":null,
+ "resolvedValue":null,
+ "resolvedOn":null,
+ "leaning":"The catalog is the primary-trust source and says DATA 5100 is Foundations of Data Science, which the NASA project page uses correctly. The garbage-classification page's subtitle is therefore wrong in at least its course title — but the corpus does not know which course that project actually belongs to, so it can be flagged and not corrected.",
+ "agentGuidance":"Do not attribute the garbage-classification project to any course. Describe the model and its results and stop there. If asked which course it was for, say the project page's own label conflicts with the catalog and Duy would have to confirm it.",
+ "raisedOn":"2026-09-02",
+ "blocksClaims":[]
+},
+{
+ "id":"dsp:mosaic-cost",
+ "question":"What did the MOSAIC chatbot cost to run?",
+ "positions":[
+  {"sourceId":"src:mosaic-html","sourceDate":"2024","locator":"public/docs/index_mosaic_chatbot.html — header stat","value":"$16/yr API cost"},
+  {"sourceId":"src:mosaic-html","sourceDate":"2024","locator":"public/docs/index_mosaic_chatbot.html — impact panel","value":"about $80 monthly infrastructure operating cost"}
+ ],
+ "resolution":"unresolved",
+ "reconciledAs":null,
+ "resolvedValue":null,
+ "resolvedOn":null,
+ "leaning":"The two figures may be measuring different things — model API spend versus total hosting — but the page does not say so, and $16 a year next to $80 a month reads as a contradiction to anyone who notices both. Only Duy can say which is which.",
+ "agentGuidance":"Do not quote a cost figure for the MOSAIC chatbot. The project page carries two that do not obviously reconcile. If asked about cost, say the two published figures appear to measure different things and Duy can clarify.",
+ "raisedOn":"2026-09-02",
+ "blocksClaims":[]
+}
+]

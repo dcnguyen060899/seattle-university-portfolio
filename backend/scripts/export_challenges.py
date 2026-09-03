@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Export the challenge registry to docs/data (spec 2.7).
+"""Export the challenge registry to public/docs/data (spec 2.7).
 
-usage: export_challenges.py [--out-dir docs/data] [--check] [--stdout [--include-private]]
+usage: export_challenges.py [--out-dir public/docs/data] [--check] [--stdout [--include-private]]
 
-  (default)                 write docs/data/challenges.json and docs/data/challenge_solutions.json
+  (default)                 write public/docs/data/challenges.json and public/docs/data/challenge_solutions.json
   --check                   exit 1 when a committed file differs from what would be written (Render build, CI)
   --stdout                  print the public export instead of writing files
   --stdout --include-private
@@ -27,7 +27,7 @@ if str(SRC) not in sys.path:
 
 from evaluation import registry  # noqa: E402  (import validates the registry)
 
-DEFAULT_OUT_DIR = ROOT / "docs" / "data"
+DEFAULT_OUT_DIR = ROOT / "public" / "docs" / "data"
 FILES = (
     ("challenges.json", registry.export_public),
     ("challenge_solutions.json", registry.export_solutions),
@@ -60,7 +60,7 @@ def check(out_dir: Path) -> int:
     if problems:
         print("; ".join(problems) + " -- run `python backend/scripts/export_challenges.py`", file=sys.stderr)
         return 1
-    print(f"docs/data is up to date (registry_hash {registry.registry_hash()})")
+    print(f"public/docs/data is up to date (registry_hash {registry.registry_hash()})")
     return 0
 
 
@@ -77,8 +77,8 @@ def write(out_dir: Path) -> int:
 
 
 def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(description="Export the challenge registry to docs/data.")
-    parser.add_argument("--out-dir", default=str(DEFAULT_OUT_DIR), help="target directory (default: docs/data)")
+    parser = argparse.ArgumentParser(description="Export the challenge registry to public/docs/data.")
+    parser.add_argument("--out-dir", default=str(DEFAULT_OUT_DIR), help="target directory (default: public/docs/data)")
     parser.add_argument("--check", action="store_true", help="exit 1 when the committed files are stale")
     parser.add_argument("--stdout", action="store_true", help="print the export instead of writing files")
     parser.add_argument("--include-private", action="store_true",

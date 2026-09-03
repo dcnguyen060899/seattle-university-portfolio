@@ -1,0 +1,4974 @@
+[
+  {
+    "id": "clm:identity-name",
+    "kind": "fact",
+    "subject": "per:duy",
+    "statement": "Duy Nguyen is a data scientist and M.S. Data Science candidate based in Seattle, Washington.",
+    "short": "Duy Nguyen — Seattle, WA",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "credential",
+    "sources": [
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — contact block, lines 200-206",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:ownership"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "jsonld",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:identity-contact",
+    "kind": "fact",
+    "subject": "per:duy",
+    "statement": "Duy can be reached at dnguyen44@seattleu.edu; his profiles are linkedin.com/in/duwe-ng and github.com/dcnguyen060899.",
+    "short": "Contact and profiles",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "credential",
+    "sources": [
+      "src:resume-2026-08",
+      "src:portfolio-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — contact block, lines 200-206; the personal gmail address was retired at the owner's instruction, 2026-09-02",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:ownership"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:linkedin",
+      "art:github",
+      "art:portfolio"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "jsonld",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "One email only. The owner asked on 2026-09-02 that the personal gmail address be dropped and dnguyen44@seattleu.edu carry every contact surface — page, resume, JSON-LD and agent."
+  },
+  {
+    "id": "clm:msds-enrolment",
+    "kind": "fact",
+    "subject": "rol:msds",
+    "statement": "Duy is completing an M.S. in Data Science at Seattle University, expected June 2027.",
+    "short": "MS Data Science, Seattle U — expected Jun 2027",
+    "period": {
+      "start": "2025-09",
+      "end": "2027-06",
+      "precision": "month"
+    },
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "credential",
+    "sources": [
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — Education, lines 224-229",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:statistics",
+      "cpt:ml-modeling"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "jsonld",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:msds-gpa",
+    "kind": "metric",
+    "subject": "rol:msds",
+    "statement": "Duy holds a 4.0 GPA in the M.S. Data Science programme.",
+    "short": "GPA 4.0",
+    "value": {
+      "display": "4.0",
+      "numbers": [
+        "4.0"
+      ],
+      "unit": "GPA",
+      "baseline": null,
+      "n": null
+    },
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "credential",
+    "sources": [
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — Education, line 232",
+    "verifiedOn": "2026-09-02",
+    "quote": "GPA 4.0 — College of Science and Engineering Dean's Graduate Student Honor Roll, Winter 2026",
+    "caveats": [],
+    "concepts": [
+      "cpt:statistics"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 180,
+    "note": "The ONLY licensed academic-performance figure. '98%+ across all coursework' is retracted (ret:gpa-98-percent) and every individual term GPA is retracted as a class (ret:term-gpa-range). Per Addendum B R-8 this belongs in the education credentials block, NOT in the hero: the loudest numbers on the page are research results."
+  },
+  {
+    "id": "clm:msds-honor-roll",
+    "kind": "fact",
+    "subject": "rol:msds",
+    "statement": "Duy was named to the Seattle University College of Science and Engineering Dean's Graduate Student Honor Roll for Winter 2026.",
+    "short": "Dean's Honor Roll, Winter 2026",
+    "period": {
+      "start": "2026-01",
+      "end": "2026-03",
+      "precision": "quarter"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "credential",
+    "sources": [
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — Education, line 232",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:statistics"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:msds-structure",
+    "kind": "metric",
+    "subject": "rol:msds",
+    "statement": "The Seattle University M.S. Data Science is 45 credits — 36 required and 9 elective — across roughly six quarters, ending in a two-quarter capstone run with industry partners.",
+    "short": "45 credits: 36 required + 9 elective",
+    "value": {
+      "display": "45 credits (36 required + 9 elective)",
+      "numbers": [
+        "45",
+        "36",
+        "9"
+      ],
+      "unit": "credits",
+      "baseline": null,
+      "n": null
+    },
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "credential",
+    "sources": [
+      "src:su-catalog"
+    ],
+    "verificationPath": "https://catalog.seattleu.edu/ — 2026-2027 Graduate Catalog, M.S. Data Science",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:statistics",
+      "cpt:ml-modeling"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:su-catalog-msds"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "A claim about the PROGRAMME, not about what Duy has completed."
+  },
+  {
+    "id": "clm:msds-capstone",
+    "kind": "fact",
+    "subject": "rol:msds",
+    "statement": "The programme ends in a two-quarter capstone, DATA 5901 and DATA 5902, run with industry partners.",
+    "short": "Two-quarter industry capstone",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "coursework",
+    "sources": [
+      "src:su-catalog"
+    ],
+    "verificationPath": "https://catalog.seattleu.edu/ — MSDS required course list",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:stakeholder",
+      "cpt:ownership"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:su-catalog-msds"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:msds-stats-sequence",
+    "kind": "fact",
+    "subject": "rol:msds",
+    "statement": "Duy's required coursework includes DATA 5300 Applied Statistical Inference and Experimental Design, DATA 5111 Probability for Data Science, and the two-course Statistical Machine Learning sequence, DATA 5321 and DATA 5322.",
+    "short": "Inference, experimental design, statistical ML I and II",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "coursework",
+    "sources": [
+      "src:su-catalog"
+    ],
+    "verificationPath": "https://catalog.seattleu.edu/ — MSDS required course list",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:statistics",
+      "cpt:experimental-design",
+      "cpt:ml-modeling"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:su-catalog-msds"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "DATA 5321 is the course Duy took with Dr. Yang, which is where the research relationship started — see clm:yang-origin-course."
+  },
+  {
+    "id": "clm:msds-data-management",
+    "kind": "fact",
+    "subject": "rol:msds",
+    "statement": "Duy's required coursework includes CPSC 5071 Data Management for Data Science and CPSC 5070 Programming for Data Science.",
+    "short": "Data management and programming coursework",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "coursework",
+    "sources": [
+      "src:su-catalog"
+    ],
+    "verificationPath": "https://catalog.seattleu.edu/ — MSDS required course list",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:sql",
+      "cpt:schema-design",
+      "cpt:python"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:su-catalog-msds"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:msds-ethics-viz",
+    "kind": "fact",
+    "subject": "rol:msds",
+    "statement": "Duy's required coursework includes DATA 5120 Data Science, Law and Ethics and DATA 5310 Data Visualization.",
+    "short": "Law and ethics; data visualisation",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "coursework",
+    "sources": [
+      "src:su-catalog"
+    ],
+    "verificationPath": "https://catalog.seattleu.edu/ — MSDS required course list",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:legal-compliance",
+      "cpt:data-viz"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:su-catalog-msds"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:msds-electives",
+    "kind": "fact",
+    "subject": "rol:msds",
+    "statement": "The elective group for the programme includes CPSC 5075 Data Architectures for Analytics, DATA 5155 Numerical Methods for Machine Learning, ECEGR 5760 Advanced Machine Learning and MATH 5112 Mathematical Statistics for Data Analytics.",
+    "short": "Elective group A",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "coursework",
+    "sources": [
+      "src:su-catalog"
+    ],
+    "verificationPath": "https://catalog.seattleu.edu/ — MSDS elective group A",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:schema-design",
+      "cpt:ml-modeling",
+      "cpt:statistics"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:su-catalog-msds"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "Which of these Duy has taken is not recorded anywhere in this corpus. The statement is about the programme's elective group and says nothing about his transcript."
+  },
+  {
+    "id": "clm:availability",
+    "kind": "fact",
+    "subject": "per:duy",
+    "statement": "Duy graduates in June 2027 after completing all 45 credits and the two-quarter capstone, and is open to both internships in the summer of 2027 and new-graduate research, data-science and machine-learning-engineering roles starting mid-2027.",
+    "short": "Available from mid-2027; graduating June 2027",
+    "period": {
+      "start": "2027-06",
+      "end": null,
+      "precision": "month"
+    },
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "credential",
+    "sources": [
+      "src:owner-corrections-2026-09-02",
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "Rebuild brief, Addendum A.4 and Addendum B.1 decision 3; graduation date corroborated at git show 234cbcd:docs/resume_content.html line 225",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:ownership"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 180,
+    "note": "The single sentence on the page that tells a recruiter what to do next. The owner settled it: BOTH, without contradiction. Every 'Summer 2026' string is retracted (ret:summer-2026-availability). Deliberately phrased 'in the summer of 2027' rather than as a season-plus-year token so it cannot be confused with the retracted availability strings."
+  },
+  {
+    "id": "clm:berkeley-cert",
+    "kind": "fact",
+    "subject": "rol:berkeley-cert",
+    "statement": "Duy holds a Professional Certificate in Machine Learning and AI from the UC Berkeley College of Engineering, completed July 2024.",
+    "short": "UC Berkeley ML/AI certificate, Jul 2024",
+    "period": {
+      "start": "2024-01",
+      "end": "2024-07",
+      "precision": "month"
+    },
+    "status": "historical",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "credential",
+    "sources": [
+      "src:resume-2026-08",
+      "src:certificate-pdf"
+    ],
+    "verificationPath": "public/docs/professional_certificate_in_mlai.pdf",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:ml-modeling",
+      "cpt:deep-learning"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:berkeley-cert-pdf",
+      "art:cert-page"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "jsonld",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:sfu-economics-ba",
+    "kind": "fact",
+    "subject": "rol:sfu-ba",
+    "statement": "Duy holds a B.A. in Economics with a Data Analysis concentration from Simon Fraser University, completed May 2023.",
+    "short": "B.A. Economics (Data Analysis), SFU, May 2023",
+    "period": {
+      "start": null,
+      "end": "2023-05",
+      "precision": "month"
+    },
+    "status": "historical",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "credential",
+    "sources": [
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — Education, lines 249-254",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:economics",
+      "cpt:causal-inference",
+      "cpt:statistics"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "jsonld",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "Only the completion date is sourced. No start year is asserted anywhere until the owner supplies one."
+  },
+  {
+    "id": "clm:resume-reporting-note",
+    "kind": "fact",
+    "subject": "per:duy",
+    "statement": "Duy owns problems end to end — experiment design, modelling, evaluation and reporting — and names reporting as the hardest of the four to learn, because it is where months of shared work have to be revised into one coherent argument under a deadline.",
+    "short": "Owns design, modelling, evaluation and reporting",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — Summary, line 214",
+    "verifiedOn": "2026-09-02",
+    "quote": "I own problems end to end: experiment design, modeling, evaluation, and reporting. Of those four, reporting has been the hardest to learn.",
+    "caveats": [],
+    "concepts": [
+      "cpt:ownership",
+      "cpt:technical-writing"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:econ-to-ds-bridge",
+    "kind": "narrative",
+    "subject": "per:duy",
+    "statement": "Duy came to data science from economics and works where the two meet: experimental design and causal reasoning applied to machine-learning systems, with every claim made checkable.",
+    "short": "Economics into causal reasoning about ML systems",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:resume-2026-08",
+      "src:portfolio-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/index_portfolio.html — About section",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:causal-inference",
+      "cpt:experimental-design",
+      "cpt:economics"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [
+      "clm:sfu-economics-ba",
+      "clm:yang-design-24cells",
+      "clm:cause-ces-model"
+    ],
+    "surfaces": [
+      "page",
+      "jsonld",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "The JSON-LD Person description. A narrative claim, so it may combine the three claims in derivedFrom and may not add a fact."
+  },
+  {
+    "id": "clm:audit-disposition",
+    "kind": "narrative",
+    "subject": "per:duy",
+    "statement": "One habit runs through all of Duy's work: he audits the thing everyone else assumed was fine. He found a metric-labelling artifact in the paper he was replicating, audited his own team's pipeline output against the lab's stated requirements and traced the failures to a single line of shared code, and built a colour system whose documented contrast failure is structurally unreachable rather than merely written down.",
+    "short": "Audits the thing everyone assumed was fine",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:owner-corrections-2026-09-02"
+    ],
+    "verificationPath": "Rebuild brief, Addendum A.2 — 'it is the same instinct as the metric-labeling artifact Duy caught in the Yang replication'",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:code-review",
+      "cpt:root-cause",
+      "cpt:data-quality",
+      "cpt:reproducibility"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [
+      "clm:yang-metric-artifact",
+      "clm:fischer-team-audit",
+      "clm:fischer-team-audit-rootcause",
+      "clm:mav-ground-contexts"
+    ],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "THE THROUGH-LINE the brief asks to be named explicitly. It connects both research positions to the MAVTERRAS contrast mechanism. As a narrative claim it can only combine the four claims under it."
+  },
+  {
+    "id": "clm:yang-role",
+    "kind": "fact",
+    "subject": "rol:yang-gra",
+    "statement": "As a Graduate Research Assistant with Dr. Wenjing Yang, Duy runs a critical replication of a published retrieval-augmented mammography report-generation pipeline, which became a controlled experiment of his own design.",
+    "short": "Graduate Research Assistant — medical vision-language RAG",
+    "period": {
+      "start": "2026-04",
+      "end": null,
+      "precision": "quarter"
+    },
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:resume-2026-08",
+      "src:news-html"
+    ],
+    "verificationPath": "public/docs/news.html:L237-L245 — March 2026 entry",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:yang-label-caveat"
+    ],
+    "concepts": [
+      "cpt:rag",
+      "cpt:vision-language",
+      "cpt:medical-ai",
+      "cpt:experimental-design"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 180,
+    "note": "Present tense: the position is ongoing with weekly meetings (Addendum A.3)."
+  },
+  {
+    "id": "clm:yang-origin-course",
+    "kind": "fact",
+    "subject": "rol:yang-gra",
+    "statement": "The research relationship grew out of coursework: Duy met Dr. Yang as a student in her Statistical Machine Learning I course, began reading for her over the winter break at the end of that course, and started experimentation in the spring 2026 quarter.",
+    "short": "Research grew out of Statistical Machine Learning I",
+    "period": {
+      "start": "2026-04",
+      "end": null,
+      "precision": "quarter"
+    },
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:owner-corrections-2026-09-02"
+    ],
+    "verificationPath": "Rebuild brief, Addendum A.3 — owner's own account of the timeline",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:ml-modeling",
+      "cpt:ownership"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "Supports the 'curriculum as a coherent arc' argument: the research came out of a class, not out of a job board. The resume's start date is a typo and is retracted (ret:yang-winter-2025); no other start string may be printed."
+  },
+  {
+    "id": "clm:yang-ongoing",
+    "kind": "fact",
+    "subject": "rol:yang-gra",
+    "statement": "The position is ongoing, with weekly meetings.",
+    "short": "Ongoing, with weekly meetings",
+    "period": {
+      "start": "2026-04",
+      "end": null,
+      "precision": "quarter"
+    },
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:owner-corrections-2026-09-02"
+    ],
+    "verificationPath": "Rebuild brief, Addendum A.3 — 'up until now (PRESENT still working - weekly meeting)'",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:ownership"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 90,
+    "note": "reviewEvery 90: the day this stops being true is the day the page is wrong."
+  },
+  {
+    "id": "clm:yang-dataset",
+    "kind": "metric",
+    "subject": "rol:yang-gra",
+    "statement": "The study runs on VinDr-Mammo — 5,000 studies from 5,000 patients, four views each, 20,000 images — with a 1,000-study held-out test split.",
+    "short": "VinDr-Mammo: 5,000 studies / 20,000 images",
+    "value": {
+      "display": "5,000 studies · 20,000 images · 1,000-study held-out split",
+      "numbers": [
+        "5,000",
+        "20,000",
+        "1,000"
+      ],
+      "unit": "studies / images",
+      "baseline": null,
+      "n": "5,000 patients"
+    },
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:resume-2026-08",
+      "src:news-html"
+    ],
+    "verificationPath": "public/docs/news.html:L196-L201 — May 2026 entry, '1,000-study VinDr-Mammo held-out test split'",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:yang-label-caveat"
+    ],
+    "concepts": [
+      "cpt:medical-ai",
+      "cpt:evaluation"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:vindr-mammo"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "Reconciles what looked like a conflict: the resume's '20,000 images / 5,000 patients' and the news archive's '5,000 studies' are the same corpus at two granularities — four views per study, one study per patient. Recorded at dsp:vindr-unit as reconciled so nobody re-opens it."
+  },
+  {
+    "id": "clm:yang-design-24cells",
+    "kind": "metric",
+    "subject": "rol:yang-gra",
+    "statement": "Duy designed and ran a 24-cell controlled experiment: four retrieval-encoder substrates, each evaluated frozen and fine-tuned, crossed with three frozen vision-language decoders.",
+    "short": "24-cell controlled experiment",
+    "value": {
+      "display": "24 evaluation cells (4 encoders × 2 states × 3 decoders)",
+      "numbers": [
+        "24",
+        "4",
+        "2",
+        "3"
+      ],
+      "unit": "cells",
+      "baseline": null,
+      "n": null
+    },
+    "period": {
+      "start": "2026-07",
+      "end": "2026-07",
+      "precision": "month"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:resume-2026-08",
+      "src:news-html"
+    ],
+    "verificationPath": "public/docs/news.html:L135-L144 — July 2026, 'That completed the design'",
+    "verifiedOn": "2026-09-02",
+    "quote": "four retrieval-encoder substrates, each evaluated frozen and fine-tuned, crossed with three frozen VLM decoders — 24 evaluation cells",
+    "caveats": [],
+    "concepts": [
+      "cpt:experimental-design",
+      "cpt:evaluation",
+      "cpt:vision-language"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:yang-encoders",
+    "kind": "fact",
+    "subject": "rol:yang-gra",
+    "statement": "The four retrieval encoders are Mammo-CLIP (mammography-native), OpenCLIP (generic web images), a biomedical-figure encoder, and BioCLIP (organism and tree-of-life images) — the last chosen because it shares architecture and fine-tuning schedule with the other out-of-domain encoders but not their pretraining domain.",
+    "short": "Four encoder substrates, one domain-native",
+    "period": null,
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:news-html"
+    ],
+    "verificationPath": "public/docs/news.html:L135-L140 — July 2026, 'Added a fourth encoder, BioCLIP'",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:vision-language",
+      "cpt:experimental-design",
+      "cpt:deep-learning"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "BioCLIP is the control for architecture and schedule. Without it, 'domain matters' would be confounded with 'this particular model is better'."
+  },
+  {
+    "id": "clm:yang-decoders",
+    "kind": "fact",
+    "subject": "rol:yang-gra",
+    "statement": "The three frozen vision-language decoders are MedGemma, Qwen2.5-VL and LLaVA-Med.",
+    "short": "MedGemma, Qwen2.5-VL, LLaVA-Med",
+    "period": null,
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:news-html"
+    ],
+    "verificationPath": "public/docs/news.html:L237-L245 — March 2026 entry",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:vision-language",
+      "cpt:llm"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:yang-negative-control",
+    "kind": "fact",
+    "subject": "rol:yang-gra",
+    "statement": "MedGemma serves as the retrieval-insensitive negative control: it did not respond to the retrieval improvement, which is what makes the effect on the other two decoders interpretable.",
+    "short": "MedGemma as negative control",
+    "period": null,
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:news-html",
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "public/docs/news.html:L150-L163 — July 2026, 'while MedGemma did not respond to it'",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:experimental-design",
+      "cpt:evaluation"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:yang-p1-floor",
+    "kind": "metric",
+    "subject": "rol:yang-gra",
+    "statement": "The held-out majority-class retrieval floor is P@1 = 0.487; fine-tuning the mammography-native encoder produced the only arm of twenty-four to clear it, moving from 0.513 frozen to 0.585 fine-tuned.",
+    "short": "P@1 0.513 to 0.585 against a 0.487 floor",
+    "value": {
+      "display": "0.487 floor · 0.513 → 0.585",
+      "numbers": [
+        "0.487",
+        "0.513",
+        "0.585"
+      ],
+      "unit": "P@1",
+      "baseline": "held-out majority-class retrieval floor, P@1 = 0.487",
+      "n": "1,000-study held-out split"
+    },
+    "period": {
+      "start": "2026-07",
+      "end": "2026-07",
+      "precision": "month"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:news-html"
+    ],
+    "verificationPath": "public/docs/news.html:L150-L163 — July 2026, 'Confirmed the headline result'",
+    "verifiedOn": "2026-09-02",
+    "quote": "the only arm to clear the held-out majority-class retrieval floor of P@1 = 0.487, moving from 0.513 frozen to 0.585 fine-tuned",
+    "caveats": [
+      "clm:yang-label-caveat"
+    ],
+    "concepts": [
+      "cpt:evaluation",
+      "cpt:rag",
+      "cpt:statistics"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "The single most important number in the corpus and the first of the three hero figures (Addendum B R-8). The floor must always be printed with the result: 0.585 without 0.487 is meaningless."
+  },
+  {
+    "id": "clm:yang-ood-null",
+    "kind": "fact",
+    "subject": "rol:yang-gra",
+    "statement": "The same fine-tuning recipe applied to the out-of-domain encoders inflated training-set class separation while leaving held-out retrieval tied with the majority-class floor — separation without transfer.",
+    "short": "Out-of-domain encoders: separation without transfer",
+    "period": null,
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:news-html"
+    ],
+    "verificationPath": "public/docs/news.html:L150-L163 — July 2026, 'inflated training-set separation but left held-out retrieval tied with that floor'",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:evaluation",
+      "cpt:experimental-design",
+      "cpt:deep-learning"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "The null result is the paper's title. Reporting it as loudly as the positive one is the point."
+  },
+  {
+    "id": "clm:yang-suspicion-f1",
+    "kind": "metric",
+    "subject": "rol:yang-gra",
+    "statement": "Replacing the frozen generic retriever with the domain-native, contrastively fine-tuned encoder — decoder frozen throughout — raised suspicion macro-F1 from 0.35 to 0.48 on LLaVA-Med, a gain of 0.13.",
+    "short": "Suspicion macro-F1 0.35 to 0.48 (+0.13)",
+    "value": {
+      "display": "0.35 → 0.48 (+0.13)",
+      "numbers": [
+        "0.35",
+        "0.48",
+        "0.13",
+        "+0.13"
+      ],
+      "unit": "macro-F1",
+      "baseline": "frozen OpenCLIP retriever, same frozen decoder",
+      "n": "1,000-study held-out split"
+    },
+    "period": null,
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — Experience bullet 3, line 274",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:yang-label-caveat",
+      "clm:yang-metric-restatement-caveat"
+    ],
+    "concepts": [
+      "cpt:evaluation",
+      "cpt:rag",
+      "cpt:medical-ai"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:yang-birads-delta",
+    "kind": "metric",
+    "subject": "rol:yang-gra",
+    "statement": "The same substitution raised BI-RADS agreement by 0.10 on LLaVA-Med.",
+    "short": "BI-RADS +0.10",
+    "value": {
+      "display": "+0.10",
+      "numbers": [
+        "0.10",
+        "+0.10"
+      ],
+      "unit": "F1",
+      "baseline": "frozen OpenCLIP retriever, same frozen decoder",
+      "n": "1,000-study held-out split"
+    },
+    "period": null,
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — Experience bullet 3, line 274",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:yang-label-caveat"
+    ],
+    "concepts": [
+      "cpt:evaluation",
+      "cpt:medical-ai"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:yang-ft-attribution",
+    "kind": "metric",
+    "subject": "rol:yang-gra",
+    "statement": "Isolating the fine-tuning step alone — holding the encoder family fixed — accounts for +0.11 on Qwen2.5-VL and +0.06 on LLaVA-Med.",
+    "short": "Fine-tuning alone: +0.11 / +0.06",
+    "value": {
+      "display": "+0.11 (Qwen2.5-VL) · +0.06 (LLaVA-Med)",
+      "numbers": [
+        "0.11",
+        "+0.11",
+        "0.06",
+        "+0.06"
+      ],
+      "unit": "F1",
+      "baseline": "same encoder family, frozen",
+      "n": "1,000-study held-out split"
+    },
+    "period": null,
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — Experience bullet 3, line 274",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:yang-label-caveat"
+    ],
+    "concepts": [
+      "cpt:evaluation",
+      "cpt:experimental-design"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "The ATTRIBUTION number: it separates 'a better encoder' from 'fine-tuning the encoder', which is what makes clm:yang-suspicion-f1 a causal claim rather than a comparison."
+  },
+  {
+    "id": "clm:yang-suspicion-acc",
+    "kind": "metric",
+    "subject": "rol:yang-gra",
+    "statement": "The retrieval gain propagated into the generated reports on the two retrieval-sensitive decoders, raising suspicion accuracy by 20.7% and 15.6% relative to the frozen baseline.",
+    "short": "Suspicion accuracy +20.7% / +15.6%",
+    "value": {
+      "display": "+20.7% and +15.6%",
+      "numbers": [
+        "20.7",
+        "20.7%",
+        "+20.7%",
+        "15.6",
+        "15.6%",
+        "+15.6%"
+      ],
+      "unit": "% relative",
+      "baseline": "frozen-encoder baseline, same decoders",
+      "n": "1,000-study held-out split"
+    },
+    "period": null,
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:news-html"
+    ],
+    "verificationPath": "public/docs/news.html:L150-L163 — July 2026, 'suspicion accuracy +20.7% and +15.6% relative to the frozen baseline'",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:yang-label-caveat",
+      "clm:yang-metric-restatement-caveat"
+    ],
+    "concepts": [
+      "cpt:evaluation",
+      "cpt:rag"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "SAME EFFECT, DIFFERENT METRIC, as clm:yang-suspicion-f1. The shared caveat clm:yang-metric-restatement-caveat is what stops a reader seeing '+0.13' and '+20.7%' side by side and counting two results."
+  },
+  {
+    "id": "clm:yang-metric-restatement-caveat",
+    "kind": "caveat",
+    "subject": "rol:yang-gra",
+    "statement": "The macro-F1 gain and the relative-accuracy gain are two renderings of the same measured effect, not two separate results.",
+    "short": "Two renderings of one effect",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:resume-2026-08",
+      "src:news-html"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html line 274 and public/docs/news.html:L150-L163 describe the same experiment arm",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:evaluation",
+      "cpt:reproducibility"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "Attached to both metric claims, so C10 makes it impossible to print them together without it."
+  },
+  {
+    "id": "clm:yang-birads-untrained",
+    "kind": "metric",
+    "subject": "rol:yang-gra",
+    "statement": "Scoring the untrained, finer five-class BI-RADS category instead of the three-class label the encoder was fine-tuned on, the gain held on both retrieval-sensitive decoders: accuracy up 23.2% and 14.6%, quadratic weighted kappa from 0.100 to 0.302.",
+    "short": "Untrained BI-RADS label: the gain holds",
+    "value": {
+      "display": "+23.2% and +14.6% · QWK 0.100 → 0.302",
+      "numbers": [
+        "23.2",
+        "23.2%",
+        "+23.2%",
+        "14.6",
+        "14.6%",
+        "+14.6%",
+        "0.100",
+        "0.302"
+      ],
+      "unit": "% relative / quadratic weighted kappa",
+      "baseline": "frozen-encoder baseline",
+      "n": "1,000-study held-out split"
+    },
+    "period": null,
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:news-html"
+    ],
+    "verificationPath": "public/docs/news.html:L120-L129 — July 2026, 'Tested whether the effect was specific to the label'",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:yang-birads-majority-caveat",
+      "clm:yang-label-caveat"
+    ],
+    "concepts": [
+      "cpt:evaluation",
+      "cpt:experimental-design",
+      "cpt:medical-ai"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:yang-birads-majority-caveat",
+    "kind": "caveat",
+    "subject": "rol:yang-gra",
+    "statement": "Nearly all of the BI-RADS gain landed on the majority BI-RADS categories rather than the clinically decisive ones.",
+    "short": "Gain concentrated on majority categories",
+    "period": null,
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:news-html"
+    ],
+    "verificationPath": "public/docs/news.html:L127-L129 — 'though nearly all of it landed on the majority BI-RADS categories'",
+    "verifiedOn": "2026-09-02",
+    "quote": "though nearly all of it landed on the majority BI-RADS categories rather than the clinically decisive ones",
+    "caveats": [],
+    "concepts": [
+      "cpt:evaluation",
+      "cpt:medical-ai",
+      "cpt:reproducibility"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "The brief: 'This caveat is load-bearing. Do not drop it — the honesty is part of the signal.' It is attached to clm:yang-birads-untrained, so C10 fails the build if that claim renders without it. The honesty is enforced, not remembered."
+  },
+  {
+    "id": "clm:yang-label-caveat",
+    "kind": "caveat",
+    "subject": "rol:yang-gra",
+    "statement": "VinDr-Mammo carries radiologist BI-RADS assessments, not biopsy-confirmed pathology, so every suspicion and BI-RADS result here is agreement with a radiologist's reading, not diagnostic accuracy.",
+    "short": "Agreement with a radiologist, not diagnostic accuracy",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:news-html"
+    ],
+    "verificationPath": "public/docs/news.html:L285-L287 — closing note on the clinical labels",
+    "verifiedOn": "2026-09-02",
+    "quote": "VinDr-Mammo carries radiologist BI-RADS assessments, not biopsy-confirmed pathology. The suspicion and BI-RADS results above are agreement with a radiologist's reading, not diagnostic accuracy.",
+    "caveats": [],
+    "concepts": [
+      "cpt:medical-ai",
+      "cpt:evaluation",
+      "cpt:reproducibility"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "Attached to every Yang metric claim. This is the caveat that keeps the work from reading as a clinical accuracy claim, which it is not and which would be the most damaging possible misreading."
+  },
+  {
+    "id": "clm:yang-identification-limit",
+    "kind": "caveat",
+    "subject": "rol:yang-gra",
+    "statement": "The encoders differ in pretraining domain and in input resolution at once, so those two explanations are entangled; the paper marks the domain claim provisional rather than resolved.",
+    "short": "Domain and resolution are entangled",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:blog-html"
+    ],
+    "verificationPath": "public/docs/blog_econometrics_of_ai.html",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:experimental-design",
+      "cpt:causal-inference",
+      "cpt:reproducibility"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "An identification limit the author states about his own result. Worth shipping: it is the clearest evidence in the corpus that he knows the difference between a finding and a proof."
+  },
+  {
+    "id": "clm:yang-effective-rank",
+    "kind": "metric",
+    "subject": "rol:yang-gra",
+    "statement": "The geometric signature behind the effect: the same fine-tuning recipe collapses the held-out effective rank of the three out-of-domain encoders' embeddings — 10.5 to 1.1, 9.1 to 2.4, 20.2 to 2.5 — while expanding the mammography-native encoder's from 7.2 to 13.3.",
+    "short": "Effective rank: collapse versus expansion",
+    "value": {
+      "display": "10.5→1.1 · 9.1→2.4 · 20.2→2.5 · 7.2→13.3",
+      "numbers": [
+        "10.5",
+        "1.1",
+        "9.1",
+        "2.4",
+        "20.2",
+        "2.5",
+        "7.2",
+        "13.3"
+      ],
+      "unit": "effective rank",
+      "baseline": "the same encoder before fine-tuning",
+      "n": "1,000-study held-out split"
+    },
+    "period": null,
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:news-html"
+    ],
+    "verificationPath": "public/docs/news.html:L105-L114 — July 2026, 'Found the geometric signature'",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:deep-learning",
+      "cpt:evaluation",
+      "cpt:experimental-design"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:yang-metric-artifact",
+    "kind": "fact",
+    "subject": "rol:yang-gra",
+    "statement": "Auditing his evaluation code against the paper he was replicating, Duy found that its published precision, recall and F1 are computed as weighted averages while its text describes them as macro-averaged — a metric-labelling artifact that changes how the reference numbers must be interpreted. His evaluator follows the paper's stated methodology, so every subsequent comparison runs inside his own pipeline rather than against the published numbers.",
+    "short": "Found a metric-labelling artifact in the replicated paper",
+    "period": {
+      "start": "2026-06",
+      "end": "2026-06",
+      "precision": "month"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:news-html",
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "public/docs/news.html:L169-L178 — June 2026 entry",
+    "verifiedOn": "2026-09-02",
+    "quote": "its published precision, recall and F1 are computed as weighted averages while its text describes them as macro-averaged — the two are not the same metric",
+    "caveats": [],
+    "concepts": [
+      "cpt:evaluation",
+      "cpt:reproducibility",
+      "cpt:statistics",
+      "cpt:code-review"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "The single best evidence of rigour in the corpus: he found an error in the thing he was replicating and changed his own methodology in response. Rank it high for Research Scientist. It is also half of clm:audit-disposition."
+  },
+  {
+    "id": "clm:yang-regenerators",
+    "kind": "metric",
+    "subject": "rol:yang-gra",
+    "statement": "Evaluation is automated with reproducible, self-verifying generators in Python and pandas that recompute more than 100 reported metrics byte-exact from raw model predictions.",
+    "short": "100+ metrics recomputed byte-exact",
+    "value": {
+      "display": "100+ metrics",
+      "numbers": [
+        "100",
+        "100+"
+      ],
+      "unit": "metrics",
+      "baseline": null,
+      "n": null
+    },
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — Experience bullet 4, line 275",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:reproducibility",
+      "cpt:python",
+      "cpt:evaluation"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:yang-repro-package",
+    "kind": "fact",
+    "subject": "rol:yang-gra",
+    "statement": "Before submitting, Duy re-derived every number in the paper directly from the raw prediction files and stored embeddings and assembled a reproducibility package — checksummed input data, an end-to-end rebuild script and the executed notebooks — so each figure and table regenerates from source.",
+    "short": "Reproducibility package: checksums, rebuild script, notebooks",
+    "period": {
+      "start": "2026-07",
+      "end": "2026-07",
+      "precision": "month"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:news-html"
+    ],
+    "verificationPath": "public/docs/news.html:L92-L99 — July 2026, 'assembled a reproducibility package'",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:reproducibility",
+      "cpt:python"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:yang-report-37p",
+    "kind": "metric",
+    "subject": "rol:yang-gra",
+    "statement": "Duy wrote up the full analysis as a 37-page technical report for his advisor, Dr. Wenjing Yang.",
+    "short": "37-page technical report",
+    "value": {
+      "display": "37 pages",
+      "numbers": [
+        "37"
+      ],
+      "unit": "pages",
+      "baseline": null,
+      "n": null
+    },
+    "period": {
+      "start": "2026-07",
+      "end": "2026-07",
+      "precision": "month"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:news-html",
+      "src:resume-2026-08",
+      "src:yang-report"
+    ],
+    "verificationPath": "public/docs/news.html:L161-L163 — July 2026, 'Wrote up the full analysis in a 37-page technical report'",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:technical-writing",
+      "cpt:reproducibility"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:yang-report"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:yang-psb-submission",
+    "kind": "fact",
+    "subject": "rol:yang-gra",
+    "statement": "The report was condensed into a first-author manuscript, \"Separation Without Transfer: The Retrieval Encoder's Substrate, Not the VLM Decoder, Decides Whether Contrastive Fine-Tuning Transfers in Mammography Report Generation\", submitted to the Pacific Symposium on Biocomputing 2027 with Dr. Wenjing Yang as co-author. It is under review.",
+    "short": "First-author manuscript under review, PSB 2027",
+    "period": {
+      "start": "2026-08",
+      "end": null,
+      "precision": "month"
+    },
+    "status": "in-progress",
+    "tense": "present-progressive",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:news-html",
+      "src:resume-2026-08",
+      "src:psb-manuscript"
+    ],
+    "verificationPath": "public/docs/news.html — August 2026 entry",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:yang-psb-caveat"
+    ],
+    "concepts": [
+      "cpt:research-publication",
+      "cpt:medical-ai",
+      "cpt:rag"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:psb-manuscript"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "jsonld",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 90,
+    "note": "status in-progress because the outcome is not decided. The statement is written so that the past-tense verbs describe the SUBMISSION (which happened) and the present tense describes the REVIEW (which is ongoing)."
+  },
+  {
+    "id": "clm:yang-psb-caveat",
+    "kind": "caveat",
+    "subject": "rol:yang-gra",
+    "statement": "The manuscript is under review; it is not accepted and not published.",
+    "short": "Under review, not published",
+    "period": null,
+    "status": "in-progress",
+    "tense": "present-progressive",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:news-html"
+    ],
+    "verificationPath": "public/docs/news.html — August 2026 entry, 'PSB 2027 · under review'",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:research-publication"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "jsonld",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 90,
+    "note": "reviewEvery 90 days: the day this becomes 'accepted' or 'rejected' is the day the copy is wrong. C11 will surface it."
+  },
+  {
+    "id": "clm:yang-stack",
+    "kind": "fact",
+    "subject": "rol:yang-gra",
+    "statement": "The work is built in Python with PyTorch, HuggingFace Transformers, ChromaDB and scikit-learn, trained on a Google Colab A100.",
+    "short": "PyTorch · Transformers · ChromaDB · scikit-learn",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — Experience bullet 2 (line 273) and Skills (lines 350-353)",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:python",
+      "cpt:deep-learning",
+      "cpt:rag",
+      "cpt:ml-modeling"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:yang-concurrency",
+    "kind": "narrative",
+    "subject": "per:duy",
+    "statement": "Duy carries two research positions at once during the master's programme — the Yang mammography study and the Fischer lab data infrastructure — alongside coursework.",
+    "short": "Two concurrent research positions during the MS",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:portfolio-2026-08",
+      "src:news-html"
+    ],
+    "verificationPath": "git show 234cbcd:docs/index_portfolio.html — About, 'My master's program has carried two research positions at once'",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:ownership"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [
+      "clm:yang-role",
+      "clm:fischer-role",
+      "clm:msds-enrolment"
+    ],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 180,
+    "note": "Present tense: both positions are ongoing."
+  },
+  {
+    "id": "clm:fischer-role",
+    "kind": "fact",
+    "subject": "rol:fischer-rde",
+    "statement": "As Research Data Engineer in Prof. Brian Fischer's Computational Neuroscience Lab, Duy builds the data infrastructure for an NIH CRCNS-funded project on barn-owl sound localization — concurrent with study in spring, full-time over the summer term, and continuing into the fall 2026 quarter.",
+    "short": "Research Data Engineer — Fischer lab (ongoing)",
+    "period": {
+      "start": "2026-03",
+      "end": null,
+      "precision": "month"
+    },
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:resume-2026-08",
+      "src:news-html",
+      "src:owner-corrections-2026-09-02"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — Experience, second entry (lines 281-292); ongoing status from Rebuild brief Addendum A.5",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:fischer-live-caveat"
+    ],
+    "concepts": [
+      "cpt:data-pipeline",
+      "cpt:etl",
+      "cpt:schema-design",
+      "cpt:computational-neuroscience"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:iccl-db"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 90,
+    "note": "ONGOING, present tense (Addendum A.5). The resume closes this role in July 2026; that end date is stale and no surface may print it."
+  },
+  {
+    "id": "clm:fischer-domain",
+    "kind": "fact",
+    "subject": "rol:fischer-rde",
+    "statement": "The project is NIH CRCNS-funded research on how barn owls localize sound, and the data are neural recordings from that work.",
+    "short": "NIH CRCNS · barn-owl sound localization",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — Experience bullet 1, line 288",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:computational-neuroscience"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:fischer-etl-formats",
+    "kind": "metric",
+    "subject": "rol:fischer-rde",
+    "statement": "Duy engineered an ETL pipeline in Python — pandas, SciPy and h5py — converting five or more proprietary electrophysiology formats (XDPHYS .iid, .itd and .bf, MATLAB .mat, headerless CSV) into a single normalized relational database.",
+    "short": "ETL over 5+ proprietary electrophysiology formats",
+    "value": {
+      "display": "5+ proprietary formats",
+      "numbers": [
+        "5",
+        "5+"
+      ],
+      "unit": "formats",
+      "baseline": null,
+      "n": null
+    },
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:resume-2026-08",
+      "src:iccl-raw-archive"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — Experience bullet 2, line 289; extension counts corroborated by /Users/dcnguyen060899/Downloads/data_manager/database_nerology_design/Brian Fischer's files - all_owl_data/",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:etl",
+      "cpt:data-pipeline",
+      "cpt:python",
+      "cpt:sql"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 180,
+    "note": "The raw archive carries six distinct scientific extensions (.itd, .mat, .abi, .iid, .gen, .bf), which satisfies '5+' rather than contradicting it. Recorded reconciled at dsp:fischer-formats; the corpus asserts the conservative '5+'."
+  },
+  {
+    "id": "clm:fischer-etl-endtoend",
+    "kind": "fact",
+    "subject": "rol:fischer-rde",
+    "statement": "The pipeline is end to end: it reads the raw lab files, applies the data-quality rules and loads a queryable database with no manual step in the middle.",
+    "short": "End-to-end ETL, no manual step",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — Experience bullet 2, line 289",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:etl",
+      "cpt:data-pipeline",
+      "cpt:python"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "Deliberately 'end to end' and never a phase count. The phase count appears only in the stale news paragraph and is retracted at ret:fischer-6-phase."
+  },
+  {
+    "id": "clm:fischer-schema-er",
+    "kind": "fact",
+    "subject": "rol:fischer-rde",
+    "statement": "Duy designed the relational schema and its ER model — documented in LaTeX — with foreign-key constraints and explicit data-quality rules covering missing-data handling, tracked exclusions and path remapping, consolidating scattered lab files into one queryable source of truth.",
+    "short": "Relational schema and ER model documented in LaTeX",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:resume-2026-08",
+      "src:iccl-schema"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/data_manager/database_nerology_design/demo_db/schema.sql — header maps each of the 7 tables to a numbered Relation in ER_diagram/phase_1/er_model_report.tex",
+    "verifiedOn": "2026-09-02",
+    "quote": "aligned with the authoritative ER model in ER_diagram/phase_1/er_model_report.tex (Part 2: Resulting Relations)",
+    "caveats": [],
+    "concepts": [
+      "cpt:schema-design",
+      "cpt:sql",
+      "cpt:data-quality",
+      "cpt:technical-writing"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:iccl-db"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 180,
+    "note": "The schema file's own header is the evidence: it names the LaTeX ER document and maps each table to a numbered relation in it."
+  },
+  {
+    "id": "clm:fischer-db-shape",
+    "kind": "metric",
+    "subject": "rol:fischer-rde",
+    "statement": "The shipped database is SQLite: seven normalized tables — owl, recording session, neuron, experiment, ILD condition tested, tuning parameters and spike reliability — plus five views built for the lab's own queries.",
+    "short": "SQLite · 7 tables · 5 views",
+    "value": {
+      "display": "7 tables · 5 views",
+      "numbers": [
+        "7",
+        "5"
+      ],
+      "unit": "tables / views",
+      "baseline": null,
+      "n": null
+    },
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:iccl-db",
+      "src:iccl-schema"
+    ],
+    "verificationPath": "sqlite3 'file:/Users/dcnguyen060899/Downloads/data_manager/database_nerology_design/demo_db/iccl_demo.db?mode=ro' \"SELECT type, COUNT(*) FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' GROUP BY type\" — 7 tables, 5 views",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:fischer-live-caveat"
+    ],
+    "concepts": [
+      "cpt:schema-design",
+      "cpt:sql"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:iccl-db"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 90,
+    "note": "SQLite, not MySQL. The schema file states it was translated from an earlier MySQL DDL: MySQL was a previous phase, not the shipped engine, and 'MySQL database' is retracted as a description of the current state (ret:fischer-mysql). Views: v_neuron_wide, v_experiment_coverage, v_owl_summary, v_spike_reliability, v_analyzed_neuron."
+  },
+  {
+    "id": "clm:fischer-db-scale",
+    "kind": "metric",
+    "subject": "rol:fischer-rde",
+    "statement": "The database holds 195 neurons from 7 barn owls across 38 recording sessions, with 1,325 recording passes and 1,265 tuning-parameter rows.",
+    "short": "195 neurons · 7 owls · 38 sessions · 1,325 passes",
+    "value": {
+      "display": "195 neurons · 7 owls · 38 sessions · 1,325 passes · 1,265 tuning rows",
+      "numbers": [
+        "195",
+        "7",
+        "38",
+        "1,325",
+        "1,265"
+      ],
+      "unit": "rows",
+      "baseline": null,
+      "n": null
+    },
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:iccl-db",
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "sqlite3 'file:/Users/dcnguyen060899/Downloads/data_manager/database_nerology_design/demo_db/iccl_demo.db?mode=ro' — SELECT COUNT(*) FROM neuron (195), FROM owl WHERE source_dataset='fischer' (7), FROM recording_session (38), FROM experiment (1325), FROM tuning_parameters (1265). Re-derive with `node scripts/corpus-refresh-fischer.mjs`.",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:fischer-live-caveat"
+    ],
+    "concepts": [
+      "cpt:schema-design",
+      "cpt:sql",
+      "cpt:etl"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:iccl-db"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 90,
+    "note": "THE FORMERLY DISPUTED FIGURES, now settled by querying the database directly. The competing account — 110 neurons across 8 owls, ~261 experiments — is retracted (ret:fischer-110-neurons, ret:fischer-8-owls, ret:fischer-261-experiments): its 8-owl figure counted a second researcher's three owls that are staged and schema-provisioned but hold zero rows. The seven owl identifiers are 802, 841, 842, 844, 847, 853 and 858."
+  },
+  {
+    "id": "clm:fischer-curated-subset",
+    "kind": "metric",
+    "subject": "rol:fischer-rde",
+    "statement": "Of the 195 neurons, 77 sit in the principal investigator's own hand-curated analysis set, flagged in the schema so a downstream query can restrict to it without re-deriving the curation.",
+    "short": "77 of 195 neurons in the curated analysis set",
+    "value": {
+      "display": "77 of 195 neurons",
+      "numbers": [
+        "77",
+        "195"
+      ],
+      "unit": "neurons",
+      "baseline": "all neurons loaded",
+      "n": "195"
+    },
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:iccl-db"
+    ],
+    "verificationPath": "sqlite3 'file:...iccl_demo.db?mode=ro' \"SELECT analyzed_by_brian, COUNT(*) FROM neuron GROUP BY analyzed_by_brian\" — 77 flagged, 118 not",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:fischer-live-caveat"
+    ],
+    "concepts": [
+      "cpt:data-quality",
+      "cpt:schema-design",
+      "cpt:sql"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:iccl-db"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 90,
+    "note": "A good, small, concrete detail: the curation is a first-class column rather than a convention held in someone's head."
+  },
+  {
+    "id": "clm:fischer-paradigms",
+    "kind": "metric",
+    "subject": "rol:fischer-rde",
+    "statement": "The 1,325 recording passes span 13 experimental paradigm types, the largest being 407 ABI, 240 ITD, 198 ILD and 166 combined ITD-ILD runs.",
+    "short": "1,325 passes across 13 paradigm types",
+    "value": {
+      "display": "1,325 passes · 13 paradigm types",
+      "numbers": [
+        "1,325",
+        "13",
+        "407",
+        "240",
+        "198",
+        "166"
+      ],
+      "unit": "passes / paradigms",
+      "baseline": null,
+      "n": "1,325"
+    },
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:iccl-db"
+    ],
+    "verificationPath": "sqlite3 'file:...iccl_demo.db?mode=ro' \"SELECT experiment_type, COUNT(*) FROM experiment GROUP BY experiment_type ORDER BY 2 DESC\" — 13 distinct types",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:fischer-live-caveat"
+    ],
+    "concepts": [
+      "cpt:computational-neuroscience",
+      "cpt:sql",
+      "cpt:data-quality"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:iccl-db"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 90,
+    "note": "Full breakdown: abi 407, itd 240, ild 198, itdild 166, allabi 131, bf 103, itd_twosnd 27, ildabl 24, itdabl 19, ildbc 6, ildstim 2, stim 1, itdstim 1."
+  },
+  {
+    "id": "clm:fischer-raw-archive",
+    "kind": "metric",
+    "subject": "rol:fischer-rde",
+    "statement": "The pipeline reads a raw lab archive of 30,147 files and produces a curated, staged set of 1,579.",
+    "short": "30,147 raw files to 1,579 curated",
+    "value": {
+      "display": "30,147 raw files → 1,579 curated",
+      "numbers": [
+        "30,147",
+        "1,579"
+      ],
+      "unit": "files",
+      "baseline": "the raw archive as received from the lab",
+      "n": null
+    },
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:iccl-raw-archive"
+    ],
+    "verificationPath": "find \"/Users/dcnguyen060899/Downloads/data_manager/database_nerology_design/Brian Fischer's files - all_owl_data\" -type f | wc -l → 30147; find .../cleaning_raw_files/iccl_staged -type f | wc -l → 1579",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:fischer-live-caveat"
+    ],
+    "concepts": [
+      "cpt:etl",
+      "cpt:data-pipeline",
+      "cpt:data-quality"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 90,
+    "note": "Counted directly on 2026-09-02. By extension: 11,965 .itd, 9,787 .mat, 2,428 .abi, 1,901 .iid, 1,662 .gen, 485 .bf. The older '14,000+ files' figure is an undercount and is retracted (ret:fischer-14000-files)."
+  },
+  {
+    "id": "clm:fischer-depth-provenance",
+    "kind": "metric",
+    "subject": "rol:fischer-rde",
+    "statement": "Electrode depth has real provenance handling rather than an adjective about data quality: the raw instrument header records no usable depth for 143 of the 195 neurons, so the ETL falls back to the principal investigator's hand-curated position file and a depth_source column records, per neuron, which of the two the value came from.",
+    "short": "Depth provenance recorded per neuron, not assumed",
+    "value": {
+      "display": "143 of 195 neurons lack a header depth",
+      "numbers": [
+        "143",
+        "195",
+        "52",
+        "53"
+      ],
+      "unit": "neurons",
+      "baseline": "depth read directly from the raw XDPHYS header",
+      "n": "195"
+    },
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:iccl-db"
+    ],
+    "verificationPath": "sqlite3 'file:...iccl_demo.db?mode=ro' \"SELECT COALESCE(depth_source,'(null)'), COUNT(*) FROM neuron GROUP BY depth_source\" — header 52, curated_csv 53, null 90",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:fischer-live-caveat"
+    ],
+    "concepts": [
+      "cpt:data-quality",
+      "cpt:reproducibility",
+      "cpt:schema-design"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:iccl-db"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 90,
+    "note": "52 neurons take depth from the instrument header, 53 from the curated position file, and 90 have no depth from either source and are recorded as unknown rather than filled in. The honest third case is the reason this claim is worth more than a sentence about caring about data quality."
+  },
+  {
+    "id": "clm:fischer-dq-rules",
+    "kind": "fact",
+    "subject": "rol:fischer-rde",
+    "statement": "The schema carries explicit data-quality rules rather than conventions: missing-data handling, tracked exclusions and path remapping are written down and enforced at load time.",
+    "short": "Data-quality rules written into the schema",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:resume-2026-08",
+      "src:iccl-schema"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — Experience bullet 3, line 290; corroborated by the CHECK constraints and quality_flag / exclusion_reason columns in demo_db/schema.sql",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:data-quality",
+      "cpt:schema-design",
+      "cpt:reproducibility"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 180,
+    "note": null
+  },
+  {
+    "id": "clm:fischer-perf-targets",
+    "kind": "metric",
+    "subject": "rol:fischer-rde",
+    "statement": "Duy tuned the queries and the ETL to meet targets of under 200 milliseconds per query and under 30 seconds for a full load.",
+    "short": "Under 200 ms query · under 30 s full load",
+    "value": {
+      "display": "<200 ms query · <30 s full load",
+      "numbers": [
+        "200",
+        "30"
+      ],
+      "unit": "ms / s",
+      "baseline": "the stated performance targets for the lab's workload",
+      "n": null
+    },
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:resume-2026-08",
+      "src:iccl-claude-md"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — Experience bullet 4, line 291; targets restated in /Users/dcnguyen060899/Downloads/data_manager/database_nerology_design/CLAUDE.md",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:sql",
+      "cpt:data-pipeline"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 180,
+    "note": null
+  },
+  {
+    "id": "clm:fischer-selfserve",
+    "kind": "fact",
+    "subject": "rol:fischer-rde",
+    "statement": "Lab students can now self-serve neuron-level queries that previously required manual file handling.",
+    "short": "Lab students self-serve neuron-level queries",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — Experience bullet 4, line 291",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:mentoring",
+      "cpt:stakeholder",
+      "cpt:sql"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "THE OUTCOME CLAIM for this role: it says what changed for the people who use the thing, which is the better sentence anyway. The '228 file loads became one SQL query' framing is unsourced and retracted (ret:fischer-228-loads); this claim carries the same idea without an invented denominator."
+  },
+  {
+    "id": "clm:fischer-integrity-audit",
+    "kind": "fact",
+    "subject": "rol:fischer-rde",
+    "statement": "Duy ran SQL schema and data-integrity audits that caught and corrected problems — all-zero rows and weak-tuning exclusions — before they reached downstream analysis.",
+    "short": "Integrity audits caught all-zero rows and weak-tuning exclusions",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — Experience bullet 5, line 292",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:data-quality",
+      "cpt:sql",
+      "cpt:reproducibility",
+      "cpt:code-review"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:fischer-second-dataset",
+    "kind": "fact",
+    "subject": "rol:fischer-rde",
+    "statement": "A second researcher's spike-reliability dataset is staged and schema-provisioned for load; its tables exist and hold no rows yet.",
+    "short": "Second researcher's dataset staged, not yet loaded",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:resume-2026-08",
+      "src:iccl-db"
+    ],
+    "verificationPath": "sqlite3 'file:...iccl_demo.db?mode=ro' \"SELECT COUNT(*) FROM spike_reliability\" → 0 and \"SELECT COUNT(*) FROM ild_condition_tested\" → 0, with both tables present in sqlite_master",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:fischer-live-caveat"
+    ],
+    "concepts": [
+      "cpt:schema-design",
+      "cpt:data-pipeline"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:iccl-db"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 90,
+    "note": "This is the claim that explains the retired 8-owl figure: the second researcher's three owls are provisioned but not loaded, so counting them was counting an empty table."
+  },
+  {
+    "id": "clm:fischer-team-audit",
+    "kind": "metric",
+    "subject": "rol:fischer-rde",
+    "statement": "Duy audited the whole team's pipeline output against the lab's eight stated file-naming and content requirements, and found 164 violations across all 16 date folders that had been uploaded.",
+    "short": "164 violations found across 16 folders",
+    "value": {
+      "display": "164 violations across 16 folders",
+      "numbers": [
+        "164",
+        "16",
+        "8"
+      ],
+      "unit": "violations / folders",
+      "baseline": "the lab's eight stated output requirements",
+      "n": "16 date folders"
+    },
+    "period": {
+      "start": "2026-05",
+      "end": "2026-05",
+      "precision": "month"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:iccl-audit-report"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/data_manager/database_nerology_design/cleaning_raw_files/src/ICCL_AUDIT_REPORT.md — dated 2026-05-27, generated by cleaning_raw_files/src/audit_team_iccl.py",
+    "verifiedOn": "2026-09-02",
+    "quote": "164 total violations across 16 folders.",
+    "caveats": [
+      "clm:fischer-team-audit-coverage"
+    ],
+    "concepts": [
+      "cpt:code-review",
+      "cpt:data-quality",
+      "cpt:root-cause",
+      "cpt:reproducibility"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:iccl-audit"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "NO TEAMMATE IS NAMED, here or anywhere else (Addendum B R-16). The underlying report attributes violations per person; the corpus records the defect, the mechanism and the coverage, never the people. Written as an automated audit script's finding, which is what it was."
+  },
+  {
+    "id": "clm:fischer-team-audit-rootcause",
+    "kind": "metric",
+    "subject": "rol:fischer-rde",
+    "statement": "He traced the largest class of failures to a single line in the team's shared renaming notebook: its final loop hard-codes one file extension, so a parent file with no child trial files is renamed as-is — the code never opens the header to see what actually varied, and never checks for sibling channel files. That one line left 17 raw files in the team's output, violating an explicit lab rule.",
+    "short": "Root-caused to one hardcoded extension in shared code",
+    "value": {
+      "display": "17 files from one line of code",
+      "numbers": [
+        "17",
+        "1"
+      ],
+      "unit": "files",
+      "baseline": "the lab's rule that no raw parent files appear in the output",
+      "n": null
+    },
+    "period": {
+      "start": "2026-05",
+      "end": "2026-05",
+      "precision": "month"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:iccl-audit-report"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/data_manager/database_nerology_design/cleaning_raw_files/src/ICCL_AUDIT_REPORT.md — 'Issue 1: Leftover .gen files', which quotes the offending final loop of build_plan and annotates the hardcoded extension",
+    "verifiedOn": "2026-09-02",
+    "quote": "It never: Reads the .gen header to detect what varied / Checks for sibling .abi channel children",
+    "caveats": [],
+    "concepts": [
+      "cpt:root-cause",
+      "cpt:code-review",
+      "cpt:data-quality"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:iccl-audit"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "The strongest evidence in the corpus for code review and root-cause analysis inside a team, and it names nobody. An audit that stops at a violation count is a complaint; one that reaches the line is a fix."
+  },
+  {
+    "id": "clm:fischer-team-audit-coverage",
+    "kind": "caveat",
+    "subject": "rol:fischer-rde",
+    "statement": "The audit also reported the team's coverage honestly rather than favourably: 16 of the 36 required dates had been uploaded at the time, 44%, with 20 still to process.",
+    "short": "Coverage reported honestly: 16 of 36 dates, 44%",
+    "period": {
+      "start": "2026-05",
+      "end": "2026-05",
+      "precision": "month"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:iccl-audit-report"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/data_manager/database_nerology_design/cleaning_raw_files/src/ICCL_AUDIT_REPORT.md — Executive Summary",
+    "verifiedOn": "2026-09-02",
+    "quote": "16 of 36 required dates uploaded (44% coverage). 20 dates remain to be processed.",
+    "caveats": [],
+    "concepts": [
+      "cpt:data-quality",
+      "cpt:technical-writing",
+      "cpt:stakeholder"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:iccl-audit"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "Attached as a caveat to clm:fischer-team-audit so a surface cannot report finding 164 violations without also reporting that the work was 44% done. The unflattering half is the point."
+  },
+  {
+    "id": "clm:fischer-live-caveat",
+    "kind": "caveat",
+    "subject": "rol:fischer-rde",
+    "statement": "This work is ongoing, so its counts move; every figure here was verified against the lab database on 2 September 2026 and is re-derivable from it.",
+    "short": "Ongoing work: figures carry a verification date",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:owner-corrections-2026-09-02",
+      "src:iccl-db"
+    ],
+    "verificationPath": "Rebuild brief, Addendum A.5; re-derive with `node scripts/corpus-refresh-fischer.mjs`",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:reproducibility",
+      "cpt:data-quality"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 90,
+    "note": "Attached to every Fischer figure. This is the page's own ethos applied to itself: the numbers are checkable, they are dated, and there is a command that re-checks them."
+  },
+  {
+    "id": "clm:cause-win",
+    "kind": "fact",
+    "subject": "art:cause-story",
+    "statement": "Duy won the Graduate Division of the CAUSE Student Data Scrollytelling Contest, run by the Consortium for the Advancement of Undergraduate Statistics Education, in 2026.",
+    "short": "Winner, Graduate Division — CAUSE 2026",
+    "period": {
+      "start": "2026-06",
+      "end": "2026-07",
+      "precision": "month"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "personal-project",
+    "sources": [
+      "src:resume-2026-08",
+      "src:news-html",
+      "src:causeweb"
+    ],
+    "verificationPath": "https://www.causeweb.org/cause/contests/data-scrollytelling",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:data-viz",
+      "cpt:statistics",
+      "cpt:economics"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:cause-contest",
+      "art:cause-story"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "jsonld",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "The second of the three hero figures (Addendum B R-8), and the only external, third-party judgment in the corpus."
+  },
+  {
+    "id": "clm:cause-blind-judging",
+    "kind": "fact",
+    "subject": "art:cause-story",
+    "statement": "The contest is judged blind, on narrative, data interpretation, scrollytelling and visual design.",
+    "short": "Judged blind on four criteria",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "personal-project",
+    "sources": [
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — Honors and Projects, line 310",
+    "verifiedOn": "2026-09-02",
+    "quote": "Judged on narrative, data interpretation, scrollytelling, and visual design.",
+    "caveats": [],
+    "concepts": [
+      "cpt:data-viz",
+      "cpt:statistics"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "'Judged blind' is what makes this an external signal rather than a self-report. Keep it attached to clm:cause-win in copy."
+  },
+  {
+    "id": "clm:cause-story",
+    "kind": "fact",
+    "subject": "art:cause-story",
+    "statement": "The winning entry is \"Will AI Make Human Work Worthless — or Priceless?\", live at cheap-as-electricity.com.",
+    "short": "\"Will AI Make Human Work Worthless — or Priceless?\"",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "personal-project",
+    "sources": [
+      "src:cheap-as-electricity"
+    ],
+    "verificationPath": "https://www.cheap-as-electricity.com",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:data-viz",
+      "cpt:economics"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:cause-story"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 180,
+    "note": null
+  },
+  {
+    "id": "clm:cause-build",
+    "kind": "metric",
+    "subject": "art:cause-story",
+    "statement": "It is a nine-act interactive data story built in D3.js and Scrollama.js, with scroll-driven animation and a reader-controlled parameter widget.",
+    "short": "Nine acts · D3.js · Scrollama.js",
+    "value": {
+      "display": "nine acts",
+      "numbers": [
+        "9"
+      ],
+      "unit": "acts",
+      "baseline": null,
+      "n": null
+    },
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "personal-project",
+    "sources": [
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — Honors and Projects, line 310",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:data-viz",
+      "cpt:frontend",
+      "cpt:typescript"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:cause-story"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "value.display is the word rather than the digit, because that is how the resume renders it; '9' is listed in numbers so the C8 gate accepts either rendering."
+  },
+  {
+    "id": "clm:cause-ces-model",
+    "kind": "fact",
+    "subject": "art:cause-story",
+    "statement": "The story is built on an original nested-CES general-equilibrium model of AI and cognitive labour, translated into a narrative for readers who do not work in economics.",
+    "short": "Original nested-CES general-equilibrium model",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "personal-project",
+    "sources": [
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/resume_content.html — Honors and Projects, line 310",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:economics",
+      "cpt:statistics",
+      "cpt:data-viz"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:cause-story"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:cause-concurrency",
+    "kind": "narrative",
+    "subject": "art:cause-story",
+    "statement": "He submitted it in June, at the end of a spring quarter that also carried both research positions and the Big Data Analytics course.",
+    "short": "Built alongside two research jobs and coursework",
+    "period": {
+      "start": "2026-06",
+      "end": "2026-06",
+      "precision": "month"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "personal-project",
+    "sources": [
+      "src:news-html",
+      "src:cpsc5330-hw"
+    ],
+    "verificationPath": "public/docs/news.html — July 2026 entry, plus the dated CPSC 5330 artifact at /Users/dcnguyen060899/Downloads/CPSC_5330/w5/term-frequency/ (2026-05-04 to 2026-05-06)",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:ownership"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [
+      "clm:cause-win",
+      "clm:yang-concurrency",
+      "clm:cpsc5330-enrolled"
+    ],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "REWRITTEN from the legacy 'three courses' phrasing, which named no course and could not be checked. It now names the one course that IS evidenced, with dated code, and drops the unverifiable count."
+  },
+  {
+    "id": "clm:econ-essay",
+    "kind": "fact",
+    "subject": "art:econ-essay",
+    "statement": "Duy wrote an essay for new graduates, \"AI Didn't Take Your Job. It Created One Nobody Is Trained For\", arguing that the slow entry-level market is a skills mismatch rather than a disappearance, and that experimental design and causal inference are the scarce complement to AI work in high-stakes domains.",
+    "short": "Essay: the scarce complement to AI work",
+    "period": {
+      "start": "2026-08",
+      "end": "2026-08",
+      "precision": "month"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "personal-project",
+    "sources": [
+      "src:blog-html"
+    ],
+    "verificationPath": "public/docs/blog_econometrics_of_ai.html",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:technical-writing",
+      "cpt:economics",
+      "cpt:causal-inference"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:econ-essay"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:cpsc5330-enrolled",
+    "kind": "fact",
+    "subject": "rol:msds",
+    "statement": "Duy took CPSC 5330 Big Data Analytics at Seattle University in the spring 2026 quarter, section 26SQ.",
+    "short": "CPSC 5330 Big Data Analytics, spring 2026",
+    "period": {
+      "start": "2026-04",
+      "end": "2026-06",
+      "precision": "quarter"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "coursework",
+    "sources": [
+      "src:cpsc5330-syllabus",
+      "src:cpsc5330-hw"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/CPSC_5330/introduction/CPSC 5330 01 26SQ Big Data Analytics.pdf — section 26SQ, Seattle University, Thursdays 18:00-20:40, BANN 371; independently fixed by assignment due dates of Thu 7 May 2026 and Thu 21 May 2026",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:cpsc5330-caveat"
+    ],
+    "concepts": [
+      "cpt:distributed-compute",
+      "cpt:hadoop-ecosystem",
+      "cpt:spark",
+      "cpt:mapreduce"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:cpsc5330-tf"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "The term is fixed twice over: by the syllabus's own section code and, independently, by the dated assignment sheets. Neither depends on the catalog, which describes the course but says nothing about who took it."
+  },
+  {
+    "id": "clm:cpsc5330-stack",
+    "kind": "fact",
+    "subject": "rol:msds",
+    "statement": "The course ran on the industry stack rather than on a description of it: HDFS and YARN on an EC2 Hadoop instance built from an AMI, Hadoop Streaming, Hive through Beeline over JDBC, AWS EMR, DynamoDB, Spark RDDs, Spark SQL and DataFrames, and Spark Streaming, with Java and Maven for the JVM assignments.",
+    "short": "HDFS · YARN · Hadoop Streaming · Hive · EMR · Spark",
+    "period": {
+      "start": "2026-04",
+      "end": "2026-06",
+      "precision": "quarter"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "coursework",
+    "sources": [
+      "src:cpsc5330-syllabus",
+      "src:cpsc5330-decks",
+      "src:cpsc5330-tf"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/CPSC_5330/introduction/CPSC 5330 01 26SQ Big Data Analytics.pdf (AWS LearnerLab, EC2 Hadoop AMI, WSL, Java + Maven, SSH/PEM) and the weekly decks 5 AWS EMR, 6 TF-IDF & DynamoDB, 7 Spark & RDD, 8 Spark SQL & DataFrames, 9 Streaming",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:cpsc5330-caveat"
+    ],
+    "concepts": [
+      "cpt:hadoop-ecosystem",
+      "cpt:spark",
+      "cpt:distributed-compute",
+      "cpt:mapreduce",
+      "cpt:cloud",
+      "cpt:nosql",
+      "cpt:stream-processing",
+      "cpt:java"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:cpsc5330-tf"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "Use these concretes, never the catalog description. The catalog says what the course covers; the syllabus and the decks say what was actually run."
+  },
+  {
+    "id": "clm:cpsc5330-tf-artifact",
+    "kind": "metric",
+    "subject": "rol:msds",
+    "statement": "The coursework produced inspectable, dated code: a two-stage Hadoop Streaming pipeline and a Hive query that compute term frequency over a text corpus. Job one emits per-document term counts, job two emits per-document totals, a HiveQL script declares an external table over each job's HDFS output directory, joins them on document id and divides, and a driver script runs both jobs, executes the query through Beeline over JDBC, merges the Hive part-files and cleans up both HDFS output directories.",
+    "short": "Two-stage Hadoop Streaming pipeline plus a Hive join",
+    "value": {
+      "display": "2 streaming jobs · 2 Hive external tables · 12 files",
+      "numbers": [
+        "2",
+        "12"
+      ],
+      "unit": "jobs / files",
+      "baseline": null,
+      "n": null
+    },
+    "period": {
+      "start": "2026-05",
+      "end": "2026-05",
+      "precision": "month"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "coursework",
+    "sources": [
+      "src:cpsc5330-tf"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/CPSC_5330/w5/term-frequency/ — job1/{mapper,reducer}.py, job2/{mapper,reducer}.py, tf.hql, main.sh, job1.sh, job2.sh, README.md; the zip carries 12 entries, authored 2026-05-04 to 2026-05-06",
+    "verifiedOn": "2026-09-02",
+    "quote": "beeline -u jdbc:hive2://localhost:10000 -e \"$(cat tf.hql)\"",
+    "caveats": [
+      "clm:cpsc5330-caveat"
+    ],
+    "concepts": [
+      "cpt:hadoop-ecosystem",
+      "cpt:mapreduce",
+      "cpt:distributed-compute",
+      "cpt:python",
+      "cpt:sql",
+      "cpt:nlp"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:cpsc5330-tf"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "THIS is what turns the Big Data Analytics signal from an assertion into evidence. The README even documents a verification command and its expected output to four decimal places, which is the same instinct as the reproducibility package in the Yang work."
+  },
+  {
+    "id": "clm:cpsc5330-tfidf",
+    "kind": "fact",
+    "subject": "rol:msds",
+    "statement": "The follow-on assignment extended that pipeline into a TF-IDF text-search application run on an AWS EMR cluster: three Hadoop Streaming jobs plus a Hive script computing document relevance for a search query.",
+    "short": "Extended to TF-IDF search on an EMR cluster",
+    "period": {
+      "start": "2026-05",
+      "end": "2026-05",
+      "precision": "month"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "coursework",
+    "sources": [
+      "src:cpsc5330-hw"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/CPSC_5330/W7/Homework 4.pdf — 'Use an EMR cluster to run the four steps: three Hadoop streaming jobs and one Hive job.'",
+    "verifiedOn": "2026-09-02",
+    "quote": "Your solution will consist of three Hadoop streaming jobs and one Hive script.",
+    "caveats": [
+      "clm:cpsc5330-caveat"
+    ],
+    "concepts": [
+      "cpt:hadoop-ecosystem",
+      "cpt:distributed-compute",
+      "cpt:cloud",
+      "cpt:nlp",
+      "cpt:mapreduce"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "The assignment sheet is the source; it states the required shape of the solution. The corpus does not hold the submitted solution, so this claim describes the assignment Duy took, not a graded artifact."
+  },
+  {
+    "id": "clm:cpsc5330-caveat",
+    "kind": "caveat",
+    "subject": "rol:msds",
+    "statement": "This is coursework on a single-node lab cluster and an AWS teaching account, not distributed processing at production scale.",
+    "short": "Coursework on a lab cluster, not production scale",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "coursework",
+    "sources": [
+      "src:cpsc5330-syllabus"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/CPSC_5330/introduction/CPSC 5330 01 26SQ Big Data Analytics.pdf — the environment is AWS LearnerLab plus a single EC2 Hadoop instance created from an AMI",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:distributed-compute",
+      "cpt:spark",
+      "cpt:hadoop-ecosystem"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "Attached to every CPSC 5330 claim, so C10 makes it impossible to render one without it. One clause, stated plainly: the page's whole ethos is stating limits."
+  },
+  {
+    "id": "clm:spring-2026-load",
+    "kind": "narrative",
+    "subject": "per:duy",
+    "statement": "One quarter carried all of it: the mammography experimentation starting, the barn-owl ETL and the team audit, the Hadoop and Hive coursework, and the data story submitted at the end of it in June.",
+    "short": "One quarter: two research jobs, Hadoop coursework, a contest entry",
+    "period": {
+      "start": "2026-04",
+      "end": "2026-06",
+      "precision": "quarter"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:news-html",
+      "src:cpsc5330-tf",
+      "src:iccl-audit-report"
+    ],
+    "verificationPath": "Dated in three independent places: public/docs/news.html (research entries, April to July 2026), the CPSC 5330 term-frequency artifact (2026-05-04 to 2026-05-06), and the ICcl audit report (2026-05-27)",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:ownership"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [
+      "clm:yang-origin-course",
+      "clm:fischer-team-audit",
+      "clm:cpsc5330-tf-artifact",
+      "clm:cause-win"
+    ],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "The 'coherent journey' the owner asked for, and it is no longer an assertion: three separately dated artifacts fall inside the same eleven weeks."
+  },
+  {
+    "id": "clm:mlops-thesis",
+    "kind": "narrative",
+    "subject": "per:duy",
+    "statement": "A result that lives in a notebook is not yet a system anyone can run, so Duy is wrapping the retrieval work in the deployment workflow industry actually runs on.",
+    "short": "Notebook result into a system a team can operate",
+    "period": null,
+    "status": "in-progress",
+    "tense": "present-progressive",
+    "confidence": "medium",
+    "evidenceStrength": "personal-project",
+    "sources": [
+      "src:owner-brief-2026-09-02",
+      "src:portfolio-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/index_portfolio.html — the 'Production.' paragraph, line 76",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:mlops-caveat"
+    ],
+    "concepts": [
+      "cpt:mlops",
+      "cpt:ownership"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [
+      "clm:yang-regenerators",
+      "clm:mlops-fastapi-aws"
+    ],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 90,
+    "note": null
+  },
+  {
+    "id": "clm:mlops-fastapi-aws",
+    "kind": "fact",
+    "subject": "per:duy",
+    "statement": "Duy is building a containerized FastAPI evaluation service on AWS around the mammography retrieval work.",
+    "short": "Containerized FastAPI evaluation service on AWS",
+    "period": null,
+    "status": "in-progress",
+    "tense": "present-progressive",
+    "confidence": "medium",
+    "evidenceStrength": "personal-project",
+    "sources": [
+      "src:owner-brief-2026-09-02",
+      "src:portfolio-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/index_portfolio.html — the 'Production.' paragraph, line 76",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:mlops-caveat"
+    ],
+    "concepts": [
+      "cpt:api-design",
+      "cpt:containerization",
+      "cpt:cloud",
+      "cpt:mlops"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 90,
+    "note": null
+  },
+  {
+    "id": "clm:mlops-gha",
+    "kind": "fact",
+    "subject": "per:duy",
+    "statement": "He is shipping that service through GitHub Actions.",
+    "short": "Shipping through GitHub Actions",
+    "period": null,
+    "status": "in-progress",
+    "tense": "present-progressive",
+    "confidence": "medium",
+    "evidenceStrength": "personal-project",
+    "sources": [
+      "src:owner-brief-2026-09-02",
+      "src:portfolio-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/index_portfolio.html — the 'Production.' paragraph, line 76",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:mlops-caveat"
+    ],
+    "concepts": [
+      "cpt:ci-cd",
+      "cpt:mlops"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 90,
+    "note": null
+  },
+  {
+    "id": "clm:mlops-mlflow",
+    "kind": "fact",
+    "subject": "per:duy",
+    "statement": "MLflow is tracking every run against the paper's frozen splits.",
+    "short": "MLflow tracking against frozen splits",
+    "period": null,
+    "status": "in-progress",
+    "tense": "present-progressive",
+    "confidence": "medium",
+    "evidenceStrength": "personal-project",
+    "sources": [
+      "src:owner-brief-2026-09-02",
+      "src:portfolio-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/index_portfolio.html — the 'Production.' paragraph, line 76",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:mlops-caveat"
+    ],
+    "concepts": [
+      "cpt:mlops",
+      "cpt:evaluation",
+      "cpt:reproducibility"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 90,
+    "note": null
+  },
+  {
+    "id": "clm:mlops-airflow",
+    "kind": "fact",
+    "subject": "per:duy",
+    "statement": "Airflow is re-scoring the evaluation on a schedule.",
+    "short": "Airflow re-scoring on a schedule",
+    "period": null,
+    "status": "in-progress",
+    "tense": "present-progressive",
+    "confidence": "medium",
+    "evidenceStrength": "personal-project",
+    "sources": [
+      "src:owner-brief-2026-09-02",
+      "src:portfolio-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/index_portfolio.html — the 'Production.' paragraph, line 76",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:mlops-caveat"
+    ],
+    "concepts": [
+      "cpt:orchestration",
+      "cpt:mlops"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 90,
+    "note": null
+  },
+  {
+    "id": "clm:mlops-drift-watch",
+    "kind": "fact",
+    "subject": "per:duy",
+    "statement": "ragas and Evidently are being wired in to watch retrieval quality drift after release.",
+    "short": "ragas and Evidently watching retrieval drift",
+    "period": null,
+    "status": "in-progress",
+    "tense": "present-progressive",
+    "confidence": "medium",
+    "evidenceStrength": "personal-project",
+    "sources": [
+      "src:owner-brief-2026-09-02",
+      "src:portfolio-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/index_portfolio.html — the 'Production.' paragraph, line 76",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:mlops-caveat"
+    ],
+    "concepts": [
+      "cpt:model-monitoring",
+      "cpt:evaluation",
+      "cpt:mlops"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 90,
+    "note": null
+  },
+  {
+    "id": "clm:mlops-standard",
+    "kind": "narrative",
+    "subject": "per:duy",
+    "statement": "The standard is the same as the research — every claim checkable — but on infrastructure a team could operate without him.",
+    "short": "Same standard, infrastructure a team can operate",
+    "period": null,
+    "status": "in-progress",
+    "tense": "present-progressive",
+    "confidence": "medium",
+    "evidenceStrength": "personal-project",
+    "sources": [
+      "src:portfolio-2026-08"
+    ],
+    "verificationPath": "git show 234cbcd:docs/index_portfolio.html — the 'Production.' paragraph, line 76",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:mlops-caveat"
+    ],
+    "concepts": [
+      "cpt:mlops",
+      "cpt:reproducibility",
+      "cpt:ownership"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [
+      "clm:mlops-fastapi-aws",
+      "clm:yang-regenerators"
+    ],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 90,
+    "note": null
+  },
+  {
+    "id": "clm:mlops-caveat",
+    "kind": "caveat",
+    "subject": "per:duy",
+    "statement": "This deployment work is in flight and not shipped; Duy describes it as what he is building now, not as a system in production.",
+    "short": "In flight, not shipped",
+    "period": null,
+    "status": "in-progress",
+    "tense": "present-progressive",
+    "confidence": "high",
+    "evidenceStrength": "personal-project",
+    "sources": [
+      "src:owner-brief-2026-09-02"
+    ],
+    "verificationPath": "Rebuild brief, section 3 — 'Present-progressive — this is in flight, not shipped.'",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:mlops"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 90,
+    "note": "Attached to every mlops claim. C10 makes it impossible to render one without it, so a completed-sounding sentence about a FastAPI service on AWS cannot reach the page even by accident."
+  },
+  {
+    "id": "clm:mav-live",
+    "kind": "fact",
+    "subject": "rol:mavterras-eng",
+    "statement": "mavterras.com is live in production, serving a real construction company's public site.",
+    "short": "mavterras.com is live",
+    "period": {
+      "start": "2026-08",
+      "end": null,
+      "precision": "month"
+    },
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "production",
+    "sources": [
+      "src:mav-live"
+    ],
+    "verificationPath": "https://mavterras.com",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:frontend",
+      "cpt:cloud",
+      "cpt:scale-users"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:mavterras-site"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 180,
+    "note": null
+  },
+  {
+    "id": "clm:mav-sole-author",
+    "kind": "metric",
+    "subject": "rol:mavterras-eng",
+    "statement": "Duy is the sole engineer: all 29 commits, between 17 and 26 August 2026, are authored by him.",
+    "short": "Sole engineer — 29 of 29 commits",
+    "value": {
+      "display": "29 commits, all his, 17-26 Aug 2026",
+      "numbers": [
+        "29",
+        "17",
+        "26"
+      ],
+      "unit": "commits",
+      "baseline": "every commit in the repository",
+      "n": "29"
+    },
+    "period": {
+      "start": "2026-08",
+      "end": "2026-08",
+      "precision": "month"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "production",
+    "sources": [
+      "src:mav-git"
+    ],
+    "verificationPath": "git -C /Users/dcnguyen060899/Downloads/MAVTERRAS rev-list --count HEAD → 29; git log --pretty='%an' | sort | uniq -c → '29 Duy Nguyen'; first and last commit dates 2026-08-17 and 2026-08-26",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:ownership"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:mavterras-site"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 180,
+    "note": "The third of the three hero figures (Addendum B R-8). Deliberately states the count and the authorship without a percentage: '100%' of 29 is 29, and the extra token buys nothing."
+  },
+  {
+    "id": "clm:mav-ai-division-of-labour",
+    "kind": "fact",
+    "subject": "rol:mavterras-eng",
+    "statement": "Duy used AI heavily to write the code for that site, and drew the line himself: the model produced implementations, and he decided what the product was, what came out of scope, how the data was shaped, what the legal surface had to say, and what had to be true before it could go in front of an investor.",
+    "short": "AI wrote implementations; he decided what to build",
+    "period": null,
+    "status": "verified",
+    "tense": "past",
+    "confidence": "medium",
+    "evidenceStrength": "production",
+    "sources": [
+      "src:owner-brief-2026-09-02"
+    ],
+    "verificationPath": "Rebuild brief, section 1 — the owner's own framing: 'use AI to assist design and deploy production website ... knowing what to build through stakeholder or founder requirement is something still important'",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:llm",
+      "cpt:ownership",
+      "cpt:stakeholder"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:mavterras-site"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "FIRST PERSON, and specific to this project (Addendum B R-9a). Without this sentence the MAVTERRAS argument is a slogan anyone could write; with it, it is a claim about how he personally worked. confidence is medium because only the owner can attest to the division of labour."
+  },
+  {
+    "id": "clm:mav-stack",
+    "kind": "fact",
+    "subject": "rol:mavterras-eng",
+    "statement": "The stack is Next.js 16 App Router, React 19, TypeScript in strict mode, Tailwind v4 with CSS Modules, Neon serverless Postgres, the Anthropic SDK with structured outputs, ONNX Runtime Web running a client-side CLIP ViT-B/32 int8 encoder, sharp, Zod and framer-motion, deployed on Vercel, with Cloudflare R2 for photo storage and Inngest for background jobs.",
+    "short": "Next.js 16 · React 19 · TS strict · Neon · Vercel",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "production",
+    "sources": [
+      "src:mav-package",
+      "src:mav-repo"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/MAVTERRAS/package.json — dependencies and devDependencies",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:typescript",
+      "cpt:frontend",
+      "cpt:cloud",
+      "cpt:sql",
+      "cpt:llm",
+      "cpt:api-design"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:mavterras-site"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 180,
+    "note": null
+  },
+  {
+    "id": "clm:mav-requirements-elicited",
+    "kind": "fact",
+    "subject": "rol:mavterras-eng",
+    "statement": "Duy elicited the requirements directly from the company's founder and its co-founder — one on construction and project delivery, the other on finance and operations — turning what they wanted into a scope he could build, and recording the decisions those conversations produced in the code itself, dated, next to the thing each decision changed.",
+    "short": "Requirements elicited from two founders, decisions recorded in code",
+    "period": null,
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "production",
+    "sources": [
+      "src:mav-decisions",
+      "src:mav-repo"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/MAVTERRAS — dated decision comments in components/site/statement.tsx, app/page.tsx and data/match-corpus.map.json",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:stakeholder",
+      "cpt:ownership",
+      "cpt:technical-writing"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:mavterras-site"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "NAMES NOBODY and QUOTES NOTHING. Consent to reproduce the internal memos is pending (Addendum B R-17), so the two people are described by role. Their names are already public on the company site as founders; that is not the issue — quoting internal correspondence is."
+  },
+  {
+    "id": "clm:mav-scope-cuts",
+    "kind": "fact",
+    "subject": "rol:mavterras-eng",
+    "statement": "Features were cut on founder instruction and the code says so: a deposit-terms block was replaced on a dated memo from the co-founder responsible for finance, a zone selector was removed on a partner memo asking to keep it simple, and a leadership section was reduced on another. Each removal is annotated in the source with who asked, in what role, and when — and an end-to-end test asserts that the retired values may not reappear.",
+    "short": "Scope cuts traced to dated memos, enforced by a test",
+    "period": null,
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "production",
+    "sources": [
+      "src:mav-decisions",
+      "src:mav-repo"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/MAVTERRAS — components/site/statement.tsx, app/page.tsx and tests/e2e/homepage-structure.spec.ts (asserts the surviving stat and forbids the retired ones)",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:stakeholder",
+      "cpt:ownership",
+      "cpt:ci-cd"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:mavterras-site"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "THE SOFT-SKILL CLAIM WITH HARD EVIDENCE: most candidates assert stakeholder communication; this one can be diffed. Rank it high on every profile's communication requirement. Memo text is paraphrased, never quoted, and no individual is named (Addendum B R-17)."
+  },
+  {
+    "id": "clm:mav-legal-compliance",
+    "kind": "fact",
+    "subject": "rol:mavterras-eng",
+    "statement": "Duy identified and implemented the domain's statutory requirements himself: the contractor licence number is rendered in the footer because California Business and Professions Code section 7030.5 requires it in all advertising and a website is advertising, and a provenance rule in the AI matching corpus prevents another company's project from ever being shown as this company's own work under section 7027. Both are asserted by end-to-end tests.",
+    "short": "Found and implemented the statutory requirements",
+    "period": null,
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "production",
+    "sources": [
+      "src:mav-site-config",
+      "src:mav-decisions"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/MAVTERRAS/components/site/site-config.ts:55-62 (the section 7030.5 citation and the licence constant) and data/match-corpus.map.json (excluded sites)",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:legal-compliance",
+      "cpt:stakeholder",
+      "cpt:data-quality"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:mavterras-site"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "The exclusion rule is worth telling in full when a recruiter asks about judgment: a competitor's project re-entered the matching corpus through a second photograph of the same building after the first had been excluded, so the exclusion moved from the FILE to the PROJECT. A real near-miss, caught and structurally fixed. The licence number itself is another company's regulated identifier and is deliberately not reproduced in this corpus."
+  },
+  {
+    "id": "clm:mav-operating",
+    "kind": "fact",
+    "subject": "rol:mavterras-eng",
+    "statement": "He deployed it and still operates it: Vercel for hosting, Neon serverless Postgres for the data written at runtime, Cloudflare R2 for photo storage and Inngest for background jobs — which means he owns what happens when a background job fails, when a photo upload does not land, and when a serverless database is cold.",
+    "short": "Deployed and operated on Vercel, Neon, R2 and Inngest",
+    "period": {
+      "start": "2026-08",
+      "end": null,
+      "precision": "month"
+    },
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "production",
+    "sources": [
+      "src:mav-package",
+      "src:mav-live",
+      "src:mav-repo"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/MAVTERRAS/package.json (@neondatabase/serverless, inngest) and https://mavterras.com",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:cloud",
+      "cpt:api-design",
+      "cpt:sql",
+      "cpt:mlops"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:mavterras-site"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 180,
+    "note": "Addendum B R-9b: the band needs elicitation and OPERATION, not a paragraph about the design system — the reader is looking at the design system."
+  },
+  {
+    "id": "clm:mav-quality-gates",
+    "kind": "fact",
+    "subject": "rol:mavterras-eng",
+    "statement": "Quality gates are wired into the build: one verify command runs environment checks, ESLint 9 with typescript-eslint, a no-emit TypeScript pass and Vitest, and Playwright drives end-to-end tests with axe-core accessibility assertions.",
+    "short": "verify = env, lint, typecheck, test; Playwright plus axe",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "production",
+    "sources": [
+      "src:mav-package"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/MAVTERRAS/package.json — scripts.verify, line 29",
+    "verifiedOn": "2026-09-02",
+    "quote": "\"verify\": \"npm run check:env && npm run lint && npm run typecheck && npm run test\"",
+    "caveats": [],
+    "concepts": [
+      "cpt:ci-cd",
+      "cpt:accessibility",
+      "cpt:typescript"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:mavterras-site"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 180,
+    "note": null
+  },
+  {
+    "id": "clm:mav-typescript-strict",
+    "kind": "fact",
+    "subject": "rol:mavterras-eng",
+    "statement": "TypeScript runs in strict mode behind a separate no-emit typecheck gate, and runtime inputs are validated with Zod rather than cast.",
+    "short": "TypeScript strict plus Zod at the boundary",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "production",
+    "sources": [
+      "src:mav-package",
+      "src:mav-repo"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/MAVTERRAS/package.json — scripts.typecheck is 'tsc --noEmit' (line 14); zod in dependencies",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:typescript",
+      "cpt:ci-cd"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:mav-ground-contexts",
+    "kind": "metric",
+    "subject": "rol:mavterras-eng",
+    "statement": "Duy built a design system in which components never name a colour: they read foreground tokens, and the section's declared ground resolves each token to the value that passes contrast on that ground — which makes a documented 3.42:1 accent-on-light failure structurally unreachable rather than merely written down.",
+    "short": "Ground contexts make a 3.42:1 failure unreachable",
+    "value": {
+      "display": "3.42:1",
+      "numbers": [
+        "3.42",
+        "3.42:1"
+      ],
+      "unit": "contrast ratio",
+      "baseline": "WCAG AA requires 4.5:1 for body text",
+      "n": null
+    },
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "production",
+    "sources": [
+      "src:mav-globals-css"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/MAVTERRAS/app/globals.css:11 (the hazard), :177-:190 (the ground mechanism and the inline measurement)",
+    "verifiedOn": "2026-09-02",
+    "quote": "That is what makes the 3.42:1 trap unreachable rather than merely documented.",
+    "caveats": [],
+    "concepts": [
+      "cpt:accessibility",
+      "cpt:frontend",
+      "cpt:code-review"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:mavterras-site"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "The brief calls this 'the single most transferable idea to the portfolio'. It is also the strongest single piece of engineering-judgment evidence in the corpus: the difference between documenting a hazard and removing it. Third leg of clm:audit-disposition."
+  },
+  {
+    "id": "clm:mav-measured-contrast",
+    "kind": "fact",
+    "subject": "rol:mavterras-eng",
+    "statement": "Every colour token in that system carries its measured contrast ratio in a comment beside it, so an accessibility claim in that codebase is checkable at the point of use.",
+    "short": "Every token carries its measured ratio",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "production",
+    "sources": [
+      "src:mav-globals-css"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/MAVTERRAS/app/globals.css — the token block, each declaration annotated with its measured ratio",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:accessibility",
+      "cpt:reproducibility"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "Deliberately kind=fact, not metric: the specific ratios belong to that project's palette and mean nothing on this one. Putting them in value.numbers would license those digits onto this page."
+  },
+  {
+    "id": "clm:mav-demo-mode",
+    "kind": "fact",
+    "subject": "rol:mavterras-eng",
+    "statement": "A demo-mode safety lock defaults on and wins over a present API key, so a live API call cannot fail in front of an investor; going live is an explicit opt-out, not an accident of configuration.",
+    "short": "Demo mode defaults on and beats a present key",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "production",
+    "sources": [
+      "src:mav-env"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/MAVTERRAS/lib/env.ts:18 and :31 — the flag defaults on, and the live() guard requires it to be off",
+    "verifiedOn": "2026-09-02",
+    "quote": "DEMO_MODE=1 with a real key still uses canned data — that is deliberate",
+    "caveats": [],
+    "concepts": [
+      "cpt:mlops",
+      "cpt:ci-cd",
+      "cpt:ownership"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "Operational-risk thinking, and the direct model for this portfolio's recruiter agent degrading safely. Note the inverted risk here: on that site the failure mode is an embarrassing demo, on a job-hunt site serving strangers unattended it is silently serving canned answers forever — so this portfolio must make the mode DETECTABLE, not just default-safe."
+  },
+  {
+    "id": "clm:mav-clone-and-run",
+    "kind": "fact",
+    "subject": "rol:mavterras-eng",
+    "statement": "The project runs end to end from a fresh clone with no keys, no accounts and no cost: seeded data serves the full public site, the internal dashboard and a complete AI brief.",
+    "short": "Runs from a fresh clone with no keys and no cost",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "production",
+    "sources": [
+      "src:mav-catalog",
+      "src:mav-repo"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/MAVTERRAS/lib/db/catalog.ts (the clone-and-run header) and scripts/seed.mjs",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:ci-cd",
+      "cpt:ownership",
+      "cpt:mlops"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": null
+  },
+  {
+    "id": "clm:mav-seed-validator",
+    "kind": "fact",
+    "subject": "rol:mavterras-eng",
+    "statement": "A dependency-free seed validator proves the committed data still satisfies both the TypeScript interfaces and the SQL guardrails before a demo discovers otherwise, reporting every failure as a JSON pointer into the offending file.",
+    "short": "A validator gates the committed data",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "production",
+    "sources": [
+      "src:mav-catalog"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/MAVTERRAS/scripts/seed.mjs",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:data-quality",
+      "cpt:ci-cd",
+      "cpt:reproducibility"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "The direct ancestor of scripts/verify-corpus.mjs in this repository. Same idea, different data: prove the committed facts still hold before anyone reads them."
+  },
+  {
+    "id": "clm:mav-postgres-boundary",
+    "kind": "fact",
+    "subject": "rol:mavterras-eng",
+    "statement": "Duy drew and documented the boundary between data that belongs in Postgres and data that stays as committed JSON — data a stranger writes at runtime moves to the database, generated and partner-owned catalog data does not — so a fresh clone keeps rendering with no database at all.",
+    "short": "Explicit runtime-versus-catalog data boundary",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "production",
+    "sources": [
+      "src:mav-catalog"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/MAVTERRAS/lib/db/catalog.ts — the header block stating the rule",
+    "verifiedOn": "2026-09-02",
+    "quote": "RUNTIME DATA MOVES TO POSTGRES. GENERATED AND PARTNER-OWNED CATALOG DATA DOES NOT.",
+    "caveats": [],
+    "concepts": [
+      "cpt:schema-design",
+      "cpt:sql",
+      "cpt:api-design"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "The test this rule gives — 'is this written at runtime by a stranger?' — is also why this corpus is committed JSON rather than a database. Nobody writes the corpus at runtime, so by that repository's own definition it is catalog data."
+  },
+  {
+    "id": "clm:mav-thesis",
+    "kind": "narrative",
+    "subject": "rol:mavterras-eng",
+    "statement": "AI writes the code now. Knowing what to build — eliciting it from a founder, architecting it, deploying it and operating it — is still traditional engineering, and this is where Duy did all four for a real business with real stakeholders.",
+    "short": "AI writes the code; knowing what to build is engineering",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "production",
+    "sources": [
+      "src:owner-brief-2026-09-02"
+    ],
+    "verificationPath": "Rebuild brief, section 1 (the owner's own words) and section 2, signal 4",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:ownership",
+      "cpt:stakeholder",
+      "cpt:frontend",
+      "cpt:cloud"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:mavterras-site"
+    ],
+    "derivedFrom": [
+      "clm:mav-ai-division-of-labour",
+      "clm:mav-live",
+      "clm:mav-sole-author",
+      "clm:mav-requirements-elicited",
+      "clm:mav-scope-cuts",
+      "clm:mav-legal-compliance",
+      "clm:mav-operating"
+    ],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "The page's closing argument. As a narrative claim it may only combine the seven claims in derivedFrom and cannot add a fact. clm:mav-ai-division-of-labour is listed FIRST deliberately: without it the sentence is a general proposition anyone could write."
+  },
+  {
+    "id": "clm:mosaic-role",
+    "kind": "fact",
+    "subject": "rol:blueprint",
+    "statement": "SFU Blueprint is a student-run organisation that builds software pro bono for British Columbia non-profits in interdisciplinary teams. Duy was the AI Engineer on the team that built MOSAIC's immigration and settlement assistant, and the team carried it through product definition, a design sprint and a documented developer handoff.",
+    "short": "MOSAIC chatbot — build and handoff",
+    "period": {
+      "start": "2024-03",
+      "end": "2024-10",
+      "precision": "month"
+    },
+    "status": "historical",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "production",
+    "sources": [
+      "src:blueprint-site",
+      "src:mosaic-handoff",
+      "src:resume-2026-08"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/MOSAIC_project/MOSAIC-3/ — PRD, Design Sprint, Handoff documentation, Developer Documentation, Meeting Notes",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:llm",
+      "cpt:nlp",
+      "cpt:stakeholder",
+      "cpt:technical-writing"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:mosaic-page"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "TEAM ATTRIBUTION IS LOAD-BEARING (owner, 2026-09-02): 'i build with other student engineer'. Blueprint work is collaborative by construction. Any surface that renders this claim must make the team visible and Duy's own role specific; 'I built an assistant' is not an acceptable rendering."
+  },
+  {
+    "id": "clm:mosaic-reach",
+    "kind": "metric",
+    "subject": "rol:blueprint",
+    "statement": "The client was MOSAIC, a settlement-services organisation that recorded 660,000 website visits in its 2022 annual report.",
+    "short": "Client recorded 660,000 site visits in 2022",
+    "value": {
+      "display": "660,000 website visits (MOSAIC annual report, 2022)",
+      "numbers": [
+        "660,000"
+      ],
+      "unit": "website visits per year",
+      "baseline": null,
+      "n": null
+    },
+    "period": {
+      "start": "2022",
+      "end": "2022",
+      "precision": "year"
+    },
+    "status": "historical",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "production",
+    "sources": [
+      "src:mosaic-infographic"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/MOSAIC_project/EDIJ application/Mosaic_Chatbot_Impact_Infographic (4).pdf — '660 000 RECORDED WEBSITE VISITS — MOSAIC ANNUAL REPORT 2022'",
+    "verifiedOn": "2026-09-02",
+    "quote": "660 000 RECORDED WEBSITE VISITS — MOSAIC ANNUAL REPORT 2022",
+    "caveats": [
+      "clm:mosaic-reach-caveat"
+    ],
+    "concepts": [
+      "cpt:scale-users",
+      "cpt:stakeholder"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:mosaic-page"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "ORGANISATIONAL REACH, SOURCE NAMED — and nothing else (Addendum C.2 ruling 1). Never 'users served', never 'interactions', never 'analyzed'. Duy's own source document, which he wrote, is titled 'PROJECTED MOSAIC CHATBOT IMPACT' and glosses the figure as MOSAIC's site traffic. The mis-denominated variants are retracted at ret:mosaic-reach-misuse."
+  },
+  {
+    "id": "clm:mosaic-reach-caveat",
+    "kind": "caveat",
+    "subject": "rol:blueprint",
+    "statement": "That figure is the organisation's own recorded website traffic for 2022, quoted from its annual report. It is the size of the problem, not a measurement of anything Duy's system served.",
+    "short": "The client's traffic, not the system's usage",
+    "period": null,
+    "status": "historical",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "production",
+    "sources": [
+      "src:mosaic-infographic"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/MOSAIC_project/EDIJ application/Mosaic_Chatbot_Impact_Infographic (4).pdf — the document's own title is 'PROJECTED MOSAIC CHATBOT IMPACT'",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:scale-users",
+      "cpt:evaluation"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "MANDATORY on clm:mosaic-reach. Without it the number reads as usage, which is exactly the misreading that produced three different denominations of it across the old site."
+  },
+  {
+    "id": "clm:mosaic-graph",
+    "kind": "fact",
+    "subject": "rol:blueprint",
+    "statement": "The system the team built runs on a Neo4j knowledge graph modelling programmes against locations, client needs, age groups, immigration status and other services, with multi-language natural-language handling on top of it.",
+    "short": "Neo4j knowledge graph, multi-language NLP",
+    "period": null,
+    "status": "historical",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "production",
+    "sources": [
+      "src:mosaic-neo4j-data",
+      "src:mosaic-html"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/MOSAIC_project/MOSAIC-2/redesign dataframe/neo4j_data/ — six entity CSVs (Programs, Locations, ClientNeeds, AgeGroups, ImmigrationStatus, OtherServices) and five ProgramTo* relationship CSVs",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:graph-db",
+      "cpt:nlp",
+      "cpt:schema-design"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:mosaic-page"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "The entity and relationship files are the primary evidence: the graph model is inspectable independently of any usage figure."
+  },
+  {
+    "id": "clm:mosaic-award",
+    "kind": "fact",
+    "subject": "rol:blueprint",
+    "statement": "The team's project was shortlisted in the top four for the SFU Computing Science Diversity Award. The submission was backed by a signed letter from the Director of Business Technology and Operations at MOSAIC BC, the client, endorsing the students' work to the award committee.",
+    "short": "Top 4, SFU CS Diversity Award; signed reference",
+    "period": null,
+    "status": "historical",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "production",
+    "sources": [
+      "src:resume-2026-08",
+      "src:sfu-rec-letter"
+    ],
+    "verificationPath": "/Users/dcnguyen060899/Downloads/MOSAIC_project/Recommendation Letter_SFU_Signed.pdf",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:stakeholder",
+      "cpt:scale-users"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "Two corrections, 2026-09-02. The letter is from MOSAIC BC to SFU, not from SFU; and both the shortlisting and the letter belong to the team, which the letter names only in the plural. See src:sfu-rec-letter."
+  },
+  {
+    "id": "clm:faisal-rag",
+    "kind": "fact",
+    "subject": "rol:faisal-lab",
+    "statement": "At the SFU Faisal Lab, Duy built a RAG pipeline in Python and LlamaIndex that translates natural language into structured queries for CT and MRI scan retrieval.",
+    "short": "RAG pipeline for CT and MRI scan retrieval",
+    "period": {
+      "start": "2024-01",
+      "end": "2024-05",
+      "precision": "month"
+    },
+    "status": "historical",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:resume-2026-08",
+      "src:faisal-repo"
+    ],
+    "verificationPath": "https://github.com/dcnguyen060899/SFU_Faisal_Lab_roi_slab_retrieval_engine",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:rag",
+      "cpt:medical-ai",
+      "cpt:python",
+      "cpt:nlp"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:faisal-repo"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "The earliest medical-retrieval work and the through-line to the Yang study; worth saying so on a Research Scientist brief."
+  },
+  {
+    "id": "clm:berkeley-capstone-model",
+    "kind": "metric",
+    "subject": "rol:berkeley-cert",
+    "statement": "Duy's UC Berkeley ML/AI capstone built a deep model predicting hospital patient length of stay at 80% accuracy.",
+    "short": "Length-of-stay model, 80% accuracy",
+    "value": {
+      "display": "80% accuracy",
+      "numbers": [
+        "80",
+        "80%"
+      ],
+      "unit": "accuracy",
+      "baseline": null,
+      "n": null
+    },
+    "period": {
+      "start": "2024-01",
+      "end": "2024-07",
+      "precision": "month"
+    },
+    "status": "historical",
+    "tense": "past",
+    "confidence": "medium",
+    "evidenceStrength": "personal-project",
+    "sources": [
+      "src:capstone-html"
+    ],
+    "verificationPath": "public/docs/index.html — UC Berkeley capstone project page",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:ml-modeling",
+      "cpt:deep-learning",
+      "cpt:statistics"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:berkeley-capstone-page"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "resume",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "The record count is deliberately absent: the string '180' does not appear anywhere on the capstone page, so '180K+ patient records' is unsourced and is retracted (ret:berkeley-180k-records). The accuracy figure is on the page and ships; the dataset size does not."
+  },
+  {
+    "id": "clm:berkeley-capstone-impact",
+    "kind": "metric",
+    "subject": "rol:berkeley-cert",
+    "statement": "The capstone projected $30.4M in annual savings against the baseline resource-allocation approach and was selected as a programme capstone exemplar.",
+    "short": "$30.4M projected annual savings; capstone exemplar",
+    "value": {
+      "display": "$30.4M projected annual savings",
+      "numbers": [
+        "30.4",
+        "$30.4M",
+        "30,388,400"
+      ],
+      "unit": "USD per year, projected",
+      "baseline": "the baseline resource-allocation approach",
+      "n": null
+    },
+    "period": {
+      "start": "2024-07",
+      "end": "2024-07",
+      "precision": "month"
+    },
+    "status": "historical",
+    "tense": "past",
+    "confidence": "medium",
+    "evidenceStrength": "personal-project",
+    "sources": [
+      "src:capstone-html",
+      "src:linkedin-exemplar"
+    ],
+    "verificationPath": "public/docs/index.html — carries the exact figure 30,388,400; exemplar selection at https://www.linkedin.com/posts/duwe-ng_professional-certificate-in-machine-learning-activity-7229560019187326976-ShNS",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:berkeley-projected-caveat"
+    ],
+    "concepts": [
+      "cpt:ml-modeling",
+      "cpt:economics",
+      "cpt:stakeholder"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:berkeley-capstone-page",
+      "art:berkeley-exemplar"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "Licensed for the agent only, not for the page. The old homepage rendered '$30.4M' as a bare hero metric labelled 'Projected Savings', which a skimming reader reads as money saved. It is coursework from 2024 and it is not what this page is arguing."
+  },
+  {
+    "id": "clm:berkeley-projected-caveat",
+    "kind": "caveat",
+    "subject": "rol:berkeley-cert",
+    "statement": "That figure is a projection from a coursework model against a baseline, not savings realised at any hospital.",
+    "short": "Projected in coursework, not realised",
+    "period": null,
+    "status": "historical",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "personal-project",
+    "sources": [
+      "src:capstone-html"
+    ],
+    "verificationPath": "public/docs/index.html — the figure is presented as a projection against a baseline approach",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:economics",
+      "cpt:evaluation"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "MANDATORY on clm:berkeley-capstone-impact via caveats, so the qualifier cannot be dropped."
+  },
+  {
+    "id": "clm:nasa-scale",
+    "kind": "metric",
+    "subject": "rol:msds",
+    "statement": "For his DATA 5100 final project Duy analysed 1.88 million NASA flight-recorder measurements across 312 flights, reaching an R-squared of 0.959 — that is, the model accounts for 95.9% of the variance in fuel flow.",
+    "short": "1.88M measurements · 312 flights · R-squared 0.959",
+    "value": {
+      "display": "1.88M measurements · 312 flights · R² = 0.959",
+      "numbers": [
+        "1.88",
+        "1.88M",
+        "312",
+        "0.959",
+        "95.9"
+      ],
+      "unit": "measurements / flights / R-squared",
+      "baseline": null,
+      "n": "312 flights"
+    },
+    "period": {
+      "start": "2025-09",
+      "end": "2025-12",
+      "precision": "quarter"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "coursework",
+    "sources": [
+      "src:data5100-html"
+    ],
+    "verificationPath": "public/docs/index_data5100_project.html:L55-L56 — '95.9% / Variance Explained (R²)'",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:nasa-r2-caveat"
+    ],
+    "concepts": [
+      "cpt:statistics",
+      "cpt:python",
+      "cpt:data-viz"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:nasa-page"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "value.numbers lists 0.959 and 95.9 because the project page renders the same quantity both ways. It does NOT license the phrase 'predictive accuracy', which is a different claim and is retracted (ret:nasa-r2-as-accuracy). This page's research band flags a macro-versus-weighted mislabel in someone else's paper; making the same class of error about its own number would be disqualifying."
+  },
+  {
+    "id": "clm:nasa-r2-caveat",
+    "kind": "caveat",
+    "subject": "rol:msds",
+    "statement": "R-squared is the share of variance the model explains, not predictive accuracy, and this is observational cruise-phase data from a single airframe rather than a controlled experiment.",
+    "short": "Variance explained, not accuracy; observational data",
+    "period": null,
+    "status": "verified",
+    "tense": "present",
+    "confidence": "high",
+    "evidenceStrength": "coursework",
+    "sources": [
+      "src:data5100-html"
+    ],
+    "verificationPath": "public/docs/index_data5100_project.html — the metric is labelled 'Variance Explained (R²)' and the data provenance section states the cruise-only, single-airframe scope",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:statistics",
+      "cpt:causal-inference",
+      "cpt:evaluation"
+    ],
+    "skills": [],
+    "artifacts": [],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "MANDATORY on both NASA claims."
+  },
+  {
+    "id": "clm:nasa-anova",
+    "kind": "metric",
+    "subject": "rol:msds",
+    "statement": "Using ANOVA, nested F-tests, variance decomposition and interaction analysis, he found that engine performance explains 64.4% of fuel variance — 2.2 times more than flight planning — which cuts against the conventional prioritisation.",
+    "short": "Engine performance explains 64.4% of fuel variance",
+    "value": {
+      "display": "64.4% · 2.2×",
+      "numbers": [
+        "64.4",
+        "64.4%",
+        "64.44",
+        "2.2"
+      ],
+      "unit": "% of variance",
+      "baseline": "flight planning's contribution to the same variance",
+      "n": "312 flights"
+    },
+    "period": {
+      "start": "2025-09",
+      "end": "2025-12",
+      "precision": "quarter"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "coursework",
+    "sources": [
+      "src:data5100-html"
+    ],
+    "verificationPath": "public/docs/index_data5100_project.html:L59 and :L143 — 'accounting for 64.44% of explained variance'",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [
+      "clm:nasa-r2-caveat"
+    ],
+    "concepts": [
+      "cpt:statistics",
+      "cpt:causal-inference",
+      "cpt:experimental-design"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:nasa-page"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "The page renders it as 64.4% in the metric cards and 64.44% in the prose; both are listed so the C8 gate accepts either without licensing a third figure."
+  },
+  {
+    "id": "clm:garbage-model",
+    "kind": "metric",
+    "subject": "per:duy",
+    "statement": "A garbage-classification model using ResNet34 transfer learning reached 94% accuracy over 2,527 images in six classes, with 100% recall on the minority class, which held only 137 images.",
+    "short": "ResNet34 · 94% accuracy · 100% minority recall",
+    "value": {
+      "display": "94% accuracy · 100% minority-class recall",
+      "numbers": [
+        "94",
+        "94%",
+        "94.0",
+        "100",
+        "100%",
+        "2,527",
+        "137",
+        "6"
+      ],
+      "unit": "accuracy / recall / images",
+      "baseline": null,
+      "n": "2,527 images"
+    },
+    "period": null,
+    "status": "historical",
+    "tense": "past",
+    "confidence": "medium",
+    "evidenceStrength": "coursework",
+    "sources": [
+      "src:imgclass-html"
+    ],
+    "verificationPath": "public/docs/index_image_classification.html — results section",
+    "verifiedOn": "2026-09-02",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:deep-learning",
+      "cpt:ml-modeling"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:garbage-page"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-02",
+    "reviewEvery": 365,
+    "note": "The course label on the project page is wrong (dsp:data5100-label). The MODEL claim is unaffected; only the course attribution is disputed, and this claim carries no course attribution at all."
+  }
+]

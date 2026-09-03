@@ -1,0 +1,404 @@
+[
+  {
+    "id": "art:psb-manuscript",
+    "kind": "paper",
+    "title": "Separation Without Transfer: The Retrieval Encoder's Substrate, Not the VLM Decoder, Decides Whether Contrastive Fine-Tuning Transfers in Mammography Report Generation",
+    "url": null,
+    "access": "under-review",
+    "roleId": "rol:yang-gra",
+    "legacyPath": null,
+    "note": "access=under-review: it exists and cannot be shown yet. A surface must say so rather than linking."
+  },
+  {
+    "id": "art:yang-report",
+    "kind": "report",
+    "title": "37-page technical report on the mammography retrieval experiment",
+    "url": null,
+    "access": "on-request",
+    "roleId": "rol:yang-gra",
+    "legacyPath": null,
+    "note": null
+  },
+  {
+    "id": "art:vindr-mammo",
+    "kind": "dataset",
+    "title": "VinDr-Mammo",
+    "url": "https://physionet.org/content/vindr-mammo/",
+    "access": "public",
+    "roleId": null,
+    "legacyPath": null,
+    "note": "Third-party dataset. Recorded for a reader's benefit; never used as a source for a claim about Duy."
+  },
+  {
+    "id": "art:iccl-db",
+    "kind": "database",
+    "title": "ICcl barn-owl database (SQLite)",
+    "url": null,
+    "access": "on-request",
+    "roleId": "rol:fischer-rde",
+    "legacyPath": null,
+    "note": "The lab's system of record for this work. Not public; Duy can demonstrate it. Every published figure about it is re-derivable with `npm run corpus:refresh:fischer`."
+  },
+  {
+    "id": "art:iccl-audit",
+    "kind": "report",
+    "title": "ICcl shared-folder audit report",
+    "url": null,
+    "access": "on-request",
+    "roleId": "rol:fischer-rde",
+    "legacyPath": null,
+    "note": "Names individual collaborators, so it is on-request rather than public and nothing derived from it names a person."
+  },
+  {
+    "id": "art:cpsc5330-tf",
+    "kind": "code",
+    "title": "CPSC 5330 term-frequency pipeline — two Hadoop Streaming jobs and a Hive query",
+    "url": null,
+    "access": "on-request",
+    "roleId": "rol:msds",
+    "legacyPath": null,
+    "note": "Coursework, so it is not published, but it is dated, inspectable code and Duy can supply it. This is what turns the Big Data Analytics signal from an assertion into evidence."
+  },
+  {
+    "id": "art:cause-story",
+    "kind": "website",
+    "title": "Will AI Make Human Work Worthless — or Priceless?",
+    "url": "https://www.cheap-as-electricity.com",
+    "access": "public",
+    "roleId": "rol:msds",
+    "legacyPath": null,
+    "note": null
+  },
+  {
+    "id": "art:cause-contest",
+    "kind": "award-page",
+    "title": "CAUSE Student Data Scrollytelling Contest",
+    "url": "https://www.causeweb.org/cause/contests/data-scrollytelling",
+    "access": "public",
+    "roleId": null,
+    "legacyPath": null,
+    "note": null
+  },
+  {
+    "id": "art:mavterras-site",
+    "kind": "website",
+    "title": "mavterras.com",
+    "url": "https://mavterras.com",
+    "access": "public",
+    "roleId": "rol:mavterras-eng",
+    "legacyPath": null,
+    "note": null
+  },
+  {
+    "id": "art:su-catalog-msds",
+    "kind": "catalog-page",
+    "title": "Seattle University 2026-2027 Graduate Catalog — M.S. Data Science",
+    "url": "https://catalog.seattleu.edu/",
+    "access": "public",
+    "roleId": null,
+    "legacyPath": null,
+    "note": null
+  },
+  {
+    "id": "art:faisal-repo",
+    "kind": "repo",
+    "title": "SFU Faisal Lab — ROI slab retrieval engine",
+    "url": "https://github.com/dcnguyen060899/SFU_Faisal_Lab_roi_slab_retrieval_engine",
+    "access": "public",
+    "roleId": "rol:faisal-lab",
+    "legacyPath": null,
+    "note": null
+  },
+  {
+    "id": "art:github",
+    "kind": "repo",
+    "title": "github.com/dcnguyen060899",
+    "url": "https://github.com/dcnguyen060899",
+    "access": "public",
+    "roleId": null,
+    "legacyPath": null,
+    "note": null
+  },
+  {
+    "id": "art:linkedin",
+    "kind": "page",
+    "title": "linkedin.com/in/duwe-ng",
+    "url": "https://www.linkedin.com/in/duwe-ng/",
+    "access": "public",
+    "roleId": null,
+    "legacyPath": null,
+    "note": null
+  },
+  {
+    "id": "art:portfolio",
+    "kind": "website",
+    "title": "duyng-portfolio.com",
+    "url": "https://duyng-portfolio.com",
+    "access": "public",
+    "roleId": null,
+    "legacyPath": null,
+    "note": null
+  },
+  {
+    "id": "art:resume-pdf",
+    "kind": "pdf",
+    "title": "Resume (PDF)",
+    "url": "https://duyng-portfolio.com/docs/Resume.pdf",
+    "access": "public",
+    "roleId": null,
+    "legacyPath": "public/docs/Resume.pdf",
+    "note": "THE HIGHEST-TRAFFIC RESUME SURFACE ON THE DOMAIN and, as committed, the only one still outside the corpus gates. It carries 'Winter 2025 - Present' (retracted) and closes the Fischer role in July 2026 (contradicting the ongoing role). See the report accompanying this corpus for the proposed regeneration path; until it lands, `node scripts/verify-corpus.mjs --built` runs the C9 retraction scan over its extracted text and fails on a hit."
+  },
+  {
+    "id": "art:resume-page",
+    "kind": "page",
+    "title": "Resume (web)",
+    "url": "https://duyng-portfolio.com/docs/resume_content.html",
+    "access": "public",
+    "roleId": null,
+    "legacyPath": "public/docs/resume_content.html",
+    "note": "GENERATED from this corpus by scripts/gen-resume.mjs. Exempt from the byte-freeze; gated by `node scripts/gen-resume.mjs --check`."
+  },
+  {
+    "id": "art:resume-frame",
+    "kind": "page",
+    "title": "Resume (framed view)",
+    "url": "https://duyng-portfolio.com/docs/index_resume.html",
+    "access": "public",
+    "roleId": null,
+    "legacyPath": "public/docs/index_resume.html",
+    "note": null
+  },
+  {
+    "id": "art:news-archive",
+    "kind": "page",
+    "title": "Research news archive",
+    "url": "https://duyng-portfolio.com/docs/news.html",
+    "access": "public",
+    "roleId": null,
+    "legacyPath": "public/docs/news.html",
+    "note": null
+  },
+  {
+    "id": "art:mosaic-page",
+    "kind": "page",
+    "title": "MOSAIC — AI immigration and settlement chatbot",
+    "url": "https://duyng-portfolio.com/docs/index_mosaic_chatbot.html",
+    "access": "public",
+    "roleId": "rol:blueprint",
+    "legacyPath": "public/docs/index_mosaic_chatbot.html",
+    "note": null
+  },
+  {
+    "id": "art:nasa-page",
+    "kind": "page",
+    "title": "Aircraft fuel-efficiency analysis (DATA 5100 final project)",
+    "url": "https://duyng-portfolio.com/docs/index_data5100_project.html",
+    "access": "public",
+    "roleId": "rol:msds",
+    "legacyPath": "public/docs/index_data5100_project.html",
+    "note": null
+  },
+  {
+    "id": "art:garbage-page",
+    "kind": "page",
+    "title": "Garbage classification — transfer learning",
+    "url": "https://duyng-portfolio.com/docs/index_image_classification.html",
+    "access": "public",
+    "roleId": null,
+    "legacyPath": "public/docs/index_image_classification.html",
+    "note": null
+  },
+  {
+    "id": "art:berkeley-capstone-page",
+    "kind": "page",
+    "title": "UC Berkeley ML/AI capstone — hospital resource optimisation",
+    "url": "https://duyng-portfolio.com/docs/index.html",
+    "access": "public",
+    "roleId": "rol:berkeley-cert",
+    "legacyPath": "public/docs/index.html",
+    "note": null
+  },
+  {
+    "id": "art:berkeley-exemplar",
+    "kind": "post",
+    "title": "Capstone exemplar recognition",
+    "url": "https://www.linkedin.com/posts/duwe-ng_professional-certificate-in-machine-learning-activity-7229560019187326976-ShNS",
+    "access": "public",
+    "roleId": null,
+    "legacyPath": null,
+    "note": null
+  },
+  {
+    "id": "art:berkeley-cert-pdf",
+    "kind": "pdf",
+    "title": "Professional Certificate in Machine Learning and AI",
+    "url": "https://duyng-portfolio.com/docs/professional_certificate_in_mlai.pdf",
+    "access": "public",
+    "roleId": "rol:berkeley-cert",
+    "legacyPath": "public/docs/professional_certificate_in_mlai.pdf",
+    "note": null
+  },
+  {
+    "id": "art:cert-page",
+    "kind": "page",
+    "title": "Certificate page",
+    "url": "https://duyng-portfolio.com/docs/index_certificate.html",
+    "access": "public",
+    "roleId": null,
+    "legacyPath": "public/docs/index_certificate.html",
+    "note": null
+  },
+  {
+    "id": "art:econ-essay",
+    "kind": "post",
+    "title": "AI Didn't Take Your Job. It Created One Nobody Is Trained For",
+    "url": "https://duyng-portfolio.com/docs/blog_econometrics_of_ai.html",
+    "access": "public",
+    "roleId": null,
+    "legacyPath": "public/docs/blog_econometrics_of_ai.html",
+    "note": null
+  },
+  {
+    "id": "art:learning-algorithm",
+    "kind": "page",
+    "title": "Algorithm learning tool",
+    "url": "https://duyng-portfolio.com/docs/learning_algorithm.html",
+    "access": "public",
+    "roleId": null,
+    "legacyPath": "public/docs/learning_algorithm.html",
+    "note": "Depends on the /evaluate-challenge routes, which keep their Python implementation and their test suite."
+  },
+  {
+    "id": "art:ai-agent-page",
+    "kind": "page",
+    "title": "AI agent — ML and business alignment",
+    "url": "https://duyng-portfolio.com/docs/index_ai_agent_project.html",
+    "access": "public",
+    "roleId": null,
+    "legacyPath": "public/docs/index_ai_agent_project.html",
+    "note": null
+  },
+  {
+    "id": "art:business-card",
+    "kind": "page",
+    "title": "Programmatic business card",
+    "url": "https://duyng-portfolio.com/docs/index_business_card.html",
+    "access": "public",
+    "roleId": null,
+    "legacyPath": "public/docs/index_business_card.html",
+    "note": null
+  },
+  {
+    "id": "art:business-card-print",
+    "kind": "page",
+    "title": "Business card — print-ready",
+    "url": "https://duyng-portfolio.com/docs/business_card_print_ready_FedEx.html",
+    "access": "public",
+    "roleId": null,
+    "legacyPath": "public/docs/business_card_print_ready_FedEx.html",
+    "note": null
+  },
+  {
+    "id": "art:business-card-design",
+    "kind": "page",
+    "title": "Business card — design",
+    "url": "https://duyng-portfolio.com/docs/business_card_design.html",
+    "access": "public",
+    "roleId": null,
+    "legacyPath": "public/docs/business_card_design.html",
+    "note": null
+  },
+  {
+    "id": "art:admin",
+    "kind": "page",
+    "title": "Admin panel",
+    "url": "https://duyng-portfolio.com/docs/admin.html",
+    "access": "public",
+    "roleId": null,
+    "legacyPath": "public/docs/admin.html",
+    "note": null
+  },
+  {
+    "id": "art:hero-photo",
+    "kind": "image",
+    "title": "Hero background — an AI-generated composite",
+    "url": null,
+    "access": "private",
+    "roleId": null,
+    "legacyPath": null,
+    "note": "THE ONE ARTIFACT THIS SITE PUBLISHES RATHER THAN CITES, and the only record here written multi-line — because it is meant to be read before anyone ships the image, not skimmed. access stays 'private' and url stays null now that provenance is RESOLVED, for a different reason than before: the image is decoration with a disclosed origin, and it is not evidence of anything. Addendum F, R-25 turns that into a standing rule — no generated brief may cite this record or describe the site as showing photographs of Seattle University. What the visitor sees instead is the one sentence in captionText, rendered in the hero's own <Limit> block beside the BI-RADS and Fischer caveats.",
+    "provenance": {
+      "status": "verified",
+      "origin": "ai-generated-composite",
+      "depicts": "real-place",
+      "rightsBasis": "The owner's own synthesis: he generated the composite himself from multiple source images (see src:hero-photo-origin). It is used here as decorative background art on his personal site, not licensed, resold or offered as evidence. The source images' own terms are UNSTATED — recorded in sourceImagesProvenance rather than implied to be clean.",
+      "attributionRequired": false,
+      "captionRule": "disclosure",
+      "captionText": "Background: an AI-generated composite, not a photograph of the campus.",
+      "endorsement": "none",
+      "affiliationBasis": "clm:msds-enrolment",
+      "affiliationStatement": "Duy Nguyen is an enrolled M.S. Data Science student at Seattle University. The university's marks appear on this site to identify that affiliation and nothing more; Seattle University does not sponsor, endorse or review it.",
+      "assetDir": "public/brand/hero",
+      "sourcePaths": [
+        "public/brand/hero-source.png",
+        "public/brand/hero-source.jpg",
+        "public/brand/hero-source.jpeg"
+      ],
+      "sources": [
+        "src:hero-photo-origin"
+      ],
+      "verifiedOn": "2026-09-02",
+      "verificationPath": "BRIEF.md Addendum F (owner's decision, 2026-09-02: \"but this is good and honest\") on the disclosure line, and Addendum D.1 for the origin. The owner's verbatim statement of origin is held in data/corpus/sources.json as src:hero-photo-origin.",
+      "openQuestions": [],
+      "note": "WHY THIS RECORD READS THE WAY IT DOES. The origin is the owner's own words: he synthesized one new image from several sources. Three facts then compound — the frame depicts an identifiable real place, it renders a third party's name and marks, and it sits on a page that claims a real affiliation with that third party. Any one alone would be minor; together they are what makes an undisclosed synthetic image read as institutional endorsement. The page's whole argument is that its claims are checkable and its limits are stated, so the resolution is the one the page already has an idiom for: the limit is stated, in the hero's own <Limit> block, in the same voice and at the same weight as the BI-RADS caveat. captionText is the exact sentence, written once, here — the component renders it through lib/corpus/hero-asset.ts and C15 greps the built HTML for it, so dropping the line while keeping the image turns the build red. sourceImagesProvenance stays internal (R-26): the visible line is accurate and sufficient, and expanding it into a paragraph about source licensing is past what the owner approved.",
+      "containsThirdPartyMarks": true,
+      "disclosureRequired": true,
+      "sourceImagesProvenance": "unstated"
+    }
+  },
+  {
+    "id": "art:su-mark",
+    "kind": "image",
+    "title": "Seattle University seal-and-signature lockup — a third party's registered trademark",
+    "url": null,
+    "access": "private",
+    "roleId": null,
+    "legacyPath": null,
+    "note": "THE SECOND ARTIFACT THIS SITE REPRODUCES RATHER THAN CITES, and the first one that belongs to somebody else. art:hero-photo asks \"where did this picture come from\". This record asks a different question with a harder answer: \"are we allowed to show this at all\". It was opened on 2026-09-03 while moving the nav to sit over the hero photograph, because the design question (a black mark cannot be seen on a dark picture) turned out to sit downstream of a permission question nobody had asked. WHAT THE FILE ACTUALLY IS. public/brand/seattle_university_logo.png is not the Seattle University wordmark. Rendered on white it is the ringed academic seal — eagle, shield, IHS monogram, 1891 banner — followed by the SEATTLE UNIVERSITY wordmark. The 2024 brand guidelines name that exact composite \"SEATTLE UNIVERSITY SEAL AND SIGNATURE\" (p.17) and put the seal in the most restricted tier the document has. public/brand/seattle_university_seal.png is the same seal standing alone. So BOTH marks this repo ships are the academic seal, and the component's `variant` prop was offering a choice between two forms of the same restricted mark. WHY THIS IS pending-owner AND NOT blocked. Three published rules point the same way — the seal is \"not intended for general use\" and its use outside four named offices is \"not permitted\"; any SU trademark needs \"prior, expressed, written permission from Marketing Communications\"; and the licensed-content policy names \"Web sites and pages (commercial and personal)\" among the uses that require it. That is a strong signal and it is still not a finding of fact about THIS site: the owner may hold a permission this repo has never seen, and the university itself says fair use is a question for counsel rather than for the FAQ. `blocked` would also delete the asset out from under public/docs/business_card_design.html and two other legacy pages that reference it, and C15 would turn the build red for work nobody had agreed to. So the record states the doubt at full strength and the SHIPPING CHOICE IS MADE SAFE UNDER IT INSTEAD: components/ui/Mark.tsx reads this status and renders the affiliation as TEXT until it says \"verified\", so the mark reaches no page in either nav state, plated or not. Flip one field here and the raster returns; nothing else has to change. Setting the affiliation in words is not a workaround — naming an institution to state a true fact about yourself reproduces no mark, and it is the same argument Mark.tsx already made for the College of Science and Engineering sub-brand.",
+    "provenance": {
+      "status": "pending-owner",
+      "origin": "unknown",
+      "depicts": "third-party-institutional-trademark — the Seattle University academic seal paired with the SEATTLE UNIVERSITY wordmark, an identifiable registered mark owned by a party other than the site's author",
+      "rightsBasis": null,
+      "attributionRequired": null,
+      "captionRule": "pending",
+      "captionText": null,
+      "endorsement": "none",
+      "affiliationBasis": "clm:msds-enrolment",
+      "affiliationStatement": "Duy Nguyen is an enrolled M.S. Data Science student at Seattle University. Any appearance of the university's marks on this site identifies that affiliation and nothing more; Seattle University does not sponsor, endorse, review or license this site.",
+      "assetDir": null,
+      "sourcePaths": [
+        "public/brand/seattle_university_logo.png",
+        "public/brand/seattle_university_seal.png",
+        "public/brand/seattle_university.png"
+      ],
+      "sources": [
+        "src:su-brand-guidelines-2024",
+        "src:su-trademark-permission"
+      ],
+      "verifiedOn": null,
+      "verificationPath": "https://www.seattleu.edu/media/seattle-university/marketing-communications/branding/BrandGuidelines2024.pdf p.12, p.16, p.17 — read 2026-09-03; quoted in full in src:su-brand-guidelines-2024. The permission rule is quoted in src:su-trademark-permission. The rendering consequence is enforced in components/ui/Mark.tsx, which reads this record's status.",
+      "openQuestions": [
+        "Do you hold written permission from Seattle University Marketing Communications (brand@seattleu.edu) to display a university mark on duyng-portfolio.com? Their licensing FAQ says any SU trademark \"may not be used without prior, expressed, written permission from Marketing Communications\", and their licensed-content policy names \"Web sites and pages (commercial and personal)\" among the uses that require it. If you do, paste it and this record closes as verified.",
+        "Are you aware that public/brand/seattle_university_logo.png is the ACADEMIC SEAL plus the wordmark, not the wordmark alone? The 2024 guidelines reserve the seal for Commencement, diplomas and official communications and say its use by anyone outside the offices of the President, Provost, Deans, Board of Trustees and official staff \"is not permitted\". If we ever get to show a mark here, the wordmark or the SU interlock is the mark to ask for — the university encourages community use of the interlock — and neither is in this repo.",
+        "If Marketing Communications approves a mark, ask them in the same message for the WHITE / reverse lockup and for permission to place it over a photograph. We could not verify a reverse variant from the public web: the asset library sits behind the Redhawk Hub login. Note that the wordmark's approved colours are red, black and white, so a white wordmark is ordinary — but the seal carries \"Do not alter or attempt to recreate these elements in any way\", so recolouring the seal is not ours to do even to white, and the isolation rule (p.16) says no \"typography, rules or photography\" may enter a clear-space margin one full logo-height wide, which a mark sitting on the hero photograph does by construction.",
+        "public/docs/business_card_design.html, public/docs/business_card_print_ready_FedEx.html and public/docs/index_business_card.html all render this same file on a printed business card. That is a different use from site chrome and this territory did not touch it. Should it be re-cut with the affiliation set in type as well, or does it fall under a permission you already hold?"
+      ],
+      "containsThirdPartyMarks": true,
+      "disclosureRequired": false,
+      "sourceImagesProvenance": "The PNGs were copied into public/brand/ from the legacy public/docs/images/ tree (Addendum B R-14). How they arrived in that tree is unrecorded; they are not the owner's work. Internal note, never surfaced.",
+      "note": "THE MEASUREMENT, kept here so nobody re-opens the design argument without it. The wordmark half of the file is pure #000000 on transparency — sampled every second pixel, 100% of opaque pixels right of x=156 sit below luminance 60, and the mean is 0. The nav sits on the hero's CREST, where components/site/hero-scrim.module.css paints an effective scrim alpha of 0.2500 full width (the 0.8656 column only starts after the ease, 18px above the first glyph). Compositing the shipped hero variants under that 25% veil and measuring the worst pixel inside a 28px lockup box at the wrap's left gutter: 1600x900 1.04:1, 1280x800 1.04:1, 861x1000 2.33:1, 390x844 2.38:1, 375x812 2.38:1. WCAG 1.4.11 asks 3:1 of a graphical object. The mark fails at every viewport, and fails worst on desktop, because at 1280 and 1600 the gutter is the dark ivy arch. A white plate would fix the ratio and is the treatment the guidelines imply — but at the guidelines' own isolation width (one full logo height, p.16) a 28px lockup needs an 84px-tall plate, which is taller than the bar, and the owner has spent seven rounds removing exactly that white rectangle from the top of this photograph. Neither arm is available, which is what sent this to the permission question in the first place."
+    }
+  }
+]

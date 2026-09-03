@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume - Duy Nguyen</title>
+    <!--
+      GENERATED FILE — do not hand-edit.
+      Source: data/corpus/*.json · Generator: scripts/gen-resume.mjs
+      corpusHash: sha256:d748baa7cde4934be38038e6d03886a7
+      Regenerate with `node scripts/gen-resume.mjs`. CI runs
+      `node scripts/gen-resume.mjs --check` and fails when this file is stale,
+      which is what stops the résumé and the site from disagreeing.
+    -->
+    <style>
+        :root {
+            --seattle-red: #AA0000;
+            --text-dark: #333333;
+            --text-gray: #666666;
+            --border-gray: #cccccc;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Times New Roman', Georgia, serif;
+            font-size: 11pt;
+            line-height: 1.4;
+            color: var(--text-dark);
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .resume-container {
+            max-width: 8.5in;
+            margin: 0 auto;
+            background: white;
+            padding: 0.6in 0.7in;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .resume-header { text-align: center; margin-bottom: 15px; }
+
+        .resume-header h1 {
+            font-size: 28pt;
+            color: var(--seattle-red);
+            font-weight: normal;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .contact-line { font-size: 10pt; color: var(--text-dark); }
+        .contact-line a { color: var(--text-dark); text-decoration: underline; }
+        .contact-line a:hover { color: var(--seattle-red); }
+
+        .section { margin-bottom: 12px; }
+
+        .section-title {
+            font-size: 11pt;
+            font-weight: normal;
+            color: var(--seattle-red);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border-bottom: 1px solid var(--seattle-red);
+            padding-bottom: 3px;
+            margin-bottom: 10px;
+            font-variant: small-caps;
+        }
+
+        .entry { margin-bottom: 10px; }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 2px;
+        }
+
+        .entry-title {
+            font-weight: bold;
+            color: var(--seattle-red);
+            font-size: 11pt;
+            text-decoration: none;
+        }
+
+        .entry-date {
+            font-style: italic;
+            color: var(--text-dark);
+            font-size: 10pt;
+            white-space: nowrap;
+        }
+
+        .entry-subtitle {
+            display: flex;
+            justify-content: space-between;
+            font-style: italic;
+            color: var(--text-dark);
+            font-size: 10pt;
+            margin-bottom: 4px;
+        }
+
+        .entry-location { font-style: italic; }
+
+        .bullets { padding-left: 18px; margin-top: 4px; }
+        .bullets li { margin-bottom: 3px; text-align: justify; font-size: 10.5pt; }
+
+        .skills-content { font-size: 10.5pt; }
+        .skills-content p { margin-bottom: 4px; }
+        .skill-category { font-weight: bold; }
+
+        .provenance {
+            margin-top: 18px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border-gray);
+            font-size: 8.5pt;
+            color: var(--text-gray);
+        }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .resume-container { box-shadow: none; padding: 0.5in; }
+            .provenance { display: none; }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .resume-container { padding: 0.4in 0.3in; }
+            .entry-header, .entry-subtitle { flex-direction: column; }
+            .entry-date, .entry-location { margin-top: 2px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="resume-container">
+        <header class="resume-header">
+            <h1>Duy Nguyen</h1>
+            <p class="contact-line">
+                <a href="mailto:dnguyen44@seattleu.edu">dnguyen44@seattleu.edu</a> |
+                <a href="https://www.linkedin.com/in/duwe-ng/" target="_blank" rel="noopener">LinkedIn</a> |
+                <a href="https://github.com/dcnguyen060899" target="_blank" rel="noopener">GitHub</a> |
+                <a href="/">Portfolio</a> |
+                Seattle, WA
+            </p>
+        </header>
+        <section class="section">
+            <h2 class="section-title">Summary</h2>
+            <div class="skills-content">
+                <p>Duy Nguyen is a data scientist and M.S. Data Science candidate based in Seattle, Washington. As a Graduate Research Assistant with Dr. Wenjing Yang, Duy runs a critical replication of a published retrieval-augmented mammography report-generation pipeline, which became a controlled experiment of his own design. Duy owns problems end to end &mdash; experiment design, modelling, evaluation and reporting &mdash; and names reporting as the hardest of the four to learn, because it is where months of shared work have to be revised into one coherent argument under a deadline.</p>
+            </div>
+        </section>
+        <section class="section">
+            <h2 class="section-title">Education</h2>
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title">M.S. in Data Science</span>
+                    <span class="entry-date">Sep 2025 &ndash; Expected Jun 2027</span>
+                </div>
+                <div class="entry-subtitle">
+                    <span>Seattle University</span>
+                    <span class="entry-location">Seattle, WA</span>
+                </div>
+                <ul class="bullets">
+                    <li>GPA 4.0 &mdash; Duy was named to the Seattle University College of Science and Engineering Dean's Graduate Student Honor Roll for Winter 2026.</li>
+                    <li>The Seattle University M.S. Data Science is 45 credits &mdash; 36 required and 9 elective &mdash; across roughly six quarters, ending in a two-quarter capstone run with industry partners.</li>
+                </ul>
+            </div>
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title">Certificate, Machine Learning &amp; AI</span>
+                    <span class="entry-date">Jul 2024</span>
+                </div>
+                <div class="entry-subtitle">
+                    <span>UC Berkeley College of Engineering</span>
+                    <span class="entry-location">Online</span>
+                </div>
+            </div>
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title">B.A. in Economics, Data Analysis Concentration</span>
+                    <span class="entry-date">May 2023</span>
+                </div>
+                <div class="entry-subtitle">
+                    <span>Simon Fraser University</span>
+                    <span class="entry-location">Burnaby, BC, Canada</span>
+                </div>
+            </div>
+        </section>
+        <section class="section">
+            <h2 class="section-title">Experience</h2>
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title">Graduate Research Assistant &mdash; medical vision-language RAG</span>
+                    <span class="entry-date">Spring 2026 &ndash; Present</span>
+                </div>
+                <div class="entry-subtitle">
+                    <span>Seattle University | Advisor: Dr. Wenjing Yang</span>
+                    <span class="entry-location"></span>
+                </div>
+                <ul class="bullets">
+                    <li>As a Graduate Research Assistant with Dr. Wenjing Yang, Duy runs a critical replication of a published retrieval-augmented mammography report-generation pipeline, which became a controlled experiment of his own design.</li>
+                    <li>The position is ongoing, with weekly meetings.</li>
+                    <li>The study runs on VinDr-Mammo &mdash; 5,000 studies from 5,000 patients, four views each, 20,000 images &mdash; with a 1,000-study held-out test split.</li>
+                    <li>Duy designed and ran a 24-cell controlled experiment: four retrieval-encoder substrates, each evaluated frozen and fine-tuned, crossed with three frozen vision-language decoders.</li>
+                    <li>The held-out majority-class retrieval floor is P@1 = 0.487; fine-tuning the mammography-native encoder produced the only arm of twenty-four to clear it, moving from 0.513 frozen to 0.585 fine-tuned.</li>
+                    <li>Replacing the frozen generic retriever with the domain-native, contrastively fine-tuned encoder &mdash; decoder frozen throughout &mdash; raised suspicion macro-F1 from 0.35 to 0.48 on LLaVA-Med, a gain of 0.13.</li>
+                    <li>The same substitution raised BI-RADS agreement by 0.10 on LLaVA-Med.</li>
+                    <li>Isolating the fine-tuning step alone &mdash; holding the encoder family fixed &mdash; accounts for +0.11 on Qwen2.5-VL and +0.06 on LLaVA-Med.</li>
+                    <li>Auditing his evaluation code against the paper he was replicating, Duy found that its published precision, recall and F1 are computed as weighted averages while its text describes them as macro-averaged &mdash; a metric-labelling artifact that changes how the reference numbers must be interpreted. His evaluator follows the paper's stated methodology, so every subsequent comparison runs inside his own pipeline rather than against the published numbers.</li>
+                    <li>Evaluation is automated with reproducible, self-verifying generators in Python and pandas that recompute more than 100 reported metrics byte-exact from raw model predictions.</li>
+                    <li>Duy wrote up the full analysis as a 37-page technical report for his advisor, Dr. Wenjing Yang.</li>
+                    <li>The report was condensed into a first-author manuscript, "Separation Without Transfer: The Retrieval Encoder's Substrate, Not the VLM Decoder, Decides Whether Contrastive Fine-Tuning Transfers in Mammography Report Generation", submitted to the Pacific Symposium on Biocomputing 2027 with Dr. Wenjing Yang as co-author. It is under review.</li>
+                    <li>The work is built in Python with PyTorch, HuggingFace Transformers, ChromaDB and scikit-learn, trained on a Google Colab A100.</li>
+                    <li>VinDr-Mammo carries radiologist BI-RADS assessments, not biopsy-confirmed pathology, so every suspicion and BI-RADS result here is agreement with a radiologist's reading, not diagnostic accuracy.</li>
+                    <li>The macro-F1 gain and the relative-accuracy gain are two renderings of the same measured effect, not two separate results.</li>
+                    <li>The manuscript is under review; it is not accepted and not published.</li>
+                </ul>
+            </div>
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title">Research Data Engineer</span>
+                    <span class="entry-date">Mar 2026 &ndash; Present</span>
+                </div>
+                <div class="entry-subtitle">
+                    <span>Computational Neuroscience Lab, Seattle University | Advisor: Prof. Brian Fischer</span>
+                    <span class="entry-location">Full-time</span>
+                </div>
+                <ul class="bullets">
+                    <li>As Research Data Engineer in Prof. Brian Fischer's Computational Neuroscience Lab, Duy builds the data infrastructure for an NIH CRCNS-funded project on barn-owl sound localization &mdash; concurrent with study in spring, full-time over the summer term, and continuing into the fall 2026 quarter.</li>
+                    <li>The project is NIH CRCNS-funded research on how barn owls localize sound, and the data are neural recordings from that work.</li>
+                    <li>Duy engineered an ETL pipeline in Python &mdash; pandas, SciPy and h5py &mdash; converting five or more proprietary electrophysiology formats (XDPHYS .iid, .itd and .bf, MATLAB .mat, headerless CSV) into a single normalized relational database.</li>
+                    <li>The pipeline is end to end: it reads the raw lab files, applies the data-quality rules and loads a queryable database with no manual step in the middle.</li>
+                    <li>Duy designed the relational schema and its ER model &mdash; documented in LaTeX &mdash; with foreign-key constraints and explicit data-quality rules covering missing-data handling, tracked exclusions and path remapping, consolidating scattered lab files into one queryable source of truth.</li>
+                    <li>The shipped database is SQLite: seven normalized tables &mdash; owl, recording session, neuron, experiment, ILD condition tested, tuning parameters and spike reliability &mdash; plus five views built for the lab's own queries.</li>
+                    <li>The database holds 195 neurons from 7 barn owls across 38 recording sessions, with 1,325 recording passes and 1,265 tuning-parameter rows.</li>
+                    <li>Duy tuned the queries and the ETL to meet targets of under 200 milliseconds per query and under 30 seconds for a full load.</li>
+                    <li>Lab students can now self-serve neuron-level queries that previously required manual file handling.</li>
+                    <li>Duy ran SQL schema and data-integrity audits that caught and corrected problems &mdash; all-zero rows and weak-tuning exclusions &mdash; before they reached downstream analysis.</li>
+                    <li>A second researcher's spike-reliability dataset is staged and schema-provisioned for load; its tables exist and hold no rows yet.</li>
+                    <li>This work is ongoing, so its counts move; every figure here was verified against the lab database on 2 September 2026 and is re-derivable from it.</li>
+                </ul>
+            </div>
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title">Sole engineer &mdash; design, build, deploy, operate</span>
+                    <span class="entry-date">Aug 2026 &ndash; Present</span>
+                </div>
+                <div class="entry-subtitle">
+                    <span>MAVTERRAS Design + Build</span>
+                    <span class="entry-location"></span>
+                </div>
+                <ul class="bullets">
+                    <li>mavterras.com is live in production, serving a real construction company's public site.</li>
+                    <li>Duy is the sole engineer: all 29 commits, between 17 and 26 August 2026, are authored by him.</li>
+                    <li>Duy elicited the requirements directly from the company's founder and its co-founder &mdash; one on construction and project delivery, the other on finance and operations &mdash; turning what they wanted into a scope he could build, and recording the decisions those conversations produced in the code itself, dated, next to the thing each decision changed.</li>
+                    <li>Features were cut on founder instruction and the code says so: a deposit-terms block was replaced on a dated memo from the co-founder responsible for finance, a zone selector was removed on a partner memo asking to keep it simple, and a leadership section was reduced on another. Each removal is annotated in the source with who asked, in what role, and when &mdash; and an end-to-end test asserts that the retired values may not reappear.</li>
+                    <li>Quality gates are wired into the build: one verify command runs environment checks, ESLint 9 with typescript-eslint, a no-emit TypeScript pass and Vitest, and Playwright drives end-to-end tests with axe-core accessibility assertions.</li>
+                </ul>
+            </div>
+        </section>
+        <section class="section">
+            <h2 class="section-title">Honors &amp; Projects</h2>
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title">Winner, Graduate Division &mdash; CAUSE 2026</span>
+                    <span class="entry-date">2026</span>
+                </div>
+                <div class="entry-subtitle">
+                    <span>Consortium for the Advancement of Undergraduate Statistics Education (CAUSE)</span>
+                    <span class="entry-location"></span>
+                </div>
+                <ul class="bullets">
+                    <li>The winning entry is "Will AI Make Human Work Worthless &mdash; or Priceless?", live at cheap-as-electricity.com.</li>
+                    <li>It is a nine-act interactive data story built in D3.js and Scrollama.js, with scroll-driven animation and a reader-controlled parameter widget.</li>
+                    <li>The story is built on an original nested-CES general-equilibrium model of AI and cognitive labour, translated into a narrative for readers who do not work in economics.</li>
+                    <li>The contest is judged blind, on narrative, data interpretation, scrollytelling and visual design.</li>
+                </ul>
+            </div>
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title">CPSC 5330 Big Data Analytics</span>
+                    <span class="entry-date">Spring 2026</span>
+                </div>
+                <div class="entry-subtitle">
+                    <span>Seattle University</span>
+                    <span class="entry-location"></span>
+                </div>
+                <ul class="bullets">
+                    <li>Duy took CPSC 5330 Big Data Analytics at Seattle University in the spring 2026 quarter, section 26SQ.</li>
+                    <li>This is coursework on a single-node lab cluster and an AWS teaching account, not distributed processing at production scale.</li>
+                </ul>
+            </div>
+        </section>
+        <section class="section">
+            <h2 class="section-title">Earlier Experience</h2>
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title">AI Engineer</span>
+                    <span class="entry-date">Mar 2024 &ndash; Oct 2024</span>
+                </div>
+                <div class="entry-subtitle">
+                    <span>SFU Blueprint</span>
+                    <span class="entry-location"></span>
+                </div>
+                <ul class="bullets">
+                    <li>SFU Blueprint is a student-run organisation that builds software pro bono for British Columbia non-profits in interdisciplinary teams. Duy was the AI Engineer on the team that built MOSAIC's immigration and settlement assistant, and the team carried it through product definition, a design sprint and a documented developer handoff.</li>
+                    <li>The system the team built runs on a Neo4j knowledge graph modelling programmes against locations, client needs, age groups, immigration status and other services, with multi-language natural-language handling on top of it.</li>
+                    <li>The team's project was shortlisted in the top four for the SFU Computing Science Diversity Award. The submission was backed by a signed letter from the Director of Business Technology and Operations at MOSAIC BC, the client, endorsing the students' work to the award committee.</li>
+                </ul>
+            </div>
+            <div class="entry">
+                <div class="entry-header">
+                    <span class="entry-title">AI Research Engineer</span>
+                    <span class="entry-date">Jan 2024 &ndash; May 2024</span>
+                </div>
+                <div class="entry-subtitle">
+                    <span>SFU Faisal Lab</span>
+                    <span class="entry-location"></span>
+                </div>
+                <ul class="bullets">
+                    <li>At the SFU Faisal Lab, Duy built a RAG pipeline in Python and LlamaIndex that translates natural language into structured queries for CT and MRI scan retrieval.</li>
+                </ul>
+            </div>
+        </section>
+        <section class="section">
+            <h2 class="section-title">Skills</h2>
+            <div class="skills-content">
+                <p><span class="skill-category">Programming:</span> Python, SQL, TypeScript and JavaScript, Java and Maven</p>
+                <p><span class="skill-category">ML / AI:</span> PyTorch, HuggingFace Transformers, scikit-learn, Retrieval-augmented generation, Vision-language models, Contrastive and parameter-efficient fine-tuning</p>
+                <p><span class="skill-category">Data:</span> pandas, NumPy, SciPy, ETL design, Relational schema and ER design, Data quality and integrity auditing, Hadoop, HDFS, Hive, Apache Spark, ChromaDB and vector retrieval, Neo4j and knowledge graphs</p>
+                <p><span class="skill-category">Infrastructure:</span> CI/CD and automated quality gates, Cloud deployment and operation, API and service design</p>
+                <p><span class="skill-category">Front-end:</span> Next.js and React, D3.js and Scrollama.js, Accessibility engineering (WCAG AA)</p>
+                <p><span class="skill-category">Practice:</span> Experimental design, Causal inference and econometrics, Applied statistical inference, Model evaluation and benchmarking, Reproducibility engineering, Code review and engineering audit, Stakeholder requirements and communication, Technical writing, LaTeX, Git</p>
+            </div>
+        </section>
+        <!-- corpus:no-scan -->
+        <p class="provenance">
+            Every figure on this résumé is generated from a committed evidence corpus (116 claims, 46 sources), each carrying the file or URL that verifies it. Corpus sha256:d748baa7cde4934be38038e6d03886a7, generated 2026-09-03. 24 superseded claims are recorded and scanned for on every build so they cannot reappear.
+        </p>
+        <!-- /corpus:no-scan -->
+    </div>
+</body>
+</html>

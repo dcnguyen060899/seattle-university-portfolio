@@ -1,0 +1,190 @@
+{
+  "role": "data-engineer",
+  "profile": "rp:data-engineer",
+  "provenance": {
+    "composer": "deterministic",
+    "model": null,
+    "builtAt": "2026-09-03T20:51:25.579Z",
+    "corpusVersion": "d748baa7cde4",
+    "corpusSize": 116,
+    "guardrailTotal": 4
+  },
+  "brief": {
+    "role_label": "Data Engineer",
+    "jd_source": "role_chip",
+    "headline": "Part of this Data Engineer profile maps to work on this site, and part of it does not.",
+    "requirements": [
+      {
+        "requirement": "ETL and pipeline construction",
+        "verdict": "direct",
+        "confidence": "high",
+        "rationale": "Duy engineered an ETL pipeline in Python — pandas, SciPy and h5py — converting five or more proprietary electrophysiology formats (XDPHYS .iid, .itd and .bf, MATLAB .mat, headerless CSV) into a single normalized relational database. The pipeline is end to end: it reads the raw lab files, applies the data-quality…",
+        "evidence": [
+          {
+            "evidence_id": "clm:fischer-etl-formats",
+            "quoted_claim": "ETL over 5+ proprietary electrophysiology formats",
+            "artifact_label": "ETL over 5+ proprietary electrophysiology formats",
+            "artifact_url": ""
+          },
+          {
+            "evidence_id": "clm:fischer-etl-endtoend",
+            "quoted_claim": "End-to-end ETL, no manual step",
+            "artifact_label": "End-to-end ETL, no manual step",
+            "artifact_url": ""
+          }
+        ],
+        "caveat": ""
+      },
+      {
+        "requirement": "Schema and data modelling",
+        "verdict": "direct",
+        "confidence": "high",
+        "rationale": "Duy drew and documented the boundary between data that belongs in Postgres and data that stays as committed JSON — data a stranger writes at runtime moves to the database, generated and partner-owned catalog data does not — so a fresh clone keeps rendering with no database at all. Duy designed the relational schema…",
+        "evidence": [
+          {
+            "evidence_id": "clm:mav-postgres-boundary",
+            "quoted_claim": "Explicit runtime-versus-catalog data boundary",
+            "artifact_label": "Explicit runtime-versus-catalog data boundary",
+            "artifact_url": ""
+          },
+          {
+            "evidence_id": "clm:fischer-schema-er",
+            "quoted_claim": "Relational schema and ER model documented in LaTeX",
+            "artifact_label": "ICcl barn-owl database (SQLite)",
+            "artifact_url": ""
+          }
+        ],
+        "caveat": ""
+      },
+      {
+        "requirement": "Data quality and integrity",
+        "verdict": "direct",
+        "confidence": "high",
+        "rationale": "Electrode depth has real provenance handling rather than an adjective about data quality: the raw instrument header records no usable depth for 143 of the 195 neurons, so the ETL falls back to the principal investigator's hand-curated position file and a depth_source column records, per neuron, which of the two the…",
+        "evidence": [
+          {
+            "evidence_id": "clm:fischer-depth-provenance",
+            "quoted_claim": "Depth provenance recorded per neuron, not assumed",
+            "artifact_label": "ICcl barn-owl database (SQLite)",
+            "artifact_url": ""
+          },
+          {
+            "evidence_id": "clm:fischer-dq-rules",
+            "quoted_claim": "Data-quality rules written into the schema",
+            "artifact_label": "Data-quality rules written into the schema",
+            "artifact_url": ""
+          }
+        ],
+        "caveat": "This work is ongoing, so its counts move; every figure here was verified against the lab database on 2 September 2026 and is re-derivable from it."
+      },
+      {
+        "requirement": "Reviewing and root-causing other people's data work",
+        "verdict": "direct",
+        "confidence": "high",
+        "rationale": "Duy audited the whole team's pipeline output against the lab's eight stated file-naming and content requirements, and found 164 violations across all 16 date folders that had been uploaded. He traced the largest class of failures to a single line in the team's shared renaming notebook: its final loop hard-codes one…",
+        "evidence": [
+          {
+            "evidence_id": "clm:fischer-team-audit",
+            "quoted_claim": "164 violations found across 16 folders",
+            "artifact_label": "ICcl shared-folder audit report",
+            "artifact_url": ""
+          },
+          {
+            "evidence_id": "clm:fischer-team-audit-rootcause",
+            "quoted_claim": "Root-caused to one hardcoded extension in shared code",
+            "artifact_label": "ICcl shared-folder audit report",
+            "artifact_url": ""
+          }
+        ],
+        "caveat": "The audit also reported the team's coverage honestly rather than favourably: 16 of the 36 required dates had been uploaded at the time, 44%, with 20 still to process."
+      },
+      {
+        "requirement": "Distributed data processing",
+        "verdict": "adjacent",
+        "confidence": "medium",
+        "rationale": "The course ran on the industry stack rather than on a description of it: HDFS and YARN on an EC2 Hadoop instance built from an AMI, Hadoop Streaming, Hive through Beeline over JDBC, AWS EMR, DynamoDB, Spark RDDs, Spark SQL and DataFrames, and Spark Streaming, with Java and Maven for the JVM assignments. The…",
+        "evidence": [
+          {
+            "evidence_id": "clm:cpsc5330-stack",
+            "quoted_claim": "HDFS · YARN · Hadoop Streaming · Hive · EMR · Spark",
+            "artifact_label": "CPSC 5330 term-frequency pipeline — two Hadoop Streaming…",
+            "artifact_url": ""
+          },
+          {
+            "evidence_id": "clm:cpsc5330-tf-artifact",
+            "quoted_claim": "Two-stage Hadoop Streaming pipeline plus a Hive join",
+            "artifact_label": "CPSC 5330 term-frequency pipeline — two Hadoop Streaming…",
+            "artifact_url": ""
+          }
+        ],
+        "caveat": "Coursework with a dated, inspectable artifact — a two-stage Hadoop Streaming pipeline and a Hive query, extended to TF-IDF search on EMR. The applied pipeline work is single-node Python. This is…"
+      },
+      {
+        "requirement": "Query and load performance",
+        "verdict": "direct",
+        "confidence": "high",
+        "rationale": "Duy tuned the queries and the ETL to meet targets of under 200 milliseconds per query and under 30 seconds for a full load. The stack is Next.js 16 App Router, React 19, TypeScript in strict mode, Tailwind v4 with CSS Modules, Neon serverless Postgres, the Anthropic SDK with structured outputs, ONNX Runtime Web…",
+        "evidence": [
+          {
+            "evidence_id": "clm:mav-stack",
+            "quoted_claim": "Next.js 16 · React 19 · TS strict · Neon · Vercel",
+            "artifact_label": "mavterras.com",
+            "artifact_url": "https://mavterras.com"
+          },
+          {
+            "evidence_id": "clm:mav-operating",
+            "quoted_claim": "Deployed and operated on Vercel, Neon, R2 and Inngest",
+            "artifact_label": "mavterras.com",
+            "artifact_url": "https://mavterras.com"
+          }
+        ],
+        "caveat": ""
+      },
+      {
+        "requirement": "Distributed data processing in production",
+        "verdict": "no_evidence",
+        "confidence": "high",
+        "rationale": "Duy has run the distributed stack, but as coursework rather than in production. In spring 2026 he took Big Data Analytics at Seattle University and built a two-stage Hadoop Streaming pipeline with a Hive query on top of it, on HDFS and YARN, and extended it into a TF-IDF search application on an EMR cluster. That is…",
+        "evidence": [],
+        "caveat": ""
+      },
+      {
+        "requirement": "Orchestration in a shipped system",
+        "verdict": "no_evidence",
+        "confidence": "high",
+        "rationale": "Airflow is part of the deployment work Duy is building right now, not part of anything he has shipped. What he has shipped is background jobs on Inngest in a production website, which is scheduling but not DAG orchestration.",
+        "evidence": [],
+        "caveat": ""
+      }
+    ],
+    "strongest": "clm:fischer-etl-formats",
+    "gaps_summary": "This site does not fully evidence distributed data processing in production; orchestration in a shipped system. Each row above says which half is missing.",
+    "not_claimed": [
+      "Not claimed: distributed data processing in production."
+    ],
+    "closing": "Every row above links to the record it came from, and the rows this site cannot support say so.",
+    "observed_directives": []
+  },
+  "coverage": {
+    "direct": 5,
+    "adjacent": 1,
+    "partial": 0,
+    "no_evidence": 2
+  },
+  "guardrails": {
+    "citations_dropped": 0,
+    "claims_redacted": 0,
+    "numbers_rejected": [],
+    "urls_rejected": [],
+    "verdicts_downgraded": [],
+    "caveats_restored": [
+      "clm:fischer-live-caveat",
+      "clm:fischer-team-audit-coverage",
+      "requirement-note:4",
+      "clm:cpsc5330-caveat"
+    ],
+    "overclaim_flagged": false,
+    "injection_suspected": false,
+    "retractions_blocked": []
+  }
+}

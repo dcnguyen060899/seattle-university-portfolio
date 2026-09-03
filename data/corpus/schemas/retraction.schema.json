@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://duyng-portfolio.com/schemas/corpus/retraction.schema.json",
+  "title": "Retraction",
+  "description": "A first-class record of something that WAS asserted somewhere and must never be asserted again. Retractions are permanent: the record is never deleted, and C9 scans every new served surface for its forbiddenPhrases and forbiddenPatterns on every build.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["id", "subject", "statement", "short", "reason", "forbiddenPhrases", "retractedOn", "previouslyAt"],
+    "properties": {
+      "id": { "type": "string", "pattern": "^ret:[a-z0-9]+(-[a-z0-9]+)*$" },
+      "subject": { "type": "string", "pattern": "^(rol|art|org|per|skl):[a-z0-9]+(-[a-z0-9]+)*$" },
+      "statement": { "type": "string", "minLength": 20, "maxLength": 620, "description": "What was retracted, stated plainly. Rendered nowhere; read by maintainers and by the audit." },
+      "short": { "type": "string", "minLength": 3, "maxLength": 90 },
+      "reason": { "type": "string", "minLength": 40, "description": "WHY it does not ship. Written so that a future editor who is tempted to restore it reads the argument first." },
+      "forbiddenPhrases": {
+        "type": "array",
+        "minItems": 1,
+        "items": { "type": "string", "minLength": 3 },
+        "description": "Case-insensitive substrings. C9 fails the build on a hit in any NEW served surface (see verify-corpus.mjs SCAN SCOPE). Phrases must be specific enough not to fire on an honest sentence — 'MySQL' alone would fire on a truthful account of the earlier phase, so the phrase is 'MySQL database'."
+      },
+      "forbiddenPatterns": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["source", "flags", "why"],
+          "properties": {
+            "source": { "type": "string", "minLength": 3 },
+            "flags": { "type": "string" },
+            "why": { "type": "string", "minLength": 10 }
+          }
+        },
+        "description": "Regular expressions, for retractions that are a RANGE rather than a string (Addendum B R-19's 'any term GPA between 2.0 and 3.9')."
+      },
+      "retractedOn": { "type": "string", "format": "date" },
+      "previouslyAt": { "type": "array", "items": { "type": "string" }, "description": "Where it used to live, so the removal is checkable." },
+      "supersededBy": { "type": "array", "items": { "type": "string", "pattern": "^clm:[a-z0-9]+(-[a-z0-9]+)*$" }, "description": "The true claim to reach for instead. Empty when the honest replacement is silence." },
+      "note": { "type": ["string", "null"] }
+    }
+  }
+}

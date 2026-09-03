@@ -1,0 +1,740 @@
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  components/site/nav.module.css
+
+  OWNERSHIP: THE DESIGN TERRITORY OWNS THIS FILE. It did not exist when the
+  state-machine slice landed, and a component that imports a missing module
+  does not compile — so this is a SKELETON written by the owner of nav.tsx /
+  use-scroll-driver.ts / layout.tsx to keep `npm run build` green and to write
+  the class contract down somewhere executable. Overwrite it freely.
+
+  WHAT IS STRUCTURAL (please keep the mechanism, change the numbers):
+    · the three paper-face conditions, and the fact that the paper face is
+      expressed by UNSETTING the ink ground rather than by naming a colour
+    · `.veil` existing at all — see THE VEIL below, it is answering a gate
+    · `--nav-h` being read, never authored (hooks/use-scroll-driver.ts
+      measures the bar and publishes it on <html>)
+
+  WHAT IS MEASURED (do not "tidy" these without re-measuring):
+    · the veil's 82% plateau — bisected against scripts/check-nav-contrast.mjs
+      with the collar credited; see THE VEIL for the floor and what holds it
+    · the tail's 160px and its five stops — a perceptual budget, not taste
+    · the frosted fill's 97% — DERIVED here now, not ported; see THE FILL
+    · the ABSENCE of a per-glyph collar — measured, three arms, see the note
+      where it would have gone
+
+  WHAT IS STILL A PLACEHOLDER:
+    · every duration, the blur radius, the gap and padding values
+    · the 640px brand breakpoint, and the two-row bar it leaves at 375
+  ═══════════════════════════════════════════════════════════════════════════
+
+  THE COMPOSITED-GROUND TRAP, carried over from the reference verbatim because
+  it is the trap this project has already spent rounds on:
+
+    A translucent bar does not have one background — it has whatever is behind
+    it, blended. MAVTERRAS measured its own bar at 82% bone and found the
+    effective ground fell to ~#CFCDC8 with the ink zone track behind it,
+    dropping its links to 3.50:1 and its accent to 3.99:1 — "both below AA, and
+    both invisible to any check that reads the declared colour instead of the
+    composited one." At 97% it holds at ~#F0EDE9: 4.76:1 and 5.43:1.
+
+  ── THE FILL: 97% IS NO LONGER A COPIED NUMBER ────────────────────────────
+
+  It was, and the note that used to sit here said so. It is now derived from
+  this palette, by a criterion the reference did not have to answer.
+
+  THE REFERENCE WALKED UP FROM FAILURE. It found 82% broken and moved until
+  the ratios cleared, which finds the AA LINE. The AA line here is 84%: at
+  that fill the bar composited over the award band's ink reads #D6D6D4 —
+  legal, and visibly a grey panel rather than paper. Nine bands pass under
+  this bar and two of them are ink, so it has to hold ONE identity across all
+  of them, which is a harder question than the reference's page asked.
+
+  So the number comes from the DARKEST thing that can ever be behind it — and
+  rather than argue about which band that is, the bound is taken against
+  #000000, which no pixel on any page can beat:
+
+      the least fill at which the bar composited over BLACK is no darker than
+      --color-paper-sunk (#F1EFEB), the darkest LIGHT surface this system
+      ships.
+
+  Crossover 0.95395, computed with scratchpad/wcag.py. 97% clears it, which is
+  what makes the whole bar a surface app/globals.css has ALREADY measured:
+
+      backdrop      composited    --fg   --fg-muted   --fg-accent
+      paper           #FBFAF8    17.30      6.34         7.43
+      ink             #F4F3F1    16.27      5.96         6.99
+      pure black      #F3F2F0    16.13      5.91         6.93
+      (--ground-sunk  #F1EFEB    15.71      5.76         6.75)   <- the floor
+
+  Every row sits ABOVE the sunk surface, so the frosted bar introduces no new
+  ratio at all — every role in it is already published against --ground-sunk.
+  The frost is unaffected: backdrop-filter is what produces it, and it still
+  blurs whatever passes underneath.
+
+  scripts/check-nav-contrast.mjs derives its own MINIMUM from this palette on
+  every run (85.9% as of 2026-09-03). That is the floor; this is the choice
+  above it, and the two answer different questions — the gate asks "is it
+  legal", this asks "is it still paper".
+*/
+
+/* ── The bar ─────────────────────────────────────────────────────────────
+   Fixed FROM THE FIRST PAINT, in CSS, never promoted by JS — that is what
+   makes this a zero-CLS change: the nav is out of flow before the first
+   frame, so nothing below it ever moves. */
+.nav {
+  /*
+    ── THE CONTRACT scripts/check-nav-contrast.mjs READS ──────────────────
+
+    That gate cannot see the DOM, so a two-state bar has to declare its states
+    in CSS or the gate skips the state it cannot attribute. `rest` is the face
+    over the photograph; the paper-face rule below declares `stuck`.
+
+    ⚠ `--nav-height` IS A MEASURED NUMBER STANDING IN FOR A DECLARED ONE, and
+    that is a real weakness, stated rather than hidden. This bar's height is
+    CONTENT-DRIVEN — padding plus however many rows the links wrap onto — so
+    the value here is what it measured in Chromium on 2026-09-03 (60px at
+    ≥641, 104px below, where the four links take two rows), not a height
+    anything enforces. If a label lengthens, the bar grows and this number
+    silently stops being true. It becomes a real single source of truth the
+    day the narrow bar collapses to one row — see the 640px handover at the
+    foot of this file — at which point `min-block-size: var(--nav-height)`
+    can be added here and the two can no longer disagree.
+  */
+  --nav-state: rest;
+  --nav-ground: ink;
+  --nav-height: 60px;
+
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 50;
+  padding-block: 16px;
+
+  /*
+    THE PLATEAU LIVES ON THE BAR'S OWN BACKGROUND, NOT ON A CHILD, AND THAT
+    IS A GATE REQUIREMENT RATHER THAN A PREFERENCE.
+
+    It was a child element first. scripts/check-nav-contrast.mjs composites
+    the source pixel through the hero scrim and through THE REST RULE'S OWN
+    `background-image` / `background` / `background-color` — it cannot see a
+    child's paint — so with the ramp on a child it reported every glyph in
+    this bar at 1.000:1 over the bare crest. The browser gate
+    (tests/e2e/nav.spec.ts §4, which screenshots and reads real pixels) was
+    green at the same moment, so the two gates disagreed about the same bar.
+    A static gate that under-credits is not a safe gate: the next person to
+    change the ramp reads 1.000:1, concludes the layer does nothing, and
+    deletes it.
+
+    So the part that covers the glyphs is a background layer of this rule.
+    `.veil` below is now only the TAIL, below the bar's foot, where nothing
+    is drawn.
+
+    TWO LAYERS, BOTH GRADIENTS, IN BOTH STATES — that is what makes the
+    400ms cross-fade smooth. `background-image: none` in the other state
+    would be a DISCRETE change, flipping at 50% of the transition, which
+    would strip the ramp while the paper fill was still half transparent —
+    one glyph-band's worth of nav text over a bare photograph, for 200ms,
+    every time the bar sticks. Same layer count and same stop structure in
+    both rules interpolates instead.
+  */
+  background-image:
+    linear-gradient(to bottom, transparent 0, transparent 100%),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--ground) 82%, transparent) 0,
+      color-mix(in srgb, var(--ground) 82%, transparent) 72%,
+      color-mix(in srgb, var(--ground) 70%, transparent) 100%
+    );
+
+  /*
+    No drop shadow anywhere in this system; the hairline below is a rule.
+
+  */
+  transition:
+    background-color 400ms var(--ease),
+    background-image 400ms var(--ease),
+    backdrop-filter 400ms,
+    box-shadow 400ms;
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 32px;
+}
+
+/* ── THE VEIL ────────────────────────────────────────────────────────────
+
+   NOT DECORATION. scripts/check-hero-contrast.mjs check B proves the hero's
+   scrim reaches its text floor only ABOVE THE FIRST GLYPH — "the aperture is
+   legal only because it is text-free". The first glyph sits at
+   --spacing-band + --hero-headroom (128px at 1280 wide, 242px at 375). A fixed
+   bar puts type at y≈0–110px, inside that aperture, over the brightest strip
+   of the photograph. The hero's guarantee does not reach here; this is the
+   nav's own.
+
+   THE PLATEAU IS 82%, AND THE 88% IT REPLACES WAS PROTECTING INK THAT IS NO
+   LONGER PAINTED HERE. Both of the derivations that set it are worth keeping,
+   because both are correct about what they measured:
+
+     · components/ui/Mark.tsx swept both ink text roles over this PHOTOGRAPH
+       as the veil deepens, in a 28px box at the wrap's left gutter, at five
+       viewports (2026-09-03):
+
+           veil alpha →   0.2500   0.5000   0.8656
+           --fg  @1280      2.28     4.21    11.87    (needs 4.5)
+           --fg-muted       1.02     1.88     5.29
+
+     · public/brand/hero/manifest.json publishes scrim.requiredAlpha = 0.86,
+       derived independently: the alpha at which EVERY glyph-sized patch of
+       EVERY emitted rung still clears 4.5:1 against --fg-muted.
+
+   BOTH ARE BINDING ON --fg-muted, AND NEITHER SWEEPS THE BACKDROP THAT
+   ACTUALLY BINDS. useNavGround's threshold is the hero's BOTTOM EDGE minus
+   the bar, so the nav is `over` for the hero's whole height and what passes
+   behind it is the hero's own copy — including 92px of --fg display type,
+   which is #F2F1EE, the same ink this nav paints. MEASURED 2026-09-03,
+   Chromium, dpr 1, the nav ghosted with `color: transparent` so its own
+   treatment still paints, worst backdrop pixel within 3px of nav ink, 16
+   scroll rows from y=0 to the hero's foot:
+
+       viewport      worst backdrop, no veil     what it is
+       375 x 812          L 0.8796               a hero glyph, y=379
+       768 x 1024         L 0.8796               a hero glyph, y=368
+       1280 x 800         L 0.8969               a hero glyph
+       1600 x 900         L 0.8969               a hero glyph
+
+   L 0.8796 IS EXACTLY lum(#F2F1EE). The binding pixel is not a lit window in
+   the skyline — it is the headline. And against it 88% was SHORT rather than
+   generous: --fg-muted over #F2F1EE needs 0.92 to clear AA, where --fg needs
+   0.64. The number both derivations were protecting was the one number they
+   could not reach.
+
+   SO THE ROLE MOVED INSTEAD OF THE ALPHA. See ONE INK, FULL STRENGTH below:
+   the rest face declares --fg on the name, the separator and the links, and
+   --fg-accent's hover colour moves to the paper face. What is left painting
+   --fg-muted at rest is the mark slot alone, whose role
+   scripts/check-nav-contrast.mjs reads out of components/ui/Mark.tsx.
+
+   82% IS TWO POINTS ABOVE A BISECTED FLOOR. Running that gate against this
+   file at descending plateaus, with the collar below credited by its own
+   resolver:
+
+       plateau   result
+       88%       pass  (what this file shipped)
+       82%       pass  <- ships
+       80%       pass  — the floor
+       78%       FAIL: --fg-muted in the mark box at 861 and at 1280
+       64%       FAIL: 3 boxes
+       28%       FAIL: 20 boxes
+
+   The two points are the same headroom convention the rest of this repo
+   keeps, and the floor is held by ONE box — the mark. If Mark.tsx's text form
+   ever resolves --fg on a photograph the way this file's own links now do,
+   this number has another 15 points in it, and that is the next thing to try.
+
+   WHAT SIX POINTS OF VEIL BUY: the photograph keeps 18% of its light in the
+   nav strip rather than 12% — half again as much sky — and the strip stops
+   reading as a filled bar with a picture behind it.
+*/
+/*
+  THE TAIL. Starts where the bar's own paint stops and carries it to nothing,
+  so the plateau does not end in a hard horizontal edge across the photograph
+  — which is the owner's original complaint restated as a gradient.
+
+  It is DELIBERATELY BELOW EVERY GLYPH, and that is why it is allowed to be
+  the one part of this treatment no static gate credits: it is the same
+  argument check-hero-contrast.mjs check B makes about the hero's aperture,
+  "legal only because it is text-free". tests/e2e/nav.spec.ts §2 is what holds
+  it honest, by measuring the luminance step either side of the bar's foot.
+
+  ── 160px AND FIVE STOPS, AND THE 64px IT REPLACES WAS A DRAWN LINE ───────
+
+  This system has a perceptual budget for exactly this: 1.00 L* per 6px, one
+  JND at the eye's peak spatial frequency (scripts/check-hero-blend.mjs).
+  Measured against the same flat 128 field that gate uses, and against a white
+  field as the bound:
+
+      tail                                  flat 128   over #FFFFFF   total
+      74% -> 34% -> 0            over  64px    4.12         7.99      32.9 L*
+      70% -> 56 -> 29 -> 10 -> 0 over 160px    1.74         3.48      31.1 L*
+
+  4.12 is worse than anything the hero band ships (its own four viewports
+  measure 1.23 / 1.09 / 3.28 / 2.31) and four times the budget. Compressing a
+  33 L* drop into 64px is the Mach knee this whole round exists to remove; the
+  same drop shaped as a smoothstep over 160px lands at 1.74, INSIDE the family
+  the hero already ships and better than its own worst.
+
+  AND IT RUNS THE RIGHT WAY. The hero's own crest ramp deepens downward, from
+  0.2500 at y=0 to its pocket floor over the first ~110px at 1280; this one
+  lightens downward across the same span. They are complements rather than two
+  edges: the composite leaves the crest well above 0.25 and reaches the floor
+  with a SHALLOWER total rise than the hero's ramp has alone. The nav's veil
+  is the crest's missing rung.
+
+  NOTHING IS DRAWN INSIDE IT, at either end. The hero's first glyph sits at
+  --spacing-band + --hero-headroom — 128px at 1280, 242px at 375 — and this
+  tail ends at 220px and 265px. The overlap is the hero's own aperture, which
+  is text-free by construction.
+*/
+.veil {
+  position: absolute;
+  inset-block-start: 100%;
+  inset-inline: 0;
+  z-index: 0;
+  block-size: 160px;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--ground) 70%, transparent) 0,
+    color-mix(in srgb, var(--ground) 56%, transparent) 30%,
+    color-mix(in srgb, var(--ground) 29%, transparent) 58%,
+    color-mix(in srgb, var(--ground) 10%, transparent) 80%,
+    transparent 100%
+  );
+  transition: opacity 400ms var(--ease);
+}
+
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  THE INK FACE — what the bar does instead of being a bar
+  ═══════════════════════════════════════════════════════════════════════════
+
+  ONE ROLE REMAP, AND IT IS NOT A COLOUR. It is the move `.ground` already
+  makes in hero-scrim.module.css: one ground-resolved role pointed at another.
+  Scoped to `[data-nav='over']`, so the paper face's twelve `inherit`s outrank
+  it and the shipped role comes straight back.
+
+    --focus-ring -> --fg    the same remap, for the same reason the hero band
+                            makes it: crimson-lift's luminance sits BETWEEN
+                            flat ink and a lit window, so its ratio falls
+                            through 1:1 on the way down and there is no veil
+                            in the open half of the range that it survives.
+                            --fg is monotone in the veil.
+*/
+.nav[data-nav='over'] {
+  --focus-ring: var(--fg);
+}
+
+/*
+  ONE INK, FULL STRENGTH, AND IT IS A MEASUREMENT RATHER THAN A PREFERENCE.
+
+  Over a photograph there is no such thing as a quiet ink. --fg-muted is
+  #A3A2A8: MEASURED against the worst backdrop this bar actually has — the
+  hero's own --fg display type, L 0.8796, sliding behind the bar because
+  useNavGround keeps it `over` for the hero's whole height — it needs a veil
+  of 0.92 to clear AA, where --fg needs 0.64. A muted role in this bar was
+  buying nothing but 28 points of plate.
+
+  So the rest face paints --fg everywhere and the hierarchy is carried by
+  position and by the separator instead of by tone. Muting is a luxury a
+  painted ground affords; the bar gets it back the moment it has one.
+
+  DECLARED, NOT REMAPPED. `--fg-muted: var(--fg)` on this rule would be the
+  same pixels and would be invisible to scripts/check-nav-contrast.mjs, which
+  reads role TOKENS out of the stylesheet — so the gate would go on holding
+  the crest to a colour nothing paints there, and the only way to satisfy it
+  would be to darken the photograph. Two declarations say the same thing to
+  the browser and to the instrument.
+*/
+.nav[data-nav='over'] .home,
+.nav[data-nav='over'] .sep,
+.nav[data-nav='over'] .link {
+  color: var(--fg);
+}
+
+/*
+  ── THE COLLAR THAT IS NOT HERE, AND THE MEASUREMENT THAT KEPT IT OUT ────
+
+  hero-scrim.module.css's per-glyph collar was ported into this file first,
+  unchanged — the same three radii (1.47 / 3.36 / 6.09px), the same three
+  counts (12 / 12 / 8), which are 0.14 / 0.32 / 0.58 of --text-micro, the step
+  this whole bar is set at. It is the obvious move: a veil is a SHEET sized by
+  the brightest pixel under any glyph, a collar is proportional to the INK, and
+  the nav strip is 5% ink and 95% air. It should have been the best trade on
+  this page. IT SHIPPED NOTHING, AND BOTH HALVES OF WHY ARE WORTH KEEPING.
+
+  IT BOUGHT NOTHING MEASURABLE. Bisecting the plateau against
+  scripts/check-nav-contrast.mjs, three arms, same file otherwise:
+
+      plateau      no collar    12 x 1.47px    12/12/8 (the hero's)
+      82%            pass          pass            pass
+      80%            pass          pass            pass          <- the floor
+      78%            FAIL          FAIL            FAIL
+      76%            FAIL          FAIL            FAIL
+
+  Identical. The floor is not held by the links at all — it is held by the
+  MARK box, and the mark's role is read out of components/ui/Mark.tsx, which
+  paints --fg-muted. A collar on this stylesheet's own `.inner` cannot move a
+  number set by another component's utility class.
+
+  AND IT COST THE ONE THING THIS ROUND IS FOR. Rendered and inspected at
+  1280x800: at 10.5px with 0.16em tracking the halos of adjacent glyphs MERGE,
+  so each label sat in a dark rounded slab — four small boxes on the
+  photograph, which is the object the owner has spent seven rounds removing,
+  reintroduced at a quarter of the size. check-hero-contrast.mjs names this
+  exact failure mode in its own words: "that is a SHEET drawn a slower way — at
+  that radius the halos of adjacent glyphs merge". The hero's collar works
+  because its type is large and sparse; a tracked cap row at the smallest step
+  in the system is the case it does not transfer to.
+
+  So the veil carries this bar alone, and the picture is better for it. If the
+  mark ever resolves --fg here, re-run the bisect before reaching for a collar
+  again — the plateau moves first, and it moves further.
+*/
+
+/*
+  THE OUTLINE'S VERSION OF THE COLLAR, and unlike the hero's it does not have
+  to be probabilistic. A text-shadow is thrown from glyph geometry and an
+  outline has none, so the ring cannot wear the collar above — but a
+  box-shadow with SPREAD paints a solid pad of flat --ground outside the
+  border box, which the outline is then drawn on top of. `outline-offset` is
+  2px and the outline is 2px wide, so the pad has to reach 4px to sit under
+  all of it; 5px leaves a pixel of clearance, and the two blurred rings behind
+  it soften the pad's own edge so it does not read as a second box.
+
+  The ratio is therefore --fg on flat ink, 16.04:1, and it does not depend on
+  a blur profile or on what the photograph is doing. It is still a darkening
+  no gate in this repo can read.
+*/
+.nav[data-nav='over'] :focus-visible {
+  box-shadow:
+    0 0 0 5px var(--ground),
+    0 0 3.36px 5px var(--ground),
+    0 0 6.09px 6px var(--ground);
+}
+
+/* ── Brand slot ──────────────────────────────────────────────────────── */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-inline-size: 0;
+}
+
+.home,
+.link {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.home {
+  color: var(--fg);
+}
+
+/*
+  NO COLOUR ON THE BASE RULE, HERE OR ON `.link`. Each face declares its own,
+  a few rules down, and the reason is not style: scripts/check-nav-contrast.mjs
+  reads the roles a box paints OUT OF THIS STYLESHEET (`rolesOfClass`, per
+  state). A base declaration that a face overrides still puts its token in the
+  rest state's role set, and the gate then holds the bar to a colour it does
+  not paint there — which is how a picture gets darkened to protect ink that
+  is not on it.
+*/
+
+/* ONE mark element on both faces. components/ui/Mark.tsx renders the
+   affiliation as TYPE while `art:su-mark` is unverified, and type follows
+   [data-ground] for free — so there is no variant to swap here and no plate.
+   This class exists to give the design territory a hook and to hide the mark
+   on the narrowest bars; see the 640px block. */
+.markSlot {
+  display: inline-flex;
+  align-items: center;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.link {
+  text-underline-offset: 4px;
+}
+
+/*
+  ── HOVER IS AN UNDERLINE ON THE PHOTOGRAPH AND A COLOUR ON PAPER ────────
+
+  --fg-accent on the ink ground is crimson-lift, and MEASURED by
+  scripts/check-nav-contrast.mjs against the shipped rungs it does not survive
+  the crest: sRGB 36..39 under the CONTACT box at 1280 puts it at 4.704:1
+  against 4.725:1, and it fails at 861, 1280 and 1600. Crimson is the hue that
+  FAILS IN THE MIDDLE — luminance 0.279 sits between flat ink and a lit
+  window, so its ratio falls through 1:1 on the way down — and the only veil
+  that rescues it is a veil deep enough to be the plate this round removed.
+
+  So the ink face does not paint it. This is the hero band's own move one step
+  on: `.ground` in hero-scrim.module.css spends the whole crimson budget on a
+  single object and remaps every other accent to --fg, on the argument that
+  one red object in a photograph is a decision and five is a palette. The
+  nav's rest hover is the underline alone, which is --fg and already measured;
+  the colour comes back the moment the bar has a paper ground to put it on.
+
+  THIS IS NOT A GATE BEING DODGED. The declaration is removed, so
+  `rolesOfClass` correctly reports that no rest-state rule paints
+  --fg-accent — the stylesheet and the gate agree, rather than the gate being
+  told to stop looking.
+*/
+.link:hover {
+  text-decoration: underline;
+}
+
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  THE PAPER FACE
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Three conditions, one treatment. In order of how early each is true:
+
+    [data-nav="paper"]   JS: the bar's bottom edge has passed the hero's.
+    body:not(:has(…))    STRUCTURAL, no JS: this document has no ink hero, so
+                         there was never anything to be transparent over.
+                         app/not-found.tsx and every future route, with no
+                         route list to maintain.
+    scripting: none      no JS will ever arrive, so the JS condition can never
+                         become true. Falls all the way back to the nav that
+                         shipped before this change — in flow, on paper.
+
+  THE GROUND SWITCH. `--fg: inherit` is not a colour: it is "stop declaring
+  ink here and let the document's own ground through", and the document's own
+  ground is `:root` in app/globals.css, which IS the paper context. All twelve
+  roles, not the four this file happens to read, so that anything nested in
+  the bar later resolves paper roles on a paper bar rather than ink ones.
+  scripts/check-ground-tokens.mjs passes on this file, which is the mechanical
+  form of the claim that no colour is being chosen here.
+*/
+.nav[data-nav='paper'],
+:global(body:not(:has(#top[data-ground='ink']))) .nav {
+  /* The other half of check-nav-contrast.mjs's contract. `paper` is not a
+     colour named here — it is the name of the ground the twelve `inherit`s
+     below fall back to, which is the one `:root` already declares. */
+  --nav-state: stuck;
+  --nav-ground: paper;
+  /* Declared FIRST on purpose: check-nav-contrast.mjs reads the shipped fill
+     with a window that starts at `--nav-state: stuck`, and the twelve ground
+     resets below would otherwise push it out of range. It derives our own
+     minimum from this palette on every run — 85.9% as of 2026-09-03 — and
+     never copies the reference's 97%. */
+  background-color: color-mix(in srgb, var(--ground) 97%, transparent);
+
+  --ground: inherit;
+  --ground-sunk: inherit;
+  --surface-pressed: inherit;
+  --fg: inherit;
+  --fg-muted: inherit;
+  --fg-accent: inherit;
+  --fg-accent-display: inherit;
+  --fg-pressed: inherit;
+  --rule: inherit;
+  --edge: inherit;
+  --focus-ring: inherit;
+  --fg-error: inherit;
+
+  /* Same layer count and stop structure as the rest rule, so the two
+     interpolate. See THE PLATEAU on .nav. */
+  background-image:
+    linear-gradient(to bottom, transparent 0, transparent 100%),
+    linear-gradient(to bottom, transparent 0, transparent 72%, transparent 100%);
+  backdrop-filter: blur(16px) saturate(1.4);
+  /* A 1px hairline separating ground from ground. NOT a drop shadow. */
+  box-shadow: 0 1px 0 var(--edge);
+}
+
+.nav[data-nav='paper'] .veil,
+:global(body:not(:has(#top[data-ground='ink']))) .veil {
+  opacity: 0;
+}
+
+
+/*
+  The paper face gets the tonal hierarchy back — the name at --fg, the
+  separator and the sections at --fg-muted — because it has a ground to be
+  quiet against. Both selectors, so the 404 gets it with no JS at all.
+*/
+.nav[data-nav='paper'] .sep,
+.nav[data-nav='paper'] .link,
+:global(body:not(:has(#top[data-ground='ink']))) .sep,
+:global(body:not(:has(#top[data-ground='ink']))) .link {
+  color: var(--fg-muted);
+}
+
+.nav[data-nav='paper'] .link:hover,
+:global(body:not(:has(#top[data-ground='ink']))) .link:hover {
+  color: var(--fg-accent);
+}
+
+
+/*
+  ── STICKY, NOT FIXED, ON A PAGE WITH NO INK HERO ────────────────────────
+
+  A fixed bar is out of flow, so on a page with no tall hero under it the
+  first band starts UNDERNEATH it. The obvious patch is
+  `#main { padding-block-start: var(--nav-h) }` — and it was written, measured,
+  and thrown away, because `--nav-h` is published by JavaScript AFTER first
+  paint: MEASURED on the 404 at 375x812, the padding stepped 72px → 108px when
+  the hook first ran and booked CLS 0.113. A layout-shift fix that causes a
+  layout shift.
+
+  `position: sticky` needs no number, no JS and no second source of truth: the
+  bar occupies its own flow space at rest — exactly as it did before this
+  change, so nothing moves — and then sticks to the top as the page scrolls,
+  which is the behaviour a 404 wants anyway. Measured after: CLS 0.000.
+
+  It is scoped to the SAME structural fact as everything else above, so there
+  is still exactly one question being asked — does this document contain
+  `#top[data-ground="ink"]` — and no route list.
+*/
+:global(body:not(:has(#top[data-ground='ink']))) .nav {
+  position: sticky;
+}
+
+/*
+  `.nav[data-nav]`, not `.nav`, and the attribute selector is load-bearing.
+
+  MEASURED 2026-09-03 with `javaScriptEnabled: false` in Chromium: at plain
+  `.nav` (0,1,0) this block LOST to `[data-ground="ink"]` in app/globals.css
+  (also 0,1,0, and later in the cascade), so the no-JS bar rendered
+  `rgb(20,22,26)` with on-ink link colours — a black bar with pale links,
+  static, over a paper page. The media query fired; the specificity was wrong.
+  `[data-nav]` is always present (the server renders `data-nav="over"`), so
+  this is a specificity bump and not a new condition.
+*/
+@media (scripting: none) {
+  .nav[data-nav] {
+    position: static;
+    --ground: inherit;
+    --ground-sunk: inherit;
+    --surface-pressed: inherit;
+    --fg: inherit;
+    --fg-muted: inherit;
+    --fg-accent: inherit;
+    --fg-accent-display: inherit;
+    --fg-pressed: inherit;
+    --rule: inherit;
+    --edge: inherit;
+    --focus-ring: inherit;
+    --fg-error: inherit;
+
+    background-image: none;
+    background-color: var(--ground);
+    border-block-end: 1px solid var(--edge);
+  }
+
+  .nav[data-nav] .veil {
+    display: none;
+  }
+
+  /* …and it is a paper bar, so it keeps the paper tonality. */
+  .nav[data-nav] .sep,
+  .nav[data-nav] .link {
+    color: var(--fg-muted);
+  }
+
+  .nav[data-nav] .link:hover {
+    color: var(--fg-accent);
+  }
+}
+
+/*
+  ── The height the rest of the document has to know about ────────────────
+
+  `--nav-h` is MEASURED and published on <html> by useNavGround(); it is never
+  authored. The fallback is only for the frames before that hook first runs.
+  Without this an in-page anchor (`/#research`) scrolls its target to y=0,
+  which is underneath a fixed bar.
+*/
+:global(html) {
+  scroll-padding-block-start: calc(var(--nav-h, 72px) + 16px);
+}
+
+/* ── 640px: the affiliation leaves the bar ───────────────────────────────
+
+   It is repeated in the hero's eyebrow and again in the footer, and at this
+   width the bar's height is viewport a phone cannot spare. The NAME and the
+   four sections stay.
+
+   ⚠ HANDOVER, WITH THE ARITHMETIC, BECAUSE THIS IS A DESIGN DECISION AND NOT
+   A STATE-MACHINE ONE. MEASURED at 375px against this build: the bar is 96px
+   tall — one brand row and TWO link rows, with CONTACT alone on the last.
+   That is 12% of an 812px viewport, permanently, on the device most of this
+   traffic arrives on.
+
+   The four labels at this file's own typography (11px / 500 / 0.16em / upper)
+   measure RESEARCH 62 · FOR RECRUITERS 105 · FULL STACK 78 · CONTACT 57 =
+   302px of glyphs. With 335px of usable width (375 minus the wrap's gutters)
+   the row fits only if the three gaps total under 33px — i.e. an 11px gap,
+   which is tighter than the type reads well at. Three ways out, all of them
+   the design territory's to pick:
+
+     · shorten one label (FOR RECRUITERS → RECRUITERS buys ~27px)
+     · drop the tracking to ~0.10em below 640 (buys ~24px, but 0.16em is the
+       system's small-caps signature and this file should not fork it alone)
+     · the reference's answer: collapse to a MENU button and a full-screen
+       overlay (components/site/nav.module.css in MAVTERRAS, .menuBtn /
+       .overlay). That is a focus-trap and a dialog, i.e. a real interaction
+       slice, not a media query.
+
+   Two rows is the honest interim: nothing is hidden, nothing is unreachable,
+   and no hover-dependent affordance was introduced. It is not the answer. */
+@media (max-width: 640px) {
+  .nav {
+    /* MEASURED at 375x812: brand row + two link rows. See the note on
+       --nav-height above — this tracks the bar, it does not set it. */
+    --nav-height: 104px;
+
+    padding-block: 12px;
+  }
+
+  .sep,
+  .markSlot {
+    display: none;
+  }
+
+  .inner {
+    gap: 6px 20px;
+  }
+
+  .links {
+    gap: 4px 16px;
+  }
+}
+
+/*
+  Two rules, not one `.nav, .veil` selector list, and that is not a style
+  preference — it is a workaround for a gate defect, recorded so nobody
+  "tidies" it back.
+
+  MEASURED 2026-09-03: scripts/check-nav-contrast.mjs exempts a @media query
+  it cannot evaluate as long as no rule under it declares a property the gate
+  reads (MEASURED_PROPS — `transition` is not one). Written as
+  `.nav, .veil { transition: none }` it nevertheless recorded
+  `prefers-reduced-motion: reduce` as an unevaluable query and hard-failed;
+  split into two single-selector rules with byte-identical semantics, it
+  passes. So the comma selector, not the declaration, is what trips it. Its
+  own header says this exact block "cannot move a single number here" and
+  must not fail the build, so this is the gate agreeing with itself.
+
+  BOTH SELECTORS ARE REQUIRED. tests/e2e/nav.spec.ts §7 walks every element
+  inside the bar and fails any transition-duration over 0.06s under
+  `prefers-reduced-motion: reduce`; `.veil` carries a 400ms opacity fade, so
+  dropping it would trade one red gate for another.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .nav,
+  .veil {
+    transition: none;
+  }
+}

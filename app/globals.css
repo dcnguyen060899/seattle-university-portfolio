@@ -1,0 +1,644 @@
+@import "tailwindcss";
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SEATTLE UNIVERSITY PORTFOLIO — design tokens
+   Source of truth: spec-02-design-system.md §1–§5, as amended by BRIEF
+   Addendum B (R-7 palette, R-8 hero threshold, R-14 brand asset paths).
+   Ported from MAVTERRAS app/globals.css — the MECHANISM, not the palette.
+
+   Every ratio in this file was computed with scratchpad/wcag.py (WCAG 2.1
+   sRGB relative luminance). None is estimated, and none is copied from a
+   document that did not show its working. Addendum B R-7 exists because
+   another spec asserted 8.15:1 and 7.83:1 for #AA0000 and both were invented;
+   the real numbers are 7.75:1 and 7.35:1. On a page whose entire thesis is
+   "every claim traces to a source", a fabricated contrast ratio in the
+   stylesheet is the one defect that disqualifies the argument.
+
+   Six rules this file exists to make mechanical:
+
+   1. CRIMSON IS CHOSEN BY GROUND, NEVER BY HAND.
+      --color-crimson #AA0000 on the ink ground is 2.34:1. That fails AA body
+      (4.5:1), AA large (3:1) AND the 1.4.11 non-text minimum (3:1) — so on
+      ink it is illegal as text of any size, as a rule, as a border, as an
+      icon and as a focus ring. It is a WORSE trap than the 3.42:1 brass trap
+      this file is ported from, and it points the OTHER WAY: crimson is
+      perfectly safe on light (7.43:1) and lethal on dark, where brass was the
+      reverse. An engineer porting by muscle memory guards the wrong ground.
+      PREVENTS: a component naming a crimson token and rendering 2.34:1 text.
+      Components read --fg-accent; each ground resolves it to the safe red.
+      Enforced by scripts/check-ground-tokens.mjs, not by review.
+
+   2. THE DISPLAY FACE NEVER SETS TYPE BELOW 26px.
+      Montserrat's weakest register is 16-20px, where a geometric sans is wide
+      and undifferentiated. --text-h3 is therefore set in the BODY face at
+      500. Mono, symmetrically, never sets a figure above --text-data.
+      PREVENTS: a record title arriving in the display face by omission, and
+      a 48px monospaced number that reads as a terminal instead of a result.
+
+   3. THERE ARE NO DROP SHADOWS AND THERE ARE NO CARDS.
+      The --shadow-* / --drop-shadow-* namespaces are cleared, so `shadow-md`
+      generates nothing. The radius scale is clamped to 4px because this
+      page's objects are RECORDS separated by hairlines, and a record has no
+      corner. (The reference clamps radius because its logo has no curves —
+      that argument does not transfer; the SU seal is a circle. The reason
+      here is structural, not decorative.)
+      PREVENTS: `rounded-3xl shadow-lg` producing a pill-shaped floating card.
+
+   4. THERE IS NO ERROR HUE.
+      docs/css/news.css already states the site's own rule: exactly ONE
+      accent, no second accent. A second red on a one-hue brand cannot be
+      distinguished from the first by a protanopic reader, so colour is not
+      permitted to carry failure state at all. --fg-error resolves to --fg on
+      EVERY ground; the state is carried by a doubled 2px --fg-accent rule, a
+      mono ERROR/DEGRADED prefix, aria-invalid and role="status".
+      PREVENTS: an unmeasured second red being introduced "just for errors",
+      and colour ever being the only channel carrying a state.
+      (Addendum B R-7: --fg-warn does not exist here and must not be added.)
+
+   5. THE ANCHOR IS SWAPPABLE WITHOUT RE-MEASURING.
+      public/docs/images/seattle_university_logo.png carries #A2192B, not
+      #AA0000. Measured: L(#AA0000) = 0.085460, L(#A2192B) = 0.085511. Every
+      ratio in this file is IDENTICAL to two decimals for either hex
+      (re-verified: #A2192B on paper 7.43:1, on paper-sunk 6.75:1, on ink
+      2.34:1, white on it 7.75:1, rose on it 5.60:1). If the owner confirms
+      #A2192B is the real SU red it is a one-token edit.
+      PREVENTS: a full accessibility re-audit being scheduled for a brand
+      correction that changes no measured value.
+
+   6. THERE ARE THREE GROUNDS AND THERE IS NO `bone`.
+      paper #FBFAF8 · ink #14161A · crimson #AA0000. Paper is NOT #FFFFFF.
+      A fourth ground would need its own measured column below and would
+      break the band budget (max 2 ink, max 1 crimson, per page).
+      PREVENTS: [data-ground="bone"] silently resolving to nothing, which
+      renders --fg as the inherited value of whatever band it landed in.
+
+   7. OVER THE PHOTOGRAPH, A RATIO IS MEASURED AGAINST THE LOCAL GROUND.
+      CONTRAST-METHOD: local-composited-ground
+
+      Every ratio printed beside a token below is the plain WCAG 1.4.3
+      quantity: that foreground over that flat ground. On the three flat
+      grounds those numbers are what the reader gets, and they are what
+      scripts/check-ground-tokens.mjs re-derives.
+
+      THE HERO IS NOT A FLAT GROUND. Its copy sits on a photograph, so there
+      is no single background colour to divide by, and the hero's own copy
+      also paints a per-glyph collar (a stack of zero-offset text-shadows in
+      components/site/hero-scrim.module.css) that darkens the picture only
+      where a stroke actually touches it. The ratios the hero gate publishes
+      are therefore measured against the LOCAL COMPOSITED GROUND — the
+      photograph, the veil over it, and the text's own collar, averaged over
+      the observer's point-spread function beside each stroke (sigma 1.565
+      CSS px, derived from WCAG's own 20/40 acuity target).
+
+      BOTH HALVES OF THAT SENTENCE ARE PUBLISHED, because only one of them
+      flatters the page:
+
+        STRICTER than WCAG 2.x, on two counts. It divides by the real
+        composited photograph rather than a nominal flat colour, pairing each
+        glyph with the brightest source pixel in its own neighbourhood across
+        six viewports and every graded image rung; and every threshold
+        carries a x1.05 engineering margin (4.725 where AA asks 4.5, 3.150
+        where it asks 3).
+
+        MORE PERMISSIVE than WCAG 2.x, on exactly one. WCAG 1.4.3 does not
+        formally credit a text-shadow at all. This method does. Six hero
+        roles pass ONLY because the collar is counted: without it --fg is
+        3.461:1 and --fg-muted is 1.544:1 against the same photograph.
+
+      So the honest short form is: on the hero, "5.642:1" is not the 1.4.3
+      number and is not offered as one. The 1.4.3 number for that role over
+      that photograph is 1.544:1, and the page says so here rather than
+      publishing only the flattering half.
+      PREVENTS: the page keeping a thesis of "every number traces to a
+      source" while quoting a ratio derived by a procedure it never named.
+      Enforced by scripts/check-hero-contrast.mjs, which refuses to credit
+      any per-glyph treatment while this marker is absent.
+
+   Hero and recruiter-agent CSS do NOT live here — those are component-scoped.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* `static` so every token is emitted to :root whether or not a Tailwind
+   utility happens to reference it. The ground contexts below and every CSS
+   module read these by var() name, and a tree-shaken token would silently
+   resolve to nothing — which is not a visible failure, it is a colourless
+   page that still passes the build. */
+@theme static {
+  /* ── Grounds ─────────────────────────────────────────────────────────── */
+  --color-paper: #FBFAF8;        /* primary ground — near-white, 2% warm.
+                                    NOT cream: a cream ground under hue-0
+                                    crimson goes muddy, which is why this is
+                                    not the reference's #F7F4EF bone. And NOT
+                                    #FFFFFF: pure white next to a white PNG
+                                    plate is 1.04:1 — not a contrast failure,
+                                    a visible seam. */
+  --color-paper-sunk: #F1EFEB;   /* insets on paper */
+  --color-ink: #14161A;          /* dark ground — faintly blue-slate. A warm
+                                    black (the reference's #191919) pulls
+                                    crimson toward brown. */
+  --color-ink-raised: #1C1F24;   /* insets on ink */
+
+  /* ── Text ────────────────────────────────────────────────────────────── */
+  --color-text: #16161A;         /* on paper   — 17.30:1 · sunk 15.71:1 · wash 14.88:1 */
+  --color-text-muted: #5E5C60;   /* on paper   —  6.34:1 · sunk  5.76:1 · wash  5.45:1 */
+  --color-on-ink: #F2F1EE;       /* on ink     — 16.04:1 · raised 14.63:1 */
+  --color-on-ink-muted: #A3A2A8; /* on ink     —  7.15:1 · raised  6.52:1 */
+  --color-on-crimson: #FFFFFF;   /* on crimson —  7.75:1 · deep  10.26:1 */
+  --color-rose: #F3D4D4;         /* on crimson —  5.60:1 · deep   7.42:1
+                                    The crimson ground's muted AND accent. It
+                                    needs its own token because
+                                    --color-on-ink-muted on crimson is 3.06:1
+                                    and fails body text — reusing the ink
+                                    muted here is the obvious shortcut and it
+                                    is wrong. */
+
+  /* ── Crimson — three tokens, chosen by ground. See rule 1 above. ─────── */
+  --color-crimson: #AA0000;      /* SU red. paper 7.43:1 · sunk 6.75:1 ·
+                                    wash 6.39:1 — AA at ANY size on light.
+                                    ink 2.34:1 · ink-raised 2.13:1 — illegal
+                                    for text, rules, borders, icons and focus
+                                    rings alike. */
+  --color-crimson-deep: #880000; /* :active, and the INSET surface inside the
+                                    crimson ground (inset goes DARKER there).
+                                    paper 9.84:1 · sunk 8.93:1 */
+  --color-crimson-lift: #FF5252; /* the only red legal on ink — 5.68:1 ink,
+                                    5.18:1 ink-raised. Derived, not chosen:
+                                    hue 0deg and saturation 100%, bit-identical
+                                    to the anchor; only HSL lightness moves
+                                    (33% -> 66%). The anchor under a light,
+                                    not a second red.
+                                    MIRROR TRAP: on paper it is 3.06:1 —
+                                    >=24px display and UI only, never body.
+                                    That is why no paper-ground role resolves
+                                    to this token. Neither red is universal;
+                                    neither may be hand-picked. */
+  --color-crimson-wash: #F5E6E4; /* pressed chips, tinted inset. Derived as
+                                    paper + 8% crimson (computed, not eyeballed).
+                                    crimson on it is 6.39:1, so unlike the
+                                    reference's chip the pressed label KEEPS
+                                    the accent instead of falling back to ink. */
+
+  /* ── Type ────────────────────────────────────────────────────────────── */
+  /* Montserrat is Seattle University's OWN published free alternate for
+     Neutraface 2 (seattleu.edu · Brand Identity · Typography). Neutraface
+     leads the stack so obtaining the licence is a zero-diff upgrade: one line
+     changes and nothing else in the system moves.
+     --font-montserrat / --font-inter / --font-plex-mono are published by
+     next/font in app/layout.tsx.
+     PREVENTS: a designer's favourite geometric being substituted for the
+     client's own published guideline, and a licence purchase turning into a
+     re-typesetting project. */
+  --font-display: "Neutraface 2 Display", var(--font-montserrat, "Montserrat"),
+                  "Futura", "Century Gothic", system-ui, sans-serif;
+  --font-body: var(--font-inter, "Inter"), -apple-system, BlinkMacSystemFont,
+               "Segoe UI", sans-serif;
+  --font-mono: var(--font-plex-mono, "IBM Plex Mono"), "SFMono-Regular",
+               Menlo, Monaco, Consolas, monospace;
+  --font-sans: var(--font-body);
+
+  /* Scale. Weight / leading / tracking travel WITH the size, in the
+     reference's --text-*--line-height idiom, so a heading cannot be set at
+     the wrong weight by omission. */
+  --text-display: clamp(2.5rem, 7.6vw, 5.75rem);     /*  40 →  92px */
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.03em;
+  --text-display--font-weight: 200;
+
+  --text-h1: clamp(2.25rem, 5.4vw, 4rem);            /*  36 →  64px */
+  --text-h1--line-height: 1.06;
+  --text-h1--letter-spacing: -0.025em;
+  --text-h1--font-weight: 200;
+
+  --text-h2: clamp(1.625rem, 3.4vw, 2.5rem);         /*  26 →  40px */
+  --text-h2--line-height: 1.1;
+  --text-h2--letter-spacing: -0.02em;
+  --text-h2--font-weight: 300;
+
+  /* h3 is the BODY face, on purpose — rule 2. A record title at 17-20px set
+     in Montserrat is the weakest thing this system can produce. */
+  --text-h3: clamp(1.0625rem, 1.6vw, 1.25rem);       /*  17 →  20px */
+  --text-h3--line-height: 1.3;
+  --text-h3--letter-spacing: -0.005em;
+  --text-h3--font-weight: 500;
+
+  --text-stat: clamp(2rem, 4.2vw, 3rem);             /*  32 →  48px */
+  --text-stat--line-height: 1;
+  --text-stat--letter-spacing: -0.02em;
+  --text-stat--font-weight: 200;
+
+  --text-lede: clamp(1.0625rem, 1.35vw, 1.1875rem);  /*  17 →  19px */
+  --text-lede--line-height: 1.6;
+
+  --text-body: 1rem;                                 /*  16px */
+  --text-body--line-height: 1.65;
+
+  /* The measurement voice. Mono because this portfolio's vernacular IS
+     monospaced — P@1, CPSC 5330, macro-F1, .iid/.itd/.bf, a latency readout —
+     and because docs/css/news.css already sets its eyebrow this way. */
+  --text-data: 0.8125rem;                            /*  13px — inline metrics */
+  --text-data--line-height: 1.5;
+  --text-data--letter-spacing: 0.01em;
+
+  --text-fine: 0.75rem;                              /*  12px — captions, cites */
+  --text-fine--line-height: 1.55;
+  --text-fine--letter-spacing: 0.02em;
+
+  --text-eyebrow: 0.6875rem;                         /*  11px — section labels */
+  --text-eyebrow--line-height: 1.4;
+  --text-eyebrow--letter-spacing: 0.16em;
+  --text-eyebrow--font-weight: 500;
+
+  --text-micro: 0.65625rem;                          /*  10.5px — buttons, chips */
+  --text-micro--line-height: 1.4;
+  --text-micro--letter-spacing: 0.14em;
+  --text-micro--font-weight: 500;
+
+  /* ── Space ───────────────────────────────────────────────────────────── */
+  --spacing-band: clamp(4.5rem, 10vw, 8.75rem);      /*  72 → 140px */
+  --spacing-gutter: clamp(1.25rem, 4.5vw, 2.75rem);  /*  20 →  44px */
+  --container-wrap: 68rem;                           /* 1088px — page measure */
+  --container-prose: 34rem;                          /*  544px — reading measure,
+                                    ~66ch at 17px. New vs the reference, which
+                                    has ONE measure because its longest text is
+                                    four sentences. Research prose set to
+                                    1088px is unreadable.
+                                    PREVENTS: multi-paragraph research copy
+                                    running the full page measure. */
+
+  /* ── Geometry — 4px maximum, 3px in practice, no pills. Rule 3. ──────── */
+  --radius-*: initial;
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-brand: 3px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-xl: 4px;
+  --radius-2xl: 4px;
+  --radius-3xl: 4px;
+  --radius-4xl: 4px;
+
+  /* ── Material — no drop shadows. These namespaces stay EMPTY. Rule 3. ── */
+  --shadow-*: initial;
+  --drop-shadow-*: initial;
+
+  /* ── Motion ──────────────────────────────────────────────────────────── */
+  --ease-brand: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-reveal: 700ms;      /* 700/60 rather than the reference's 800/70:
+                                    same curve, ~12% quicker, because there
+                                    are more elements per band here and an
+                                    800ms stagger across six records reads as
+                                    a loading screen. */
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Bare aliases — the names used by component-scoped CSS modules.
+   One source of truth: the @theme block above. Nothing here introduces a
+   value; every declaration is a var() of a token defined once.
+   ══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --paper: var(--color-paper);
+  --paper-sunk: var(--color-paper-sunk);
+  --ink: var(--color-ink);
+  --ink-raised: var(--color-ink-raised);
+  --text: var(--color-text);
+  --text-muted-c: var(--color-text-muted);
+  --on-ink: var(--color-on-ink);
+  --on-ink-muted: var(--color-on-ink-muted);
+  --on-crimson: var(--color-on-crimson);
+  --rose: var(--color-rose);
+  --crimson: var(--color-crimson);
+  --crimson-deep: var(--color-crimson-deep);
+  --crimson-lift: var(--color-crimson-lift);
+  --crimson-wash: var(--color-crimson-wash);
+  --display: var(--font-display);
+  --body: var(--font-body);
+  --mono: var(--font-mono);
+  --ease: var(--ease-brand);
+  --stagger: 60ms;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   GROUND CONTEXTS — the anti-misuse mechanism.
+
+   A section declares [data-ground="paper" | "ink" | "crimson"] and every
+   ground-dependent decision resolves from it. Components read exactly these
+   nine roles and nothing else:
+
+     --ground  --ground-sunk  --surface-pressed
+     --fg  --fg-muted  --fg-accent  --fg-accent-display  --fg-pressed
+     --rule  --edge  --focus-ring  --fg-error
+
+   They never name --color-crimson, --color-ink, --color-paper or a Tailwind
+   utility built from one. THAT is what makes the 2.34:1 crimson-on-ink trap
+   unreachable rather than merely documented, and scripts/check-ground-tokens.mjs
+   fails the build if a component reaches past this line.
+   <Band tone> is the normal way to set a ground.
+
+   THREE grounds, one job each:
+     paper    everything that is READ. Default. Most of the page.
+     ink      the production register — the hero. MAX 2 BANDS per page.
+     crimson  the institution — the identity close + footer. MAX 1 BAND.
+
+   Addendum B R-7: the recruiter-agent panel sits on PAPER, not ink. The
+   original spec put it on ink while also forbidding the form from sitting on
+   ink — and the panel contains the form. Paper resolves it, and it is the
+   right answer independently: dark and coloured forms measurably reduce
+   completion, and that form is the commercial point of the page.
+
+   Every foreground below is measured against BOTH the ground and its
+   sunk/raised variant, so an inset never has to declare its own ground.
+   PREVENTS: the gap the reference had to patch mid-file, where --brass-deep
+   cleared AA on `bone` (4.82:1) and quietly failed on `bone-sunk` (4.41:1).
+   ══════════════════════════════════════════════════════════════════════════ */
+:root,
+[data-ground="paper"] {
+  --ground: var(--color-paper);
+  --ground-sunk: var(--color-paper-sunk);
+  --surface-pressed: var(--color-crimson-wash);
+  --fg: var(--color-text);                      /* 17.30:1 · sunk 15.71:1 */
+  --fg-muted: var(--color-text-muted);          /*  6.34:1 · sunk  5.76:1 · wash 5.45:1 */
+  --fg-accent: var(--color-crimson);            /*  7.43:1 · sunk  6.75:1 · wash 6.39:1 */
+  /* Same value as --fg-accent, and that is the point: unlike brass, SU
+     crimson clears AA at every size on light, so this ground needs no split.
+     It is published anyway so components use ONE contract on all three
+     grounds — on crimson the split is real (rose 5.60 vs white 7.75). */
+  --fg-accent-display: var(--color-crimson);    /*  7.43:1 */
+  --fg-pressed: var(--color-crimson);           /*  6.39:1 on --surface-pressed */
+  --rule: var(--color-crimson);
+  --edge: color-mix(in srgb, var(--color-text) 12%, transparent);
+                                                /*  resolves to #E0DFDD over paper,
+                                                    1.28:1 — decorative, see below */
+  --focus-ring: var(--color-crimson);           /*  7.43:1 vs ground — 1.4.11 ✓ */
+  --fg-error: var(--fg);                        /*  rule 4 — no error hue */
+}
+
+[data-ground="ink"] {
+  --ground: var(--color-ink);
+  --ground-sunk: var(--color-ink-raised);
+  --surface-pressed: var(--color-ink-raised);
+  --fg: var(--color-on-ink);                    /* 16.04:1 · raised 14.63:1 */
+  --fg-muted: var(--color-on-ink-muted);        /*  7.15:1 · raised  6.52:1 */
+  --fg-accent: var(--color-crimson-lift);       /*  5.68:1 · raised  5.18:1 */
+  --fg-accent-display: var(--color-crimson-lift);
+  --fg-pressed: var(--color-crimson-lift);      /*  5.18:1 on --surface-pressed */
+  --rule: var(--color-crimson-lift);
+  --edge: color-mix(in srgb, var(--color-on-ink) 12%, transparent);
+                                                /*  resolves to #2F3033 over ink,
+                                                    1.37:1 — decorative */
+  --focus-ring: var(--color-crimson-lift);      /*  5.68:1 vs ground — 1.4.11 ✓ */
+  --fg-error: var(--fg);
+}
+
+[data-ground="crimson"] {
+  --ground: var(--color-crimson);
+  /* The only ground whose inset goes DARKER. A lighter inset on crimson would
+     be pink, and pink is not in this palette. */
+  --ground-sunk: var(--color-crimson-deep);
+  --surface-pressed: var(--color-crimson-deep);
+  --fg: var(--color-on-crimson);                /*  7.75:1 · deep 10.26:1 */
+  --fg-muted: var(--color-rose);                /*  5.60:1 · deep  7.42:1 */
+  /* Accent-by-tint. The hue IS the ground here, so the accent role — quieter
+     than the heading, louder than nothing — is carried by lightness. Not
+     --color-on-ink-muted, which is 3.06:1 on crimson and fails body. */
+  --fg-accent: var(--color-rose);               /*  5.60:1 */
+  --fg-accent-display: var(--color-on-crimson); /*  7.75:1 */
+  --fg-pressed: var(--color-on-crimson);        /* 10.26:1 on --surface-pressed */
+  --rule: var(--color-on-crimson);
+  --edge: color-mix(in srgb, var(--color-on-crimson) 22%, transparent);
+                                                /*  resolves to #BD3838 over crimson,
+                                                    1.40:1 — decorative */
+  --focus-ring: var(--color-on-crimson);        /*  7.75:1 vs ground — 1.4.11 ✓ */
+  --fg-error: var(--fg);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   DECORATIVE EDGES vs MEANINGFUL OBJECTS — why --edge is allowed under 3:1.
+
+   WCAG 1.4.11 applies to graphical objects REQUIRED to understand the content
+   and to the parts of a component that indicate its state. --edge separates
+   one record from the next; those records are ALSO separated by space and by
+   type hierarchy, so the hairline carries no unique information. Measured
+   over their own grounds: 1.28:1 (paper) · 1.37:1 (ink) · 1.40:1 (crimson).
+
+   Anything that DOES carry information uses an accent role instead and is
+   >= 3:1 on every ground:
+     .threshold-rule   --fg-accent   7.43 paper · 5.68 ink · 7.75 crimson
+     :focus-visible    --focus-ring  7.43 paper · 5.68 ink · 7.75 crimson
+     pressed chip edge --fg-accent   7.43 paper · 5.68 ink · 5.60 crimson
+   The pressed chip's FILL is deliberately not the state carrier: measured,
+   --surface-pressed against its own ground is only 1.16:1 (wash/paper),
+   1.10:1 (raised/ink) and 1.32:1 (deep/crimson). The border and aria-pressed
+   are what make the state perceivable; the fill is reinforcement.
+   PREVENTS: someone "improving" the pressed state by dropping the border.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Base
+   ══════════════════════════════════════════════════════════════════════════ */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* clip, not hidden: `hidden` here makes the root a scroll container and
+       breaks position:sticky anywhere on the page. `clip` suppresses
+       horizontal overflow without creating one. Root only — a second
+       declaration on body risks making it a containing block. */
+    overflow-x: clip;
+  }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* h1/h2 are the display face; h3/h4 are deliberately NOT — rule 2. Setting
+     it here rather than per-component means a heading cannot arrive at the
+     wrong face by omission. */
+  h1, h2 {
+    font-family: var(--font-display);
+    font-weight: 200;
+    line-height: 1.06;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+  h1 { font-size: var(--text-h1); }
+  h2 {
+    font-size: var(--text-h2);
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  h3, h4 {
+    font-family: var(--font-body);
+    font-size: var(--text-h3);
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: -0.005em;
+    text-wrap: balance;
+  }
+
+  p { text-wrap: pretty; }
+
+  a { color: inherit; }
+
+  /* This page is nothing but numbers that have to line up: 0.487 / 0.513 /
+     0.585, and 10.5→1.1 / 9.1→2.4 / 20.2→2.5. Tabular by default anywhere a
+     column can form, so no caller has to remember.
+     PREVENTS: proportional digits making a stat row drift out of alignment. */
+  :where(table, [data-numeric], .tabular) { font-variant-numeric: tabular-nums; }
+
+  ::selection {
+    background: var(--color-crimson-wash);
+    color: var(--color-text);
+  }
+
+  /* ONE ring definition, correct on all three grounds because --focus-ring is
+     resolved by the ground context rather than by the caller. Measured
+     against its own ground: paper 7.43:1, ink 5.68:1, crimson 7.75:1.
+     PREVENTS: a per-component focus style that is invisible on one ground. */
+  :focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Shared classes
+   ══════════════════════════════════════════════════════════════════════════ */
+@layer components {
+  /* Page measure. <Band> applies this automatically unless `bleed` is set. */
+  .wrap {
+    width: 100%;
+    max-width: var(--container-wrap);
+    margin-inline: auto;
+    padding-inline: var(--spacing-gutter);
+  }
+
+  /* Reading measure. <Band prose> applies this INSIDE .wrap. */
+  .prose-measure {
+    max-width: var(--container-prose);
+  }
+
+  /* ── Reveal on enter ──────────────────────────────────────────────────
+     Driven by <Reveal>, which adds `.in` from an IntersectionObserver and
+     publishes its stagger position as --i. ONE delay mechanism, here, so a
+     caller cannot set a stagger the CSS then overrides.
+
+     The hidden state is scoped to @media (scripting: enabled), so content is
+     never trapped at opacity 0 when JS is off, blocked, or still loading.
+     PREVENTS: a blank page for a recruiter behind a script blocker. */
+  .rv {
+    transition:
+      opacity var(--duration-reveal) var(--ease-brand),
+      transform var(--duration-reveal) var(--ease-brand);
+    transition-delay: calc(var(--i, 0) * var(--stagger));
+  }
+
+  /* The hairline divider. Opacity-reduced because it carries no unique
+     information (see the edge note above). The THRESHOLD rule below is the
+     opposite case and is never faded — do not copy this opacity to it. */
+  .drawline {
+    height: 1px;
+    border: 0;
+    background: var(--rule);
+    opacity: 0.32;
+    transform-origin: 0 50%;
+    transition: transform 1s var(--ease-brand);
+    transition-delay: calc(var(--i, 0) * var(--stagger));
+  }
+
+  /* THE SIGNATURE. A 2px accent rule marking a MEASURED threshold — the
+     device exists because this portfolio's headline result IS a threshold:
+     a held-out majority-class retrieval floor of P@1 = 0.487 that exactly one
+     arm of 24 cleared, at 0.585.
+
+     Full opacity, ALWAYS: this line is a graphical object required to
+     understand the content, so 1.4.11 applies and it must hold 3:1 against
+     its ground. --fg-accent measures paper 7.43:1, ink 5.68:1, crimson
+     7.75:1 — all clear. Adding `opacity` to this class breaks all three.
+     PREVENTS: the signature element being faded to match .drawline. */
+  .threshold-rule {
+    height: 2px;
+    border: 0;
+    background: var(--fg-accent);
+    transform-origin: 0 50%;
+    transition: transform 1s var(--ease-brand);
+    transition-delay: calc(var(--i, 0) * var(--stagger));
+  }
+
+  @media (scripting: enabled) {
+    .rv { opacity: 0; transform: translateY(18px); }
+    .rv.in { opacity: 1; transform: none; }
+    .drawline, .threshold-rule { transform: scaleX(0); }
+    .drawline.in, .threshold-rule.in { transform: scaleX(1); }
+  }
+
+  /* prefers-reduced-motion is honoured THREE times on purpose: here (so it
+     holds before hydration and with JS disabled), inside <Reveal> (so the
+     observer is never created), and via motion-reduce: on every hover
+     transition in Btn / Chip / Figure. */
+  @media (prefers-reduced-motion: reduce) {
+    .rv {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none;
+    }
+    .drawline, .threshold-rule {
+      transform: none !important;
+      transition: none;
+    }
+  }
+
+  /* Skip link — off-screen until focused. Deliberately crimson-on-paper
+     regardless of the ground it lands over, because it renders above
+     everything and cannot know what is underneath it. 7.43:1.
+     PREVENTS: a keyboard user's first stop being invisible over the ink hero. */
+  .skip {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+    background: var(--color-paper);
+    color: var(--color-crimson);          /* 7.43:1 on --color-paper */
+    border: 1px solid var(--color-crimson);
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 12px 18px;
+    border-radius: var(--radius-sm);
+  }
+  .skip:focus { left: 12px; top: 12px; }
+
+  /* ── THE MARK PLATE ───────────────────────────────────────────────────
+     public/brand/seattle_university_logo.png is a BLACK wordmark on
+     transparency. It is legible on paper and INVISIBLE on ink and crimson,
+     and the repo ships no reversed/knockout version. So on any non-paper
+     ground the mark sits on an explicit white plate with clear space — the
+     standard brand-guide treatment, and exactly what the current site already
+     does (`header .logo { background-color: white }` in portfolio_su.css).
+
+     NEVER filter: invert() the mark. It turns the seal's red cyan, which is a
+     trademark alteration as well as an ugly one.
+     PREVENTS: an invisible university mark on the crimson identity band. */
+  .mark-plate {
+    display: inline-flex;
+    align-items: center;
+    background: #FFFFFF;                  /* pure white, NOT --color-paper: this
+                                             is the mark's own clear-space
+                                             field, not a page surface */
+    padding: 10px 16px;
+    border-radius: var(--radius-xs);
+  }
+}

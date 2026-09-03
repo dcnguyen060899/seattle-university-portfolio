@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "generatedAt": "2026-09-03",
+  "corpusHash": "sha256:d748baa7cde4934be38038e6d03886a7",
+  "counts": {
+    "claims": 116,
+    "metrics": 33,
+    "caveats": 12,
+    "narratives": 8,
+    "sources": 46,
+    "roles": 8,
+    "artifacts": 34,
+    "concepts": 51,
+    "skills": 34,
+    "gaps": 14,
+    "disputes": 6,
+    "unresolvedDisputes": 2,
+    "retractions": 24,
+    "roleProfiles": 4
+  },
+  "note": "generatedAt, corpusHash and counts are WRITTEN BY scripts/verify-corpus.mjs on every successful run; do not hand-edit them. corpusHash is a SHA-256 over the canonical JSON of every file in data/corpus/ except this one, so a derived artifact that embeds it (public/docs/resume_content.html) is detectably stale rather than merely likely to be."
+}

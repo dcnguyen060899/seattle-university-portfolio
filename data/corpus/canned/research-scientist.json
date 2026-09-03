@@ -1,0 +1,183 @@
+{
+  "role": "research-scientist",
+  "profile": "rp:research-scientist",
+  "provenance": {
+    "composer": "deterministic",
+    "model": null,
+    "builtAt": "2026-09-03T20:51:25.538Z",
+    "corpusVersion": "d748baa7cde4",
+    "corpusSize": 116,
+    "guardrailTotal": 5
+  },
+  "brief": {
+    "role_label": "Research Scientist",
+    "jd_source": "role_chip",
+    "headline": "Part of this Research Scientist profile maps to work on this site, and part of it does not.",
+    "requirements": [
+      {
+        "requirement": "Peer-reviewed publication record",
+        "verdict": "adjacent",
+        "confidence": "high",
+        "rationale": "The report was condensed into a first-author manuscript, \"Separation Without Transfer: The Retrieval Encoder's Substrate, Not the VLM Decoder, Decides Whether Contrastive Fine-Tuning Transfers in Mammography Report Generation\", submitted to the Pacific Symposium on Biocomputing 2027 with Dr. Wenjing Yang as…",
+        "evidence": [
+          {
+            "evidence_id": "clm:yang-psb-submission",
+            "quoted_claim": "First-author manuscript under review, PSB 2027",
+            "artifact_label": "Separation Without Transfer: The Retrieval Encoder's…",
+            "artifact_url": ""
+          },
+          {
+            "evidence_id": "clm:yang-report-37p",
+            "quoted_claim": "37-page technical report",
+            "artifact_label": "37-page technical report on the mammography retrieval…",
+            "artifact_url": ""
+          }
+        ],
+        "caveat": "One first-author manuscript under review; no accepted publication yet. The manuscript is under review; it is not accepted and not published."
+      },
+      {
+        "requirement": "Experimental design and controls",
+        "verdict": "direct",
+        "confidence": "high",
+        "rationale": "Duy designed and ran a 24-cell controlled experiment: four retrieval-encoder substrates, each evaluated frozen and fine-tuned, crossed with three frozen vision-language decoders. The four retrieval encoders are Mammo-CLIP (mammography-native), OpenCLIP (generic web images), a biomedical-figure encoder, and BioCLIP…",
+        "evidence": [
+          {
+            "evidence_id": "clm:yang-design-24cells",
+            "quoted_claim": "24-cell controlled experiment",
+            "artifact_label": "24-cell controlled experiment",
+            "artifact_url": ""
+          },
+          {
+            "evidence_id": "clm:yang-encoders",
+            "quoted_claim": "Four encoder substrates, one domain-native",
+            "artifact_label": "Four encoder substrates, one domain-native",
+            "artifact_url": ""
+          }
+        ],
+        "caveat": ""
+      },
+      {
+        "requirement": "Rigorous evaluation and benchmarking",
+        "verdict": "direct",
+        "confidence": "high",
+        "rationale": "The held-out majority-class retrieval floor is P@1 = 0.487; fine-tuning the mammography-native encoder produced the only arm of twenty-four to clear it, moving from 0.513 frozen to 0.585 fine-tuned. Auditing his evaluation code against the paper he was replicating, Duy found that its published precision, recall and…",
+        "evidence": [
+          {
+            "evidence_id": "clm:yang-p1-floor",
+            "quoted_claim": "P@1 0.513 to 0.585 against a 0.487 floor",
+            "artifact_label": "P@1 0.513 to 0.585 against a 0.487 floor",
+            "artifact_url": ""
+          },
+          {
+            "evidence_id": "clm:yang-metric-artifact",
+            "quoted_claim": "Found a metric-labelling artifact in the replicated paper",
+            "artifact_label": "Found a metric-labelling artifact in the replicated paper",
+            "artifact_url": ""
+          }
+        ],
+        "caveat": "VinDr-Mammo carries radiologist BI-RADS assessments, not biopsy-confirmed pathology, so every suspicion and BI-RADS result here is agreement with a radiologist's reading, not diagnostic accuracy."
+      },
+      {
+        "requirement": "Reproducible research practice",
+        "verdict": "direct",
+        "confidence": "high",
+        "rationale": "Evaluation is automated with reproducible, self-verifying generators in Python and pandas that recompute more than 100 reported metrics byte-exact from raw model predictions. Before submitting, Duy re-derived every number in the paper directly from the raw prediction files and stored embeddings and assembled a…",
+        "evidence": [
+          {
+            "evidence_id": "clm:yang-regenerators",
+            "quoted_claim": "100+ metrics recomputed byte-exact",
+            "artifact_label": "100+ metrics recomputed byte-exact",
+            "artifact_url": ""
+          },
+          {
+            "evidence_id": "clm:yang-repro-package",
+            "quoted_claim": "Reproducibility package: checksums, rebuild script, notebooks",
+            "artifact_label": "Reproducibility package: checksums, rebuild script,…",
+            "artifact_url": ""
+          }
+        ],
+        "caveat": ""
+      },
+      {
+        "requirement": "Stating the limits of a result",
+        "verdict": "adjacent",
+        "confidence": "high",
+        "rationale": "He traced the largest class of failures to a single line in the team's shared renaming notebook: its final loop hard-codes one file extension, so a parent file with no child trial files is renamed as-is — the code never opens the header to see what actually varied, and never checks for sibling channel files. That one…",
+        "evidence": [
+          {
+            "evidence_id": "clm:fischer-team-audit-rootcause",
+            "quoted_claim": "Root-caused to one hardcoded extension in shared code",
+            "artifact_label": "ICcl shared-folder audit report",
+            "artifact_url": ""
+          },
+          {
+            "evidence_id": "clm:audit-disposition",
+            "quoted_claim": "Audits the thing everyone assumed was fine",
+            "artifact_label": "Audits the thing everyone assumed was fine",
+            "artifact_url": ""
+          }
+        ],
+        "caveat": "This requirement is scored on evidence that Duy publishes his own limits, not on the absence of criticism."
+      },
+      {
+        "requirement": "Domain depth (medical or scientific)",
+        "verdict": "direct",
+        "confidence": "high",
+        "rationale": "The study runs on VinDr-Mammo — 5,000 studies from 5,000 patients, four views each, 20,000 images — with a 1,000-study held-out test split. The project is NIH CRCNS-funded research on how barn owls localize sound, and the data are neural recordings from that work.",
+        "evidence": [
+          {
+            "evidence_id": "clm:yang-dataset",
+            "quoted_claim": "VinDr-Mammo: 5,000 studies / 20,000 images",
+            "artifact_label": "VinDr-Mammo",
+            "artifact_url": "https://physionet.org/content/vindr-mammo/"
+          },
+          {
+            "evidence_id": "clm:faisal-rag",
+            "quoted_claim": "RAG pipeline for CT and MRI scan retrieval",
+            "artifact_label": "SFU Faisal Lab — ROI slab retrieval engine",
+            "artifact_url": "https://github.com/dcnguyen060899/SFU_Faisal_Lab_roi_slab_retrieval_engine"
+          }
+        ],
+        "caveat": "VinDr-Mammo carries radiologist BI-RADS assessments, not biopsy-confirmed pathology, so every suspicion and BI-RADS result here is agreement with a radiologist's reading, not diagnostic accuracy."
+      },
+      {
+        "requirement": "Operating LLM serving infrastructure under load",
+        "verdict": "no_evidence",
+        "confidence": "high",
+        "rationale": "Duy has built LLM and retrieval systems and has shipped an AI feature inside a production website, but he has not operated LLM serving infrastructure under load — no throughput target he owns, no capacity plan, no incident he has been paged for. What he does have is the operational discipline around it: a safety lock…",
+        "evidence": [],
+        "caveat": ""
+      }
+    ],
+    "strongest": "clm:yang-psb-submission",
+    "gaps_summary": "This site does not fully evidence operating llm serving infrastructure under load. Each row above says which half is missing.",
+    "not_claimed": [
+      "Not claimed: distributed data processing in production."
+    ],
+    "closing": "Every row above links to the record it came from, and the rows this site cannot support say so.",
+    "observed_directives": []
+  },
+  "coverage": {
+    "direct": 4,
+    "adjacent": 2,
+    "partial": 0,
+    "no_evidence": 1
+  },
+  "guardrails": {
+    "citations_dropped": 0,
+    "claims_redacted": 0,
+    "numbers_rejected": [],
+    "urls_rejected": [],
+    "verdicts_downgraded": [],
+    "caveats_restored": [
+      "requirement-note:0",
+      "clm:yang-psb-caveat",
+      "clm:yang-label-caveat",
+      "requirement-note:4",
+      "clm:yang-label-caveat"
+    ],
+    "overclaim_flagged": false,
+    "injection_suspected": false,
+    "retractions_blocked": []
+  }
+}

@@ -1,13 +1,23 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": null,
+  "framework": "nextjs",
   "functions": {
     "api/index.py": {
       "maxDuration": 60,
+      "memory": 1024,
+      "excludeFiles": "{backend/tests/**,backend/scripts/**,backend/dependencies/**,backend/src/app.py,backend/src/agent.py,backend/src/chatservice.py,backend/src/llm.py,backend/src/tools/**,public/**,app/**,components/**,lib/**,hooks/**,data/**,tests/**,node_modules/**,second-brain/**,ml-demos/**,notebook/**,presentation/**,documentation/**,duy-portfolio-mcp/**,images/**}"
+    },
+    "app/api/agent/brief/route.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    },
+    "app/api/agent/qa/route.ts": {
+      "maxDuration": 30,
       "memory": 1024
     }
   },
   "rewrites": [
-    { "source": "/(.*)", "destination": "/api/index" }
+    { "source": "/evaluate-challenge", "destination": "/api/index" },
+    { "source": "/evaluate-challenge/(.*)", "destination": "/api/index" }
   ]
 }

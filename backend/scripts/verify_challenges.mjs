@@ -3,11 +3,11 @@
  * backend/scripts/verify_challenges.mjs - spec 2.7 (Node >= 20, no npm dependencies).
  *
  * Loads the private registry export (python backend/scripts/export_challenges.py --stdout --include-private),
- * loads docs/js/challenge_worker.js through createRequire (the real browser harness) and asserts, per challenge:
+ * loads public/docs/js/challenge_worker.js through createRequire (the real browser harness) and asserts, per challenge:
  *   - the reference solution and every accepted alternative pass every test;
  *   - every known-bad submission fails EXACTLY expected_failing_ids (set equality; error/timeout count as failing);
  *   - the starter code fails at least one test;
- *   - docs/data/challenges.json tests deep-equal the private tests (id, args, expected) and share tests_hash;
+ *   - public/docs/data/challenges.json tests deep-equal the private tests (id, args, expected) and share tests_hash;
  *   - every test finishes under 100 ms;
  *   - the compile prefix is the worker's own "use strict" wrapper (strict-mode probe).
  * Exit 1 on any violation. The functions are also exported for backend/tests/js/challenges.test.mjs.
@@ -21,10 +21,10 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = path.resolve(HERE, "..", "..");
-export const WORKER_PATH = path.join(REPO_ROOT, "docs", "js", "challenge_worker.js");
+export const WORKER_PATH = path.join(REPO_ROOT, "public", "docs", "js", "challenge_worker.js");
 export const EXPORT_SCRIPT = path.join(HERE, "export_challenges.py");
-export const PUBLIC_JSON = path.join(REPO_ROOT, "docs", "data", "challenges.json");
-export const SOLUTIONS_JSON = path.join(REPO_ROOT, "docs", "data", "challenge_solutions.json");
+export const PUBLIC_JSON = path.join(REPO_ROOT, "public", "docs", "data", "challenges.json");
+export const SOLUTIONS_JSON = path.join(REPO_ROOT, "public", "docs", "data", "challenge_solutions.json");
 export const MAX_TEST_MS = 100;
 
 const require = createRequire(import.meta.url);
@@ -153,7 +153,7 @@ export function verifyChallenge(ch, pubCh) {
   if (!starterFails.length) problems.push(`${ch.id}: starter code passes every test`);
 
   if (!pubCh) {
-    problems.push(`${ch.id}: missing from docs/data/challenges.json`);
+    problems.push(`${ch.id}: missing from public/docs/data/challenges.json`);
   } else {
     const strip = (tests) => tests.map((t) => ({ id: t.id, args: t.args, expected: t.expected }));
     if (JSON.stringify(strip(pubCh.tests)) !== JSON.stringify(strip(ch.tests))) problems.push(`${ch.id}: public tests differ from private tests (re-run the export)`);
@@ -184,7 +184,7 @@ export function verifyAll(priv, pub) {
   const problems = [];
   const lines = [];
   const pubById = new Map((pub.challenges || []).map((c) => [c.id, c]));
-  if (pub.registry_hash !== priv.registry_hash) problems.push(`docs/data/challenges.json registry_hash ${pub.registry_hash} != registry ${priv.registry_hash} (re-run the export)`);
+  if (pub.registry_hash !== priv.registry_hash) problems.push(`public/docs/data/challenges.json registry_hash ${pub.registry_hash} != registry ${priv.registry_hash} (re-run the export)`);
   for (const ch of priv.challenges) {
     const r = verifyChallenge(ch, pubById.get(ch.id));
     problems.push(...r.problems);

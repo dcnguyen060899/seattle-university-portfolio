@@ -2,11 +2,10 @@
 # (evaluation pipeline v2). It runs the same command set as the README's
 # "Running the tests" section, with no API key anywhere:
 #
-#   pip install ...                  also proves that anthropic<1 resolves next to langchain-anthropic 0.1.11
-#   python -c "import app"           the app boots without ANTHROPIC_API_KEY
+#   python -c "import app"           the local dev app boots without ANTHROPIC_API_KEY
 #   python -m pytest tests -q        registry, evidence, retrieval, prompts, judge, post-checks, routes, tutor
 #   node --test ...                  worker contract + every reference / known-bad through the real worker
-#   export_challenges.py --check     docs/data/*.json is in sync with the registry (also run in the Render build)
+#   export_challenges.py --check     public/docs/data/*.json is in sync with the registry
 #   verify_challenges.mjs            references pass, every known-bad fails exactly its expected set
 
 name: Backend tests
@@ -15,16 +14,18 @@ on:
   push:
     paths:
       - 'backend/**'
-      - 'docs/js/challenge_*.js'
-      - 'docs/data/**'
-      - 'render.yaml'
+      - 'api/index.py'
+      - 'requirements.txt'
+      - 'public/docs/js/challenge_*.js'
+      - 'public/docs/data/**'
       - '.github/workflows/backend-tests.yml'
   pull_request:
     paths:
       - 'backend/**'
-      - 'docs/js/challenge_*.js'
-      - 'docs/data/**'
-      - 'render.yaml'
+      - 'api/index.py'
+      - 'requirements.txt'
+      - 'public/docs/js/challenge_*.js'
+      - 'public/docs/data/**'
       - '.github/workflows/backend-tests.yml'
 
   # Allow manual trigger from GitHub Actions tab
@@ -86,3 +87,63 @@ jobs:
 
       - name: Verify challenges through the worker
         run: node backend/scripts/verify_challenges.mjs
+
+  # ── The deploy shape, proven separately ────────────────────────────────────
+  #
+  # The job above installs backend/dependencies/requirements.txt, which still
+  # carries the LangChain/OpenAI stack for the retired chatbot modules that stay
+  # in-tree. VERCEL DOES NOT INSTALL THAT FILE. It installs the root
+  # requirements.txt — three lines: flask, flask-cors, anthropic.
+  #
+  # So this job installs ONLY the root file, in a clean interpreter, and boots
+  # api/index.py exactly the way the Vercel Python runtime does. If someone adds
+  # an import to backend/src/evaluation/** and forgets the root file, this job
+  # goes red here instead of the function 500ing in production.
+  vercel-function:
+    name: api/index.py boots from root requirements.txt alone
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ANTHROPIC_API_KEY: ''
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: '.python-version'
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install ONLY the root requirements
+        run: pip install -r requirements.txt
+
+      - name: Boot the function and hit /evaluate-challenge/health
+        run: |
+          python - <<'PY'
+          import importlib.util, json, sys
+          spec = importlib.util.spec_from_file_location("vercel_entry", "api/index.py")
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+
+          rules = sorted(r.rule for r in module.app.url_map.iter_rules())
+          expected = ["/evaluate-challenge", "/evaluate-challenge/health", "/evaluate-challenge/tutor"]
+          assert rules == expected, rules
+
+          # Addendum B, R-3: these four are retired and must not come back.
+          for gone in ("/", "/chat", "/api-check", "/classify-image"):
+              assert gone not in rules, gone
+          assert module.app.static_folder is None
+
+          # No LangChain, no requests, no openai in the deployed import graph.
+          for banned in ("langchain", "openai", "requests", "dotenv"):
+              assert not any(m == banned or m.startswith(banned + ".") for m in sys.modules), banned
+
+          body = module.app.test_client().get("/evaluate-challenge/health").get_json()
+          assert body["ok"] is True and body["version"] == "2", body
+          # No key in CI, so degraded mode is the correct and expected state.
+          assert body["ai_configured"] is False, body
+          print("OK", json.dumps({"rules": rules, "registry_hash": body["registry_hash"]}))
+          PY

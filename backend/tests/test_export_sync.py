@@ -1,4 +1,4 @@
-"""The committed docs/data files must equal the in-memory export (spec 10.1, test_export_sync.py)."""
+"""The committed public/docs/data files must equal the in-memory export (spec 10.1, test_export_sync.py)."""
 import importlib.util
 import json
 import os
@@ -8,7 +8,7 @@ import pytest
 from evaluation import registry
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-DATA_DIR = os.path.join(ROOT, "docs", "data")
+DATA_DIR = os.path.join(ROOT, "public", "docs", "data")
 EXPORT_SCRIPT = os.path.join(ROOT, "backend", "scripts", "export_challenges.py")
 HINT = "run `python backend/scripts/export_challenges.py`"
 
@@ -35,7 +35,7 @@ def test_docs_json_matches_registry(name, builder):
     mod = _load_export_module()
     want = mod.serialize(builder())
     have = _read(name)
-    assert have == want, f"docs/data/{name} is stale; {HINT}"
+    assert have == want, f"public/docs/data/{name} is stale; {HINT}"
     assert json.loads(have) == builder()
 
 

@@ -1,0 +1,57 @@
+[
+{"id":"gap:distributed-production","label":"Distributed data processing in production","concepts":["cpt:distributed-compute","cpt:hadoop-ecosystem","cpt:mapreduce"],"severity":"trainable","disclose":true,"lastReviewed":"2026-09-02","reviewEvery":365,
+ "honestAnswer":"Duy has run the distributed stack, but as coursework rather than in production. In spring 2026 he took Big Data Analytics at Seattle University and built a two-stage Hadoop Streaming pipeline with a Hive query on top of it, on HDFS and YARN, and extended it into a TF-IDF search application on an EMR cluster. That is real, dated, inspectable code — and it ran on a lab cluster and a teaching AWS account, not on production data at scale. His applied pipeline work, the barn-owl lab ETL, is single-node Python. If you need someone who has operated a cluster under production load, he has not done that yet.",
+ "nearestEvidence":["clm:cpsc5330-tf-artifact","clm:cpsc5330-stack","clm:cpsc5330-tfidf","clm:fischer-etl-formats"],"note":"NARROWED on 2026-09-02: this used to be a pure negative. It is now 'coursework with an artifact', which is a materially better answer and is still not a claim of production experience."},
+
+{"id":"gap:spark-production","label":"Spark in a shipped system","concepts":["cpt:spark"],"severity":"trainable","disclose":true,"lastReviewed":"2026-09-02","reviewEvery":365,
+ "honestAnswer":"Spark RDDs, Spark SQL and DataFrames, and Spark Streaming were all taught and exercised in Duy's Big Data Analytics coursework in spring 2026. No shipped system he has built uses Spark. Treat it as taught and practised on assignments, not as production experience.",
+ "nearestEvidence":["clm:cpsc5330-stack","clm:cpsc5330-enrolled"],"note":null},
+
+{"id":"gap:streaming-production","label":"Stream processing in production","concepts":["cpt:stream-processing"],"severity":"trainable","disclose":true,"lastReviewed":"2026-09-02","reviewEvery":365,
+ "honestAnswer":"Duy's exposure to streaming is one week of coursework on Spark Streaming. He has not built or operated a streaming system, and nothing in his portfolio has a latency budget. Everything he has shipped is batch or request-response.",
+ "nearestEvidence":["clm:cpsc5330-stack"],"note":null},
+
+{"id":"gap:nosql-production","label":"NoSQL data stores in production","concepts":["cpt:nosql"],"severity":"trainable","disclose":true,"lastReviewed":"2026-09-02","reviewEvery":365,
+ "honestAnswer":"DynamoDB appeared in one week of Duy's Big Data Analytics coursework. The data stores he has actually designed and shipped are relational — a normalized SQLite database for the barn-owl lab, and serverless Postgres behind a production website — plus a Neo4j knowledge graph for the MOSAIC chatbot. If the requirement is production experience with a key-value or wide-column store, the answer is no.",
+ "nearestEvidence":["clm:cpsc5330-stack","clm:fischer-db-shape","clm:mosaic-graph"],"note":null},
+
+{"id":"gap:orchestration-production","label":"Orchestration in a shipped system","concepts":["cpt:orchestration"],"severity":"trainable","disclose":true,"lastReviewed":"2026-09-02","reviewEvery":365,
+ "honestAnswer":"Airflow is part of the deployment work Duy is building right now, not part of anything he has shipped. What he has shipped is background jobs on Inngest in a production website, which is scheduling but not DAG orchestration.",
+ "nearestEvidence":["clm:mlops-airflow","clm:mav-operating"],"note":null},
+
+{"id":"gap:mlops-shipped","label":"A deployed and operated machine-learning system","concepts":["cpt:mlops","cpt:model-monitoring"],"severity":"adjacent-experience","disclose":true,"lastReviewed":"2026-09-02","reviewEvery":90,
+ "honestAnswer":"Duy has not yet deployed and operated a machine-learning system in production. The containerized FastAPI evaluation service on AWS, with MLflow, Airflow, ragas and Evidently, is what he is building right now — he describes it as in flight, not shipped, and so does this page. What he has deployed and does operate is a production website with real users, including its data layer, its background jobs and its safety controls. Do not let the second stand in for the first.",
+ "nearestEvidence":["clm:mlops-fastapi-aws","clm:mlops-caveat","clm:mav-live","clm:mav-operating","clm:mav-demo-mode"],"note":"THE THINNEST PART OF THE EVIDENCE BASE, and the owner knows it — this is precisely the gap the in-progress work is meant to close. Watch it narrow requirement by requirement rather than pretending it is already closed."},
+
+{"id":"gap:containers-production","label":"Containers in production","concepts":["cpt:containerization"],"severity":"trainable","disclose":true,"lastReviewed":"2026-09-02","reviewEvery":90,
+ "honestAnswer":"Containerisation is part of the evaluation service Duy is building now. Nothing he has shipped to date runs in a container he manages: the production site he operates runs on a managed platform.",
+ "nearestEvidence":["clm:mlops-fastapi-aws","clm:mav-operating"],"note":null},
+
+{"id":"gap:kubernetes","label":"Kubernetes","concepts":["cpt:kubernetes"],"severity":"hard-blocker","disclose":true,"lastReviewed":"2026-09-02","reviewEvery":365,
+ "honestAnswer":"No evidence of Kubernetes. Duy has not worked with it, and nothing in his portfolio is a proxy for it. If it is a hard requirement, that is a real gap.",
+ "nearestEvidence":[],"note":"nearestEvidence is deliberately empty. Offering an adjacent thing here would be the exact move this gap exists to prevent."},
+
+{"id":"gap:java-production","label":"Java in production","concepts":["cpt:java"],"severity":"trainable","disclose":true,"lastReviewed":"2026-09-02","reviewEvery":365,
+ "honestAnswer":"Java and Maven appeared in Duy's Big Data Analytics coursework, on assignments run from an EC2 instance. He has not written Java in a production system. His production languages are Python and TypeScript.",
+ "nearestEvidence":["clm:cpsc5330-stack","clm:mav-typescript-strict","clm:yang-stack"],"note":null},
+
+{"id":"gap:online-experimentation","label":"A/B testing on live traffic","concepts":["cpt:ab-testing"],"severity":"adjacent-experience","disclose":true,"lastReviewed":"2026-09-02","reviewEvery":365,
+ "honestAnswer":"Duy has designed and run controlled offline experiments — a 24-cell factorial study with a negative control and a held-out majority-class floor, and an ANOVA-based variance decomposition on flight-recorder data — but he has not run an A/B test on live production traffic. The statistics transfer; the platform experience does not exist yet.",
+ "nearestEvidence":["clm:yang-design-24cells","clm:yang-negative-control","clm:nasa-anova"],"note":null},
+
+{"id":"gap:industry-employment","label":"Employment at a technology company","concepts":["cpt:scale-users","cpt:ownership"],"severity":"adjacent-experience","disclose":true,"lastReviewed":"2026-09-02","reviewEvery":365,
+ "honestAnswer":"Duy has not held a role inside a technology company. His experience is two university research positions carried at the same time during the master's, a student-organisation engineering role that shipped to a real nonprofit client and handed the system over with documentation, and a production website he designed, built, deployed and still operates for a real business with real stakeholders. If the requirement is specifically 'has worked inside a tech company', the answer is no.",
+ "nearestEvidence":["clm:yang-role","clm:fischer-role","clm:mosaic-role","clm:mav-live"],"note":null},
+
+{"id":"gap:r-language","label":"R","concepts":["cpt:r-lang"],"severity":"trainable","disclose":true,"lastReviewed":"2026-09-02","reviewEvery":365,
+ "honestAnswer":"R is not on Duy's resume and no project in this evidence base uses it. His statistical work is in Python — pandas, SciPy, scikit-learn — and in SQL.",
+ "nearestEvidence":["clm:yang-stack","clm:nasa-anova"],"note":"An older portfolio page showed an R proficiency bar at 70%. That bar had no measurement behind it and is retracted as a class; see ret:skill-bar-percentages."},
+
+{"id":"gap:llm-serving-scale","label":"Operating LLM serving infrastructure under load","concepts":["cpt:llm","cpt:scale-users"],"severity":"trainable","disclose":true,"lastReviewed":"2026-09-02","reviewEvery":365,
+ "honestAnswer":"Duy has built LLM and retrieval systems and has shipped an AI feature inside a production website, but he has not operated LLM serving infrastructure under load — no throughput target he owns, no capacity plan, no incident he has been paged for. What he does have is the operational discipline around it: a safety lock that defaults to canned data so a live model call cannot fail in front of an audience.",
+ "nearestEvidence":["clm:mav-stack","clm:mav-demo-mode","clm:faisal-rag","clm:yang-role"],"note":null},
+
+{"id":"gap:eligibility-questions","label":"Eligibility and personal-status questions","concepts":[],"severity":"hard-blocker","disclose":false,"lastReviewed":"2026-09-02","reviewEvery":365,
+ "honestAnswer":"That is Duy's to answer, not mine. I do not hold anything about his eligibility to work, and I will not guess. Email him at dnguyen44@seattleu.edu and he will tell you directly.",
+ "nearestEvidence":[],"note":"disclose:false — the agent declines and hands the question back. Deliberately mapped to NO concepts, so retrieval never reaches it: the agent routes here through an explicit topic guard instead. Paired with ret:work-authorization-speculation, whose forbidden phrases are scanned on every build. The label and the answer are worded so that the answer itself contains none of those phrases — a decline that has to name the topic to decline it would trip its own gate."}
+]
