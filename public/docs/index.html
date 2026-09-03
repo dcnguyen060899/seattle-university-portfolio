@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UC Berkeley ML AI Professional Certificate - Capstone</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" type="image/x-icon" href="favicon_2.ico?v=2">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+
+</head>
+<body>
+    <header>
+        <a href="https://em-executive.berkeley.edu/professional-certificate-machine-learning-artificial-intelligence" class="logo-link">
+            <div class="logo">
+                <img src="images/UC_Berkeley.png" alt="Berkeley Engineering and Haas logo">
+            </div>
+        </a>
+    </header>
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-content">
+            <nav>
+                <a href="index_certificate.html">Professional Certificate</a>
+                <a href="index_portfolio.html">Portfolio</a>
+                <a href="index_resume.html">Resume</a>
+            </nav>
+        </div>
+        <div class="sidebar-footer">
+            <div class="sidebar-icon">☰</div>
+        </div>
+    </div>
+    
+    <main>
+        <section id="executive-summary">
+            <h2>Executive Summary</h2>
+            <p>In response to challenges exposed by the COVID-19 pandemic, our project focused on optimizing hospital resource management by predicting patient length of stay. Using advanced data analysis, machine learning, and deep learning techniques, we have identified key factors affecting stay duration and developed models to enhance patient care and resource allocation.</p>
+        </section>
+
+        <section id="project-goals">
+            <h2>Project Goals</h2>
+            <ol>
+                <li><strong>Enhance Patient Care:</strong> Understand social, financial, and demographic factors impacting recovery times.</li>
+                <li><strong>Optimize Hospital Resources:</strong> Identify operational bottlenecks and resource allocation inefficiencies.</li>
+                <li><strong>Develop Targeted Interventions:</strong> Create data-driven strategies to address factors contributing to prolonged stays.</li>
+            </ol>
+        </section>
+
+        <section id="key-findings">
+            <h2>Key Findings</h2>
+            <h3>1. Patient Demographics and Hospital Characteristics</h3>
+            <img src="images/distribution_age_by_cluster.png" alt="Age Distribution">
+            <img src="images/distribution_hospital_type_code_by_cluster.png" alt="Hospital Type Code Distribution by Cluster">
+            <img src="images/distribution_hospital_region_code_by_cluster.png" alt="Hospital Region Distribution by Cluster">
+            <img src="images/distribution_hospital_code_by_cluster.png" alt="Hospital Code Distribution by Cluster">
+            <ul>
+                <li>Middle-aged patients (31-60 years) form the largest group requiring hospital care.</li>
+                <li>Very young (0-10) and very old (91-100) patients are least common.</li>
+                <li>Significant variations in patient volumes across hospital types and regions:
+                    <ul>
+                        <li>Hospital codes 8 and 28 handle notably higher volumes.</li>
+                        <li>Type 'e' hospitals are most prevalent, followed by type 'b'.</li>
+                        <li>Region X has the highest number of cases, followed by Y and Z.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h3>2. Length of Stay Patterns</h3>
+            <img src="images/los_dist.png" alt="Length of Stay (LOS) Distribution">
+            <img src="images/Department_vs_Length_of_Stay.png" alt="Department vs. LOS">
+            <img src="images/Type_of_Admission_vs_Length_of_Stay.png" alt="Type of Admission vs. LOS">
+            <img src="images/Severity_of_Illness_vs_Length_of_Stay.png" alt="Severity of Illness vs. LOS">
+            <img src="images/Ward_Type_vs_Length_of_Stay.png" alt="Ward Type vs. LOS">
+            <ul>
+                <li>Multiple peaks in stay duration, with highest frequencies around 10, 20, and 30 days.</li>
+                <li>Factors associated with longer stays:
+                    <ul>
+                        <li>Trauma admissions</li>
+                        <li>Extreme severity of illness</li>
+                        <li>Departments: Surgery, Radiotherapy</li>
+                        <li>Ward types: T and U</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h3>3. Readmission Insights</h3>
+            <img src="images/Total_Readmissions_by_Department.png" alt="Readmissions by Department">
+            <img src="images/Total_Readmissions_by_Type_of_Admission.png" alt="Readmissions by Type of Admission">
+            <img src="images/Total_Readmissions_by_Severity_of_Illness.png" alt="Readmissions by Severity of Illness">
+            <img src="images/Total_Readmissions_by_Hospital_Type_Code.png" alt="Readmissions by Hospital Type">
+            <img src="images/Total_Readmissions_by_Age.png" alt="Readmissions by Age">
+            
+            <ul>
+                <li>Higher readmission rates observed in:
+                    <ul>
+                        <li>Trauma cases</li>
+                        <li>Moderate to extreme illness severity</li>
+                        <li>Gynecology department</li>
+                        <li>Hospital type 'a'</li>
+                    </ul>
+                </li>
+                <li>Patients with more than 10 readmissions tend to have significantly longer average stays.</li>
+                <li>Age groups 31-40 and 41-50 have the highest number of readmissions.</li>
+            </ul>
+            
+            <table class="readmission-stats">
+                <thead>
+                    <tr>
+                        <th>Readmission Count</th>
+                        <th>Count</th>
+                        <th>Mean Stay (days)</th>
+                        <th>Std Dev</th>
+                        <th>Min Stay</th>
+                        <th>25% Quartile</th>
+                        <th>Median Stay</th>
+                        <th>75% Quartile</th>
+                        <th>Max Stay</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0</td>
+                        <td>92017.0</td>
+                        <td>33.10</td>
+                        <td>21.59</td>
+                        <td>5.0</td>
+                        <td>15.0</td>
+                        <td>25.0</td>
+                        <td>35.0</td>
+                        <td>110.0</td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>71668.0</td>
+                        <td>31.94</td>
+                        <td>21.88</td>
+                        <td>5.0</td>
+                        <td>15.0</td>
+                        <td>25.0</td>
+                        <td>35.0</td>
+                        <td>110.0</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>15875.0</td>
+                        <td>30.76</td>
+                        <td>21.51</td>
+                        <td>5.0</td>
+                        <td>15.0</td>
+                        <td>25.0</td>
+                        <td>35.0</td>
+                        <td>110.0</td>
+                    </tr>
+                    <tr>
+                        <td>10</td>
+                        <td>1030.0</td>
+                        <td>31.57</td>
+                        <td>25.14</td>
+                        <td>5.0</td>
+                        <td>15.0</td>
+                        <td>25.0</td>
+                        <td>35.0</td>
+                        <td>110.0</td>
+                    </tr>
+                    <tr>
+                        <td>15</td>
+                        <td>116.0</td>
+                        <td>44.40</td>
+                        <td>36.61</td>
+                        <td>5.0</td>
+                        <td>15.0</td>
+                        <td>25.0</td>
+                        <td>65.0</td>
+                        <td>110.0</td>
+                    </tr>
+                    <tr>
+                        <td>20</td>
+                        <td>34.0</td>
+                        <td>47.35</td>
+                        <td>35.87</td>
+                        <td>5.0</td>
+                        <td>25.0</td>
+                        <td>35.0</td>
+                        <td>70.0</td>
+                        <td>110.0</td>
+                    </tr>
+                    <tr>
+                        <td>25</td>
+                        <td>16.0</td>
+                        <td>50.31</td>
+                        <td>38.23</td>
+                        <td>5.0</td>
+                        <td>20.0</td>
+                        <td>50.0</td>
+                        <td>75.0</td>
+                        <td>110.0</td>
+                    </tr>
+                    <tr>
+                        <td>30</td>
+                        <td>7.0</td>
+                        <td>44.29</td>
+                        <td>38.56</td>
+                        <td>5.0</td>
+                        <td>20.0</td>
+                        <td>35.0</td>
+                        <td>60.0</td>
+                        <td>110.0</td>
+                    </tr>
+                    <tr>
+                        <td>38</td>
+                        <td>3.0</td>
+                        <td>61.67</td>
+                        <td>20.82</td>
+                        <td>45.0</td>
+                        <td>50.0</td>
+                        <td>55.0</td>
+                        <td>70.0</td>
+                        <td>85.0</td>
+                    </tr>
+                    <tr>
+                        <td>39</td>
+                        <td>2.0</td>
+                        <td>72.50</td>
+                        <td>53.03</td>
+                        <td>35.0</td>
+                        <td>53.8</td>
+                        <td>72.5</td>
+                        <td>91.3</td>
+                        <td>110.0</td>
+                    </tr>
+                    <tr>
+                        <td>40</td>
+                        <td>2.0</td>
+                        <td>62.50</td>
+                        <td>67.18</td>
+                        <td>15.0</td>
+                        <td>38.8</td>
+                        <td>62.5</td>
+                        <td>86.3</td>
+                        <td>110.0</td>
+                    </tr>
+                    <tr>
+                        <td>41</td>
+                        <td>2.0</td>
+                        <td>92.50</td>
+                        <td>24.75</td>
+                        <td>75.0</td>
+                        <td>83.8</td>
+                        <td>92.5</td>
+                        <td>101.3</td>
+                        <td>110.0</td>
+                    </tr>
+                    <tr>
+                        <td>42</td>
+                        <td>2.0</td>
+                        <td>72.50</td>
+                        <td>53.03</td>
+                        <td>35.0</td>
+                        <td>53.8</td>
+                        <td>72.5</td>
+                        <td>91.3</td>
+                        <td>110.0</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <p>This table shows a clear trend: as the number of readmissions increases, especially beyond 10, the average length of stay tends to increase significantly. For instance, patients with 15 readmissions have an average stay of 44.40 days, compared to 31.57 days for those with 10 readmissions. It continues to increase to 72.50 days on average patient with 42 readmission</p>
+            
+            <h3>4. Facility Quality Analysis</h3>
+            <img src="images/cluster_numerical.png" alt="Numerical Cluster Pair Plot">
+            <table>
+                <tr>
+                    <th>Cluster</th>
+                    <th>Description</th>
+                    <th>Characteristics</th>
+                </tr>
+                <tr>
+                    <td>0 (Balanced)</td>
+                    <td>Efficient resource utilization</td>
+                    <td>Moderate bed grades, admission deposits, and extra rooms</td>
+                </tr>
+                <tr>
+                    <td>1 (High-End)</td>
+                    <td>Premium hospitals</td>
+                    <td>Highest admission deposits and extra rooms, most visitors</td>
+                </tr>
+                <tr>
+                    <td>2 (Budget)</td>
+                    <td>Possible lower-income areas</td>
+                    <td>Lowest bed grades, deposits, and extra rooms</td>
+                </tr>
+                <tr>
+                    <td>3 (Mixed)</td>
+                    <td>High-quality with moderate capacity</td>
+                    <td>Highest bed grades, second-highest deposits</td>
+                </tr>
+            </table>
+
+            <h3>5. Key Predictive Factors</h3>
+            <img src="images/neural_network_feature_importances_f1.png" alt="Neural Network Feature Importances Fold 1">
+            <img src="images/neural_network_feature_importances_f2.png" alt="Neural Network Feature Importances Fold 2">
+            <img src="images/neural_network_feature_importances_f3.png" alt="Neural Network Feature Importances Fold 3">
+            <img src="images/neural_network_feature_importances_f4.png" alt="Neural Network Feature Importances Fold 4">
+            <img src="images/neural_network_feature_importances_f5.png" alt="Neural Network Feature Importances Fold 5">
+            
+            <ul>
+                <li>Number of visitors with the patient</li>
+                <li>Admission deposit amount</li>
+                <li>Available extra rooms in the hospital</li>
+                <li>Specific ward types (especially Q, P, S)</li>
+                <li>Type of admission (Emergency, Trauma)</li>
+                <li>Severity of illness</li>
+                <li>Specific hospital and city codes</li>
+            </ul>
+            
+            <p>The consistency of these factors across different folds and modeling approaches (LSTM, Random Forest, XGBoost, etc) underscores their robustness as predictors of hospital length of stay.</p>
+        </section>
+
+        <section id="model-performance">
+            <h2>Model Performance</h2>
+            <table>
+                <tr>
+                    <th>Model</th>
+                    <th>Train Accuracy</th>
+                    <th>Test Accuracy</th>
+                </tr>
+                <tr>
+                    <td>Neural Network</td>
+                    <td>65.24%</td>
+                    <td>80.42%</td>
+                </tr>
+                <tr>
+                    <td>CatBoost</td>
+                    <td>46.23%</td>
+                    <td>42.84%</td>
+                </tr>
+                <tr>
+                    <td>XGBoost</td>
+                    <td>45.80%</td>
+                    <td>42.41%</td>
+                </tr>
+                <tr>
+                    <td>Random Forest</td>
+                    <td>49.68%</td>
+                    <td>42.19%</td>
+                </tr>
+                <tr>
+                    <td>Gradient Boosting</td>
+                    <td>41.93%</td>
+                    <td>41.62%</td>
+                </tr>
+                <tr>
+                    <td>Logistic Regression</td>
+                    <td>39.92%</td>
+                    <td>40.10%</td>
+                </tr>
+                <tr>
+                    <td>Baseline (Dummies)</td>
+                    <td>27.43%</td>
+                    <td>27.64%</td>
+                </tr>
+            </table>
+            <img src="images/roc_nn.png" alt="ROC-AUC Neural Network">
+            <p>The neural network model achieved high AUC scores (0.92 to 1.00) across all classes, indicating excellent predictive performance.</p>
+            <img src="images/confusion_matrix_nn.png" alt="Confusion Matrix Neural Network">
+            <p>The confusion matrix shows good prediction accuracy for most classes, with some challenges in distinguishing between certain adjacent classes.</p>
+        </section>
+
+        <section id="business-impact">
+            <h2>Business Impact</h2>
+            <p>Implementing our best model could lead to significant cost savings:</p>
+            <table>
+                <tr>
+                    <th>Model</th>
+                    <th>FP Cost</th>
+                    <th>FN Cost</th>
+                    <th>Total Cost</th>
+                    <th>Savings</th>
+                </tr>
+                <tr>
+                    <td>Baseline</td>
+                    <td>$4,689,900</td>
+                    <td>$36,698,500</td>
+                    <td>$41,388,400</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>Deep Learning</td>
+                    <td>$1,000,000</td>
+                    <td>$10,000,000</td>
+                    <td>$11,000,000</td>
+                    <td>$30,388,400</td>
+                </tr>
+                <tr>
+                    <td>CatBoost</td>
+                    <td>$1,500,000</td>
+                    <td>$17,500,000</td>
+                    <td>$19,000,000</td>
+                    <td>$22,388,400</td>
+                </tr>
+                <tr>
+                    <td>XGBoost</td>
+                    <td>$1,300,000</td>
+                    <td>$18,500,000</td>
+                    <td>$19,800,000</td>
+                    <td>$21,588,400</td>
+                </tr>
+            </table>
+        </section>
+
+        <section id="recommendations">
+            <h2>Business Recommendations</h2>
+            <ol>
+                <li><strong>Resource Optimization and Facility Improvement:</strong>
+                    <ul>
+                        <li>Focus on high-demand wards (R, Q) while evaluating underutilized wards (P, T, U).</li>
+                        <li>Invest in upgrading bed grades and ensuring adequate extra rooms to improve care quality and management efficiency.</li>
+                    </ul>
+                </li>
+                <li><strong>Personalized Patient Care:</strong>
+                    <ul>
+                        <li>Tailor care plans based on admission type and illness severity, particularly for medium-stay patients (10-40 days).</li>
+                        <li>Develop specialized programs for working-age adults in ward facility F.</li>
+                    </ul>
+                </li>
+                <li><strong>Visitor and Follow-Up Management:</strong>
+                    <ul>
+                        <li>Implement structured visitor programs that balance patient support with operational efficiency.</li>
+                        <li>Provide targeted post-discharge support for high-risk patients to reduce readmission rates.</li>
+                    </ul>
+                </li>
+                <li><strong>Data-Driven Strategies and Continuous Improvement:</strong>
+                    <ul>
+                        <li>Regularly retrain and fine-tune predictive models with new data to improve predictions.</li>
+                        <li>Implement best practices from high-performing hospitals, especially in regions X and Y, and prioritize resources in gynecology and anesthesia.</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h2>Technical Recommendations</h2>
+            <p>To further improve our model performance and gain deeper insights, we propose the following technical steps:</p>
+            <ol>
+                <li>
+                    <strong>Enhanced Traditional Modeling:</strong>
+                    <ul>
+                        <li>Implement SMOTE (Synthetic Minority Over-sampling Technique) to address class imbalance.</li>
+                        <li>Apply Stratified K-Fold cross-validation to maintain class distribution across folds.</li>
+                        <li>Re-run traditional models (Random Forest, Gradient Boosting, XGBoost, CatBoost) with these techniques.</li>
+                        <li>Analyze changes in model performance and feature importance.</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Ensemble Method Exploration:</strong>
+                    <ul>
+                        <li>Develop a voting classifier combining the best-performing traditional models.</li>
+                        <li>Compare the ensemble model's performance against our current LSTM Neural Network.</li>
+                        <li>Evaluate potential improvements in prediction accuracy and robustness.</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Comparative Analysis:</strong>
+                    <ul>
+                        <li>Conduct a thorough comparison of all models, including the new ensemble approach.</li>
+                        <li>Assess trade-offs between model complexity, interpretability, and performance.</li>
+                        <li>Determine the most suitable model or combination of models for deployment.</li>
+                        <li>Consider the preference for ensemble methods over neural networks if performance is comparable, due to their superior interpretability.</li>
+                    </ul>
+                </li>
+            </ol>
+            <p>By implementing these technical recommendations, we aim to potentially enhance our predictive capabilities and gain a more comprehensive understanding of the factors influencing hospital length of stay.</p>
+        </section>            
+    </main>
+
+    <footer>
+        <p>&copy; 2024 UC Berkeley. All rights reserved.</p>
+    </footer>
+    <!-- The chatbot widget that used to sit here has been REMOVED, along with
+         its js/chat.js script tag. It posted to POST /chat on the Vercel
+         origin; that endpoint is retired and js/chat.js is deleted, so the tag
+         would have given every visitor a console 404. There is one agent now:
+         the recruiter agent on the homepage at https://duyng-portfolio.com/ -->
+
+    <!-- Include JavaScript files -->
+    <script src="js/sidebar.js"></script>
+    
+</body>
+</html>

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/portfolio_su.css">
+    <link rel="stylesheet" href="css/image_classification.css">
+    <link rel="icon" type="image/x-icon" href="seattleu_2.ico?v=3">
+    <title>Garbage Classification Using Deep Learning - Seattle University</title>
+</head>
+<body>
+    <header>
+        <a href="https://www.seattleu.edu/science-engineering/discover-data-science/" class="logo-link">
+            <div class="logo">
+                <img src="images/seattle_university.png" alt="Seattle University logo">
+            </div>
+        </a>
+        <nav>
+            <a href="index_portfolio.html">Back to Portfolio</a>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero">
+            <h1>Garbage Classification Using Deep Learning</h1>
+            <p class="subtitle">A Comparative Analysis of Class Imbalance Mitigation Strategies</p>
+            <p class="course-info">DATA 5100: Deep Learning | Seattle University | Fall 2025</p>
+            <p class="author">Duy Nguyen</p>
+        </section>
+
+        <section id="executive-summary">
+            <h2>Executive Summary</h2>
+            <div class="summary-card">
+                <p>This project develops a production-ready deep learning model for automated waste sorting, classifying garbage into six categories: <strong>paper, glass, plastic, metal, cardboard, and trash</strong>. Using transfer learning with ResNet34, we systematically compared four approaches to address severe class imbalance (4.3:1 ratio).</p>
+
+                <div class="key-finding">
+                    <h3>Key Finding</h3>
+                    <p><strong>Conservative augmentation outperforms aggressive augmentation</strong>—achieving 94% accuracy with 100% trash recall while being simpler, faster, and better aligned with real-world deployment conditions.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="metrics">
+            <h2>Project Metrics</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <span class="metric-value">94%</span>
+                    <span class="metric-label">Best Accuracy</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-value">100%</span>
+                    <span class="metric-label">Trash Recall</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-value">2,527</span>
+                    <span class="metric-label">Images Classified</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-value">6</span>
+                    <span class="metric-label">Waste Categories</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="challenge">
+            <h2>The Challenge</h2>
+            <div class="challenge-content">
+                <div class="challenge-text">
+                    <h3>Severe Class Imbalance</h3>
+                    <p>The dataset exhibits significant class imbalance with a <strong>4.3:1 ratio</strong> between majority and minority classes. The "trash" category contains only 137 images (5.4%), while "paper" has 594 images (23.5%).</p>
+                    <p>This imbalance is critical because <strong>missing trash items means contamination</strong> in recycling streams—a real-world problem with significant environmental and economic consequences.</p>
+                </div>
+                <div class="class-distribution">
+                    <h4>Class Distribution</h4>
+                    <div class="distribution-bars">
+                        <div class="dist-item">
+                            <span class="dist-label">Paper</span>
+                            <div class="dist-bar-container">
+                                <div class="dist-bar" style="width: 100%;"></div>
+                            </div>
+                            <span class="dist-value">594 (23.5%)</span>
+                        </div>
+                        <div class="dist-item">
+                            <span class="dist-label">Glass</span>
+                            <div class="dist-bar-container">
+                                <div class="dist-bar" style="width: 84%;"></div>
+                            </div>
+                            <span class="dist-value">501 (19.8%)</span>
+                        </div>
+                        <div class="dist-item">
+                            <span class="dist-label">Plastic</span>
+                            <div class="dist-bar-container">
+                                <div class="dist-bar" style="width: 81%;"></div>
+                            </div>
+                            <span class="dist-value">482 (19.1%)</span>
+                        </div>
+                        <div class="dist-item">
+                            <span class="dist-label">Metal</span>
+                            <div class="dist-bar-container">
+                                <div class="dist-bar" style="width: 69%;"></div>
+                            </div>
+                            <span class="dist-value">410 (16.2%)</span>
+                        </div>
+                        <div class="dist-item">
+                            <span class="dist-label">Cardboard</span>
+                            <div class="dist-bar-container">
+                                <div class="dist-bar" style="width: 68%;"></div>
+                            </div>
+                            <span class="dist-value">403 (15.9%)</span>
+                        </div>
+                        <div class="dist-item minority">
+                            <span class="dist-label">Trash</span>
+                            <div class="dist-bar-container">
+                                <div class="dist-bar" style="width: 23%;"></div>
+                            </div>
+                            <span class="dist-value">137 (5.4%)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="methodology">
+            <h2>Methodology</h2>
+            <div class="methodology-content">
+                <h3>Base Architecture</h3>
+                <p><strong>ResNet34</strong> with ImageNet pre-trained weights, fine-tuned for garbage classification using FastAI's transfer learning pipeline.</p>
+
+                <h3>Four Experimental Approaches</h3>
+                <div class="approaches-grid">
+                    <div class="approach-card">
+                        <div class="approach-header">
+                            <span class="approach-number">1</span>
+                            <h4>Oversampling + Aggressive Augmentation</h4>
+                        </div>
+                        <ul>
+                            <li>Balanced to 594 images per class</li>
+                            <li>30° rotation, 1.5x zoom</li>
+                            <li>±40% brightness/contrast</li>
+                        </ul>
+                        <div class="approach-result">93.5% accuracy</div>
+                    </div>
+
+                    <div class="approach-card winner">
+                        <div class="approach-header">
+                            <span class="approach-number">2</span>
+                            <h4>Oversampling + Conservative Augmentation</h4>
+                            <span class="winner-badge">WINNER</span>
+                        </div>
+                        <ul>
+                            <li>Balanced to 594 images per class</li>
+                            <li>10° rotation, 1.1x zoom</li>
+                            <li>±20% brightness/contrast</li>
+                        </ul>
+                        <div class="approach-result winner">94.0% accuracy</div>
+                    </div>
+
+                    <div class="approach-card failed">
+                        <div class="approach-header">
+                            <span class="approach-number">3</span>
+                            <h4>Weighted Cross-Entropy Loss Only</h4>
+                        </div>
+                        <ul>
+                            <li>Original unbalanced dataset</li>
+                            <li>Inverse-frequency weights</li>
+                            <li>Trash weight: 18.4x</li>
+                        </ul>
+                        <div class="approach-result failed">89.9% accuracy (70% trash recall)</div>
+                    </div>
+
+                    <div class="approach-card">
+                        <div class="approach-header">
+                            <span class="approach-number">4</span>
+                            <h4>Both Combined</h4>
+                        </div>
+                        <ul>
+                            <li>Oversampling + Weighted Loss</li>
+                            <li>Created "double-weighting"</li>
+                            <li>~80x minority emphasis</li>
+                        </ul>
+                        <div class="approach-result">89.9% accuracy</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="results">
+            <h2>Results Comparison</h2>
+            <div class="results-table-container">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Aggressive Aug.</th>
+                            <th class="winner-col">Conservative Aug.</th>
+                            <th>Weighted Loss</th>
+                            <th>Combined</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Overall Accuracy</strong></td>
+                            <td>93.5%</td>
+                            <td class="winner-col"><strong>94.0%</strong></td>
+                            <td>89.9%</td>
+                            <td>89.9%</td>
+                        </tr>
+                        <tr class="critical-row">
+                            <td><strong>Trash Recall</strong></td>
+                            <td>100%</td>
+                            <td class="winner-col"><strong>100%</strong></td>
+                            <td class="failed-cell">70.4%</td>
+                            <td>100%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Plastic Accuracy</strong></td>
+                            <td>86.2%</td>
+                            <td class="winner-col"><strong>93.6%</strong> (+7.4%)</td>
+                            <td>86.3%</td>
+                            <td>85.1%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cardboard Accuracy</strong></td>
+                            <td>91.8%</td>
+                            <td class="winner-col"><strong>94.1%</strong> (+2.3%)</td>
+                            <td>92.2%</td>
+                            <td>88.2%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Paper Accuracy</strong></td>
+                            <td>95.8%</td>
+                            <td class="winner-col">95.0%</td>
+                            <td>94.6%</td>
+                            <td>87.4%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="visualizations">
+            <h2>Model Performance Visualizations</h2>
+
+            <div class="viz-grid">
+                <div class="viz-item">
+                    <h3>Baseline Model Confusion Matrix</h3>
+                    <div class="viz-container">
+                        <img src="images/image_classification/viz_01.png" alt="Baseline Confusion Matrix" class="viz-image">
+                    </div>
+                    <p class="viz-caption">Initial baseline model (84.7% accuracy) showing class-wise performance before optimization.</p>
+                </div>
+
+                <div class="viz-item highlight">
+                    <h3>Best Model: Conservative Augmentation</h3>
+                    <div class="viz-container">
+                        <img src="images/image_classification/viz_03.png" alt="Conservative Augmentation Confusion Matrix" class="viz-image">
+                    </div>
+                    <p class="viz-caption">Final model achieving 94% accuracy with perfect trash detection (100% recall on minority class).</p>
+                </div>
+            </div>
+
+            <div class="viz-section">
+                <h3>Real-World Validation</h3>
+                <p>Testing the model on external images not seen during training to validate generalization:</p>
+                <div class="external-test">
+                    <div class="test-result">
+                        <img src="images/image_classification/viz_12.png" alt="External Test - Plastic" class="test-image">
+                        <p class="test-caption"><strong>Plastic bottle</strong> - 99.8% confidence</p>
+                    </div>
+                </div>
+                <p class="test-note">The model correctly classifies real-world images with high confidence, demonstrating strong generalization beyond the training distribution.</p>
+            </div>
+        </section>
+
+        <section id="findings">
+            <h2>Key Findings</h2>
+            <div class="findings-grid">
+                <div class="finding-card">
+                    <div class="finding-icon">&#128161;</div>
+                    <h3>Conservative Beats Aggressive</h3>
+                    <p>Simpler augmentation (10° rotation vs 30°) preserves visual features better, achieving higher accuracy while being faster to train.</p>
+                </div>
+                <div class="finding-card warning">
+                    <div class="finding-icon">&#9888;</div>
+                    <h3>Double-Weighting Problem</h3>
+                    <p>Combining oversampling + weighted loss creates multiplicative (not additive) emphasis: 4.3x × 18.4x = ~80x, causing over-fitting.</p>
+                </div>
+                <div class="finding-card danger">
+                    <div class="finding-icon">&#10060;</div>
+                    <h3>Weighted Loss Alone Fails</h3>
+                    <p>Only 70.4% trash recall—missing 30% of trash items is unacceptable for recycling operations. Oversampling is essential.</p>
+                </div>
+                <div class="finding-card success">
+                    <div class="finding-icon">&#10004;</div>
+                    <h3>Domain-Aligned Parameters</h3>
+                    <p>Conservative parameters match real sorting facilities: controlled lighting, items rarely rotate beyond 15° on conveyor belts.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="recommendation">
+            <h2>Deployment Recommendation</h2>
+            <div class="recommendation-card">
+                <h3>Deploy Approach 2: Conservative Augmentation Model</h3>
+                <div class="recommendation-specs">
+                    <div class="spec-item">
+                        <span class="spec-label">Architecture</span>
+                        <span class="spec-value">ResNet34 (ImageNet pre-trained)</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Accuracy</span>
+                        <span class="spec-value">94.0%</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Trash Recall</span>
+                        <span class="spec-value">100% (critical requirement)</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Augmentation</span>
+                        <span class="spec-value">±10° rotation, 1.1x zoom, ±20% brightness</span>
+                    </div>
+                </div>
+                <div class="business-impact">
+                    <h4>Expected Business Impact</h4>
+                    <ul>
+                        <li>94% accuracy vs. 80-85% human baseline (+9-14% improvement)</li>
+                        <li>Zero trash contamination in recycling streams</li>
+                        <li>60% potential labor cost reduction through automation</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="live-demo">
+            <h2>Live Demo</h2>
+            <div class="demo-container">
+                <p class="demo-intro">Try the model yourself! Upload any garbage image to see real-time classification.</p>
+                <div class="demo-frame-container">
+                    <iframe
+                        id="demo-iframe"
+                        src="https://dnguyen44-garbage-classification.hf.space"
+                        title="Garbage Classification Demo"
+                        frameborder="0"
+                        allowfullscreen
+                    ></iframe>
+                </div>
+                <p class="demo-note">Powered by Hugging Face Spaces | Model: ResNet34 with Conservative Augmentation</p>
+            </div>
+        </section>
+
+        <section id="tech-stack">
+            <h2>Technologies Used</h2>
+            <div class="tech-grid">
+                <span class="tech-tag">Python</span>
+                <span class="tech-tag">FastAI</span>
+                <span class="tech-tag">PyTorch</span>
+                <span class="tech-tag">ResNet34</span>
+                <span class="tech-tag">Transfer Learning</span>
+                <span class="tech-tag">Torchvision</span>
+                <span class="tech-tag">PIL/Pillow</span>
+                <span class="tech-tag">Matplotlib</span>
+                <span class="tech-tag">NumPy</span>
+                <span class="tech-tag">Jupyter Notebook</span>
+            </div>
+        </section>
+
+        <section id="links">
+            <h2>Project Resources</h2>
+            <div class="links-container">
+                <a href="https://github.com/dcnguyen060899/SU_data_5100-01_image_classification" class="resource-link" target="_blank">
+                    <span class="link-icon">&#128187;</span>
+                    <span class="link-text">GitHub Repository</span>
+                </a>
+            </div>
+        </section>
+
+        <section id="contact">
+            <h2>Contact</h2>
+            <p>Email: <a href="mailto:dnguyen44@seattleu.edu">dnguyen44@seattleu.edu</a></p>
+            <p>LinkedIn: <a href="https://www.linkedin.com/in/duwe-ng/">https://www.linkedin.com/in/duwe-ng/</a></p>
+            <p>GitHub: <a href="https://github.com/dcnguyen060899">https://github.com/dcnguyen060899</a></p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Seattle University. All rights reserved.</p>
+    </footer>
+</body>
+</html>

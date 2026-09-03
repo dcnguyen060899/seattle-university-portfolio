@@ -9,7 +9,7 @@ import vm from "node:vm";
 import { fileURLToPath } from "node:url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const WORKER_PATH = path.resolve(HERE, "..", "..", "..", "docs", "js", "challenge_worker.js");
+const WORKER_PATH = path.resolve(HERE, "..", "..", "..", "public", "docs", "js", "challenge_worker.js");
 const require = createRequire(import.meta.url);
 const { buildTree, compileLearnerCode, runOne, serializeActual, definedFunctions } = require(WORKER_PATH);
 

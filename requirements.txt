@@ -1,12 +1,21 @@
-python-dotenv
-langchain==0.1.20
-langchain-community==0.0.38
-langchain-anthropic==0.1.11
-openai<2.0.0,>=1.10.0
+# Runtime dependencies of api/index.py ONLY — the /evaluate-challenge blueprint.
+#
+# Vercel's Python runtime reads requirements.txt at the PROJECT ROOT, not next to
+# the entry point, which is why this file exists at all.
+#
+# This is NOT a copy of backend/dependencies/requirements.txt any more. That file
+# also carries the langchain / openai stack for backend/src/{app,agent,llm}.py,
+# which Vercel no longer loads: POST /chat is retired (Addendum B, ruling R-3)
+# and POST /classify-image and GET /api-check are deleted with it.
+#
+# Derived by reading every import statement in backend/src/evaluation/** — all 13
+# modules. The complete third-party set is: flask, flask_cors, anthropic, and
+# werkzeug (which arrives as a Flask dependency). Everything else those modules
+# import is the standard library: collections, dataclasses, functools, hashlib,
+# json, logging, math, os, re, secrets, threading, time, typing, uuid.
+#
+# If you add an import to backend/src/evaluation/, add it here too — the
+# deployed function installs from this file and nothing else.
 flask>=3.0,<4
-langchain-openai==0.1.3
 flask-cors>=6.0,<7
-llm
-gunicorn>=21,<24
-requests
 anthropic>=0.125.0,<1

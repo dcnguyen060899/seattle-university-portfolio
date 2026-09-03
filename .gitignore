@@ -14,3 +14,26 @@ venv/
 
 # Node
 node_modules/
+
+# ── Next.js / Node (added at the Next.js migration) ──────────────────────────
+.next/
+out/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# env & secrets. `.env` is already ignored above; `.env.*` catches
+# .env.local / .env.production while keeping the committed examples.
+.env.*
+!.env.example
+
+# test artifacts
+playwright-report/
+test-results/
+blob-report/
+.playwright/
+
+# Vercel CLI
+.vercel
+
+*.log

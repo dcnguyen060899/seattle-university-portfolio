@@ -1,13 +1,82 @@
-# Keep the serverless bundle small: only the Flask backend and the small page
-# assets are needed. The portfolio site itself is served by GitHub Pages.
-second-brain
-ml-demos
-notebook
-presentation
-images
-docs/images
-docs/*.pdf
-duy-portfolio-mcp
-.github
-backend/tests
-.claude
+# What Vercel does NOT upload to the build.
+#
+# ⚠ THIS FILE USES .gitignore SYNTAX. A pattern with no leading slash matches a
+# directory of that name AT ANY DEPTH. That is the whole reason every docs-ish
+# line below is anchored with `/`: an unanchored `docs` would also match
+# `public/docs`, which is THE ENTIRE FROZEN LEGACY SITE — 15 HTML pages, both
+# PDFs, the images, the css and the js, every one of them a live URL that is on
+# a résumé and on LinkedIn. It would deploy green and 404 the résumé.
+# (Addendum B, ruling R-11.)
+#
+# ⚠ The previous version of this file excluded `docs/images` and `docs/*.pdf`,
+# on the written premise that "the portfolio site itself is served by GitHub
+# Pages". That premise expires at the DNS cutover. Re-adding either line 404s
+# /docs/Resume.pdf and the portrait on the live domain the moment DNS moves.
+# Verified 2026-09-02: Resume.pdf is 200 on duyng-portfolio.com and 404 on
+# seattle-university-portfolio.vercel.app today, because of exactly those lines.
+
+# ── Archived subtrees: in git for history, never in a build ──────────────────
+/second-brain
+/ml-demos
+/notebook
+/presentation
+/documentation
+/duy-portfolio-mcp
+
+# Root images/ is a byte-identical duplicate of public/docs/images/ and is
+# referenced by nothing. Orphaned, kept on disk, excluded from the build.
+/images
+
+# ── Engineering documents ────────────────────────────────────────────────────
+# ANCHORED. This is the root docs/ folder (specs, ADRs, design notes), NOT
+# public/docs. If this line ever loses its leading slash the legacy site
+# disappears from production.
+/docs
+
+# ── Private working files that must never be published ──────────────────────
+# Jekyll silently 404s dot-directories; Next.js SERVES them out of public/
+# (measured on next@16.3.4). next.config.ts rewrites the path to a 404 and
+# scripts/verify-urls.sh asserts it, but the cheapest guarantee is for the bytes
+# never to leave this machine.
+/public/docs/.claude
+
+# Finder metadata. UNANCHORED on purpose — every depth, unlike the docs-ish
+# lines above. `.gitignore` already excludes these, so a git-driven deploy never
+# sees them; a `vercel deploy` from a working tree honours THIS file and not
+# `.gitignore`, and four of them exist under public/ on the maintainer's machine
+# today (public/, public/docs/, public/docs/css/, public/docs/images/). A
+# .DS_Store is a directory listing: it names every file beside it, including any
+# that were deleted from the site but not from the folder.
+# Measured on next@16.3.4: /docs/.DS_Store returns 500, not 404 — Next declines
+# to serve it but does not pretend it is absent.
+.DS_Store
+
+# ── Repo and dev tooling ─────────────────────────────────────────────────────
+/.github
+/.claude
+/backend/tests
+/backend/scripts
+/backend/dependencies
+/tests
+/playwright.config.ts
+/vitest.config.ts
+
+# ── Retired Python modules: kept in-tree, never deployed ─────────────────────
+# POST /chat is RETIRED, not ported (Addendum B, ruling R-3). Nothing that
+# Vercel loads imports any of these, and none of them belongs in a function
+# bundle. api/index.py mounts the evaluation blueprint and nothing else.
+/backend/src/app.py
+/backend/src/agent.py
+/backend/src/chatservice.py
+/backend/src/llm.py
+/backend/src/tools
+
+# ── Stale GitHub Pages / Render artifacts ────────────────────────────────────
+# CNAME and _config.yml are DELETED at the cutover, not before — deleting either
+# while DNS still points at GitHub Pages breaks the live site. Until then they
+# are simply not uploaded. See RUNBOOK-cutover.md.
+/render.yaml
+/_config.yml
+/CNAME
+/index.html
+/LICENSE

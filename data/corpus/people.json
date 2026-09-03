@@ -1,0 +1,26 @@
+[
+  {
+    "id": "per:duy",
+    "name": "Duy Nguyen",
+    "title": "M.S. Data Science candidate",
+    "orgId": "org:seattle-u",
+    "url": "https://duyng-portfolio.com",
+    "note": "The subject of the identity and narrative claims and the anchor of the JSON-LD Person."
+  },
+  {
+    "id": "per:wenjing-yang",
+    "name": "Dr. Wenjing Yang",
+    "title": "Faculty research advisor, Seattle University",
+    "orgId": "org:seattle-u",
+    "url": null,
+    "note": "Co-author on the PSB 2027 submission. Honorific is 'Dr.' everywhere, on every surface."
+  },
+  {
+    "id": "per:brian-fischer",
+    "name": "Prof. Brian Fischer",
+    "title": "Principal investigator, Computational Neuroscience Lab",
+    "orgId": "org:su-cns-lab",
+    "url": null,
+    "note": "Honorific is 'Prof.' everywhere, on every surface. The dated news archive uses 'Dr.'; the resume and the brief use 'Prof.' and that is the house form."
+  }
+]

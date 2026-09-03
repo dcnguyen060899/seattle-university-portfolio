@@ -1,0 +1,2519 @@
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  HERO SCRIM — the mechanism that makes app/globals.css's published ratios
+  TRUE again once a photograph is behind the hero text.
+
+  Five exports, and every one of them is load-bearing:
+
+    .ground   the band's stacking context, the focal-point knobs, and
+              --frame-foot — where the photograph ends, which BOTH the frame
+              and the veil are written against
+    .frame    the photograph's box — bounded to --frame-foot
+    .focal    object-position, on each <img>
+    .scrim    the veil's box and every knob it is built from. IT PAINTS
+              NOTHING ITSELF — see THE THIRD COMPLAINT for why that changed
+    .scrim::before
+              THE POCKET — the guarantee, masked to the reading measure
+    .scrim::after
+              THE FIELD — the aperture, masked to the gutters, i.e. to
+              EXACTLY THE COMPLEMENT of the pocket
+
+  Ported from the reference repo's components/site/hero.module.css: two
+  layers, flattened before anything else touches them, one carrying the text
+  and one carrying the open picture. It reaches different numbers on every
+  knob, because the reference's numbers were measured against ITS hero.
+
+  ── THE PROBLEM, STATED ONCE ──────────────────────────────────────────────
+
+  The hero is data-ground="ink". Every colour in it is measured against a FLAT
+  #14161A and those numbers are written into app/globals.css:
+
+      --fg          #F2F1EE   16.04:1
+      --fg-muted    #A3A2A8    7.15:1
+      --fg-accent   #FF5252     5.68:1   (crimson-lift; the brand #AA0000 is
+                                          2.34:1 on ink and illegal here)
+
+  A photograph makes all three false, because contrast is then measured
+  against whatever pixel sits behind each glyph. The scrim is not decoration.
+  It is what makes the published numbers true again, and it is designed
+  against the WORST case, never the average.
+
+  ═══════════════════════════════════════════════════════════════════════════
+  ── THE RESULT THAT DECIDED THIS FILE ─────────────────────────────────────
+
+  The owner's complaint was correct and it is worth stating in full, because
+  the obvious fixes for it are all wrong and the algebra says so.
+
+      "it is currently too dark... look at mavterras. we can see the image
+       clearly."
+
+  MEASURED, on the shipped rungs, through the previous flat 93% veil:
+
+      region                       source sRGB      composited sRGB
+      text column, 1600x900          0 .. 255         20 .. 38
+      text column,  375x812          0 .. 252         20 .. 38
+
+  Eighteen levels out of 255. That is the black rectangle, and it is not a
+  bug in the veil — it is what the veil is FOR.
+
+  ── WHY A TONE GRADE CANNOT RESCUE IT ─────────────────────────────────────
+
+  The tempting fix is to bake the darkening into the image at build time
+  (scripts/gen-hero-photo.mjs prints `sharp tone: IDENTITY` and the hook is
+  sitting there unused), on the theory that a graded photograph keeps its
+  internal structure where a flat veil crushes it. That theory is wrong here,
+  and the reason is one line of algebra.
+
+  The constraint the scrim exists to satisfy is on the OUTPUT, not the input:
+  every pixel under a glyph must composite to at most the luminance at which
+  --fg-accent still clears 4.5:1 x1.05. That ceiling is
+
+      L <= 0.01964   ->   sRGB 38.28
+
+  and it does not move when the source moves. So with a source ceiling g_max,
+  the minimum alpha is alpha = (g_max - 38.28) / (g_max - 20), and the
+  photograph's surviving dynamic range under the text is
+
+      range = (1 - alpha) * g_max = 18.28 * g_max / (g_max - 20)
+
+      g_max   255    204    150    124     90     60     45    38.3
+      alpha  .922   .901   .859   .824   .739   .543   .269   .000
+      range  19.8   20.3   21.1   21.8   23.5   27.4   32.9   38.3
+
+  Grading the frame down to a quarter of its brightness buys TWO sRGB levels.
+  The curve only turns over once g_max approaches the ceiling itself — that
+  is, once the "grade" IS the scrim and alpha has gone to zero, at which point
+  the guarantee is a property of one image file rather than of this
+  stylesheet, and the next photograph the owner drops in breaks it silently.
+
+  The same algebra retires a second temptation: solving the floor against a
+  graded ceiling of 210 instead of pure #FFFFFF lowers the binding alpha from
+  0.930 to 0.901 and widens the picture by half a level. The image-independent
+  guarantee is very nearly free. Keep it.
+
+  ── SO THE FLOOR DOES NOT MOVE, AND HERE IS WHAT DOES ─────────────────────
+
+  Everything above is about the region UNDER THE TEXT. It says nothing about
+  the regions with no text in them, where the alpha is bounded by nothing at
+  all. The previous design had exactly one such region — a 20-to-39px strip of
+  the band's top padding — and spent the rest of the frame at the floor.
+
+  This design finds the other one. app/globals.css's .wrap is
+
+      max-width: var(--container-wrap);   68rem = 1088px
+      margin-inline: auto;
+      padding-inline: var(--spacing-gutter);   clamp(20px, 4.5vw, 44px)
+
+  and every glyph, rule and control in this hero is inside it. So the outer
+  dead space, max(0, (100% - 1088px) / 2), is text-free BY CONSTRUCTION rather
+  than by measurement — a stronger claim than the crest's, which rests on the
+  measured first-glyph offset in scripts/check-hero-contrast.mjs.
+
+  Confirmed against the rendered page anyway (Chromium, `#top`,
+  getClientRects over every text node, every rule and every control, plus the
+  Threshold rule and the Limit border, 2026-09-02):
+
+      viewport      predicted     measured     measured      clearance
+                    open edge     first x      last x + w    to first glyph
+      375 x 812        0            20.0          355.0         20.0
+      390 x 844        0            20.0          370.0         20.0
+      861 x 1000       0            38.7          822.3         38.7
+      1280 x 800      96.0         140.0         1140.0         44.0
+      1600 x 900     256.0         300.0         1300.0         44.0
+
+  Exact at all five, on both edges, for text AND graphics AND controls,
+  because it is the same arithmetic .wrap does. The clearance is the whole
+  gutter — 44px where the aperture is non-zero, against the crest's 18px.
+
+  ── THE IDEA ──────────────────────────────────────────────────────────────
+
+  THE INK IS NOT A WASH OVER THE PICTURE. IT IS A COLUMN EXACTLY AS WIDE AS
+  THE READING MEASURE, HANGING FROM A CREST, AND EVERYTHING OUTSIDE THE
+  MEASURE IS PHOTOGRAPH.
+
+  It suits this frame specifically, which is why it is worth doing rather than
+  merely legal. The composition puts its brightest material — sunset sky, the
+  lit library facade, the uplit fountain — down the middle, which is precisely
+  where the column has to be. What it puts in the margins is the ivy arch and
+  its lamp on the left, and the SEATTLE UNIVERSITY banner and a street lamp on
+  the right. The aperture opens on the two things that say where this is, and
+  the column falls over the two things that would have fought the type.
+
+  ── THE TWO LAYERS, AND HOW THEY FLATTEN ──────────────────────────────────
+
+  Same construction as the reference, same flattening: for a pocket alpha a1
+  painted over a field alpha a2 the effective alpha is
+
+      eff = a1 + a2 * (1 - a1)
+
+  and there is no element opacity anywhere, so eff IS what renders.
+
+    .scrim::after  THE FIELD   masked to the GUTTERS — the wrap's outer dead
+                   space. 25% at the crest, deepening to 34% at three quarters
+                   of the frame, then dissolving into flat --ground exactly
+                   where the photograph's bottom edge is.
+
+    .scrim::before THE POCKET  masked to the reading measure, which is the
+                   exact complement of the field's mask. The crest at the top,
+                   an EASED ramp to --scrim-floor reached 18px above the first
+                   glyph, held to within a tenth of the frame's foot, then the
+                   same dissolve.
+
+  THE TWO MASKS ARE COMPLEMENTARY, WHICH IS WHY THE COMPOUNDING IS GONE.
+  Where the pocket is opaque the field is masked out, so the column carries
+  ONE layer and its effective alpha is the authored floor exactly — see THE
+  THIRD COMPLAINT. The layers still flatten by the formula above, because they
+  overlap across the mask's own ramp, and that ramp is provably text-free.
+
+  BOTH SHAPES ARE EASED, ON BOTH AXES, AND THE POCKET IS THE PRODUCT OF THE
+  TWO — a mask multiplies where a background layer would add. So the pocket's
+  corners fall off in both directions at once and its iso-alpha contours curve
+  there; a rectangle with soft sides and sharp corners still reads as a
+  rectangle. See THE SECOND COMPLAINT for the curve and its derivation.
+
+  EFFECTIVE alpha, by region — the number the page paints, not the number a
+  layer is authored at. Measured on the shipped geometry at all six reference
+  viewports; the column's value is identical at every one of them:
+
+      crest, full width                0.2500 dipping to 0.2340 across the
+                                       mask's own ramp — see THE MASK SEAM
+      the ease, over the measure       0.2500 -> 0.8656  (16-rung ladder, below)
+      text column, below the ease      0.8656 FLAT
+      the dissolve, at the foot        -> 1.0000
+
+  and, ON THE HORIZONTAL AXIS BELOW THE SEAL, the jamb — which since THE
+  FOURTH COMPLAINT no longer arrives anywhere inside the frame, so it has a
+  different value at every viewport instead of one:
+
+      region                         1280x800   1600x900   <= 1088px
+      text column (mask 1)             0.8656     0.8656     0.8656
+      half way out the gutter          0.7895     0.6294     0.8656
+      the frame's own edge             0.6481     0.3922     0.8656
+      (the mask there)                 0.696      0.220      1.000
+
+  THE COLUMN IS EXACTLY --scrim-floor-min, NOT MORE. That is new, and it is
+  the point of the mask split: this file used to publish 86% and paint 89.6%,
+  because the field's crest compounded onto the pocket everywhere. Every
+  published ratio, worst case — a #FFFFFF source pixel, x1.05 headroom:
+
+      role                    at 89.57%   at 87.00%   threshold
+      --fg                    11.989:1    10.992:1    4.5   x2.326
+      --fg-muted               5.346:1     4.902:1    4.5   x1.037   <- binding
+      --fg-accent     -> --fg 11.989:1    10.992:1    4.5   x2.326
+      --fg-accent-display      4.244:1     3.891:1    3     x1.235
+      --fg-pressed  -> muted   5.346:1     4.902:1    4.5   x1.037
+      --rule          -> --fg 11.989:1    10.992:1    3     x3.664
+      --focus-ring             4.244:1     3.891:1    3     x1.235
+
+  (The 1.05 is not ornamental — it is what caught a genuine 4.449:1 AA failure
+  earlier in this project.)
+
+  ── THE ALGEBRAIC WALL, STATED SO NOBODY LOOKS FOR ROOM BELOW IT ──────────
+
+  --fg-muted #A3A2A8 over ink needs alpha >= 0.85946 to clear 4.5:1 x1.05
+  against a #FFFFFF source pixel, and --fg-pressed resolves to the same hex.
+  The column paints 86.56%, which is 0.6 points above that wall. There is no
+  version of this hero in which the veil under body copy is thinner than
+  85.95% while --fg-muted is still painted on the photograph, and no gradient,
+  grade or curve changes it:
+  the ceiling is on the OUTPUT and does not move when the source moves. The
+  reference's ~0.28 pocket is not a number this file can approach; it is a
+  number a hero with one lede and no muted small text can afford.
+
+  ── THE BINDING NUMBER, AND WHO ACTUALLY OWNS IT ──────────────────────────
+
+  Compositing ink at alpha `a` over #FFFFFF and requiring the threshold each
+  role actually owes, x1.05, WITH .ground's crimson remap already applied:
+
+      --rule        -> --fg      3:1      a >= 0.5129
+      --fg          #F2F1EE    4.5:1      a >= 0.6362
+      --fg-accent   -> --fg    4.5:1      a >= 0.6362
+      --focus-ring  #FF5252      3:1      a >= 0.8106
+      --fg-muted    #A3A2A8    4.5:1      a >= 0.8595   <- binding
+      --fg-pressed  -> muted   4.5:1      a >= 0.8595   <- binding
+
+  The eyebrow, the rules and the readout labels came off crimson in the round
+  before this one, and 93% went with them. What is left holding the floor is
+  BODY COPY IN --fg-muted, and that is not a colour anyone is going to retire:
+
+      over the photograph            floor      photograph survives as
+      --fg + --fg-muted                86.6%     sRGB  20 .. 54   (this file)
+      --fg alone                       63.6%     sRGB  20 .. 113
+
+  So the remaining lever is the same shape as the last one and it is still not
+  in this file: it is which roles the hero's small copy uses, in
+  components/site/hero.tsx. Until --fg-muted comes off the photographic region
+  the column cannot be thinner than 85.95%, and 86.56% is where it sits.
+
+  ── THE FLOOR IS A FLOOR, NOT A DEFAULT ───────────────────────────────────
+
+  components/site/hero.tsx passes a measured alpha in as `--scrim-base`. That
+  number comes from a manifest, which comes from a generator, which can be
+  re-run by anyone. So the declaration below is
+
+      clamp(var(--scrim-floor-min), calc(var(--scrim-base, 1) * 100%), 100%)
+
+  and the consequences are the whole point:
+
+    - A manifest may only make the veil DARKER than the guarantee. A measured
+      0.86 — which fails --fg-accent at 3.76:1 — resolves to 0.93 and renders
+      safely. The failure is not caught, it is UNREACHABLE, which is the same
+      move [data-ground] makes for the 2.34:1 crimson trap.
+    - With no photograph `--scrim-base` is unset, the fallback is 1, the
+      pocket is fully opaque --ground, and the mask is irrelevant because ink
+      over ink is ink at any alpha. The band is the flat ink hero, pixel-
+      identical to what shipped before the photograph existed.
+    - The alphas are still readable out of this file by
+      scripts/check-hero-contrast.mjs, because the FLOOR is a literal and the
+      floor is what the gate has to verify.
+
+  Verified in Chromium, not assumed: `clamp()` inside `color-mix()`'s
+  percentage resolves as written (base 0.5 -> 0.93, unset -> 1, 0.97 -> 0.97).
+
+  ── WHY THE SCRIM NAMES NO COLOUR ─────────────────────────────────────────
+
+  It is `color-mix(in srgb, var(--ground) N%, transparent)` throughout, which
+  is the anti-misuse mechanism <Band> and <Eyebrow> use, applied to a
+  gradient. Two consequences, both load-bearing:
+
+    1. scripts/check-ground-tokens.mjs scans .css under components/ and treats
+       `rgb(`, `#RRGGBB` and every palette alias as a violation. A scrim
+       written with literal colours would fail that gate — correctly.
+    2. If this band were ever moved to another ground the veil follows it,
+       instead of painting an ink wash over a paper section.
+
+  The one exception is the mask, whose `black` is not paint: a mask-image is
+  read for its ALPHA channel and nothing of its colour is ever composited.
+  `transparent` and `black` there mean 0 and 1, and no other pair of keywords
+  says that as plainly.
+
+  ═══════════════════════════════════════════════════════════════════════════
+  ── THE SECOND COMPLAINT, AND WHY IT IS A DIFFERENT DEFECT ────────────────
+
+      "why does it still has this black part around the text? like it doesn't
+       feel like it blend in the background image, it feel like it just cut of
+       overlap on top the background image in the back... look square"
+
+  That is not the complaint above. Every alpha in this header is unchanged and
+  every ratio still holds; nothing here is darker or lighter than it was. It is
+  an EDGE — a place where the veil's alpha changes fast enough over a short
+  enough distance that the eye resolves a LINE, and a dark region bounded by
+  four lines is a plate lying on the photograph rather than the photograph in
+  shadow. The fix is entirely in the shape of the ramps.
+
+  MEASURED on the previous geometry. The units are composited sRGB levels per
+  CSS pixel for a mid-tone source pixel — the gradient of the thing the visitor
+  looks at — and `jump` is how much that gradient CHANGES across 3px, which is
+  the quantity lateral inhibition amplifies into a Mach band:
+
+      viewport    axis         ramp     peak gradient   gradient jump
+      375x812     vertical      34px       2.75/px         2.75/px
+      768x1024    vertical      37px       2.49/px         2.49/px
+      1280x800    vertical      74px       1.26/px         1.26/px
+      1280x800    horizontal    43px       1.94/px         1.94/px
+      1600x900    horizontal   115px       0.74/px         0.74/px
+
+  Two independent faults, and they take different fixes.
+
+  1. EVERY RAMP WAS LINEAR. A linear ramp between two flat regions has a
+     DISCONTINUOUS first derivative at both ends: the gradient goes from zero
+     to its full value across one pixel. That is the textbook Mach stimulus,
+     and the signature is right there in the table — `jump` EQUALS `peak` on
+     every row, because the whole gradient appears at once. A ramp does not
+     have to be short to draw a line. It has to be linear.
+
+  2. THE RAMPS WERE ALSO SHORT, and on the horizontal axis short BY
+     CONSTRUCTION: the mask spent only the outer 45% of the wrap's dead space,
+     turning 96px of available gutter into a 43px transition, and 256px into
+     115px.
+
+  ── THE CURVE, AND WHY IT IS THIS ONE ─────────────────────────────────────
+
+  CSS interpolates linearly between gradient stops, so an "eased" ramp is a
+  POLYLINE and the only question is which polyline. Take N segments of equal
+  width with slopes s_1..s_N in units of the ramp's mean slope, Σ s_i = N.
+  TWO quantities matter and they pull in opposite directions:
+
+      PEAK   = max s_i        how steep the ramp ever gets. This is what
+                              scripts/check-hero-blend.mjs measures, because a
+                              steep gradient is resolvable as a soft edge.
+      JUMP   = max |Δs|       how much the slope changes at any one knee,
+                              counting the two ends where the ramp meets a flat
+                              region. This is the Mach-band term — the thing
+                              that turns a gradient into a drawn LINE.
+
+  A linear ramp is PEAK 1.0 (the best possible) and JUMP 1.0 (the worst
+  possible: the whole gradient appears at one pixel). That is what this file
+  shipped first, and the tell was in the table above — jump EQUALLED peak on
+  every row.
+
+  The obvious repair was to minimise JUMP alone. With s_i <= J * min(i, N+1-i)
+  and N = 8 that gives J >= 0.4, attained by s_i = 0.4 * min(i, 9-i), i.e. the
+  ladder 0/5/15/30/50/70/85/95/100 at eighths — JUMP 0.4, but PEAK 1.6. It
+  cured the line and paid 60% on the steepness, and the blend gate then read
+  3.0-3.8x over its limit at all four viewports.
+
+  BOTH ARE CHEAPER TOGETHER AT LARGER N. Let the slope profile be a TRAPEZOID:
+  rise linearly over the first r segments, hold, fall over the last r. Then
+
+      Σ s_i = PEAK * (N - r + 1) = N    ->   PEAK = N / (N - r + 1)
+      JUMP  = PEAK / r
+
+  so PEAK -> 1 as r/N -> 0 while JUMP -> 0 as r grows. The N=8 minimax ladder
+  is the r = N/2 corner of this family — the point that optimises JUMP and
+  nothing else. Moving off that corner is free improvement in both directions.
+  This file ships N = 16, r = 4:
+
+      PEAK = 16/13 = 1.231   (was 1.600)      -23%
+      JUMP = 1.231/4 = 0.308 (was 0.400)      -23%
+
+  Strictly better than the eight-segment minimax on BOTH metrics, at the price
+  of eight more stops per ramp. Integrating gives the ladder, at sixteenths:
+
+      t   0  1/16  2/16  3/16  4/16  5/16  6/16  7/16  8/16 ... 1
+      a   0  .0192 .0577 .1154 .1923 .2692 .3462 .4231 .5000 ... 1
+
+  — linear through the middle half, eased into and out of at both ends. The
+  measured effect of the swap, blend gate over its flat field, no other change:
+
+      375x812   3.76 -> 1.29     1280x800   3.52 -> 3.07
+      768x1024  3.39 -> 1.18     1600x900   2.97 -> 2.29
+
+  (N = 32, r = 5 would reach PEAK 1.143 / JUMP 0.229 — another 7% and 26% for
+  sixteen more stops per ramp and sixty-six in the mask. Measured, that is
+  worth 0.1 L* at 1280, and this file still has to be readable.)
+
+  THE LADDER IS IN ALPHA, NOT IN LUMINANCE, AND THAT IS THE CORRECT PLACE FOR
+  IT. Compositing --ground at alpha a over a source byte s gives (1-a)s + a*g,
+  which is AFFINE in a. So a ramp whose alpha derivative vanishes at both ends
+  has a vanishing luminance derivative there too — for every source pixel in
+  the photograph simultaneously, not just for the one it was tuned against.
+  Easing the alpha eases the picture, whatever the picture is.
+
+  (Checked rather than assumed: over the composite this veil actually reaches,
+  L* is very nearly affine in alpha too — dL* per da runs 32.1 at the crest end to
+  38.2 at the floor end, a 19% bow across the whole run. So an alpha-even
+  ladder is within a few percent of an L*-even one, and re-deriving the stops
+  in L* buys nothing worth the loss of the affine argument above.)
+
+  ── WHERE THE RAMPS RUN ───────────────────────────────────────────────────
+
+  VERTICALLY, the run is a property of the BAND — --hero-headroom plus
+  --spacing-band — and of nothing else. That is the whole answer to why the
+  plate was worst on a phone: the old ramp began at --spacing-band * 0.28 and
+  ended 18px above the first glyph, which is 34px on a 375px screen no matter
+  how much room sits above it.
+
+  --pocket-open IS NOW ZERO. It buys the ease every pixel between the top of
+  the band and --pocket-seal:
+
+      viewport     --pocket-open   --pocket-seal   run     (0.8h)   (first)
+      375x812          0px            225px       225px     88px     34px
+      390x844          0px            231px       231px     89px     34px
+      768x1024         0px            259px       259px     99px     37px
+      861x1000         0px            268px       268px    108px     44px
+      1280x800         0px            110px       110px    110px     74px
+      1600x900         0px            122px       122px    122px     83px
+
+  THIS REVERSES AN EARLIER DECISION IN THIS FILE, and the earlier reasoning is
+  worth keeping because it is the trade. --pocket-open used to hold four fifths
+  of the vertical aperture FLAT at the crest alpha, on the argument that this
+  is the largest window that leaves the aperture's single brightest composited
+  pixel byte-identical. That is true and it was measured. It is also the wrong
+  objective: protecting the brightest pixel is worth nothing if the price is a
+  36 L* drop crammed into the 88px underneath it, which is precisely the plate
+  the owner can see. The flat window WAS the plate's top edge.
+
+  What zero costs the picture, measured rather than feared: the ladder's own
+  toe is shallow, so a quarter of the way down the run the veil has taken only
+  11.5% of the drop and the photograph is 11% dimmer than at full crest. Half
+  way down it is 46% dimmer. Nothing is pinned bright any more, and nothing
+  falls off a cliff either — which is the entire point.
+
+  Above --container-wrap --hero-headroom is 0 and this knob was already 0, so
+  desktop is unchanged by the reversal.
+
+  HORIZONTALLY — AND THIS PARAGRAPH USED TO BE WRONG, TWICE OVER, IN THOSE
+  EXACT WORDS. It said the run was "the wrap's dead space, ALL of it, and that
+  is not a ramp width chosen from a range — it is the only width available":
+  96px at 1280, 256px at 1600, 0px below the page measure. Both halves of that
+  are true only if the ramp has to REACH ZERO by the frame's edge, and nothing
+  ever required that. It is the whole subject of THE FOURTH COMPLAINT below,
+  and the run is now --jamb-fall — 22% of the band's own width, 282px at 1280
+  — of which the frame shows whatever it has room for.
+
+  What remains true is the CORE's boundary. It is --scrim-open and it cannot
+  move: a core narrower than the wrap would put a glyph in the gutter on less
+  than the floor, and a core wider than the wrap would spend aperture the text
+  does not need. (The gutter looks like 44px of spare core on top of that. It
+  is not: the contrast gate inflates TEXT_EXTENT by EXTENT_MARGIN = 2% of the
+  viewport, which is 25.6px at 1280, so only 18px of the gutter is actually
+  unclaimed. Declined then, declined now — and irrelevant now, because the
+  falloff no longer has to fit inside it.)
+
+  At and below --container-wrap the CORE fills the band and every ladder stop
+  sits off-box:
+  the mask is uniformly opaque and the pocket is full-bleed. THAT IS THE RIGHT
+  DEGENERATE, not a fallback, and it is now reached as a LIMIT rather than as a
+  collapse: the ladder is continuous through 1088px, it simply runs entirely
+  outside the viewport there. A full-bleed pocket has no horizontal edge at
+  all, because its boundary is the screen's. Below the page measure the
+  softness lives on the vertical axis alone, which is what --hero-headroom is
+  for — and THE FOURTH COMPLAINT proves that is not a shortcut but the only
+  option, because the glyphs reach to within 12.5px of the frame's edge there.
+
+  ── AND WHAT IS LEFT, AND WHY SOME OF IT CANNOT GO ────────────────────────
+
+  scripts/check-hero-blend.mjs measures PEAK — max ΔL* across a 6px window —
+  over a flat neutral field with the photograph removed, so the number is a
+  property of this file and not of one image. Its limit is 1.00 L*, one JND
+  at the eye's peak spatial frequency. Shipped:
+
+      viewport    measured   linear floor   ladder floor   over the limit
+      375x812       1.29        0.98            1.20            1.3x
+      768x1024      1.18        0.85            1.04            1.2x
+      1280x800      3.07        2.28            2.81            3.1x
+      1600x900      2.29        1.80            2.21            2.3x
+
+  RE-MEASURED after the mask split, the 25% crest and the 132svh frame, on the
+  same gate over the same flat field:
+
+      viewport    was     now     where the worst window is now
+      375x812     1.29    1.23    vertical, y=174 — the pocket's own ladder
+      768x1024    1.18    1.09    vertical, y=197 — ditto
+      1280x800    3.07    3.28    HORIZONTAL, the jamb at y=85
+      1600x900    2.29    2.31    vertical, y=94, full width
+
+  The two viewports the gate could ever have reached got quieter, because the
+  composite floor fell from 0.9538 to 0.8656 and dL* fell with it. 1280 got 7%
+  louder and the reason is structural rather than a curve gone wrong: with the
+  masks complementary, the jamb at a row ABOVE the seal now separates
+  "field only" from "pocket mid-ladder" — 0.256 against 0.757 — where it used
+  to separate "field" from "field plus pocket", and the field's own 24% used to
+  sit under both sides and compress the difference. That compression WAS the
+  compounding. It is the same 96px slot the header already proves a 3x figure
+  is unavoidable in, and the trade it bought is 3.6 points of veil off the
+  photograph under every glyph in the band.
+
+  ⚠ AND THAT LAST SENTENCE WAS WRONG, WHICH IS THE SUBJECT OF THE FOURTH
+  COMPLAINT. "The same 96px slot" was never a slot; it was an assumption. The
+  jamb's run is `--jamb-fall` now, and the same gate over the same flat field
+  reads:
+
+      viewport    was     now     where the worst window is now
+      375x812     1.23    1.23    vertical, y=174 — unchanged, no jamb here
+      768x1024    1.09    1.09    vertical, y=197 — ditto
+      1280x800    3.28    2.45    vertical, y=86, FULL WIDTH — the jamb has
+                                  left the hotspot list entirely
+      1600x900    2.31    2.36    vertical, y=94, full width
+
+  THE 1280 ROW IS THE RESULT AND IT IS THE KIND, NOT THE NUMBER. Its top three
+  windows were all `horizontal … [left jamb] / [right jamb]`; they are now all
+  `vertical … runs the full width`. 1600 pays 2% for the same trade, because
+  the pocket's ladder now shows through its gutters where the field's gentler
+  crest->sill used to.
+
+  "linear floor" is 6 * dL* / S: the peak slope of a PERFECTLY LINEAR ramp
+  filling the whole available span S, which is the smallest peak any monotone
+  ramp can have. "ladder floor" is that times PEAK = 1.231. Every measured
+  number is within 4-13% of its own ladder floor, which is the useful result:
+  THE SHAPING IS FINISHED. What is left is not a curve that could be drawn
+  better. It is dL* and S.
+
+      viewport   dL*    S (binding axis)                      6 x dL* over S
+      375x812    36.5   224px  vertical, the whole band above the seal   0.98
+      768x1024   36.5   259px  vertical, ditto                           0.85
+      1280x800   36.5    96px  HORIZONTAL, the wrap's dead space         2.28
+      1600x900   36.5   122px  vertical, --spacing-band - 18px           1.80
+
+  SO AT 1280 AND 1600 THE GATE IS UNREACHABLE, and this is a proof rather than
+  a difficulty. dL* is fixed by the two ends: the crest (any deeper and the
+  photograph goes dark, which was the FIRST complaint) and the floor (any
+  shallower and body copy in --fg-muted fails AA, which is what this file
+  exists to prevent). S is fixed by layout: 96px is exactly
+  (100% - --container-wrap)/2 at 1280, and 122px is --spacing-band - 18px at
+  1600 with --hero-headroom already 0 there. No polyline, no easing and no
+  second layer puts that drop through a 96px slot at under 1 JND per 6px.
+
+  THE DROP DID SHRINK, AND IT IS STILL NOT ENOUGH. Over the gate's flat 128
+  field the crest now composites to L* 42.78 and the floor to L* 13.48 —
+  dL* 29.31, against 34.47 when the floor was 93%. The linear floor at 1280
+  falls from 2.28 to 1.83 and at 1600 from 1.80 to 1.44. Both are still over
+  1.00, and both are still over it BY ARITHMETIC. The 3.28 the gate measures
+  at 1280 is above even that because the worst window there is the jamb ABOVE
+  the seal, where the pocket's ladder is mid-rise and the field is not — see
+  the re-measured table above.
+
+  AND AT 375 AND 768 IT IS REACHABLE ONLY BY RE-BREAKING THE THING IT IS FOR.
+  The linear floor is under 1.00 at both, so a purely linear ramp filling the
+  whole span WOULD pass this gate — with JUMP = 1.0, the maximal Mach knee,
+  i.e. exactly the drawn line the owner complained about. A gate on PEAK alone
+  cannot see that, which is why this file tracks both numbers and why 1.29
+  with JUMP 0.308 is the better page than 0.98 with JUMP 1.0.
+
+  WHAT WOULD ACTUALLY CLOSE IT. Each lever was pulled and MEASURED, not
+  reasoned about — same gate, same flat field, one change at a time:
+
+      arm                                  375    768    1280   1600
+      shipped                             1.29   1.18   3.07   2.29
+      + --hero-headroom 140px at desktop  1.29   1.18   2.87   1.41
+      floor 63.5% instead of 93%          0.90   0.83   2.02   1.57
+      both together                       0.90   0.83   1.91   1.16
+      (limit)                             1.00   1.00   1.00   1.00
+
+  Read that table carefully, because it says something the arithmetic alone
+  does not:
+
+    1. dL* IS A TEXT DECISION, NOT A STYLESHEET ONE, and it is the biggest
+       lever by a distance. --fg-accent #FF5252 at 11px is the ONLY reason the
+       floor is 93%; with no crimson in the hero the floor is --fg's 63.5%,
+       and phone and tablet PASS OUTRIGHT — 0.90 and 0.83 against a limit of
+       1.00. Moving the eyebrow and the readout labels to --fg is the single
+       largest thing anyone can do about the plate, and it is the owner's call,
+       not this file's. (--fg-muted alone would be 86%, roughly half the win.)
+    2. --hero-headroom at desktop fixes 1600 and BARELY TOUCHES 1280 —
+       2.29 -> 1.41 against 3.07 -> 2.87. That is the useful surprise: 1600's
+       binding axis is vertical, so headroom is exactly its lever, while
+       1280's binding axis is HORIZONTAL and headroom cannot reach it. It also
+       costs the fold: at 1280x800 the last hero figure's baseline is ~787px,
+       so there are ~13px to give, not 140.
+    3. 1280 IS BOUND BY --container-wrap AND BY NOTHING ELSE. Its ramp is
+       (100% - 68rem)/2 = 96px per side. Narrowing the measure is the only
+       thing that widens it — every 2px off the measure is 1px of ramp per
+       side — and even then the vertical (110px) becomes binding at ~2.4x.
+       1280x800 is the hardest viewport this design has, and it is hardest
+       because it is the one where the page measure and the viewport are
+       closest together.
+
+  ── PRESENCE, THE SECOND HALF OF THAT GATE, AND WHY NO BUDGET IS DECLARED ─
+
+  scripts/check-hero-blend.mjs also measures PRESENCE: the share of the band
+  where the photograph is at least one JND above bare ground. Its floor is the
+  reference's 99.6%, and it offers `--hero-picture-budget` as a way for this
+  stylesheet to declare a smaller number on purpose. Measured after this work:
+
+      viewport    presence   of which: coverage   in-frame depth
+      375x812       58.6%        63.6%              92.2%
+      768x1024      92.3%       100.0%              92.3%
+      1280x800      75.3%        80.9%              93.1%
+      1600x900      83.6%        88.8%              94.1%
+
+  THE DEPTH COLUMN IS THIS FILE'S AND IT IS ESSENTIALLY DONE — 92-94% of every
+  row that has a photograph behind it is distinguishable from flat ink, and the
+  remainder is the dissolve at the foot, which has to exist. THE COVERAGE
+  COLUMN IS NOT THIS FILE'S ANY MORE. `--frame-foot` has taken it as far as
+  `object-fit: cover` allows; what is left is that the band is 1685px tall on
+  an 812px phone because of how much copy it carries, and that is
+  components/site/hero.tsx.
+
+  ⚠ AND THAT IS WHY --hero-picture-budget IS DELIBERATELY NOT DECLARED HERE.
+  The gate requires ONE number held at every viewport, which today would have
+  to be 58%, and 58% is not a designed value — it is the phone's band height,
+  which another change is actively moving. Declaring it would freeze someone
+  else's in-flight number into this stylesheet as though it were a decision,
+  and would licence every desktop viewport to regress to it. Declare it when
+  the band settles, from the worst viewport's MEASURED presence, and say in the
+  same breath which viewport set it.
+
+  Nothing else moves the number. In particular a second darkening layer inside
+  .frame does not — one was tried, and once this ramp filled its whole span the
+  extra layer became the steepest thing in the frame (375: 1.29 -> 1.99). See
+  the removal note at the top of hero.module.css.
+
+    THE FIELD'S OWN KNEE WAS LEFT ALONE, DELIBERATELY. Where the field's
+  crest->sill ramp ends at --scrim-fall and the wash's dissolve begins there,
+  the gradient changes by about 0.3/px, and that join is visible only in the
+  desktop gutters, over the foreground paving in the lower quarter of the
+  frame. It was the quietest edge in the file before
+  this change and it is now the quietest edge by a smaller margin — easing it
+  would mean writing intermediate alphas between --scrim-sill-min and opaque,
+  which the gate's alpha evaluator can only express as multiples of the sill,
+  and a ladder that silently stops being monotone if someone edits the sill is
+  worse than a 0.29/px join over gravel. If it is ever eased, ease it there,
+  and re-measure the aperture: that region IS the picture.
+
+  ═══════════════════════════════════════════════════════════════════════════
+  ── THE THIRD COMPLAINT, AND THE 458px NOBODY HAD MEASURED ────────────────
+
+      "it still feel very black and dark as i scroll down or even when i first
+       visit the page ... the black part around the text still blur the
+       background image"
+
+  Four rounds of gradient work had gone into this file by then and none of them
+  had moved that. They could not have, and the reason is not in any gradient.
+
+  MEASURED IN THE BROWSER AT 1280x800, ON THE SHIPPED PAGE:
+
+      band (#top)            1306px    = 1.63 viewports
+      photo box (.frame)      848px    = 106svh
+      => THE BOTTOM 458px OF THE BAND — 35% — HAD NO PHOTOGRAPH IN IT AT ALL.
+
+  And it was worse than 35%, because the veil ALSO dissolved to fully opaque
+  between 72svh and 106svh — 272px in which the photograph was present and the
+  stylesheet was deliberately deleting it. Adding the two:
+
+      viewport     band    photo    picture actually visible    dark, no picture
+      375 x 812    1685     861          0 ..  585 px               65%
+      1280 x 800   1306     848          0 ..  576 px               56%
+      1600 x 900   1338     954          0 ..  648 px               52%
+
+  Over half the band, at every viewport, was flat ink with nothing behind it.
+  No alpha curve can lighten a region whose backdrop is the ground itself.
+  THE GRADIENTS WERE NEVER THE DEFECT IN THAT REGION.
+
+  ── WHY 106svh EXISTED, AND WHY IT STILL HAS TO EXIST ─────────────────────
+
+  The cap is not a workaround for a band that has since changed. It is
+  `object-fit: cover` arithmetic and it is permanent: the band is 0.22:1 at
+  375px and 0.98:1 at 1280, and no photographic crop survives being covered
+  into a box that shape. Uncapping entirely, measured against the crops on
+  disk (portrait 819x1024, landscape 1536x864):
+
+      viewport    cap 106svh              no cap
+                  source width kept       source width kept   upscale
+      375 x 812        54.5%                  27.8%           1.65x
+      1280 x 800       84.9%                  55.1%           1.51x
+      1600 x 900       94.3%                  67.3%           1.55x
+
+  At 1280 that discards the ivy arch and the SEATTLE UNIVERSITY banner — the
+  two subjects the header's aperture section exists to frame — and it upscales
+  a 1536px-wide rung past 1.5x, which lands squarely in the gutters, the one
+  place the picture is meant to be looked at. THE CAP STAYS. What was wrong
+  with it was its VALUE and what it was derived from: 106svh describes the
+  VIEWPORT, and the thing that needed describing was the BAND.
+
+  ── SO THE CAP IS NOW 132svh, AND HERE IS THE TRADE, PRICED ───────────────
+
+      viewport    frame   band   covered   source kept   upscale   was covered
+      375 x 812    1072   1685      64%       43.7%       1.05x        51%
+      390 x 844    1114   1624      69%       43.8%       1.09x        55%
+      768 x 1024   1285   1285     100%       74.7%       1.25x        84%
+      861 x 1000   1320   1324     100%       36.7%       1.53x        80%
+      1280 x 800   1056   1306      81%       68.2%       1.22x        65%
+      1600 x 900   1188   1338      89%       75.8%       1.38x        71%
+
+  Two viewports gain a photograph over the WHOLE band. The two desktop rungs
+  go from two thirds to four fifths and nine tenths. The phones gain a sixth of
+  the band each and stay inside 1.1x of native, which is the number that
+  matters most there: below the page measure the crest window is the only
+  aperture there is, and softening it would be paying in the only currency the
+  phone has.
+
+  ⚠ THE BAND COLUMN ABOVE IS scripts/check-hero-contrast.mjs's TEXT_EXTENT
+  table. Measured live in Chromium the same afternoon the band is already
+  shorter than that table — 1280 -> 1115px, 1600 -> 1139px, 375 -> 1507px —
+  because the copy is being edited in components/site/hero.tsx, and real
+  coverage is therefore 94.7% / 100% / 71.1%. THE CAP WAS NOT FITTED TO THOSE
+  NUMBERS AND MUST NOT BE. It is derived from what `cover` does to the crops on
+  disk, which does not move when a line of copy does; a cap chosen to just
+  cover today's band would be the same accident as 106svh, wearing a better
+  number. Re-price it when the CROPS change, not when the band does.
+
+  861x1000 IS THE WORST ROW AND IS ACCEPTED KNOWINGLY. Its band is 1.32
+  viewports, so the cap binds exactly, and covering a 1.78:1 landscape crop
+  into a 0.65:1 box keeps 37% of the source at 1.53x. It was already 46% at
+  1.23x, it has NO horizontal aperture (861 < the 1088px page measure, so the
+  pocket is full-bleed), and every pixel of it therefore sits under an 87%
+  veil where 1.53x resampling is below the quantisation. The softness is real
+  and it is invisible.
+
+  WHAT 132svh COSTS, SAID PLAINLY. At 1600 the right-hand gutter no longer
+  frames the SU banner: it frames the fountain and the firs. Keeping the banner
+  requires the source's outer 12%, which requires 94% of the width, which
+  requires a cap of 106svh — the banner and the coverage are the same knob and
+  cannot both be had. The banner was worth less than half the band.
+
+  ── AND THE DISSOLVE MOVED WITH IT ────────────────────────────────────────
+
+  Every stop that used to be written at `72svh` or `106svh` is now a fraction
+  of `--frame-foot`, so the veil resolves into the ground EXACTLY where the
+  photograph's bottom edge is and nowhere else. That matters twice:
+
+    - The picture is no longer erased above its own edge. At 1280 it now runs
+      un-dissolved to 792px against 576px, and the frame itself is 208px
+      taller: 576 -> 1056px of band with a photograph in it, +83%.
+    - The seam is still covered. The frame's bottom rows are the darkest part
+      of the crop (mean sRGB 27) but they carry point sources — a lamp at 252 —
+      so the veil must reach opaque AT the foot or the picture ends on a cut.
+      It does. Below the foot the veil paints --ground over --ground, which is
+      a no-op at any alpha, so the last stop is held to 100% for readability
+      rather than for effect.
+
+  ── THE COMPOUNDING, WHICH WAS THE SECOND HALF OF THE COMPLAINT ───────────
+
+  The pocket was authored at 86% and the page painted 89.57%, because the
+  field's crest sat under it everywhere: eff = a1 + a2(1 - a1). Two 86% layers
+  give 98%. A published floor that is 3.6 points lighter than the rendered one
+  is a floor that moves when you edit it and does not move what anyone sees —
+  which is exactly what the previous round's 93% -> 86% change did.
+
+  THE MASKS ARE NOW COMPLEMENTARY. The pocket keeps its mask (opaque across
+  the reading measure, eased to nothing across the gutters); the field takes
+  the SAME LADDER MIRRORED, so it is opaque in the gutters and nothing across
+  the measure. Wherever one layer is at full mask the other is at zero, so:
+
+      region                  layers      effective alpha
+      text column             pocket only  = --scrim-floor-min, exactly
+      gutters                 field only   = the aperture, exactly
+      the mask's own ramp     both          flattened by the formula
+
+  and the column's effective alpha is 0.8700 at all six reference viewports,
+  against 0.8957 before. The photograph under the text goes from 26.6 to 33.2
+  surviving sRGB levels, +25%, and --scrim-floor-min becomes a true statement
+  about the page rather than about one of its layers.
+
+  ⚠ AND IT STILL FAILS IN THE SAFE DIRECTION. An engine that ignores
+  `mask-image` paints BOTH layers full width, which is the old compound 0.8957
+  — darker than the guarantee, never lighter. The mask can only ever open the
+  picture, and only where this file has proved there is no text.
+
+  ── THE MASK SEAM, AND WHY THE CREST IS 25% AND NOT 24% ───────────────────
+
+  Complementary masks are complementary in ALPHA, and alpha does not compose
+  linearly. Where both layers sit at the same alpha c and the mask is at m,
+
+      eff = 1 - (1 - c(1 - m))(1 - c*m) = c - c² * m(1 - m)
+
+  so the crest DIPS by up to c²/4 across the mask's ramp — a smooth 96px bump,
+  not an edge, but it lands on the brightest strip in the frame. The crest's
+  own constraint is that no photographic pixel may composite above sRGB 200
+  (see WHERE 24% CAME FROM), which needs alpha >= 0.2308 at the dip, so
+
+      c - c²/4 >= 0.2308   ->   c >= 0.2460
+
+  and 25% is the first quarter-point above it. At 25% the dip bottoms at
+  0.2344 and the frame's brightest pixel composites to 199. The old 24% would
+  have bottomed at 0.2256 and let it reach 201.
+
+  ═══════════════════════════════════════════════════════════════════════════
+  ── THE FOURTH COMPLAINT, AND THE ONE ASSUMPTION NOBODY HAD QUESTIONED ────
+
+      "i still feel that there is a blurry dark black box around the text that
+       is cover over the background image in the back ... whereas mavterras i
+       feel like that black blurry box around the text is smoothly, yet
+       elegantly blend smoothly into the background image"
+
+  Four rounds of easing had gone into the jamb by then. It was a 16-rung
+  trapezoidal-slope ladder, provably within 13% of the best peak any monotone
+  ramp can have over its span, and it still drew a box. THE CURVE WAS NEVER
+  THE PROBLEM. THE SPAN WAS, AND THE SPAN WAS AN ASSUMPTION.
+
+  ── THE ASSUMPTION, STATED SO IT CAN BE SEEN ──────────────────────────────
+
+  Every previous version of this file wrote the jamb's ramp as a fraction of
+  `--scrim-open`, the wrap's leftover gutter, and therefore required it to
+  REACH ZERO AT THE FRAME'S EDGE. Nothing ever required that. It was inherited
+  from the first draft, where the ramp was the outer 45% of the gutter, and
+  every round after that spent its effort making a better curve inside a slot
+  that three lines of arithmetic say is too small:
+
+      a smoothstep carrying dL* over a span S peaks at 1.75 * 6 * dL* / S
+      one JND per 6px  =>  S >= 10.5 * dL*
+      the jamb's dL* is ~29 L*  =>  S >= ~305px
+
+      viewport      S available (--scrim-open)     S needed
+      1280 x 800         96px                       305px
+      1600 x 900        256px                       305px
+      <= 1088px           0px                       305px
+
+  96 against 305. That is the entire defect, and no polyline closes a 3.2x gap.
+
+  ── WHAT THE REFERENCE ACTUALLY DOES, AND WHY IT IS NOT COPIED LITERALLY ──
+
+  MAVTERRAS components/site/hero.module.css, `.scrim`: a left-weighted radial
+  pocket — `radial-gradient(70% 58% ellipse at 24% 55%, opaque 0%, opaque 50%,
+  0% 80%)` — over a vertical field. Its falloff runs from 50% to 80% of a
+  radius that is 70% of the frame's width, so it spans ~21% of the frame, and
+  centred at x 24% it never terminates on the left at all: it is still
+  descending when it leaves the picture. THERE IS NO BOUNDARY TO PERCEIVE
+  BECAUSE THERE IS NO BOUNDARY. What it pays is that its margins are veiled
+  too, which is exactly the trade that makes its frame read as one photograph
+  in shadow rather than as a photograph with a panel on it.
+
+  THE SHAPE IS PORTED. THE ELLIPSE IS NOT, AND THE REASON IS THIS HERO'S
+  GEOMETRY RATHER THAN TASTE. An ellipse's fully-dark core has to CONTAIN the
+  protected text rectangle, and this band's rectangle is nearly square:
+
+      viewport     protected extent (TEXT_EXTENT + EXTENT_MARGIN)
+      1280 x 800   1051 x 1103 px inside a 1280 x 1306 band
+      1600 x 900   1064 x 1109 px inside a 1600 x 1338 band
+
+  An ellipse circumscribing a square wastes 4/pi of its area, and here that
+  comes straight out of the gutter. Solving for a core ellipse through
+  (525.6, 551) with a vertical radius of twice the half-height gives a
+  horizontal core radius of 607px at 1280 — against a frame half-width of 640.
+  THAT LEAVES 33px OF GUTTER, and the aperture this hero exists to open would
+  be gone. The reference can afford a radial because its protected region is a
+  short wide glyph block low in a 100svh frame; ours is a near-square that
+  fills a 1.6-viewport band. Its SHAPE — a falloff that outlives the frame —
+  is the transferable part, and that is what shipped.
+
+  ── SO THE RUN IS A PROPERTY OF THE FRAME NOW ─────────────────────────────
+
+  ONE KNOB CHANGED. `--jamb-fall` (see its own note on `.scrim`) is 22% of the
+  band's inline size, and the jamb's ladder is laid out from the CORE's edge
+  OUTWARD over that distance — so its far end sits at `--scrim-open -
+  --jamb-fall`, which is off-box at every viewport, and the frame cuts the
+  ramp wherever it happens to reach.
+
+      viewport   --scrim-open   --jamb-fall   ramp visible   mask at the edge
+      1280 x 800     96px         281.6px        34%             0.696
+      1600 x 900    256px         352.0px        73%             0.220
+      768 x 1024      0px         169.0px         0%             1.000
+      375 x 812       0px          82.5px         0%             1.000
+
+  THE EASED END NOW FACES THE CORE, WHICH IS THE END THAT NEEDS IT. The
+  ladder's toe is spent easing INTO the flat core, where a knee would be
+  visible against a flat region; its other toe — the one that used to ease
+  into the flat open gutter — is off-frame, where there is nothing to ease
+  into and nothing to see. Same 16 rungs, same PEAK 1.231 and JUMP 0.308, one
+  knee instead of two.
+
+  ── MEASURED, RENDERED, BOTH ARMS, SAME INSTRUMENT ────────────────────────
+
+  Chromium at dpr 1 over the blend gate's flat 128 field with the floor at
+  86%, the two arms differing ONLY in --jamb-fall (--scrim-open against 22%).
+  Peak L* across a 6px window, per axis:
+
+      viewport      jamb, was   jamb, now   vertical ramp (unchanged)
+      375 x 812        0.75        0.75        1.60
+      768 x 1024       0.73        0.73        1.40
+      1280 x 800       3.65        2.14        2.70
+      1600 x 900       2.50        2.04        2.57
+
+  THE POINT OF THAT TABLE IS THE ORDERING, NOT THE ABSOLUTE NUMBERS. At 1280
+  the jamb went from the LOUDEST edge in the band (3.65 against the ramp's
+  2.77) to a quieter one than the full-width vertical ramp it sits next to.
+  A dark region bounded on the left and right by lines is a plate; a dark
+  region whose sides are softer than its own top is a shadow. That reordering
+  is the fix, and it is what the owner is looking at.
+
+  (Those rendered figures are quantisation-limited: an 8-bit screenshot at
+  L* 15-25 has a quantum of 0.6-0.8 L*, so a 6px window over ANY smooth ramp
+  reads 1.6-2.1 before the ramp contributes anything. The CONTINUOUS peak,
+  computed from the stops rather than from pixels, is 2.78 -> 0.96 at 1280 and
+  1.06 -> 0.77 at 1600 — i.e. the jamb is now under one JND per 6px at both,
+  which is what 22% was solved for. Do not read the rendered column as the
+  gradient; read it as the ordering.)
+
+  ── AND HERE IS WHAT IT COST, WHICH IS NOT SMALL ──────────────────────────
+
+  THE MARGINS ARE NO LONGER UNTOUCHED PHOTOGRAPH. Effective alpha at the
+  frame's own edge, and what the picture survives as there (gate-measured, the
+  brightest rung, out of 256 sRGB levels):
+
+      viewport      alpha was -> now     picture was -> now
+      1280 x 800    0.304 -> 0.6481      170 levels -> 83 levels
+      1600 x 900    0.304 -> 0.3922      170 levels -> 147 levels
+      <= 1088px     0.8656 (unchanged)   there is no gutter
+
+  1280 IS WHERE THE PRICE LANDS and it is halved, not lost: 83 levels is a
+  legible photograph — the ivy arch and its lamp are still readable — but it
+  is dusk rather than daylight. 1600 barely moves, because its gutter is wide
+  enough that the ramp gets 73% of the way through its travel before the frame
+  ends. That asymmetry is correct and it is why --jamb-fall is a fraction of
+  the WIDTH: the wider the frame, the more of the falloff it can show.
+
+  THIS TRADE WAS AUTHORISED EXPLICITLY. The owner would rather have a
+  uniformly slightly darker photograph with no visible box than a
+  bright-margined photograph with a dark panel in the middle. If a later round
+  wants the margins back, --jamb-fall is the one number to move, and the table
+  in its own note prices every step.
+
+  ── BELOW 1088px, AND WHY IT IS NOT A SHORTCUT ────────────────────────────
+
+  The jamb contributes NOTHING at 375, 390, 768 or 861 — the two arms above
+  are byte-identical there — and that is a PROOF rather than an omission.
+  A horizontal aperture needs a text-free strip at the frame's edge, and there
+  isn't one: TEXT_EXTENT + EXTENT_MARGIN reaches to within 12.5px of the edge
+  at 375 and 19.2px at 768. A core inset by 12px, with the ladder running from
+  there, would leave the frame's edge at alpha 0.806 against the column's
+  0.8656 — 49 sRGB levels of picture against 34, in a 12px strip — while
+  spending the whole of the contrast gate's safety margin to get it. Priced
+  and declined.
+
+  So below the page measure the mask is uniformly 1, the pocket is full-bleed,
+  the field is masked out entirely, and the WHOLE story is vertical. Verified
+  rather than assumed, rendered at 375x812 down the band's centre:
+
+      y        0     40    80   120   180   224   600   900  1072  1500
+      alpha  0.244 0.313 0.443 0.585 0.785 0.854 0.854 0.908 0.994 0.994
+             crest ---- the ladder ----  seal  ---- flat ----  foot  ink
+
+  — a 224px ease, then 850px of flat floor with a photograph behind it, then
+  the wash's dissolve arriving exactly on `--frame-foot`. The 1.4-viewport
+  band is covered end to end and the only edge in it is the ladder, at 1.60
+  L* per 6px rendered / 0.96 continuous.
+
+  ⚠ ONE THING DID CHANGE BELOW 1088px, AND IT WAS A GATE ARTIFACT, NOT A
+  PIXEL. With the old geometry --scrim-open was 0, so every jamb stop
+  collapsed onto x=0 and the pocket's mask evaluated to 0 AT EXACTLY x=0 while
+  the field's evaluated to 1. No browser ever painted that — a rasteriser
+  samples pixel 0 at x=0.5 and gets the core — but check-hero-contrast.mjs
+  samples the coordinate itself, and reported a phantom unveiled column: the
+  phone's crest window read 152 sRGB levels where the page paints 123. The
+  ladder no longer has a collapsed stop, so the gate and the browser now agree.
+
+  ⚠ AND IT STILL FAILS IN THE SAFE DIRECTION, FOR A NEW REASON. If
+  --jamb-fall ever fails to resolve, the whole `mask-image` becomes invalid at
+  computed-value time and BOTH layers paint full width — the old compounded
+  0.8957, darker than the guarantee at every point, never lighter. That was
+  observed, not reasoned about: it is what this file rendered for one revision
+  when an asterisk immediately followed by a slash — inside a prose sentence,
+  not at the end of a comment — closed the comment early and ate the
+  declaration.
+
+  ⚠ TWO TRAPS IN THE COMMENTS OF THIS FILE, BOTH PAID FOR ONCE.
+    1. NEVER PUT AN ASTERISK IMMEDIATELY BEFORE A SLASH. "L*" followed by
+       "/6px" reads as a comment terminator, the rest of the prose becomes
+       garbage the parser skips, and it skips the declaration after it too.
+       Write "L* per 6px". When this happened the page went dark and every
+       gate that reads the FILE rather than the RENDER still said OK.
+    2. NEVER END A COMMENT LINE WITH `word:` INSIDE A RULE.
+       check-hero-contrast.mjs finds declarations with
+       /([-a-z0-9]+)\s*:\s*([^;]+);/g over the raw body, so a colon in prose
+       swallows everything up to the next semicolon — including the next real
+       declaration. Use an em dash.
+
+  ═══════════════════════════════════════════════════════════════════════════
+  ── WHAT THE VERTICAL STOPS ARE, AND WHY EACH IS WRITTEN THE WAY IT IS ────
+
+  All three are composite values where they overlap; the per-layer alphas are
+  smaller, because the wash is under everything. See --scrim-wash-min.
+
+    THE WASH  (.scrim, never masked)
+      0                        4%
+      --scrim-fall             4%          = --frame-foot * 0.75
+      --frame-foot             --ground    the photograph's own bottom edge
+      100%                     --ground    a no-op; ground over ground
+
+    THE FIELD  (.scrim::after, masked to the gutters)
+      0                        21.875%     composite 25% with the wash
+      --spacing-band * 0.28    21.875%     the aperture's flat top
+      --scrim-fall             31.25%      composite 34%
+      100%                     31.25%      held; the wash closes the frame
+
+    THE POCKET (.scrim::before, masked to the reading measure)
+      0                        21.875%     the ladder's zeroth rung
+      --pocket-open            21.875%
+      + --pocket-fall * 1/16   23.1%   ┐
+      ...                      the 16-rung ladder, crest -> floor
+      + --pocket-fall * 15/16  84.8%   ┘
+      --pocket-seal            --scrim-floor   86%, composite 86.56%
+      100%                     --scrim-floor   held; the wash closes the frame
+
+  THE POCKET STARTS AT THE CREST RATHER THAN AT NOTHING, and that is forced by
+  the mask split. It used to start transparent because the field lay under it
+  and supplied the crest across the whole width; the field is now masked out of
+  the column, so if the pocket still started at zero the top of the reading
+  measure would be UNVEILED photograph — the sunset sky at full strength,
+  brighter than any glyph on the page. The two layers therefore meet at one
+  number at y = 0, and the ladder runs from it.
+
+  THE 18px IS THE SAFETY MARGIN AND IT IS THE ONE NUMBER HERE THAT PROTECTS A
+  HUMAN RATHER THAN A RATIO. In the crest the effective alpha is 25% and every
+  role fails hard — over the worst-case backdrop rgb(196 197 198) --fg is
+  1.533:1, --fg-muted 1.463:1 and --fg-accent-display 1.843:1. The
+  crest is legal ONLY because it is provably text-free, and it is text-free
+  because the first glyph in this band sits at exactly `--spacing-band`. A
+  FIXED subtraction holds that clearance at 18px on every viewport, which is
+  why the floor stop is written that way and not as a fraction.
+
+  --pocket-open is a fraction instead, and the asymmetry is deliberate: it
+  makes the RAMP scale with the aperture above it rather than staying fixed.
+  The clearance is safety and stays fixed; the run is composition and scales.
+
+  check-hero-contrast.mjs derives the clearance from the rasterised field
+  rather than from named stops — it sweeps down the band and finds the first
+  row where every x across the text extent already delivers the alpha the
+  palette needs, then fails if that row is less than 12px above the first
+  glyph. So the ease has to complete ABOVE the guarantee, not at it, and the
+  eased ramp measures 22..25px of clearance where the linear one measured
+  17..20px: a ramp that arrives gently arrives slightly early. Do not tune a
+  stop by eye; change the number and run the gate.
+
+  ── WHERE THE CREST CAME FROM ─────────────────────────────────────────────
+
+  Not taste. The rule is THE TYPE MUST BE THE BRIGHTEST THING IN THE BAND: no
+  pixel of the photograph may come within striking distance of the 242/255 the
+  headline is set in, or the picture starts competing with the text it is
+  supposed to sit behind. Holding the aperture's peak output at or below 200 —
+  42 levels of daylight between the brightest stone and the quietest glyph —
+  against this frame's measured ceilings:
+
+      brightest source pixel in an aperture region   sRGB 254
+      (1 - a) * 254 + 20a <= 200                     a >= 0.2308
+
+  0.2308 is the bound on the EFFECTIVE alpha, and since the mask seam dips by
+  c²/4 the authored crest has to clear it with that dip already spent:
+  c >= 0.2460, so 25%. See THE MASK SEAM. What it does to the picture:
+
+      source  20   77  129  180  243  254
+      output  25   63  102  140  187  196     (25%, outside the seam)
+      output  24   62  103  142  190  199     (23.4%, at the seam's floor)
+
+  The old 40% put that same range at 33..160 and was chosen when the crest was
+  a 20px sliver nobody would study. It is now a third of the frame's width,
+  full height, at 1600px — it gets measured.
+
+  The sill is 34% (output ceiling 174). It exists because the aperture has to
+  arrive somewhere: below --frame-foot the band is flat ink, and a 25% picture
+  meeting opaque ink at a hard edge reads as a curtain drop. Deepening to 34%
+  first spends a quarter of the frame on that transition, and that quarter is
+  also the part of the photograph that is already darkest — foreground paving
+  and planting, mean sRGB 27.
+
+  ── WHAT THE APERTURE IS WORTH, MEASURED ──────────────────────────────────
+
+      viewport      open per side    share of the frame    picture shows
+      375 x 812        0px                  0%             crest strip only
+      861 x 1000       0px                  0%             crest strip only
+      1280 x 800      96px                 15%             arch, lamp, banner
+      1600 x 900     256px                 32%             arch and lamp; the
+                                                           banner is now past
+                                                           the crop's edge —
+                                                           see THE THIRD
+                                                           COMPLAINT for the
+                                                           trade
+
+  ⚠ AND SINCE THE FOURTH COMPLAINT THE APERTURE IS NO LONGER FULLY OPEN THERE.
+  The gutter is still that wide, but the veil inside it no longer falls to the
+  crest — it falls only as far as the frame's edge lets a 282px ramp get. What
+  the photograph survives as, per gate-measured region, on the brightest rung
+  (hero-l-1536.avif, sRGB window out of 256):
+
+      viewport      crest        column      gutter, was    gutter, now
+      1280 x 800    139 levels   32 levels   170 levels     83 levels
+      1600 x 900    142 levels   32 levels   170 levels    147 levels
+
+  That halving at 1280 is the whole price of this round, and THE FOURTH
+  COMPLAINT is where it is argued rather than merely recorded.
+
+  BELOW 1088px THERE IS NO HORIZONTAL APERTURE AND THIS FILE CANNOT MAKE ONE.
+  The measure is the viewport, the text is the measure, and the only text-free
+  region on a phone is above the first glyph — which is why --hero-headroom
+  exists and why it is 120..200px rather than the 20px of band padding it
+  started as. That window is at 25% and it is the whole picture a phone gets
+  UNVEILED; below it the photograph now runs at the 87% floor for another 850
+  to 890px, which is a shadow rather than a stop. It will stay that way until
+  --fg-muted comes off the photograph. Do not fix this by lightening the
+  pocket; the pocket is the promise.
+
+  ✔ AND THE APERTURE IS NO LONGER BEING SPENT TWICE. An earlier revision of
+  this note recorded that the rungs on disk carried
+  `modulate({ brightness: 0.222 })`, which darkened the frame once in the
+  generator and again in the veil and cost the aperture 145 levels of peak.
+  The manifest on disk now reports `grade.identity: true`, brightness 1,
+  saturation 1 — the pixels are ungraded and the output ceilings above are the
+  ones the visitor gets. The crest is still derived against a BRIGHT frame on
+  purpose: the owner can swap the photograph, and a number tuned to one grade
+  would be wrong the moment he does.
+
+  ── AND THEN THE PHOTOGRAPH ENDS ──────────────────────────────────────────
+
+  At `--frame-foot` the WASH reaches fully opaque `--ground` — at every x,
+  because nothing masks it — and BELOW it stays there, which is a no-op since
+  the band's own background is --ground and ink over ink is ink at any alpha.
+  The two masked layers hold their own alphas flat to 100% and take no part in
+  it, for the reason --scrim-fall states. Three reasons the dissolve exists at
+  all, in order of weight:
+
+  1. THE PHOTOGRAPH HAS AN EDGE AND THE EDGE MUST NOT BE VISIBLE. The frame's
+     bottom rows average sRGB 27 but carry point sources up to 252 — lamps,
+     uplights in the planting. At the sill's 34% one of those composites to
+     173 against the 20 immediately below it. The veil has to arrive at opaque
+     ON the foot, and the field spends a quarter of the frame getting there.
+
+  2. HONESTY OF THE RATIOS. Below the foot the backdrop is #14161A exactly, so
+     whatever copy sits there — at 375 and 390 that is the last third of the
+     band — carries app/globals.css's published ratios with no compositing at
+     all, not an approximation of them.
+
+  3. THE ASPECT RATIO IS UNSURVIVABLE WITHOUT A CAP. See WHY 106svh EXISTED in
+     THE THIRD COMPLAINT: uncapping keeps 28% of the source width at 375 and
+     55% at 1280, and throws away both aperture subjects to do it. `.frame` is
+     bounded to --frame-foot for that reason and no other.
+
+  And the idea is unchanged: the setting resolves into the page's own ground
+  and the evidence remains. The photograph is where the work happened; the page
+  is the work.
+
+  ── GRAIN: DELIBERATELY ABSENT ────────────────────────────────────────────
+
+  The reference's rule is TEXTURE IS A FILE, NEVER A FILTER, and it ships two
+  pre-rasterised tiles. This file ships none, for three reasons that agree:
+
+    - There is no generator for one in this repo, and adding a binary asset
+      plus a `gen-grain.mjs` is outside this territory. A `feTurbulence`
+      data-URI or a `backdrop-filter` is the forbidden shortcut, not a
+      substitute for the file.
+    - In the column it would be invisible. At 87% the picture is compressed
+      into sRGB 20..53; film grain inside a 33-level window carrying a whole
+      photograph has nothing left to add.
+    - In the aperture it would NOT be invisible, and it would be the only
+      textured surface on the page. A texture on one ink band and not the
+      other is a difference the reader can see and the system cannot explain.
+
+  If grain is wanted later it belongs on the ground itself, in
+  app/globals.css, applied to every ink band — not here.
+  ═══════════════════════════════════════════════════════════════════════════
+*/
+
+/*
+  Applied to the hero <Band>. <Band> is already `position: relative`; what it
+  is not is a stacking context, and without one the negative-z layers below
+  paint underneath the band's own `bg-[var(--ground)]` and are never seen.
+  `isolation: isolate` is the whole reason this class exists.
+
+  No `overflow: clip` here, deliberately — it would clip the focus ring of any
+  control near the band's edge, and this band ends in three of them. The
+  clipping that IS needed happens on `.frame`, the only child that overflows.
+*/
+.ground {
+  position: relative;
+  isolation: isolate;
+
+  /*
+    ── THE CRIMSON BUDGET, SPENT ON ONE OBJECT (owner decision, 2026-09-03) ──
+
+    WHY THIS IS HERE AND NOT IN A COMPONENT. Small crimson text was the single
+    constraint holding --scrim-floor-min at 93%, and that depth is what made the
+    veil's edge visible: it must fall 36.5 L* between the open crest and the
+    floor, and at 1280 the only space to do it in is the 96px gutter, which is
+    exactly (100% - 68rem)/2. 6*36.5/96 = 2.28 against a perceptual budget of
+    1.00. No easing curve puts that drop through that slot. The gradient was
+    never the defect. The depth was, and the depth was crimson.
+
+    Measured peak dL* per 6px, by viewport, limit 1.00:
+      floor 93%    1.29  1.18  3.07  2.29   <- every small crimson run
+      floor 63.5%  0.90  0.83  2.02  1.57   <- none
+
+    WHAT THIS RETIRES. --fg-accent carries every SMALL crimson run in the band:
+    the 11px Eyebrow, the 13px "P@1 0.487", the 13px Readout values, the 10.5px
+    Limit label. Each is a 4.5:1 obligation against #FF5252 and collectively they
+    set the floor. --rule follows, since the Threshold's 2px rule is the same
+    hue at a 3:1 non-text obligation.
+
+    WHAT SURVIVES, DELIBERATELY. --fg-accent-display is untouched, so the 48px
+    `0.585` stays crimson. Large text owes 3:1 rather than 4.5:1, so it is not
+    binding. hero.tsx's header already argues the Threshold is where this band's
+    whole crimson budget belongs; this makes that true rather than aspirational.
+    One red object in the hero, and it is the headline research result.
+
+    A ROLE REMAP, NOT A COLOUR. No hue is named — one ground-resolved role is
+    pointed at another, so check-ground-tokens.mjs still holds and the 2.34:1
+    crimson-on-ink trap stays unreachable. It sits on `.ground` rather than on
+    `.inner` for two reasons: `.ground` is the band's stacking context and where
+    every other ground-level knob already lives, and check-hero-contrast.mjs
+    resolves its cascade from this file — a remap it cannot see is a remap it
+    would keep gating against the retired colour.
+
+    Scoped to the band, so crimson stays legal and wanted on every paper surface.
+  */
+  --fg-accent: var(--fg);
+  --rule: var(--fg);
+  /*
+    The :active feedback follows. --fg-pressed is crimson-deep on ink and owes
+    4.5:1, so leaving it would hold the floor at 93% on its own and undo
+    everything above — the eyebrow is not the only small crimson obligation, it
+    was merely the loudest. Pointed at --fg-muted rather than --fg so a pressed
+    control still LOOKS pressed: it recedes instead of reddening, which is the
+    same feedback in the band's own palette.
+  */
+  --fg-pressed: var(--fg);
+
+  /*
+    AND NOW --fg-muted GOES THE SAME WAY, FOR THE SAME REASON ONE STEP ON.
+    Pointing --fg-pressed at --fg-muted was correct while the veil was 86%:
+    at that depth --fg-muted is 6.79:1 and receding was free. The collar
+    below lets the veil drop to 53%, where an UNTREATED --fg-muted measures
+    1.49:1 over a lit window. --fg-pressed is not painted in this band, so
+    nothing in the hero moves; what changes is that the role can no longer
+    hold the floor up on behalf of a control that is not here. A pressed
+    control in this band now recedes by losing its collar, not its ink.
+  */
+
+  /*
+    ── THE FOCUS RING, WHICH IS NOT TEXT AND CANNOT WEAR A COLLAR ─────────
+    --focus-ring is crimson-lift at a 3:1 non-text obligation, and crimson
+    is the one hue that FAILS IN THE MIDDLE: luminance 0.279 sits between
+    flat ink and a lit window, so the ratio falls through 1:1 on the way
+    down. Over a #FFFFFF source pixel it measures 3.35:1 at no veil and
+    3.76:1 at 86% — and 1.14:1 at the 53% this file now paints. There is no
+    veil in the open half of that range that a crimson ring survives.
+
+    A 2px outline is not a glyph, so the collar below cannot reach it: a
+    text-shadow is thrown from glyph geometry and an outline has none. The
+    role therefore has to change rather than be treated, and it changes to
+    the same --fg the band already gave --rule, for the same reason and with
+    the same consequence: 3.34:1 at the floor against a 3:1 x1.05 need.
+    The ring also gets its own local ground below, which is the outline's
+    version of the collar — real, and currently uncredited by any gate.
+  */
+  --focus-ring: var(--fg);
+
+  /*
+    ── FOCAL POINT — values-only knobs ────────────────────────────────────
+    One pair drives `.focal`'s object-position on every copy of the
+    photograph. They must agree across copies, or a cross-fade between the
+    sharp and soft layers cross-fades between two different framings.
+
+    The split is the 861px art-direction breakpoint (the same one the
+    <picture> media queries and the generator's manifest use), not
+    orientation: each value is tuned against the crop that viewport actually
+    downloads.
+
+    ── WHICH AXIS ACTUALLY GOVERNS ────────────────────────────────────────
+    Under `object-fit: cover` the position only moves the axis that
+    OVERFLOWS. RECOMPUTED against the 132svh frame — the cap change moved
+    every row of this table, and moved one of them across the axis — with the
+    generator's own crops, portrait 4:5 and landscape 16:9:
+
+      375 x 812   phone           frame  375x1072  0.350:1  X, 56.3% of width
+      780 x 400   phone, held     frame  780x528   1.477:1  Y, 45.7% of height
+                  sideways (still the PORTRAIT crop, it is under 861px)
+      861 x 1000  breakpoint      frame  861x1320  0.652:1  X, 63.3% of width
+      1280 x 800  laptop          frame 1280x1056  1.212:1  X, 31.8% of width
+      1600 x 900  desktop         frame 1600x1188  1.347:1  X, 24.2% of width
+      3440 x 1440 ultrawide       frame 3440x1901  1.810:1  Y,  1.8% — inert
+
+    ⚠ THE ULTRAWIDE FLIPPED. A 106svh frame at 3440x1440 was 2.25:1 against a
+    1.78:1 crop and overflowed 21% on Y, which is what --hero-pos-y 36% was
+    tuned for. At 132svh the frame is 1.81:1 — within 2% of the crop's own
+    aspect — so Y is now inert there and X governs at every viewport at or
+    above the breakpoint. The Y knob still matters below it, on a phone held
+    sideways, and that is now its only job.
+
+    So X is the consequential knob everywhere, and it overflows roughly twice
+    as far as it used to at every desktop width. That is the coverage trade,
+    stated in the axis it is actually paid in.
+
+      X 50% — the generator centres each crop on the composition and declares
+      its own `focusX` in the manifest. Moving X here would undo a decision
+      already made against the actual pixels, and at 56.3% overflow on a
+      phone it is the most consequential number in this file.
+
+      ⚠ X IS LOAD-BEARING FOR THE APERTURE TOO, AND THE CAP MOVED WHAT IS IN
+      IT. The margins the pocket leaves open are the frame's outer 15% (1280)
+      and 32% (1600) AFTER `cover` has cropped it. At 106svh and 1600x954 that
+      was image x 2.8%..17.9% and 82%..97% — the ivy arch with its lamp, and
+      the SEATTLE UNIVERSITY banner with its street lamp. At 132svh and
+      1600x1188 it is image x 12.1%..24.2% and 75.8%..87.9%: the arch and its
+      lamp survive, the banner does not, and the right jamb now frames the
+      fountain and the firs. That is the trade THE THIRD COMPLAINT prices —
+      the banner and the coverage are the same knob. Moving X slides the
+      aperture across the composition; re-check what lands in it before
+      changing this, and note that the phone crop is a different frame with no
+      aperture at all.
+
+      Y 52% (<861px) — for the landscape-held phone, the only place it
+      matters below the breakpoint. The 4:5 portrait crop lands in a 1.84:1
+      box and 56.5% of its height is discarded. At 52% the surviving window
+      is image 29%..73%, which keeps the subject band and spends the cut on
+      sky above and paving below. At 22% the window is 12%..56% and the
+      subject is clipped off the bottom.
+
+      Y 36% (>=861px) — RETAINED BUT NOW NEARLY INERT: at 132svh the wide
+      frame's aspect sits within 2% of the crop's own, so this moves the
+      picture by a handful of pixels at 3440 and by nothing at all at 1280 or
+      1600, where Y does not overflow. It is kept so an even taller band on
+      some future viewport lands the same way it used to. The window is image 7.6%..86.5%: the frame stays high
+      enough that the crest opens on sky and skyline rather than on the
+      middle of the scene, without pushing the foreground out of the bottom.
+
+    ⚠ WHAT THIS KNOB CANNOT DO, and it is a contract on the generator rather
+    than a value to tune: it cannot put the horizon inside the crest. The
+    crest and its ramp are the top ~13% of the frame, and at the ultrawide's
+    21% overflow that band can only ever reach image rows 7.6%..17.9%. If the
+    skyline sits ~40% down the landscape crop, no `object-position` brings it
+    into the aperture. THE CROP HAS TO — `LANDSCAPE_CROP.top` in
+    scripts/gen-hero-photo.mjs must sit just above the skyline if the
+    aperture is to show anything but sky.
+
+    Both values are superseded by measurement. Run
+    `node scripts/check-hero-contrast.mjs`: it prints the crest's actual
+    exposure per rung, and these are then a two-number edit with no
+    structural change behind either.
+  */
+  --hero-pos-x: 50%;
+  --hero-pos-y: 52%;
+
+  /*
+    ── HEADROOM — THE VERTICAL APERTURE ───────────────────────────────────
+    Open photograph above the hero's first glyph, and BELOW THE PAGE MEASURE
+    IT IS THE ONLY APERTURE THERE IS.
+
+    The pocket's horizontal aperture is `max(0px, 50% - --container-wrap/2)`.
+    That is exactly zero at every viewport up to 1088px, because .wrap has no
+    dead space to give: on a phone the reading measure IS the viewport. So the
+    shaped scrim below, which opens the picture beautifully on a desktop's side
+    jambs, goes full-bleed on a phone — and a phone was where the owner's "it
+    is a black rectangle" was true.
+
+    A photograph needs SOME text-free region to be seen in. If there is none on
+    the horizontal axis, it has to be made on the vertical one. This is that
+    region: the content is pushed down by exactly this much and the two
+    gradients' ramps are pushed down with it, so the picture gets a real window
+    at the top of the band instead of a 54px sliver.
+
+    ⚠ IT IS NOW LOAD-BEARING TWICE. This distance is also the entire budget the
+    pocket's ease has below the page measure: --pocket-open is 0, so the ramp
+    gets ALL of it, plus --spacing-band, and nothing else does. Shrink this and
+    the phone's ramp shrinks with it, one pixel for one, back toward the linear
+    cliff of the previous design. See THE SECOND COMPLAINT in the header.
+
+    MEASURED, 375x812, ungraded rungs: the open window goes from 54px to 224px
+    of full-height picture, and it lands on the Seattle skyline rather than on
+    the empty sky above it.
+
+    Zero at and above --container-wrap, where the side jambs open instead and
+    the picture is already visible full-height down both margins. 68rem is
+    --container-wrap restated in the one place a media query cannot read a
+    custom property; scripts/check-hero-contrast.mjs re-derives the same
+    breakpoint from the token and fails if the two disagree.
+
+    ⚠ IT FAILS IN THE SAFE DIRECTION. If this property goes missing the
+    gradients fall back to `0px`, the ramps snap back to --spacing-band, the
+    content loses its push, and the hero is exactly the plate it was before —
+    darker, not lighter, and every ratio in this header still holds.
+  */
+  --hero-headroom: clamp(7.5rem, 21svh, 12.5rem); /* 120 → 200px */
+
+  /*
+    ── THE FOOT — WHERE THE PHOTOGRAPH ENDS, WRITTEN ONCE ─────────────────
+    The bottom edge of `.frame`, and therefore the position every dissolve
+    stop in this file is a fraction of. It lives on `.ground` because it is
+    read by TWO SIBLINGS — `.frame`, which is bounded by it, and `.scrim`,
+    whose two layers have to resolve into the ground exactly there — and
+    `.ground` is the only element that is an ancestor of both.
+
+    `min(100%, N svh)` is the shape, and both halves are load-bearing. The
+    100% is the band: above 132svh of band there is no more photograph to
+    show, so the frame stops at the band. The svh term is the cap, and THE
+    CAP IS NOT OPTIONAL — see WHY 106svh EXISTED in THE THIRD COMPLAINT. It
+    is `object-fit: cover` arithmetic against a band that is 0.22:1 on a
+    phone, and removing it discards 72% of the source width there.
+
+    132svh is derived in THE THIRD COMPLAINT and priced there per viewport.
+    Short version: it covers the band outright at 768 and 861, takes 1280 and
+    1600 from two thirds to four fifths and nine tenths, and holds both phone
+    rungs inside 1.1x of their native width so the crest window — the only
+    aperture a phone has — is not resampled to buy it.
+
+    ⚠ THE NUMBER IS WRITTEN TWICE, HERE AND ON `.frame`, AND THE TWO MUST BE
+    EDITED TOGETHER. scripts/check-hero-contrast.mjs reads the frame's bound
+    by matching `block-size: min(100%, N svh)` literally — it is how the gate
+    knows which pixels of the crop land where, and a `var()` there would leave
+    it guessing 106. The same restatement-with-a-reason as the 68rem in the
+    media query below. Change one, change both.
+  */
+  --frame-foot: min(100%, 132svh);
+}
+
+@media (min-width: 861px) {
+  .ground {
+    --hero-pos-y: 36%;
+  }
+}
+
+/* --container-wrap. Above it the pocket's side jambs open, so the vertical
+   window is no longer the only aperture and the content keeps its fold. */
+@media (min-width: 68rem) {
+  .ground {
+    --hero-headroom: 0px;
+  }
+}
+
+/*
+  The photograph's box: a wrapper AROUND the photo layers, not a replacement
+  for them. Anchored to the top of the band and bounded to --frame-foot — where
+  the dissolve completes — rather than `inset: 0`, for the aspect-ratio reason
+  in the header.
+
+  ⚠ THIS IS THE SECOND HALF OF THE --frame-foot PAIR. It is spelled out rather
+  than written `var(--frame-foot)` because scripts/check-hero-contrast.mjs
+  matches this declaration literally to learn where the photograph's bottom
+  edge is; a var() here would silently fall back to 106svh and every VISIBILITY
+  number it prints would describe a frame the page does not paint. Keep the two
+  in step — the note on `.ground` says the same thing from the other side.
+
+  ⚠ CONTRACT ON THE CROPS (for scripts/gen-hero-photo.mjs): even bounded, the
+  phone frame is 375x1072 = 0.350:1 and a 4:5 portrait crop loses 56% of its
+  width to `cover`. A ~2:5.7 (0.35:1) portrait crop would land exactly. The
+  landscape frame is 1.212:1 at 1280 against a 16:9 crop — a 32% horizontal
+  loss, which is what buys the coverage and is priced in THE THIRD COMPLAINT.
+
+  z-index -2 puts it under the scrim; both are under the content because
+  `.ground` isolates.
+*/
+.frame {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: min(100%, 132svh);
+  z-index: -2;
+  overflow: clip;
+  pointer-events: none;
+  user-select: none;
+}
+
+/*
+  Applied to every <img> of the photograph — both copies, if the component
+  cross-fades. It sets only the focal point and the fit, so it composes with
+  whatever positioning the photo layers already carry.
+*/
+.focal {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  object-position: var(--hero-pos-x) var(--hero-pos-y);
+}
+
+/*
+  ── THE WASH — layer one of three, and the only unmasked one ──────────────
+
+  `.scrim` is the positioned box the two masked layers hang off, the one place
+  their shared numbers are declared (custom properties inherit into both
+  pseudo-elements, so a rung written once here is the same rung in both
+  ladders and in both masks), AND it paints the one surface that is never
+  shaped horizontally:
+
+      0 .. --scrim-fall     a flat 4%. The margin that carries the pocket's
+                            relayed 0.86 clear of --fg-muted's wall, and
+                            the reason the column's effective alpha is a
+                            constant. See --scrim-wash-min.
+      --frame-foot          fully opaque --ground — the photograph's own
+                            bottom edge, closed at every x because nothing
+                            masks this layer.
+      100%                  held. Below the foot this paints --ground over
+                            --ground, which is a no-op at any alpha.
+
+  It used to carry the FIELD's background. It cannot any more: a mask on an
+  element masks its pseudo-elements too, so a `mask-image` here would have
+  taken the pocket out with the field. The field moved to `::after` for
+  exactly that reason and for no other.
+
+  No element opacity, here or on either layer: the alphas in these gradients
+  ARE the effective alphas (flattened as eff = a1 + a2(1 - a1)), which is what
+  lets scripts/check-hero-contrast.mjs verify them by reading this file
+  instead of by rendering it.
+
+  NO SCROLL-LINKED SCRIM EITHER, and that is a decision rather than an
+  omission. The reference's arc runs light at entry and deepens on exit. This
+  band is 1.6 viewports tall and carries text at EVERY scroll position inside
+  it, so a scroll-linked veil would make the guarantee a function of scroll
+  position — and a contrast floor you can scroll out of is not a floor.
+  Deepening on exit would be harmless to the ratios and is a legitimate future
+  addition — as a third additive layer, never as an element opacity
+  multiplying these.
+*/
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+
+  /* The guarantee. A literal, so the gate can read it; a clamp FLOOR, so a
+     measured alpha from the manifest can only ever go darker. See the header.
+
+     53%. This USED to be 86% — the generator's manifest number, the alpha at
+     which a veil ALONE clears 4.5:1 over the worst pixel of the worst rung.
+     It is 53% now because the veil is no longer the only darkening in the
+     stack: THE COLLAR at the foot of this file pays for the text's own local
+     ground, so the veil only has to answer for what a collar cannot reach.
+     The COMPOSITE under the text is 54.16% — this plus the wash below, and
+     nothing else, because the mask split takes the field off the column.
+
+     WHAT NOW HOLDS THIS NUMBER, and it is not the text. Every treated role
+     clears with room at 53% (--fg 12.72:1, --fg-muted 5.55:1 against 4.5,
+     --fg-accent-display 5.09:1 against 3). The binding pair is the Threshold's
+     2px rule and the focus ring: both --fg at a 3:1 non-text obligation, which
+     needs alpha >= 0.5116 bare, and neither can wear a text-shadow because
+     neither is a glyph. See rule 7 at the foot of this file — they are given
+     the same darkening as a box-shadow, and no gate in this repo can yet read
+     it. The day one can, this literal goes to the low thirties. */
+  --scrim-floor-min: 53%;
+  /*
+    ── THE WASH — 4% OF VEIL THAT TURNS A ROUNDING ERROR INTO A MARGIN ───
+    The one layer that is never masked, so the one layer whose alpha is added
+    to every pixel of the band no matter which side of the mask it is on.
+
+    IT EXISTS BECAUSE THE POCKET ALONE CLEARS BY FIVE TEN-THOUSANDTHS.
+    --fg-muted needs alpha >= 0.85946 over a #FFFFFF source pixel. The
+    generator's manifest relays 0.86, rounded to two places, and
+    scripts/check-hero-contrast.mjs refuses a --scrim-floor-min above what the
+    manifest was measured at — so once the mask split takes the field off the
+    column, the pocket is 0.8600 alone and the whole guarantee rests on a
+    fourth decimal place. The wash is the margin:
+
+        1 - (1 - w)(1 - 0.86) >= 0.85946   ->   any w >= 0
+        1 - (1 - 0.04)(1 - 0.86)  =  0.8656   ->  0.0061 of real margin
+
+    4% buys that and it buys a property
+    nothing else here has: THE COLUMN'S EFFECTIVE ALPHA IS 0.8656 EXACTLY, at
+    every viewport and every row, because it no longer depends on where the
+    field's ramp happens to be. A floor that is a constant is a floor you can
+    reason about; the 0.8957 this file used to paint was a different number at
+    every y and none of them were the one it published.
+
+    Everything else in this rule is stated as a rung of --scrim-alpha for the
+    same reason it always was: override --scrim-alpha and the whole veil
+    thins together. 0.0465 x 86% = 4.00%.
+  */
+  --scrim-wash-min: calc(var(--scrim-alpha) * 0.0465);
+  /*
+    The aperture, at the crest, ON EACH MASKED LAYER — not the composite.
+    The COMPOSITE crest is 25%, which is the least veil that keeps every
+    photographic pixel at or below sRGB 200 once the mask seam's dip is spent
+    (see THE MASK SEAM), so the 242 of --fg stays the brightest thing in the
+    band. The wash supplies 4% of that, so each pseudo supplies
+
+        1 - (1 - 0.04)(1 - c) = 0.25   ->   c = 0.21875
+
+    and 0.2544 x 53% = 13.48% (it was 21.875% when this floor was 86% — the
+    crest opens with the floor, which is the whole point). A rung rather than
+    a literal because the
+    pocket's ladder starts here: every rung has to be a multiple of the same
+    alpha or the two layers stop meeting at the mask's edge.
+  */
+  --scrim-crest-min: calc(var(--scrim-alpha) * 0.2544);
+  /* The aperture, where it meets the ground. The ratio is held, not the
+     composite: 0.3634 x 53% = 19.26%, where it was 0.3634 x 86% = 31.25% for
+     a composite of 34%. Every stop in this file is a fraction of
+     --scrim-alpha exactly so that thinning the floor opens all of them
+     together instead of leaving the ramp at full strength under a thin
+     floor. */
+  --scrim-sill-min: calc(var(--scrim-alpha) * 0.3634);
+
+  /*
+    ── THE RELAY, DISCOUNTED BY THE COLLAR ─────────────────────────────────
+    --scrim-base arrives from public/brand/hero/manifest.json as 0.86: the
+    alpha at which A VEIL ALONE clears 4.5:1 over the worst pixel of the
+    worst rung. That measurement is still correct and still relayed — but it
+    is an answer to a question this band no longer asks, because the text now
+    pays for its own local ground and the veil is not the only darkening in
+    the stack.
+
+    THE DISCOUNT IS A TRANSMITTANCE, NOT A SUBTRACTION. Veil and collar
+    compose multiplicatively in what they let through: (1-total) =
+    (1-veil)(1-collar). So the veil a relayed base B still needs, given a
+    collar of equivalent alpha c, is
+
+        V = 1 - (1 - B) / (1 - c)
+
+    which is what the middle term below computes with --scrim-collar-open as
+    (1 - c). Written this way rather than as `B - k` because subtraction is
+    unsafe in exactly the direction that matters: a future manifest measuring
+    0.99 needs 0.96 here, and 0.99 - k would hand it 0.66.
+
+    --scrim-collar-open is 0.25 — a collar credited at alpha 0.75, against
+    the 0.79 scripts/check-hero-contrast.mjs's own observer model supports
+    for this stack. Conservative on purpose: this is the number that decides
+    how dark the page renders, and the FLOOR below is what guarantees it.
+    With B = 0.86 the middle term is 44%, so the floor is what ships.
+  */
+  --scrim-collar-open: 0.25;
+  --scrim-alpha: clamp(
+    var(--scrim-floor-min),
+    calc(100% - (100% - var(--scrim-base, 1) * 100%) / var(--scrim-collar-open)),
+    100%
+  );
+  --scrim-wash: color-mix(in srgb, var(--ground) var(--scrim-wash-min), transparent);
+  --scrim-crest: color-mix(in srgb, var(--ground) var(--scrim-crest-min), transparent);
+  --scrim-sill: color-mix(in srgb, var(--ground) var(--scrim-sill-min), transparent);
+  --scrim-floor: color-mix(in srgb, var(--ground) var(--scrim-alpha), transparent);
+
+  /*
+    ── THE EASE ────────────────────────────────────────────────────────────
+    The sixteen-segment trapezoidal-slope ladder derived in the header
+    (PEAK 1.231, JUMP 0.308 in units of the ramp mean). Every one of
+    these is a FRACTION of --scrim-alpha rather than a literal, which is what
+    keeps the whole ramp tied to the one number the gates thin: override
+    --scrim-alpha (tests/e2e/hero-contrast.spec.ts does, to 4%) or
+    --scrim-floor-min (scripts/check-hero-contrast.mjs --prove does, x0.9) and
+    every stop below moves with it. A literal ladder would have left the ramp
+    at full strength under a thinned floor and made both controls vacuous.
+
+    ⚠ THE RUNGS ARE OFFSET NOW, AND THE OFFSET IS THE MASK SPLIT. The ladder
+    used to run 0 -> --scrim-alpha because the field lay underneath supplying
+    the crest; the field is masked out of the column now, so the ladder runs
+    CREST -> --scrim-alpha instead, and each rung is
+
+        k + (1 - k) * L     with k = 0.2874 (the crest as a rung) and L the
+                            ladder fraction 0 .0192 .0577 .1154 .1923 ...
+
+    which is still one multiplication, so the gate's alpha evaluator still
+    reads it and the whole ramp still scales with the one number.
+  */
+  --scrim-pocket-p01: color-mix(in srgb, var(--ground) calc(var(--scrim-alpha) * 0.2687), transparent);
+  --scrim-pocket-p02: color-mix(in srgb, var(--ground) calc(var(--scrim-alpha) * 0.2974), transparent);
+  --scrim-pocket-p03: color-mix(in srgb, var(--ground) calc(var(--scrim-alpha) * 0.3404), transparent);
+  --scrim-pocket-p04: color-mix(in srgb, var(--ground) calc(var(--scrim-alpha) * 0.3977), transparent);
+  --scrim-pocket-p05: color-mix(in srgb, var(--ground) calc(var(--scrim-alpha) * 0.4551), transparent);
+  --scrim-pocket-p06: color-mix(in srgb, var(--ground) calc(var(--scrim-alpha) * 0.5125), transparent);
+  --scrim-pocket-p07: color-mix(in srgb, var(--ground) calc(var(--scrim-alpha) * 0.5698), transparent);
+  --scrim-pocket-p08: color-mix(in srgb, var(--ground) calc(var(--scrim-alpha) * 0.6272), transparent);
+  --scrim-pocket-p09: color-mix(in srgb, var(--ground) calc(var(--scrim-alpha) * 0.6845), transparent);
+  --scrim-pocket-p10: color-mix(in srgb, var(--ground) calc(var(--scrim-alpha) * 0.7419), transparent);
+  --scrim-pocket-p11: color-mix(in srgb, var(--ground) calc(var(--scrim-alpha) * 0.7993), transparent);
+  --scrim-pocket-p12: color-mix(in srgb, var(--ground) calc(var(--scrim-alpha) * 0.8566), transparent);
+  --scrim-pocket-p13: color-mix(in srgb, var(--ground) calc(var(--scrim-alpha) * 0.9140), transparent);
+  --scrim-pocket-p14: color-mix(in srgb, var(--ground) calc(var(--scrim-alpha) * 0.9570), transparent);
+  --scrim-pocket-p15: color-mix(in srgb, var(--ground) calc(var(--scrim-alpha) * 0.9857), transparent);
+
+  /* The same ladder in the mask's alpha channel, where the numbers are pure
+     multipliers and no colour is ever composited (see WHY THE SCRIM NAMES NO
+     COLOUR). `--ground` is here only because color-mix needs a colour to take
+     a percentage of; check-ground-tokens.mjs would reject a literal. */
+  --scrim-mask-p01: color-mix(in srgb, var(--ground) 1.92%, transparent);
+  --scrim-mask-p02: color-mix(in srgb, var(--ground) 5.77%, transparent);
+  --scrim-mask-p03: color-mix(in srgb, var(--ground) 11.54%, transparent);
+  --scrim-mask-p04: color-mix(in srgb, var(--ground) 19.23%, transparent);
+  --scrim-mask-p05: color-mix(in srgb, var(--ground) 26.92%, transparent);
+  --scrim-mask-p06: color-mix(in srgb, var(--ground) 34.62%, transparent);
+  --scrim-mask-p07: color-mix(in srgb, var(--ground) 42.31%, transparent);
+  --scrim-mask-p08: color-mix(in srgb, var(--ground) 50%, transparent);
+  --scrim-mask-p09: color-mix(in srgb, var(--ground) 57.69%, transparent);
+  --scrim-mask-p10: color-mix(in srgb, var(--ground) 65.38%, transparent);
+  --scrim-mask-p11: color-mix(in srgb, var(--ground) 73.08%, transparent);
+  --scrim-mask-p12: color-mix(in srgb, var(--ground) 80.77%, transparent);
+  --scrim-mask-p13: color-mix(in srgb, var(--ground) 88.46%, transparent);
+  --scrim-mask-p14: color-mix(in srgb, var(--ground) 94.23%, transparent);
+  --scrim-mask-p15: color-mix(in srgb, var(--ground) 98.08%, transparent);
+  --scrim-mask-on: color-mix(in srgb, var(--ground) 100%, transparent);
+
+  /*
+    ── THE POCKET'S VERTICAL GEOMETRY ──────────────────────────────────────
+    Three lengths, and between them they are the whole answer to "why does the
+    veil have a top edge". Derived from the BAND — --hero-headroom and
+    --spacing-band — and from nothing else; in particular not from the wrap's
+    dead space, which is zero on every phone and was the reason the old ramp
+    collapsed to 34px exactly where the plate was worst.
+
+      --pocket-seal   where the veil reaches the guarantee. UNCHANGED, and it
+                      is the one number here that protects a human rather than
+                      a gradient: 18px above the first glyph, on every
+                      viewport, fixed rather than fractional. See THE 18px.
+      --pocket-open   where the ramp begins. ZERO, on every viewport: the ramp
+                      starts at the band's own top edge, where a knee cannot be
+                      seen because nothing sits above it to compare against.
+                      Written as a multiplier on --hero-headroom rather than as
+                      a literal 0px so the knob is still there and still has
+                      units — an earlier revision held four fifths of the
+                      aperture flat here, and the header records why that was
+                      reversed. Raising it is the one-number way to trade edge
+                      softness back for a brighter top strip; the evidence is
+                      the VISIBILITY table check-hero-contrast prints and the
+                      PEAK column check-hero-blend prints.
+      --pocket-fall   the run the ease gets, which is now --pocket-seal
+                      exactly: 225px at 375, 259px at 768, 110px at 1280 and
+                      122px at 1600 — against 88 / 99 / 110 / 122 before and
+                      34 / 37 / 74 / 83 in the first design.
+  */
+  --pocket-seal: calc(var(--hero-headroom, 0px) + var(--spacing-band) - 18px);
+  --pocket-open: calc(var(--hero-headroom, 0px) * 0);
+  --pocket-fall: calc(var(--pocket-seal) - var(--pocket-open));
+
+  /*
+    ── THE JAMB'S RUN — THE ONE NUMBER THIS ROUND CHANGED ──────────────────
+    The horizontal counterpart of --pocket-fall, and the reason THE FOURTH
+    COMPLAINT is a different defect from the three above it. It is a FRACTION
+    OF THE BAND'S OWN WIDTH, so the falloff is a property of the FRAME; it is
+    NOT --scrim-open, which is the wrap's leftover gutter and was the whole
+    bug. 282px at 1280 and 352px at 1600, against gutters of 96px and 256px —
+    so at both desktop rungs the ramp is still descending when it runs out of
+    viewport, and the visitor never sees it arrive anywhere.
+
+    22% IS DERIVED, NOT PICKED. It is the span at which the jamb's peak
+    gradient falls to one JND per 6px — scripts/check-hero-blend.mjs's own
+    limit — at 1280x800, the viewport where the visible share of the ramp is
+    smallest and the truncation therefore harshest. Modelled over the blend
+    gate's flat field, peak L* per 6px across the jamb at 1280 —
+
+        --jamb-fall   8%w    10%    12.5%   15%    17.5%   20%    22%    25%
+        peak L* per
+        6px           2.59   2.10   1.68    1.41   1.21    1.06   0.98   0.85
+        alpha at the
+        frame edge    0.35   0.40   0.48    0.54   0.59    0.63   0.65   0.69
+
+    (8%w = 102px is within 6px of today's 96px gutter, and the 2.59 it models
+    is the shape this file shipped before this round. The gate measured 3.28
+    there — the model omits the pocket ladder's own contribution at the same
+    window — but the RATIO across the row is what the choice rests on.)
+
+    ⚠ AND THE RIGHT COLUMN IS THE PRICE, PAID ON PURPOSE. Every step right
+    buys a quieter jamb by DARKENING THE MARGINS — the gutter's veil goes from
+    0.34 to 0.65 at 1280. See THE FOURTH COMPLAINT for what that leaves of the
+    photograph there, measured, and for why it is the trade the owner asked
+    for.
+  */
+  --jamb-fall: 22%;
+
+  /*
+    ── THE DISSOLVE, AND WHY IT IS ON THE UNMASKED LAYER ───────────────────
+    Where the veil starts closing on the photograph's bottom edge. It reaches
+    fully opaque --ground at --frame-foot, because that is where the picture
+    stops and an edge the veil has not closed on is a cut, not a fade.
+
+    ⚠ IT CANNOT LIVE ON EITHER MASKED LAYER, AND THE GATE PROVES IT. Two
+    complementary masks multiply rather than add: with both layers at alpha 1
+    and the pocket's mask at m, the composite is 1 - m(1 - m), which bottoms
+    out at 75% in the middle of the ramp. An earlier draft of this file put
+    the dissolve on the two pseudos and check-hero-contrast reported exactly
+    that — "the composite veil at that row is only 76.05% at x=40" — a 96px
+    window at each gutter through which the photograph's cut edge would have
+    been visible. The wash is the only surface that is never masked, so the
+    guarantee of opacity at the foot has to be its job.
+  */
+  --scrim-fall: calc(var(--frame-foot) * 0.75);
+
+  background-image: linear-gradient(
+    180deg,
+    var(--scrim-wash) 0,
+    var(--scrim-wash) var(--scrim-fall),
+    var(--ground) var(--frame-foot),
+    var(--ground) 100%
+  );
+}
+
+/*
+  ── THE POCKET ────────────────────────────────────────────────────────────
+
+  Layer one of two: the guarantee, and the only thing in this file that is
+  allowed to be opaque while a photograph is behind it.
+
+  ── THE HORIZONTAL GEOMETRY IS NOT A GUESS ──────────────────────────────
+
+  `--scrim-open` is the outer dead space of app/globals.css's .wrap, computed
+  from the same two tokens .wrap itself uses. It is 0 at every viewport up to
+  1088px — where the core fills the band, every ladder stop sits off-box, and
+  the pocket covers the full width. Above 1088px it opens at half the surplus
+  per side.
+
+  The percentage resolves against this element's own box rather than 100vw ON
+  PURPOSE: the element is the band's width, which is the viewport MINUS the
+  scrollbar, which is the containing block .wrap centres itself in. Using
+  100vw would overstate the dead space by half a scrollbar and creep the
+  pocket edge inward, toward the text.
+
+  The mask reaches full opacity AT `--scrim-open`, so the entire gutter —
+  20px on a phone, 44px wherever the aperture is non-zero — is clearance
+  between the pocket and the first glyph. `--scrim-open` IS THE CORE'S EDGE
+  AND NOTHING ELSE NOW. It is not the ramp's width: a ramp ending right of it
+  would put a glyph in the gutter on less than the floor, which is why the
+  core cannot be narrower, and the text needs no more than the wrap, which is
+  why it need not be wider.
+
+  ⚠ WHAT IT USED TO ALSO BE, AND IS NOT ANY MORE, IS THE RAMP'S SPAN. The
+  ladder ran from 0 to `--scrim-open` and therefore reached zero at the frame's
+  edge — 96px at 1280 to carry a 29 L* drop that needs 305px. THE FOURTH
+  COMPLAINT in the header is entirely about that mistake. The span is
+  `--jamb-fall` now, laid out from this edge OUTWARD, and the frame truncates
+  it wherever it happens to reach.
+
+  ── WHY A MASK RATHER THAN A THIRD GRADIENT ─────────────────────────────
+
+  Background layers only ever ADD alpha, so a horizontally-shaped layer at the
+  floor would also darken the crest, and there would be no aperture at the top
+  at all. The pocket needs to be shaped on BOTH axes — transparent above the
+  ramp, opaque across the measure — and a mask is the only way to multiply two
+  shapes rather than add them. The alternative is a filter, and this file does
+  not use filters.
+
+  ⚠ AND IT FAILS IN THE SAFE DIRECTION. An engine that ignores `mask-image`
+  paints the pocket full width: the aperture disappears, the picture goes back
+  to being a black rectangle, and every contrast ratio in the header still
+  holds. A mask that fails open would have been unacceptable; this one fails
+  closed.
+*/
+.scrim::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  /*
+    Written with no inner parentheses on purpose: `calc(50% - W / 2)` rather
+    than `calc((100% - W) / 2)`. They are the same number, and the second form
+    is the one scripts/check-hero-contrast.mjs's length evaluator refuses —
+    it tokenises rather than parses, and says so. A scrim the gate cannot
+    rasterise is a scrim whose contrast is unmeasured, so the gate's grammar
+    is a constraint on this file, not a bug to route around.
+  */
+  /*
+    ROUND SIX, THE APERTURE IS OFF AT EVERY WIDTH, AND THIS IS THE ONE KNOB
+    THAT DOES IT. Set to the gutter expression
+    `max(0px, calc(50% - var(--container-wrap) / 2))` the pocket opens a side
+    aperture above --container-wrap; set to 0px the mask ladders below are
+    degenerate (this layer fully on, the .scrim::after field fully off) and
+    the veil is uniform across x. THAT IS NOT A NEW CODE PATH: it is exactly
+    the state this file already shipped at and below --container-wrap, which
+    is the only geometry the owner never complained about.
+
+    WHY, AND IT IS NOT A TUNING RESULT. Five rounds widened the side falloff
+    and the owner still saw a box. Rendered as an image, the veil's alpha
+    field WAS a rounded rectangle, because a veil built as a 1-D vertical
+    profile MULTIPLIED BY a 1-D horizontal mask is separable, and a separable
+    product of two ramps has straight level sets with rounded corners. No
+    value of --jamb-fall removes a corner; it only rounds it. The reference
+    reads as smooth because its falloff is a single non-separable ellipse,
+    whose level sets are curves that leave the frame.
+
+    AND THE ELLIPSE CANNOT BE PORTED, FOR A REASON THAT IS MEASURED. Any
+    falloff has to live outside the protected text rectangle. At 1280 that
+    rectangle is 990x844 in a 1280x1115 band, leaving 140px left, 150px
+    right, 128px top, 143px bottom. The span law in this file's header
+    (S >= 10.5 x dLstar, dLstar ~ 30 across this depth) asks for ~315px.
+    EVERY MARGIN IS LESS THAN HALF THE REQUIRED RUN, in all four directions,
+    so no shape - ellipse, ladder or otherwise - can both reach the picture
+    and stay under one JND per 6px. The choice is a visible boundary or no
+    aperture, and the owner authorised the darker margins.
+
+    WHAT IT COST, rendered, real photograph, brightest level in the side
+    margin: 1280 57 to 45 of 256 (the 96px gutter was barely open anyway);
+    1600 158 to 54. Mean margin luminance moved 23.0 to 22.8 and 25.9 to
+    23.4 - the aperture was mostly opening onto already-dark photograph.
+    The crest keeps the picture: 109 levels at 1280, 122 at 1600, untouched.
+
+    MEASURED AFTER (veil isolated over white, alpha recovered per pixel):
+    horizontal peak 0.00 L* per 6px at 1280 and 0.22 at 1600, against the
+    reference's own 0.93 and 0.79 - i.e. FLATTER ACROSS x THAN THE REFERENCE.
+    check-hero-blend ENCLOSURE went 3.86 to 0.00 at 1280 and 3.40 to 0.00 at
+    1600 and now PASSES at every viewport, and its largest feature is
+    described in the same words it uses for the reference: a band across the
+    full width, the shape a sky makes, touching 2 of 4 borders.
+
+    TO RESTORE AN APERTURE, restore the gutter expression above - but only
+    after the LAYOUT frees a margin of about 315px on some side. Widening the
+    ramp alone is the thing that was tried five times and does not work.
+  */
+  --scrim-open: 0px;
+
+  /*
+    THE VERTICAL RAMP. Seventeen stops at sixteenths of --pocket-fall,
+    carrying the trapezoidal-slope ladder derived in the header, offset so its
+    zeroth rung is the crest. Below --pocket-seal it is flat at the floor,
+    which is the part every gate measures; above it the alpha is bounded by
+    nothing, which is why all of the shaping lives up here. Below
+    --fall-pocket it dissolves into the ground, arriving at --frame-foot —
+    the photograph's own bottom edge — and staying there.
+  */
+  background-image: linear-gradient(
+    180deg,
+    var(--scrim-crest) 0,
+    var(--scrim-crest) var(--pocket-open),
+    var(--scrim-pocket-p01) calc(var(--pocket-open) + var(--pocket-fall) * 0.0625),
+    var(--scrim-pocket-p02) calc(var(--pocket-open) + var(--pocket-fall) * 0.125),
+    var(--scrim-pocket-p03) calc(var(--pocket-open) + var(--pocket-fall) * 0.1875),
+    var(--scrim-pocket-p04) calc(var(--pocket-open) + var(--pocket-fall) * 0.25),
+    var(--scrim-pocket-p05) calc(var(--pocket-open) + var(--pocket-fall) * 0.3125),
+    var(--scrim-pocket-p06) calc(var(--pocket-open) + var(--pocket-fall) * 0.375),
+    var(--scrim-pocket-p07) calc(var(--pocket-open) + var(--pocket-fall) * 0.4375),
+    var(--scrim-pocket-p08) calc(var(--pocket-open) + var(--pocket-fall) * 0.5),
+    var(--scrim-pocket-p09) calc(var(--pocket-open) + var(--pocket-fall) * 0.5625),
+    var(--scrim-pocket-p10) calc(var(--pocket-open) + var(--pocket-fall) * 0.625),
+    var(--scrim-pocket-p11) calc(var(--pocket-open) + var(--pocket-fall) * 0.6875),
+    var(--scrim-pocket-p12) calc(var(--pocket-open) + var(--pocket-fall) * 0.75),
+    var(--scrim-pocket-p13) calc(var(--pocket-open) + var(--pocket-fall) * 0.8125),
+    var(--scrim-pocket-p14) calc(var(--pocket-open) + var(--pocket-fall) * 0.875),
+    var(--scrim-pocket-p15) calc(var(--pocket-open) + var(--pocket-fall) * 0.9375),
+    var(--scrim-floor) var(--pocket-seal),
+    var(--scrim-floor) 100%
+  );
+
+  /*
+    THE HORIZONTAL JAMBS. The same ladder, laid out from the CORE'S EDGE
+    OUTWARD over --jamb-fall — 281.6px at 1280, 352px at 1600, 82.5px at 375 —
+    so the rung the ladder ENDS on sits at `--scrim-open - --jamb-fall`, a
+    negative position at every viewport. That is legal CSS and it is the whole
+    design: the frame cuts the ramp mid-descent instead of the ramp arriving
+    at a value the eye can find. See THE FOURTH COMPLAINT.
+
+    THE STOPS READ OUTWARD FROM THE CORE, WHICH IS WHY THE RUNG INDICES RUN
+    BACKWARDS ALONG THE LINE. At a distance of (k/16) x --jamb-fall outside
+    the core the pocket's mask is 1 - L(k/16), i.e. rung p(16-k); the core
+    itself is k = 0 and fully opaque. So the eased TOE of the ladder faces the
+    flat core, where a knee would be visible against a flat region, and the
+    steep middle faces the frame's edge, where the ramp is simply cut off and
+    there is nothing to compare it against. One knee instead of two.
+
+    The core is unchanged and still reaches full opacity at --scrim-open
+    exactly, so the whole gutter — 44px wherever the aperture is non-zero — is
+    still clearance between the veil and the first glyph.
+
+    At and below --container-wrap --scrim-open is 0, so the core is the whole
+    band and EVERY ladder stop is off-box (the leftmost at -82.5px on a phone).
+    The mask is uniformly opaque and the pocket is full-bleed. That is not a
+    degradation and it is no longer a collapse either — it is the continuous
+    limit of the same geometry, reached because the glyphs there run to within
+    12.5px of the frame's edge and there is no horizontal aperture to open. A
+    full-bleed pocket has no horizontal edge at all, and the vertical axis —
+    which --hero-headroom exists to widen — carries the softness alone.
+  */
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent calc(var(--scrim-open) - var(--jamb-fall)),
+    var(--scrim-mask-p01) calc(var(--scrim-open) - var(--jamb-fall) * 0.9375),
+    var(--scrim-mask-p02) calc(var(--scrim-open) - var(--jamb-fall) * 0.875),
+    var(--scrim-mask-p03) calc(var(--scrim-open) - var(--jamb-fall) * 0.8125),
+    var(--scrim-mask-p04) calc(var(--scrim-open) - var(--jamb-fall) * 0.75),
+    var(--scrim-mask-p05) calc(var(--scrim-open) - var(--jamb-fall) * 0.6875),
+    var(--scrim-mask-p06) calc(var(--scrim-open) - var(--jamb-fall) * 0.625),
+    var(--scrim-mask-p07) calc(var(--scrim-open) - var(--jamb-fall) * 0.5625),
+    var(--scrim-mask-p08) calc(var(--scrim-open) - var(--jamb-fall) * 0.5),
+    var(--scrim-mask-p09) calc(var(--scrim-open) - var(--jamb-fall) * 0.4375),
+    var(--scrim-mask-p10) calc(var(--scrim-open) - var(--jamb-fall) * 0.375),
+    var(--scrim-mask-p11) calc(var(--scrim-open) - var(--jamb-fall) * 0.3125),
+    var(--scrim-mask-p12) calc(var(--scrim-open) - var(--jamb-fall) * 0.25),
+    var(--scrim-mask-p13) calc(var(--scrim-open) - var(--jamb-fall) * 0.1875),
+    var(--scrim-mask-p14) calc(var(--scrim-open) - var(--jamb-fall) * 0.125),
+    var(--scrim-mask-p15) calc(var(--scrim-open) - var(--jamb-fall) * 0.0625),
+    var(--scrim-mask-on) var(--scrim-open),
+    var(--scrim-mask-on) calc(100% - var(--scrim-open)),
+    var(--scrim-mask-p15) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.0625),
+    var(--scrim-mask-p14) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.125),
+    var(--scrim-mask-p13) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.1875),
+    var(--scrim-mask-p12) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.25),
+    var(--scrim-mask-p11) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.3125),
+    var(--scrim-mask-p10) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.375),
+    var(--scrim-mask-p09) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.4375),
+    var(--scrim-mask-p08) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.5),
+    var(--scrim-mask-p07) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.5625),
+    var(--scrim-mask-p06) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.625),
+    var(--scrim-mask-p05) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.6875),
+    var(--scrim-mask-p04) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.75),
+    var(--scrim-mask-p03) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.8125),
+    var(--scrim-mask-p02) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.875),
+    var(--scrim-mask-p01) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.9375),
+    transparent calc(100% - var(--scrim-open) + var(--jamb-fall))
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent calc(var(--scrim-open) - var(--jamb-fall)),
+    var(--scrim-mask-p01) calc(var(--scrim-open) - var(--jamb-fall) * 0.9375),
+    var(--scrim-mask-p02) calc(var(--scrim-open) - var(--jamb-fall) * 0.875),
+    var(--scrim-mask-p03) calc(var(--scrim-open) - var(--jamb-fall) * 0.8125),
+    var(--scrim-mask-p04) calc(var(--scrim-open) - var(--jamb-fall) * 0.75),
+    var(--scrim-mask-p05) calc(var(--scrim-open) - var(--jamb-fall) * 0.6875),
+    var(--scrim-mask-p06) calc(var(--scrim-open) - var(--jamb-fall) * 0.625),
+    var(--scrim-mask-p07) calc(var(--scrim-open) - var(--jamb-fall) * 0.5625),
+    var(--scrim-mask-p08) calc(var(--scrim-open) - var(--jamb-fall) * 0.5),
+    var(--scrim-mask-p09) calc(var(--scrim-open) - var(--jamb-fall) * 0.4375),
+    var(--scrim-mask-p10) calc(var(--scrim-open) - var(--jamb-fall) * 0.375),
+    var(--scrim-mask-p11) calc(var(--scrim-open) - var(--jamb-fall) * 0.3125),
+    var(--scrim-mask-p12) calc(var(--scrim-open) - var(--jamb-fall) * 0.25),
+    var(--scrim-mask-p13) calc(var(--scrim-open) - var(--jamb-fall) * 0.1875),
+    var(--scrim-mask-p14) calc(var(--scrim-open) - var(--jamb-fall) * 0.125),
+    var(--scrim-mask-p15) calc(var(--scrim-open) - var(--jamb-fall) * 0.0625),
+    var(--scrim-mask-on) var(--scrim-open),
+    var(--scrim-mask-on) calc(100% - var(--scrim-open)),
+    var(--scrim-mask-p15) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.0625),
+    var(--scrim-mask-p14) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.125),
+    var(--scrim-mask-p13) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.1875),
+    var(--scrim-mask-p12) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.25),
+    var(--scrim-mask-p11) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.3125),
+    var(--scrim-mask-p10) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.375),
+    var(--scrim-mask-p09) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.4375),
+    var(--scrim-mask-p08) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.5),
+    var(--scrim-mask-p07) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.5625),
+    var(--scrim-mask-p06) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.625),
+    var(--scrim-mask-p05) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.6875),
+    var(--scrim-mask-p04) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.75),
+    var(--scrim-mask-p03) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.8125),
+    var(--scrim-mask-p02) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.875),
+    var(--scrim-mask-p01) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.9375),
+    transparent calc(100% - var(--scrim-open) + var(--jamb-fall))
+  );
+}
+
+/*
+  ── THE FIELD ─────────────────────────────────────────────────────────────
+
+  Layer two of two: the aperture, and the only part of this hero where the
+  photograph is looked at rather than read through.
+
+  It is the pocket's exact complement. Same box, same vertical vocabulary,
+  and a mask built from THE SAME LADDER VARIABLES IN REVERSE ORDER — which is
+  not a coincidence and not a second ladder to keep in step. The trapezoidal
+  ladder is symmetric (L_i + L_(16-i) = 1 at every rung: .0192 + .9808,
+  .1923 + .8077, .5 + .5), so `1 - pocket-mask` IS the pocket's own rungs
+  read backwards. One ladder, two masks, no way for them to disagree.
+
+  ── WHAT THE COMPLEMENT BUYS, AND WHAT IT COSTS ─────────────────────────
+
+  BUYS: the column carries one layer instead of two, so its effective alpha is
+  --scrim-floor-min exactly rather than --scrim-floor-min compounded with the
+  crest. 87% painted against 87% published, where it used to be 89.57% painted
+  against 86% published. See THE THIRD COMPLAINT.
+
+  COSTS: across the mask's own ramp both layers are lit at once and alpha does
+  not compose linearly, so the crest dips by up to c²/4 there. That is what
+  moved the crest from 24% to 25% — the dip is priced into the derivation, not
+  discovered after it. The ramp is 96px at 1280 and 256px at 1600, entirely
+  inside the wrap's dead space, and the text extent starts 18px and 11px
+  outside it respectively. No glyph ever stands in the blended region.
+
+  ── THE VERTICAL SHAPE ──────────────────────────────────────────────────
+
+  Crest, held flat to the aperture's top; then the eased-by-nothing linear run
+  to the sill at three quarters of the frame; then the dissolve into --ground
+  at --frame-foot. The run to the sill is deliberately NOT laddered: it is a 9
+  point change spread over 700-900px, an order of magnitude under the blend
+  budget on its own, and the header's note on the field's own knee explains why
+  intermediate rungs between the sill and opacity are not worth what they cost
+  in monotonicity.
+
+  ⚠ AND IT FAILS IN THE SAFE DIRECTION, TWICE OVER. An engine that ignores
+  `mask-image` paints BOTH layers full width — the old compounded veil, darker
+  than the guarantee at every point, never lighter. An engine that drops this
+  pseudo-element entirely loses the aperture and leaves the pocket, which is
+  the flat ink hero. Neither failure can expose a glyph.
+*/
+.scrim::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  /* The same expression as the pocket's, and it must stay the same: these two
+     masks meet at it. Written without inner parentheses for the gate's length
+     evaluator, for the reason the pocket's copy states. */
+  /*
+    ROUND SIX, THE APERTURE IS OFF AT EVERY WIDTH, AND THIS IS THE ONE KNOB
+    THAT DOES IT. Set to the gutter expression
+    `max(0px, calc(50% - var(--container-wrap) / 2))` the pocket opens a side
+    aperture above --container-wrap; set to 0px the mask ladders below are
+    degenerate (this layer fully on, the .scrim::after field fully off) and
+    the veil is uniform across x. THAT IS NOT A NEW CODE PATH: it is exactly
+    the state this file already shipped at and below --container-wrap, which
+    is the only geometry the owner never complained about.
+
+    WHY, AND IT IS NOT A TUNING RESULT. Five rounds widened the side falloff
+    and the owner still saw a box. Rendered as an image, the veil's alpha
+    field WAS a rounded rectangle, because a veil built as a 1-D vertical
+    profile MULTIPLIED BY a 1-D horizontal mask is separable, and a separable
+    product of two ramps has straight level sets with rounded corners. No
+    value of --jamb-fall removes a corner; it only rounds it. The reference
+    reads as smooth because its falloff is a single non-separable ellipse,
+    whose level sets are curves that leave the frame.
+
+    AND THE ELLIPSE CANNOT BE PORTED, FOR A REASON THAT IS MEASURED. Any
+    falloff has to live outside the protected text rectangle. At 1280 that
+    rectangle is 990x844 in a 1280x1115 band, leaving 140px left, 150px
+    right, 128px top, 143px bottom. The span law in this file's header
+    (S >= 10.5 x dLstar, dLstar ~ 30 across this depth) asks for ~315px.
+    EVERY MARGIN IS LESS THAN HALF THE REQUIRED RUN, in all four directions,
+    so no shape - ellipse, ladder or otherwise - can both reach the picture
+    and stay under one JND per 6px. The choice is a visible boundary or no
+    aperture, and the owner authorised the darker margins.
+
+    WHAT IT COST, rendered, real photograph, brightest level in the side
+    margin: 1280 57 to 45 of 256 (the 96px gutter was barely open anyway);
+    1600 158 to 54. Mean margin luminance moved 23.0 to 22.8 and 25.9 to
+    23.4 - the aperture was mostly opening onto already-dark photograph.
+    The crest keeps the picture: 109 levels at 1280, 122 at 1600, untouched.
+
+    MEASURED AFTER (veil isolated over white, alpha recovered per pixel):
+    horizontal peak 0.00 L* per 6px at 1280 and 0.22 at 1600, against the
+    reference's own 0.93 and 0.79 - i.e. FLATTER ACROSS x THAN THE REFERENCE.
+    check-hero-blend ENCLOSURE went 3.86 to 0.00 at 1280 and 3.40 to 0.00 at
+    1600 and now PASSES at every viewport, and its largest feature is
+    described in the same words it uses for the reference: a band across the
+    full width, the shape a sky makes, touching 2 of 4 borders.
+
+    TO RESTORE AN APERTURE, restore the gutter expression above - but only
+    after the LAYOUT frees a margin of about 315px on some side. Widening the
+    ramp alone is the thing that was tried five times and does not work.
+  */
+  --scrim-open: 0px;
+
+  background-image: linear-gradient(
+    180deg,
+    var(--scrim-crest) 0,
+    var(--scrim-crest) calc(var(--hero-headroom, 0px) + var(--spacing-band) * 0.28),
+    var(--scrim-sill) var(--scrim-fall),
+    var(--scrim-sill) 100%
+  );
+
+  /*
+    THE GUTTERS. The pocket's mask, inverted: nothing across the reading
+    measure, rising outward over --jamb-fall, and the mirror of that on the
+    right. Same positions, same rungs, counted the other way — at (k/16) x
+    --jamb-fall outside the core the field's mask is L(k/16), i.e. rung p(k),
+    against the pocket's p(16-k). They sum to 1 at every stop because the
+    ladder is symmetric, so there is one ladder here and no way for the two
+    masks to disagree.
+
+    ⚠ AND SINCE THE FOURTH COMPLAINT THE FIELD NEVER REACHES FULL STRENGTH
+    INSIDE THE FRAME. Its `on` stop sits at `--scrim-open - --jamb-fall`,
+    which is off-box everywhere, so at the frame's own edge the field carries
+    0.304 of its authored alpha at 1280 and 0.780 at 1600 — and the pocket
+    supplies the rest. THAT IS THE DARKENED MARGIN, and it is what this round
+    bought the missing boundary with.
+
+    At and below --container-wrap --scrim-open is 0, every ladder stop is
+    off-box, and THE FIELD DISAPPEARS ENTIRELY — the correct degenerate and
+    the exact mirror of the pocket going full-bleed there. With no dead space
+    there are no gutters to open, so the pocket carries the whole veil: crest,
+    ramp, floor and dissolve. That is why the pocket's ladder had to start at
+    the crest rather than at nothing.
+  */
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    var(--scrim-mask-on) calc(var(--scrim-open) - var(--jamb-fall)),
+    var(--scrim-mask-p15) calc(var(--scrim-open) - var(--jamb-fall) * 0.9375),
+    var(--scrim-mask-p14) calc(var(--scrim-open) - var(--jamb-fall) * 0.875),
+    var(--scrim-mask-p13) calc(var(--scrim-open) - var(--jamb-fall) * 0.8125),
+    var(--scrim-mask-p12) calc(var(--scrim-open) - var(--jamb-fall) * 0.75),
+    var(--scrim-mask-p11) calc(var(--scrim-open) - var(--jamb-fall) * 0.6875),
+    var(--scrim-mask-p10) calc(var(--scrim-open) - var(--jamb-fall) * 0.625),
+    var(--scrim-mask-p09) calc(var(--scrim-open) - var(--jamb-fall) * 0.5625),
+    var(--scrim-mask-p08) calc(var(--scrim-open) - var(--jamb-fall) * 0.5),
+    var(--scrim-mask-p07) calc(var(--scrim-open) - var(--jamb-fall) * 0.4375),
+    var(--scrim-mask-p06) calc(var(--scrim-open) - var(--jamb-fall) * 0.375),
+    var(--scrim-mask-p05) calc(var(--scrim-open) - var(--jamb-fall) * 0.3125),
+    var(--scrim-mask-p04) calc(var(--scrim-open) - var(--jamb-fall) * 0.25),
+    var(--scrim-mask-p03) calc(var(--scrim-open) - var(--jamb-fall) * 0.1875),
+    var(--scrim-mask-p02) calc(var(--scrim-open) - var(--jamb-fall) * 0.125),
+    var(--scrim-mask-p01) calc(var(--scrim-open) - var(--jamb-fall) * 0.0625),
+    transparent var(--scrim-open),
+    transparent calc(100% - var(--scrim-open)),
+    var(--scrim-mask-p01) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.0625),
+    var(--scrim-mask-p02) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.125),
+    var(--scrim-mask-p03) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.1875),
+    var(--scrim-mask-p04) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.25),
+    var(--scrim-mask-p05) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.3125),
+    var(--scrim-mask-p06) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.375),
+    var(--scrim-mask-p07) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.4375),
+    var(--scrim-mask-p08) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.5),
+    var(--scrim-mask-p09) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.5625),
+    var(--scrim-mask-p10) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.625),
+    var(--scrim-mask-p11) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.6875),
+    var(--scrim-mask-p12) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.75),
+    var(--scrim-mask-p13) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.8125),
+    var(--scrim-mask-p14) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.875),
+    var(--scrim-mask-p15) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.9375),
+    var(--scrim-mask-on) calc(100% - var(--scrim-open) + var(--jamb-fall))
+  );
+  mask-image: linear-gradient(
+    90deg,
+    var(--scrim-mask-on) calc(var(--scrim-open) - var(--jamb-fall)),
+    var(--scrim-mask-p15) calc(var(--scrim-open) - var(--jamb-fall) * 0.9375),
+    var(--scrim-mask-p14) calc(var(--scrim-open) - var(--jamb-fall) * 0.875),
+    var(--scrim-mask-p13) calc(var(--scrim-open) - var(--jamb-fall) * 0.8125),
+    var(--scrim-mask-p12) calc(var(--scrim-open) - var(--jamb-fall) * 0.75),
+    var(--scrim-mask-p11) calc(var(--scrim-open) - var(--jamb-fall) * 0.6875),
+    var(--scrim-mask-p10) calc(var(--scrim-open) - var(--jamb-fall) * 0.625),
+    var(--scrim-mask-p09) calc(var(--scrim-open) - var(--jamb-fall) * 0.5625),
+    var(--scrim-mask-p08) calc(var(--scrim-open) - var(--jamb-fall) * 0.5),
+    var(--scrim-mask-p07) calc(var(--scrim-open) - var(--jamb-fall) * 0.4375),
+    var(--scrim-mask-p06) calc(var(--scrim-open) - var(--jamb-fall) * 0.375),
+    var(--scrim-mask-p05) calc(var(--scrim-open) - var(--jamb-fall) * 0.3125),
+    var(--scrim-mask-p04) calc(var(--scrim-open) - var(--jamb-fall) * 0.25),
+    var(--scrim-mask-p03) calc(var(--scrim-open) - var(--jamb-fall) * 0.1875),
+    var(--scrim-mask-p02) calc(var(--scrim-open) - var(--jamb-fall) * 0.125),
+    var(--scrim-mask-p01) calc(var(--scrim-open) - var(--jamb-fall) * 0.0625),
+    transparent var(--scrim-open),
+    transparent calc(100% - var(--scrim-open)),
+    var(--scrim-mask-p01) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.0625),
+    var(--scrim-mask-p02) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.125),
+    var(--scrim-mask-p03) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.1875),
+    var(--scrim-mask-p04) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.25),
+    var(--scrim-mask-p05) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.3125),
+    var(--scrim-mask-p06) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.375),
+    var(--scrim-mask-p07) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.4375),
+    var(--scrim-mask-p08) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.5),
+    var(--scrim-mask-p09) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.5625),
+    var(--scrim-mask-p10) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.625),
+    var(--scrim-mask-p11) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.6875),
+    var(--scrim-mask-p12) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.75),
+    var(--scrim-mask-p13) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.8125),
+    var(--scrim-mask-p14) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.875),
+    var(--scrim-mask-p15) calc(100% - var(--scrim-open) + var(--jamb-fall) * 0.9375),
+    var(--scrim-mask-on) calc(100% - var(--scrim-open) + var(--jamb-fall))
+  );
+}
+
+/*
+  No `prefers-reduced-motion` and no `scripting: none` branch, and that is a
+  result rather than an omission: nothing in this file moves, nothing reads a
+  scroll variable, and nothing is promoted to a compositor layer. The state a
+  visitor arrives to is the only state there is — which is also why this
+  feature adds no surface to the perf gate the reference needed.
+*/
+
+/* ════════════════════════════════════════════════════════════════════════════
+   THE COLLAR — the darkening the TEXT pays for, so the BAND does not
+
+   THE COMPLAINT THIS ANSWERS, in the owner's words: "the top part is clear but
+   then the rest is black out dark see through sheet over the text". He is
+   pointing at his own crest strip — the ~110px above the first glyph, where the
+   veil is 0.25 x alpha and the skyline is sharp, warm and legible — and asking
+   why the other 1200px cannot look like that.
+
+   WHY IT COULD NOT, UNTIL NOW. A veil is a SHEET: one surface between the
+   reader and the photograph, and a sheet has to be sized by the brightest pixel
+   anywhere under any glyph. One lit window in the frame set the alpha for the
+   entire text column. That is why 34 of 256 sRGB levels survived under the
+   copy while 96-151 survived in the crest: the same photograph, two orders of
+   visibility apart, because one region had a glyph in it.
+
+   LEGIBILITY IS LOCAL. A glyph needs contrast against the pixels immediately
+   around THAT glyph — a few hundred square pixels, not a 1280x1115 rectangle.
+   Move the darkening onto the letterforms and the cost becomes proportional to
+   the INK rather than to the BAND, and everything the ink does not touch stays
+   open. That is the whole idea, and it is worth two numbers:
+
+       veil under the text     86%  ->  53%
+       sRGB levels surviving   93-166  ->  139-192   (375 / 768 / 1280 / 1600)
+
+   WHAT WAS TRIED, AND WHAT THE MEASUREMENTS SAID (Chromium, the shipped rung,
+   375/768/1280/1600, contrast taken at the worst backdrop pixel within 3px of
+   ink, ink neutralised with `color: transparent` so the treatment still paints):
+
+     -webkit-text-stroke      NO EFFECT ON THE SHADOW. A 1.2px and a 2px stroke
+                              measured identically to no stroke at all: Chromium
+                              throws text-shadow from the FILL geometry, not
+                              from the stroked outline, so a stroke buys its own
+                              rim and nothing else. It also clogs counters at
+                              10.5px. Dropped.
+     one wide soft shadow     Reaches far enough to merge between lines and
+                              becomes the sheet again, drawn slowly.
+     a ring of OFFSET shadows Physically the strongest thing measured — eight
+                              offsets on a 1.5px circle plus three wider rings
+                              held 4.39:1 at 768 with NO VEIL AT ALL. Not
+                              shipped: scripts/check-hero-contrast.mjs models an
+                              offset layer as displaced AWAY from the sample
+                              point, which is the correct worst case for ONE
+                              offset and much too pessimistic for a closed ring,
+                              so the gate cannot credit what the ring delivers.
+                              See GLYPH-LEGIBILITY.md — this is the single
+                              largest piece of picture still on the table.
+     zero-offset repetition   What ships. Fully credited, fully measurable, and
+                              measured at 0.056% of skin pixels below 4.725:1
+                              across the whole band at 768 against the shipped
+                              sheet's 0.007% — a few dozen pixels in eighty
+                              thousand, all of them single hot pixels that a
+                              20/40 observer integrates away.
+
+   THE CONTRACT. scripts/check-hero-contrast.mjs reads these rules directly and
+   requires --halo-role and --halo-type on every one of them, because it cannot
+   see the DOM and a collar credited to the wrong role is worse than a collar
+   credited to nobody. Blur radii must be literal lengths: the gate classifies a
+   shadow's tokens by first character, so calc(var(--text-fine) * 0.14) is read
+   as a COLOUR and the rule is rejected. Hence the literal px below, with the
+   fraction of the type step each one is written in the comment beside it.
+
+   WHY THIS FILE AND NOT components/site/hero-glyph.module.css. The gate reads
+   exactly three sources — this file, hero.module.css and app/globals.css. A
+   collar in a fourth file is a collar nothing checks, which by the gate's own
+   rule is worse than none.
+   ════════════════════════════════════════════════════════════════════════════ */
+/* ── 1 · THE BASE COLLAR ─────────────────────────────────────────────────
+     text-shadow INHERITS, so this one declaration reaches every run of copy
+     in the band and nothing can be missed by a selector that drifts.
+
+     THE RADII ARE 0.14 / 0.32 / 0.78 OF --text-micro (10.5px), the smallest
+     em in the band. The reach limit HALO_REACH_EM_MAX is an EM limit, so the
+     smallest run is the one that decides whether this is still a per-glyph
+     treatment or a sheet in disguise. Measured reach: 10.5px = 0.81em on
+     --text-data, 0.85em on --text-fine. The limit is 1.00em, so 0.85em is now
+     the THINNEST MARGIN THE COLLAR HAS — a future reduction of --text-micro
+     breaks the sheet test before it breaks anything else. Check it with
+     `node scripts/check-hero-contrast.mjs` before changing any hero type step.
+
+     ── WHY THE OUTER BAND IS 8.2px AND NOT 6.09px (integration, round 7) ──
+     At 6.09px the browser gate tests/e2e/hero-contrast.spec.ts:789 still found
+     single pixels under 3:1 inside three text boxes at 768: 2.56, 2.24 and
+     2.98. Those pixels sit 0.6-0.7em out from the nearest ink, which is inside
+     the legal reach but past where a 6.09px blur has anything left.
+
+     AND MORE LAYERS DO NOT HELP THERE. Measured, not assumed: taking the
+     6.09px band from 12 repetitions to 20 moved the binding pixel's luminance
+     by 0.0000. Each layer composites in 8 bits, so once a layer's own alpha at
+     that distance is under half a level it rounds away, and repeating it
+     rounds away again. Repetition buys depth only where a single layer already
+     delivers more than ~1/512 of alpha. Past that the ONLY lever is radius.
+     Widening to 8.2px moved the same three to 2.96, 2.63 and clear, and cost
+     5 percentage points of column footprint (23.7% -> 28.5% of the text column
+     darkened at 1280) plus the per-glyph look on the 11px mono, which now
+     reads as a lozenge behind the line rather than a collar around each glyph.
+
+     THE COUNTS ARE 12 / 12 / 12, and repetition rather than alpha is how the
+     depth is built: n layers of the same blur at full --ground compose to
+     1-(1-a)^n, which saturates the collar close to the stroke while leaving
+     the tail exactly as short as one layer's. Fewer, heavier layers reach
+     further for the same depth, which is the direction that becomes a sheet.
+
+     --halo-type names --text-data 400 mono because check-hero-contrast
+     credits a role at the THINNEST STEM it is painted at anywhere in the
+     band, and mono 400 (0.084em) is thinner than --text-eyebrow's mono 500
+     and thinner than --text-h1's display 200 at the phone step. */
+.ground :global(.wrap) {
+  --halo-role: --fg;
+  --halo-type: var(--text-data) 400 mono;
+  text-shadow:
+    0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground),
+    0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground),
+    0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground),
+    0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground),
+    0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground),
+    0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground),
+    0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground),
+    0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground),
+    0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground);
+}
+
+/* ── 2 · THE BINDING ROLE ────────────────────────────────────────────────
+     --fg-muted is 7.15:1 on flat ink — the weakest ink this band paints, and
+     the single number that used to force the veil to 86%. Untreated it needs
+     alpha >= 0.8595 over a #FFFFFF source pixel. With this collar it needs
+     0.32, and the veil is free to stop hiding the photograph.
+
+     SELECTED ON THE ROLE, NOT ON THE ELEMENT. Tailwind writes the role into
+     the class — text-[color:var(--fg-muted)] — so this rule follows the
+     COLOUR wherever it is painted instead of tracking a list of tag names
+     that will drift the first time the copy is re-laid-out.
+
+     Same stack as the base rule, deliberately: the collar is inherited, so
+     this rule does not change what is painted. It exists so the gate can
+     attribute the collar to this role, which it cannot do from the DOM.
+     --text-fine 400 mono is the thinnest stem the role is painted at
+     (1.008px at 12px, against --text-micro 500's 1.176px). */
+.ground :global(.wrap) [class*="--fg-muted"] {
+  --halo-role: --fg-muted;
+  --halo-type: var(--text-fine) 400 mono;
+  text-shadow:
+    0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground),
+    0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground),
+    0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground),
+    0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground),
+    0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground),
+    0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground),
+    0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground),
+    0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground),
+    0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground);
+}
+
+/* ── 3 · --fg-accent, WHICH THIS BAND PAINTS AS --fg ─────────────────────
+     .ground remaps --fg-accent to --fg above; the Threshold's "P@1 0.487"
+     run still reads the role, so the role still has to be attributed.
+     The trailing ")" in the selector is load-bearing: it keeps this off
+     text-[color:var(--fg-accent-display)], which needs the deeper collar
+     below and would be actively harmed by this one. */
+.ground :global(.wrap) [class*="--fg-accent)"] {
+  --halo-role: --fg-accent;
+  --halo-type: var(--text-data) 400 mono;
+  text-shadow:
+    0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground),
+    0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground),
+    0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground),
+    0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground),
+    0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground),
+    0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground),
+    0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground),
+    0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground),
+    0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground);
+}
+
+/* ── 4 · --fg-error AND --fg-pressed ─────────────────────────────────────
+     Neither is painted in this band today. Both are TEXT roles, both resolve
+     through .ground to a colour this collar is measured on, and both would
+     inherit this exact collar the moment a line of either appeared inside
+     .wrap — so attributing it to them is a true statement about the page,
+     not a promise about one. Written as separate rules because the contract
+     is one role per rule; the declaration is identical on purpose. */
+.ground :global(.wrap) {
+  --halo-role: --fg-error;
+  --halo-type: var(--text-data) 400 mono;
+  text-shadow:
+    0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground),
+    0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground),
+    0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground),
+    0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground),
+    0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground),
+    0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground),
+    0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground),
+    0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground),
+    0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground);
+}
+
+
+.ground :global(.wrap) {
+  --halo-role: --fg-pressed;
+  --halo-type: var(--text-fine) 400 mono;
+  text-shadow:
+    0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground),
+    0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground),
+    0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground),
+    0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground),
+    0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground),
+    0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground),
+    0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground),
+    0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground),
+    0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground), 0 0 8.2px var(--ground);
+}
+
+/* ── 5 · THE 48px FIGURE, AND THE ONE PLACE A COLLAR CAN HURT ────────────
+     --fg-accent-display is crimson-lift: luminance 0.279, which sits BETWEEN
+     flat ink and a lit window. Darkening its local ground walks the ratio
+     DOWN toward 1:1 before it comes back up the other side, so a collar too
+     shallow to cross over leaves the figure worse than bare. Over a #FFFFFF
+     source pixel with no veil the figure measures 3.35:1; at a 53% veil with
+     the base collar it would measure 1.18:1.
+
+     So this one is scaled to --text-stat (32px at the phone step) rather
+     than to --text-micro: 4.48 / 10.24 / 18.56px, the same 0.14 / 0.32 /
+     0.58 fractions, deep enough to land past the crossover. Measured reach
+     0.58em on the 32px step, 0.39em on the 48px one. */
+.ground :global(.wrap) [class*="--fg-accent-display"] {
+  --halo-role: --fg-accent-display;
+  --halo-type: var(--text-stat) 200 display;
+  text-shadow:
+    0 0 4.48px var(--ground), 0 0 4.48px var(--ground), 0 0 4.48px var(--ground), 0 0 4.48px var(--ground),
+    0 0 4.48px var(--ground), 0 0 4.48px var(--ground), 0 0 4.48px var(--ground), 0 0 4.48px var(--ground),
+    0 0 4.48px var(--ground), 0 0 4.48px var(--ground), 0 0 4.48px var(--ground), 0 0 4.48px var(--ground),
+    0 0 10.24px var(--ground), 0 0 10.24px var(--ground), 0 0 10.24px var(--ground), 0 0 10.24px var(--ground),
+    0 0 10.24px var(--ground), 0 0 10.24px var(--ground), 0 0 10.24px var(--ground), 0 0 10.24px var(--ground),
+    0 0 10.24px var(--ground), 0 0 10.24px var(--ground), 0 0 10.24px var(--ground), 0 0 10.24px var(--ground),
+    0 0 18.56px var(--ground), 0 0 18.56px var(--ground), 0 0 18.56px var(--ground), 0 0 18.56px var(--ground),
+    0 0 18.56px var(--ground), 0 0 18.56px var(--ground), 0 0 18.56px var(--ground), 0 0 18.56px var(--ground),
+    0 0 18.56px var(--ground), 0 0 18.56px var(--ground), 0 0 18.56px var(--ground), 0 0 18.56px var(--ground);
+}
+
+/* ── 6 · WHERE THE COLLAR MUST NOT GO ────────────────────────────────────
+     The solid Btn paints its own surface — background-color: var(--fg) —
+     and its label is --ground on top of it. A ground-coloured collar there
+     would smear dark blur across a light pill for no gain, because the
+     label's local ground is the pill, not the photograph. Keyed to the
+     utility that paints the fill, so it follows the fill rather than a tag
+     name; the ghost Btn beside it has a transparent background, sits
+     directly on the photograph, and KEEPS its collar. */
+.ground :global(.wrap) :is(a, button)[class~="bg-[var(--fg)]"] {
+  text-shadow: none;
+}
+
+/* ── 7 · THE TWO THINGS IN THIS BAND THAT ARE NOT TEXT ───────────────────
+     The Threshold's 2px rule and the focus ring are painted from geometry a
+     text-shadow cannot be thrown from, so they cannot wear the collar and
+     they are what now hold --scrim-floor-min at 53%: both are --fg at a 3:1
+     obligation, which needs alpha >= 0.5116 bare.
+
+     They get the outline's version of the collar anyway. A box-shadow at the
+     same three radii puts flat --ground under the bar and around the ring,
+     which is the same mechanism and the same result — it is simply a
+     darkening no gate in this repo can yet read, so it buys the page
+     legibility and buys the veil nothing. The moment
+     scripts/check-hero-contrast.mjs can model a bar the way it models a
+     stroke, this is what takes the floor from 53% to the low thirties. */
+.ground :global(.threshold-rule) {
+  box-shadow:
+    0 0 1.47px 1.47px var(--ground), 0 0 3.36px 2px var(--ground),
+    0 0 6.09px 3px var(--ground);
+}
+
+.ground :focus-visible {
+  box-shadow:
+    0 0 1.47px 1.47px var(--ground), 0 0 3.36px 2px var(--ground),
+    0 0 6.09px 3px var(--ground);
+}

@@ -1,0 +1,189 @@
+{
+  "role": "ml-engineer",
+  "profile": "rp:ml-engineer",
+  "provenance": {
+    "composer": "deterministic",
+    "model": null,
+    "builtAt": "2026-09-03T20:51:25.561Z",
+    "corpusVersion": "d748baa7cde4",
+    "corpusSize": 116,
+    "guardrailTotal": 3
+  },
+  "brief": {
+    "role_label": "ML Engineer",
+    "jd_source": "role_chip",
+    "headline": "Part of this ML Engineer profile maps to work on this site, and part of it does not.",
+    "requirements": [
+      {
+        "requirement": "Deep learning frameworks",
+        "verdict": "direct",
+        "confidence": "high",
+        "rationale": "The four retrieval encoders are Mammo-CLIP (mammography-native), OpenCLIP (generic web images), a biomedical-figure encoder, and BioCLIP (organism and tree-of-life images) — the last chosen because it shares architecture and fine-tuning schedule with the other out-of-domain encoders but not their pretraining domain.…",
+        "evidence": [
+          {
+            "evidence_id": "clm:garbage-model",
+            "quoted_claim": "ResNet34 · 94% accuracy · 100% minority recall",
+            "artifact_label": "Garbage classification — transfer learning",
+            "artifact_url": "https://duyng-portfolio.com/docs/index_image_classification.html"
+          },
+          {
+            "evidence_id": "clm:yang-encoders",
+            "quoted_claim": "Four encoder substrates, one domain-native",
+            "artifact_label": "Four encoder substrates, one domain-native",
+            "artifact_url": ""
+          }
+        ],
+        "caveat": ""
+      },
+      {
+        "requirement": "LLM and retrieval systems",
+        "verdict": "direct",
+        "confidence": "high",
+        "rationale": "The stack is Next.js 16 App Router, React 19, TypeScript in strict mode, Tailwind v4 with CSS Modules, Neon serverless Postgres, the Anthropic SDK with structured outputs, ONNX Runtime Web running a client-side CLIP ViT-B/32 int8 encoder, sharp, Zod and framer-motion, deployed on Vercel, with Cloudflare R2 for photo…",
+        "evidence": [
+          {
+            "evidence_id": "clm:mav-stack",
+            "quoted_claim": "Next.js 16 · React 19 · TS strict · Neon · Vercel",
+            "artifact_label": "mavterras.com",
+            "artifact_url": "https://mavterras.com"
+          },
+          {
+            "evidence_id": "clm:faisal-rag",
+            "quoted_claim": "RAG pipeline for CT and MRI scan retrieval",
+            "artifact_label": "SFU Faisal Lab — ROI slab retrieval engine",
+            "artifact_url": "https://github.com/dcnguyen060899/SFU_Faisal_Lab_roi_slab_retrieval_engine"
+          }
+        ],
+        "caveat": ""
+      },
+      {
+        "requirement": "Deployment and serving",
+        "verdict": "adjacent",
+        "confidence": "high",
+        "rationale": "Duy is building a containerized FastAPI evaluation service on AWS around the mammography retrieval work. He deployed it and still operates it: Vercel for hosting, Neon serverless Postgres for the data written at runtime, Cloudflare R2 for photo storage and Inngest for background jobs — which means he owns what…",
+        "evidence": [
+          {
+            "evidence_id": "clm:mav-operating",
+            "quoted_claim": "Deployed and operated on Vercel, Neon, R2 and Inngest",
+            "artifact_label": "mavterras.com",
+            "artifact_url": "https://mavterras.com"
+          },
+          {
+            "evidence_id": "clm:mav-stack",
+            "quoted_claim": "Next.js 16 · React 19 · TS strict · Neon · Vercel",
+            "artifact_label": "mavterras.com",
+            "artifact_url": "https://mavterras.com"
+          }
+        ],
+        "caveat": "The ML deployment stack is in progress, not shipped. A production web product with real users IS shipped and operated."
+      },
+      {
+        "requirement": "Evaluation and monitoring",
+        "verdict": "direct",
+        "confidence": "high",
+        "rationale": "ragas and Evidently are being wired in to watch retrieval quality drift after release. The held-out majority-class retrieval floor is P@1 = 0.487; fine-tuning the mammography-native encoder produced the only arm of twenty-four to clear it, moving from 0.513 frozen to 0.585 fine-tuned.",
+        "evidence": [
+          {
+            "evidence_id": "clm:mlops-drift-watch",
+            "quoted_claim": "ragas and Evidently watching retrieval drift",
+            "artifact_label": "ragas and Evidently watching retrieval drift",
+            "artifact_url": ""
+          },
+          {
+            "evidence_id": "clm:yang-p1-floor",
+            "quoted_claim": "P@1 0.513 to 0.585 against a 0.487 floor",
+            "artifact_label": "P@1 0.513 to 0.585 against a 0.487 floor",
+            "artifact_url": ""
+          }
+        ],
+        "caveat": "This deployment work is in flight and not shipped; Duy describes it as what he is building now, not as a system in production. VinDr-Mammo carries radiologist BI-RADS assessments, not…"
+      },
+      {
+        "requirement": "CI/CD and engineering hygiene",
+        "verdict": "direct",
+        "confidence": "high",
+        "rationale": "Quality gates are wired into the build: one verify command runs environment checks, ESLint 9 with typescript-eslint, a no-emit TypeScript pass and Vitest, and Playwright drives end-to-end tests with axe-core accessibility assertions. A dependency-free seed validator proves the committed data still satisfies both the…",
+        "evidence": [
+          {
+            "evidence_id": "clm:mav-quality-gates",
+            "quoted_claim": "verify = env, lint, typecheck, test; Playwright plus axe",
+            "artifact_label": "mavterras.com",
+            "artifact_url": "https://mavterras.com"
+          },
+          {
+            "evidence_id": "clm:mav-scope-cuts",
+            "quoted_claim": "Scope cuts traced to dated memos, enforced by a test",
+            "artifact_label": "mavterras.com",
+            "artifact_url": "https://mavterras.com"
+          }
+        ],
+        "caveat": ""
+      },
+      {
+        "requirement": "Production code quality",
+        "verdict": "direct",
+        "confidence": "high",
+        "rationale": "TypeScript runs in strict mode behind a separate no-emit typecheck gate, and runtime inputs are validated with Zod rather than cast. Evaluation is automated with reproducible, self-verifying generators in Python and pandas that recompute more than 100 reported metrics byte-exact from raw model predictions.",
+        "evidence": [
+          {
+            "evidence_id": "clm:mav-sole-author",
+            "quoted_claim": "Sole engineer — 29 of 29 commits",
+            "artifact_label": "mavterras.com",
+            "artifact_url": "https://mavterras.com"
+          },
+          {
+            "evidence_id": "clm:mav-stack",
+            "quoted_claim": "Next.js 16 · React 19 · TS strict · Neon · Vercel",
+            "artifact_label": "mavterras.com",
+            "artifact_url": "https://mavterras.com"
+          }
+        ],
+        "caveat": ""
+      },
+      {
+        "requirement": "Employment at a technology company",
+        "verdict": "no_evidence",
+        "confidence": "high",
+        "rationale": "Duy has not held a role inside a technology company. His experience is two university research positions carried at the same time during the master's, a student-organisation engineering role that shipped to a real nonprofit client and handed the system over with documentation, and a production website he designed,…",
+        "evidence": [],
+        "caveat": ""
+      },
+      {
+        "requirement": "A deployed and operated machine-learning system",
+        "verdict": "no_evidence",
+        "confidence": "high",
+        "rationale": "Duy has not yet deployed and operated a machine-learning system in production. The containerized FastAPI evaluation service on AWS, with MLflow, Airflow, ragas and Evidently, is what he is building right now — he describes it as in flight, not shipped, and so does this page. What he has deployed and does operate is a…",
+        "evidence": [],
+        "caveat": ""
+      }
+    ],
+    "strongest": "clm:garbage-model",
+    "gaps_summary": "This site does not fully evidence employment at a technology company; a deployed and operated machine-learning system. Each row above says which half is missing.",
+    "not_claimed": [
+      "Not claimed: distributed data processing in production."
+    ],
+    "closing": "Every row above links to the record it came from, and the rows this site cannot support say so.",
+    "observed_directives": []
+  },
+  "coverage": {
+    "direct": 5,
+    "adjacent": 1,
+    "partial": 0,
+    "no_evidence": 2
+  },
+  "guardrails": {
+    "citations_dropped": 0,
+    "claims_redacted": 0,
+    "numbers_rejected": [],
+    "urls_rejected": [],
+    "verdicts_downgraded": [],
+    "caveats_restored": [
+      "requirement-note:2",
+      "clm:mlops-caveat",
+      "clm:yang-label-caveat"
+    ],
+    "overclaim_flagged": false,
+    "injection_suspected": false,
+    "retractions_blocked": []
+  }
+}

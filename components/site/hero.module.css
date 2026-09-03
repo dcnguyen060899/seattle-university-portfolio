@@ -1,0 +1,780 @@
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  HERO — the photograph behind the ink ground.
+  Ported from MAVTERRAS components/site/hero.module.css. The MECHANISM is
+  theirs and is reproduced exactly; the numbers are not, because this hero
+  sits on a different ground, carries ~6x the copy, and its photograph is not
+  on disk yet.
+
+  ── THE LOAD-BEARING TRICK (do not "simplify" this) ───────────────────────
+
+  `filter: blur()` is NEVER animated. There are two stacked copies of the same
+  photograph: the soft copy (the first <img> in hero.tsx) has the blur BAKED
+  IN as a small bitmap and is never touched; .sharp sits on top and cross-fades
+  its opacity 1 -> 0 as --focus rises. Opacity is GPU-composited and
+  effectively free.
+
+  ...BUT OPACITY IS ONLY FREE ON A PROMOTED LAYER. That sentence is the whole
+  bug the reference found. .sharp reads --focus, which the scroll driver
+  rewrites every frame; while it was NOT composited each of those writes
+  repainted its whole containing layer — which also held the soft copy — so
+  every frame re-rasterised a large blurred bitmap. Their measurement, paired
+  interleaved scroll, headless Chromium 1280x800 dpr 1, n=96 hero frames per
+  arm, ratio = vsync intervals per frame (1.0x = 60fps):
+
+      .sharp unpromoted                4.0-6.0x   96% of frames over budget
+      .sharp promoted (this file)       1.00x      0% of frames over budget
+
+  THE TRAP: a will-change hint on the WRONG property makes it worse.
+
+      .sharp  will-change: transform    1.00x     <- what ships
+      .sharp  will-change: opacity      1.03x
+      .soft   will-change: transform    2.54x     <- unstable, do not add
+
+  `transform` promotes the layer, which is all the opacity cross-fade needs.
+  `opacity` additionally tells the compositor to keep the picture live, so the
+  full-resolution copy is rasterised even while it sits at opacity 0. The hint
+  stays on `transform`. If an engine regresses, RE-MEASURE; do not guess.
+
+  And the reason the soft copy is a baked bitmap rather than a live filter:
+  WebKit gives a large composited layer a TILED BACKING and rasterises those
+  tiles asynchronously. A filter is evaluated at rasterisation, so a fast
+  scroll outruns the raster and the compositor draws tiles that are not ready
+  — visible horizontal bands of unpainted background. Promotion cannot fix
+  that, because promotion changes WHEN compositing happens, not what
+  rasterisation costs. A 34px Gaussian is band-limited, so a small bitmap
+  scaled back up is visually identical and costs one decode, forever.
+  Texture is a file, never a filter.
+
+  ── WHAT IS DIFFERENT HERE, AND WHY ───────────────────────────────────────
+
+  1. NO `height: 100svh`. The reference hero is one headline, one lede and a
+     button. This one carries an eyebrow, an h1, a statement, a <Threshold>,
+     two <Readout>s, a <Limit> block and three buttons — the band is roughly
+     two viewports tall on a phone. Pinning it to the viewport would either
+     scroll internally or amputate the caveats, and the caveats are the point
+     of the band. The photograph therefore sits behind a band of natural
+     height, and --focus is mapped over the HERO's height rather than the
+     viewport's (see hooks/use-scroll-driver.ts).
+
+     WHAT *IS* PINNED IS THE PHOTOGRAPH, and only the photograph — see THE PIN
+     below. The band keeps its natural height and every word of its copy; the
+     picture box keeps the one-screenful size hero-scrim.module.css gives it
+     and stops scrolling out from under the lower half of the band. Those are
+     different claims, and the first one above is still true.
+
+  2. THE HERO COPY DOES NOT DRIFT ON --exit. The reference fades and lifts its
+     hero copy as it leaves. Here the copy is still being READ when --exit
+     starts to rise, so the driver publishes --exit and this file deliberately
+     does not consume it. It is available to any component whose content is
+     genuinely done by then.
+
+  3. THE VEIL IS NOT IN THIS FILE. `components/site/hero-scrim.module.css`
+     owns the ground, the photo box's geometry and the scrim, because those
+     are the CHECKED numbers — `npm run check:hero` re-derives the scrim's
+     alpha from app/globals.css and fails the build if it is under what any
+     ink foreground needs over a white pixel. This file owns only the
+     MECHANISM: the promoted layer, the cross-fade and the exit zoom. Two
+     modules because they have two different owners and two different gates.
+
+  4. NO COLOUR IS NAMED IN EITHER FILE. Not `#14161A`, not
+     `rgb(20 22 26 / 86%)` — the veil is `color-mix(… var(--ground) …)`,
+     resolved by the band's [data-ground="ink"].
+     scripts/check-ground-tokens.mjs enforces that, and it is right to: a
+     hand-picked near-ink in a scrim is a fourth ground nothing measured.
+
+  ═══════════════════════════════════════════════════════════════════════════
+*/
+
+/*
+  The scaled layer. Native at rest, growing on exit: rest is scale(1) — the
+  crispest presentation the master allows and the full crop framing — and the
+  1.14 growth happens as the photograph defocuses out. Scaling UP from the
+  focal origin never exposes an edge, so no overscan inset is needed.
+
+  This is the element the perf contract is about: the transform animates every
+  frame, so the promotion is required, and the hint names `transform`.
+
+  The origin reads the same --hero-pos-* pair as the frame's object-position
+  in hero-scrim.module.css (custom properties inherit), because the two must
+  agree — an origin that skips a focal-point change makes the zoom drift
+  toward the old point.
+*/
+.bg {
+  position: absolute;
+  inset: 0;
+  transform: scale(calc(1 + 0.14 * var(--focus, 0)));
+  transform-origin: var(--hero-pos-x, 50%) var(--hero-pos-y, 50%);
+  will-change: transform;
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+}
+
+/*
+  POSITIONING ONLY. The focal point, the fit and the object-position all live
+  in hero-scrim.module.css's `.focal`, which "sets only the focal point and
+  the fit, so it composes with whatever positioning the photo layers already
+  carry" — this is that positioning. Both classes go on every <img>; neither
+  works alone, and the split is deliberate: the design territory owns where
+  the photograph looks, this file owns the box it looks out of.
+*/
+.photo {
+  position: absolute;
+  inset: 0;
+}
+
+/*
+  The sharp copy. --focus 0 means SHARP, so the no-JS, pre-hydration and
+  reduced-motion states are all sharp by construction and the
+  <img fetchpriority="high"> is on screen at first paint.
+
+  will-change: transform — the promotion, NOT a hint about what animates.
+  See the file header for why naming `opacity` here measured worse.
+*/
+.sharp {
+  opacity: calc(1 - var(--focus, 0));
+  will-change: transform;
+}
+
+/* Content sits above the frame's negative z-index. Explicit rather than
+   implicit: a stacking context is easy to introduce by accident higher up. */
+/*
+  The hero's content, pushed down by the vertical aperture.
+
+  `--hero-headroom` is declared on `.ground` in hero-scrim.module.css and is
+  the single source of truth for this distance: the scrim's two gradients ramp
+  from the same offset, so the veil closes exactly where the text begins. Read
+  that block before changing this — a padding here that the scrim does not
+  know about would open a window with glyphs in it, which is the one thing the
+  aperture is not allowed to be.
+
+  Falls back to 0px, which is the pre-aperture layout: safe, just darker.
+*/
+.inner {
+  position: relative;
+  z-index: 0;
+  padding-block-start: var(--hero-headroom, 0px);
+}
+
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  THE TYPE OVER THE PHOTOGRAPH
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Everything below is a SECOND `.inner` rule on purpose: the block above is
+  the band's geometry, this one is its typography, and they change for
+  different reasons. The scale itself still lives in app/globals.css — nothing
+  here introduces a size, a face or a colour. It re-declares two of that
+  file's own custom properties inside this band, which is the mechanism
+  Tailwind v4 already gives us: `.text-micro` compiles to
+  `font-size: var(--text-micro)`, resolved AT THE ELEMENT, so a redeclaration
+  on this wrapper retypes the hero and leaves every paper band on the shipped
+  step. One scale, two registers, no fork.
+
+  ── WHY THE HERO NEEDS ITS OWN REGISTER AT ALL ────────────────────────────
+
+  The scale was designed against a flat #14161A. On a photograph the rules
+  change, and the setting this band inherited was close to worst case: 10.5px
+  and 13px mono at regular weight is thin-stemmed, low-x-height, tight-
+  countered type over a field with texture at exactly the frequency of its own
+  strokes.
+
+  MEASURED, Chromium, built page, 1280x800 dpr 1, 2026-09-03, by rendering the
+  band on FLAT INK and asking what fraction of each run's ink pixels actually
+  reach 90% of the colour the token names. That number is the honest version
+  of a contrast ratio for small type: a published 7.15:1 is a claim about a
+  pixel a 12px regular-weight monospaced stem never paints.
+
+      run                     size/weight   ink px at >=90% of nominal
+      threshold label         12 / 400                 3.0%
+      "0.513 frozen -> ..."   12 / 400                 3.6%
+      "P@1 0.487"             13 / 400                 6.4%
+      readout value           13 / 400                 7.9%
+      micro labels            10.5 / 500              15.9% and 29.6%
+
+  Three per cent. The remaining 97% of that label's ink is a blend of the
+  foreground and whatever is behind it, which is why it dissolves into a
+  photograph and why every previous round answered by darkening the
+  photograph.
+
+  ── WEIGHT, NOT SIZE. THE TRADE IS MEASURED AND IT IS NOT CLOSE ───────────
+
+  Same page, same method, one variable at a time:
+
+      change                       >=90% ink   median stem mass   band cost
+      12/400  ->  12/500              33.3%      0.70 -> 1.05      0px
+      12/400  ->  13/400              11.3%      0.70 -> 0.79      +8px, and
+                                                                   figures 2/3
+                                                                   move down 4px
+      12/400  ->  13/500              32.8%      0.70 -> 1.19      +8px
+
+  Weight buys eleven times the solid ink for nothing; the size step buys less
+  than four times and is paid for out of the above-the-fold budget the three
+  figures already had to fight for. So the mono goes to 500 and the fine/data
+  steps keep their sizes. 13/500 is no better than 12/500 and costs band.
+
+  `--text-fine` and `--text-data` compile WITHOUT a font-weight declaration
+  (only the micro and eyebrow steps carry `--text-*--font-weight` in
+  app/globals.css), so the token layer cannot reach them and the weight has to
+  be a real declaration. `:global(.font-mono)` is the honest selector for it:
+  it says "every monospaced run in this band", which is exactly the rule, and
+  it reaches the runs that components/site/evidence.tsx renders without this
+  territory reaching into that file. It does NOT reach the display face — the
+  h1, the lede and the 48px figure are not `.font-mono` — so the light-at-
+  large setting is untouched.
+
+  Does mono at 500 read as emphasis? Not when it is uniform: the eyebrow and
+  the micro labels were already 500, so this closes a split in the band rather
+  than opening one. THE RUNNING PROSE IS DELIBERATELY LEFT AT 400 — the
+  readout notes and the quoted limits are the body face, they are the quietest
+  copy in the band, and they measured 6.25:1 local at 400 against 7.52:1 at
+  500. Both clear; the register difference is worth more than the 1.3.
+
+  ── THE MICRO STEP TAKES ITS ONE SIZE INCREMENT HERE ──────────────────────
+
+  10.5px is the button/chip step and it is defensible on paper. Over a
+  photograph it is the smallest thing on the page and it carries the two
+  labels that name what the figures ARE. At 500 it goes from 15.9% / 29.6%
+  solid ink to 24.7% / 35.6% for one step up to 11px — the same size the
+  eyebrow already sets, so the band gains no new value. Measured cost:
+  band +3px at 1280 (figures move 706 -> 707), +19px at 768, +20px at 375.
+  Nothing crosses the fold. The paper bands keep 10.5px, because they have no
+  photograph to survive.
+
+  ── WHAT WAS MEASURED AND REJECTED ────────────────────────────────────────
+
+  · THE BODY FACE FOR THE SMALL ROLES. Inter at 500 measures 32.4% solid ink
+    against Plex Mono at 500's 33.3% — a wash — while carrying 15-30% more ink
+    area per run and losing the tabular alignment the figures need and the
+    monospaced vernacular the whole page is written in. The face was never the
+    problem; the weight was.
+  · TRACKING. 0.10em against 0.20em on the uppercase labels moves the band's
+    halo footprint by 0.5 of a percentage point (23.4% -> 23.9% at r=12). The
+    signature wide-tracked small caps cost essentially nothing. Keep them.
+  · LINE-HEIGHT. 1.45 against 1.80 on the quoted limits moves the same
+    footprint from 23.7% to 23.5%. Leading is not a lever here either.
+
+  ── WHAT THIS BAND CANNOT FIX FROM INSIDE ITS OWN TYPE ────────────────────
+
+  With the veil taken down to the crest strip's own 0.25 and a per-glyph pool
+  under the copy, the measured worst local contrast in the band is 2.90:1 and
+  four runs fail — and DOUBLING the pool's alpha moves that worst case to
+  3.00:1. The residual is not the ground. It is that those four runs are
+  painted in `--fg-muted`: over the same pixel, --fg-muted needs a local pool
+  of 0.792 alpha where --fg needs 0.490. Retiring the muted role in this band
+  takes the worst run to 5.34:1 and the failures to zero.
+
+  That remap belongs to `.ground` in hero-scrim.module.css, where
+  `--fg-accent` and `--rule` were retired the same way and where
+  scripts/check-hero-contrast.mjs can see it. This file's job was to make it
+  SAFE: after the changes above the hero's hierarchy is carried by case,
+  tracking, weight and size rather than by tone, so the band still reads when
+  every run is one colour.
+*/
+.inner {
+  /* The hero's step of the micro scale. Paper keeps app/globals.css's 10.5px. */
+  --text-micro: 0.6875rem;
+}
+
+.inner :global(.font-mono) {
+  font-weight: 500;
+}
+
+/*
+  THE QUOTED LIMITS GET A READING MEASURE, like every other block of prose on
+  this page.
+
+  They were the only running text on the site set to the full 1088px page
+  measure — three lines of 13.6px Inter at ~120 characters, where
+  app/globals.css publishes `--container-prose` (544px, ~66ch) for exactly
+  this and nine other bands already use it. So this is a typographic
+  correction that the photograph happens to reward: the limits are the largest
+  single mass of ink in the band (5,146 of its 17,199 ink pixels), and pulling
+  them off the right half of the column returns that area to the picture —
+  measured, the band's halo footprint at r=18 falls from 29.0% to 26.8%.
+
+  Costs 44px of band at 1280 and 22px at 768, all of it below the fold; the
+  three figures do not move. At 375 the measure was never binding and the
+  layout is byte-for-byte unchanged.
+*/
+.limits {
+  max-inline-size: var(--container-prose);
+}
+
+/*
+  With JS off nothing writes --focus, and var(--focus, 0) already means SHARP
+  — the entry state is correct with no override. What
+  still needs handling is .bg's transform (harmless at focus 0, but the
+  promotion is not) and handing back both compositor promotions, which would
+  otherwise be permanently-allocated layers backing still paints.
+*/
+@media (scripting: none) {
+  .bg {
+    transform: none;
+    will-change: auto;
+  }
+
+  .sharp {
+    opacity: 1;
+    will-change: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /*
+    Everything sits in its entry state: sharp and still. The driver never
+    writes --focus under `reduce`, so these are the
+    values the calcs compute anyway — they are insurance against a stale
+    --focus written before the preference changed, and, more importantly, the
+    place both promotions are handed back.
+  */
+  .bg {
+    transform: none;
+    will-change: auto;
+  }
+
+  .sharp {
+    opacity: 1;
+    will-change: auto;
+  }
+}
+
+
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  THE PIN — why the photograph is anchored to the VIEWPORT and not to the band
+  ═══════════════════════════════════════════════════════════════════════════
+
+  MEASURED, live, 2026-09-03, headless Chromium dpr 1:
+
+      viewport      band (#top)     photo box (.frame)   band with no photo
+      375 x 812     1685px  2.08vp        861px          824px   49%
+      768 x 1024    1285px  1.25vp       1085px          200px   16%
+      1280 x 800    1306px  1.63vp        848px          458px   35%
+      1600 x 900    1338px  1.49vp        954px          384px   29%
+
+  hero-scrim.module.css bounds the photo box to `--frame-foot` — a fraction
+  over one screenful; the number is theirs and this file must not name it —
+  for reasons that are all correct (see its "AND THEN THE PHOTOGRAPH ENDS"
+  section: the aspect ratio of a band-shaped box is unsurvivable under
+  object-fit: cover). But this band carries ~20 text runs
+  and runs 1.25–2.08 viewports. Anchored to the TOP of the band, one
+  screenful of photograph leaves 16–49% of the band with no photograph behind
+  it at all — and that region is where the readouts, the thesis line, the
+  stated limits and the buttons live.
+
+  That is the region the owner keeps describing as "a dark blur background
+  around the text that covers the background image". Four rounds of gradient
+  work could not remove it because in that region THERE IS NOTHING BEHIND THE
+  GRADIENT TO REVEAL.
+
+  ── WHY PINNING RATHER THAN GROWING THE BOX ───────────────────────────────
+
+  The obvious fix is to let .frame fill the band. Measured against the rungs
+  actually on disk (portrait 819x1024, landscape 1536x1024) it is unshippable:
+
+      viewport    band box    cover scale   width kept   CSS upscale of master
+      375 x 812   375x1685      1.65x         27.8%       819 -> 1348px  1.65x
+      768 x 1024  768x1285      1.26x         74.7%       819 -> 1028px  1.26x
+      1280 x 800  1280x1306     1.28x         65.3%      1536 -> 1959px  1.28x
+      1600 x 900  1600x1338     1.31x         81.7%      1536 -> 2011px  1.31x
+
+  At dpr 2 those are 2.5x–3.3x upscales of the master. The pipeline's own
+  manifest drops every ladder rung above native width "because emitting it
+  would upscale"; a stylesheet that upscales the same master by 1.65x is the
+  same defect spelled differently. And at 375 it throws away 72% of the
+  composition to do it.
+
+  PINNING KEEPS THE BOX EXACTLY THE SIZE IT IS TODAY — `--frame-foot`,
+  computed by hero-scrim.module.css, not by this file — and moves its ANCHOR
+  from the top of the band to the top of the viewport. Same crop, same rung,
+  same focal point, same resampling, same number the contrast gate models for
+  `frameH`. The only thing that changes is where the box sits while you read,
+  and the result is that the visible part of the band always has photograph
+  behind it:
+
+      photo covers band [min(y, bandH - frameH), + frameH]
+      reader sees band  [y, y + vh]                      for scroll y
+      => covered at every y, because frameH >= vh (the bound is over one
+         screenful) and the sticky travel stops exactly when the box's bottom
+         meets the band's bottom.
+
+  Coverage goes from 51–84% of the band (static, one position) to 100% of the
+  band (at every scroll position).
+
+  RE-MEASURED 2026-09-03 AGAINST THE CURRENT BOUND, on an immutable
+  production build rather than a dev server, 3 viewports x 5 scroll positions:
+
+      viewport      band      pin/.frame   sticky travel   uncovered visible
+      375 x 812     1507px      1072px         435px             0.0px
+      1280 x 800    1116px      1056px          60px             0.0px
+      1600 x 900    1140px      1140px           0px             0.0px
+
+  The 1600 row is the degenerate case and it is the right one: the bound
+  exceeds the band, the pin has no travel, and the geometry is identical to
+  the un-pinned hero because there was nothing to fix there. The table above
+  the fold (measured under the OLD, smaller bound) is kept because it is the
+  argument for why the pin exists; these are the numbers the page paints now.
+
+  ── WHAT THIS FILE DOES *NOT* FIX, AND MUST NOT PRETEND TO ────────────────
+
+  Coverage is necessary and NOT sufficient, and an earlier revision of this
+  paragraph got the reason wrong. It said the veil "ramps to fully opaque
+  --ground at 106svh in both of its layers" and that the fix was to extend its
+  lower stops. Both halves are false and the correction matters, because the
+  false version points the next person at a knob that will not help.
+
+  What the veil actually does: ONE layer dissolves, the unmasked wash, and it
+  reaches opaque at `--frame-foot` = `min(100%, 132svh)`. The two masked
+  layers take no part in it — hero-scrim.module.css's --scrim-fall block
+  explains why they cannot (complementary masks multiply, so a dissolve on
+  both bottoms out at 75% mid-ramp and opens a window at each gutter).
+
+  And the defect is not that the dissolve is too short. IT IS IN THE WRONG
+  COORDINATE SYSTEM. `--frame-foot` is a length in BAND coordinates that was
+  derived from where the photograph's bottom edge used to be — and the pin
+  moved that edge into VIEWPORT coordinates. The two only agree at scroll 0.
+
+  MEASURED, 2026-09-03, on an immutable production build, 9 viewports x 21
+  scroll positions = 189 samples (the frame's own rect against the band's):
+
+      the frame's bottom cut edge is exposed inside the band   0 / 189
+      the frame's top edge is exposed inside the band          0 / 189
+      visible band rows with no photograph behind them         0.0px, 15/15
+
+  The cut edge is only ever on screen at 375 and 390, at the end of the pin's
+  travel, and there `frameBottom === bandBottom` exactly — it is the band's
+  own boundary, not a cut in the middle of a picture. Everywhere else it sits
+  below the fold, because the pin holds a 132svh box against a viewport.
+
+  What that costs today, measured by hiding the picture and differencing the
+  render (mean |delta| < 1 sRGB level = the veil is opaque and the photograph
+  is not there at all):
+
+      viewport    at band top   mid-band   at band end
+      375x812        0%           26%          65%
+      390x844        0%           18%          57%
+      768x1024       4%            8%          13%
+      1280x800       0%            0%          18%
+      1600x900       0%            0%           4%
+
+  So at 375 the pin puts a photograph behind two thirds of the last screenful
+  and the dissolve paints it out again. That is not the veil being too weak in
+  the wrong place; it is the veil closing on an edge that is no longer there.
+
+  THE FIX BELONGS TO hero-scrim.module.css AND IT IS A COORDINATE, NOT A
+  DEPTH: the dissolve's terminus moves from `--frame-foot` to `100%` — the
+  band's own bottom edge, which is where the pinned frame's edge actually
+  lands. `--frame-foot` stays exactly as it is for the crop maths and for
+  `.frame`'s own block-size; only the wash's last two stops change. Reason 1
+  of that file's three (the frame's bottom rows carry point sources up to
+  sRGB 252 and must not show a cut) is then satisfied by geometry rather than
+  by paint. Reason 2 (below the foot the backdrop is #14161A exactly, so the
+  published ratios hold with no compositing) is a real cost of the change and
+  is theirs to price.
+
+  The contrast arithmetic is unchanged by any of it: the field's floor under
+  text is solved against a PURE WHITE source pixel, so it holds for any pixel
+  of the photograph, wherever the pin puts it.
+
+  ── THE BOUND IS READ, NEVER RETYPED ──────────────────────────────────────
+
+  `--hero-frame-bound` is relayed by hero.tsx, which parses it out of
+  hero-scrim.module.css exactly as scripts/check-hero-contrast.mjs does. This
+  file must not name the bound literally: that number is the design
+  territory's, it is
+  parsed by the gate, and a copy of it here is a second source of truth that
+  would silently disagree the day it moves. With the property absent the
+  fallback is `100%`, which makes the pin box the band, gives it zero sticky
+  travel, and renders EXACTLY the geometry that ships today.
+
+  ── WHY A WRAPPER RATHER THAN position: sticky ON .frame ──────────────────
+
+  .frame is `position: absolute` and belongs to another file. A sticky element
+  must be in flow, and a percentage block-size needs a definite containing
+  block — which an auto-height <section> is not. So the wrapper is absolutely
+  positioned over the band (definite height, no flow contribution, no effect
+  on the band's own layout) and the sticky box is its in-flow child. .frame
+  then resolves `min(100%, --frame-foot)` against the PIN instead of the
+  band, which evaluates to the same px at every viewport this design is
+  measured at — verified above: `.pin` and `.frame` report identical heights
+  at 375, 1280 and 1600.
+*/
+.pinWrap {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  user-select: none;
+}
+
+/*
+  The pin, and each of its three terms is doing a job.
+
+    min(100%, …)   mirrors .frame's own bound, so the box can never overhang
+                   the band on a viewport short enough for the band to be
+                   under one screenful. There the travel is simply zero and
+                   nothing sticks.
+    max(100svh, …) THE FLOOR. The pin's whole contract is "there is always a
+                   photograph behind what the reader is looking at", and a pin
+                   shorter than the viewport cannot honour it. A relayed value
+                   that is absent, stale or nonsense can therefore make the
+                   box bigger or smaller within the band, but never smaller
+                   than a screen — the failure lands on covered, not on a bare
+                   strip under the fold.
+    var(…, 100%)   the relay itself, and its fallback: with no relay the pin
+                   is the band, its travel is zero, and the render is
+                   byte-for-byte the un-pinned hero.
+
+  ONE STALENESS TO KNOW ABOUT, dev-only. The relay is parsed in hero.tsx at
+  module evaluation, so in `next dev` an edit to hero-scrim.module.css ALONE
+  can leave the old bound relayed until that module re-evaluates — observed
+  2026-09-03, when `.frame` moved 106svh -> 132svh and the running dev server
+  went on relaying 106svh. `next build` evaluates the component and compiles
+  the stylesheet in the same pass, so the shipped page cannot disagree with
+  itself; and the floor above means the stale direction costs picture height,
+  never coverage. If a dev server looks wrong after a scrim edit, restart it.
+
+  NOT PROMOTED. Sticky offsets are applied by the compositor without a
+  will-change hint, and a hint here would be a second promoted layer wrapping
+  the one .bg already has — the exact shape of the regression measured in
+  hero-scroll-perf.spec.ts. Verified: median frame ratio unchanged, 0% of
+  scroll-up frames over budget (tests/e2e/hero-scroll-perf.spec.ts, green).
+*/
+.pin {
+  position: sticky;
+  inset-block-start: 0;
+  block-size: min(100%, max(100svh, var(--hero-frame-bound, 100%)));
+}
+
+/*
+  THE PIN SURVIVES `prefers-reduced-motion: reduce`, AND THAT IS THE
+  MOTION-CORRECT ANSWER, NOT AN EXCEPTION TO THE FILE'S CONVENTION.
+
+  Every other mechanism in this file is handed back under `reduce` because
+  each of them ANIMATES: .bg transforms every frame, .sharp cross-fades every
+  frame, both off a custom property the driver rewrites. The pin animates
+  nothing. There is no transition on it, no transform, no property the driver
+  touches; `position: sticky` is layout.
+
+  And the measurement that settles it is which arm moves more pixels:
+
+      un-pinned   the photograph scrolls with the band — every background
+                  pixel translates at the full scroll velocity
+      pinned      the photograph holds still in the viewport — background
+                  pixel velocity is ZERO
+
+  Under `reduce` the driver never writes --focus, so the picture is also
+  permanently sharp and permanently at scale(1). Pinned plus reduced is
+  therefore the only configuration in this file where the background is
+  completely, literally motionless. Un-pinning it to "respect" the preference
+  would ADD motion.
+
+  It also matters that coverage is a legibility property rather than a
+  decorative one. Measured on this branch, un-pinning under `reduce` puts
+  539px of the 1507px band at 375x812 (36%) and 241px of 1115px at 1280x800
+  (22%) back onto flat ink with the copy sitting on it — the defect this whole
+  change exists to remove, handed to the readers least able to absorb it.
+
+  What `reduce` must still get, and does: no cross-fade, no zoom, no drift.
+  Those are the @media (prefers-reduced-motion: reduce) block further up this
+  file, which is unchanged — .bg and .sharp still hand back their transforms,
+  their opacity and both compositor promotions. Only the pin is exempt, and
+  only because it is the thing that stops the picture moving.
+*/
+
+
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  THE FEATHER WAS HERE, AND IT WAS REMOVED. This is the reason, kept so the
+  next person does not re-add it.
+
+  It was a second, longer darkening ramp painted inside .frame, added while
+  hero-scrim.module.css's pocket ramp was only 34-88px long. A gentler ramp
+  laid over a steeper one does dominate, and it measurably helped: the
+  flat-field metric read 4.91 -> 3.94 L* per 6px at 375.
+
+  Then the pocket's own ramp was rebuilt to spend the WHOLE vertical aperture
+  (--pocket-open went to 0), so at 375 it now runs 224px instead of 88px. The
+  feather's fall is ~150px. The gentler layer is now the veil, and the feather
+  became the steepest thing in the frame — and, because layers only ever ADD
+  alpha, it also deepened the total drop the short span has to carry.
+
+  MEASURED on the real page, same instrument (scripts/check-hero-blend.mjs,
+  flat neutral field, --page, with the isolation narrowed so the layer is
+  actually visible to it):
+
+      viewport     with feather     without
+      375x812         1.99            1.29     <- 54% worse with it
+      768x1024        1.69            1.18     <- 43% worse with it
+
+  Its own file said to re-run the sweep after any change to the veil's
+  vertical stops. The sweep was re-run and the layer lost. One ramp, one set
+  of knees, one file that owns the shape.
+  ═══════════════════════════════════════════════════════════════════════════
+*/
+
+
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  THE BOX THE VEIL PAINTS INTO — measured, so the next widening does not have
+  to re-derive it
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Five rounds of this defect have all ended at the same place: a falloff that
+  needs ~350 CSS px of span, scoped to a gutter that is 96px at 1280, 256px at
+  1600 and ZERO at every width <= 1088. The gutter is `--scrim-open` — dead
+  space outside the 68rem wrap — and it is where hero-scrim.module.css's mask
+  puts its stops. It is NOT the box. This section is the box, measured on an
+  immutable production build (Chrome, dpr 1, 2026-09-03), because the file
+  that owns the gradient cannot see any of it from inside itself.
+
+  ── 1. NOTHING CLIPS THE VEIL. NOT ANYWHERE. ──────────────────────────────
+
+  `.scrim` is a SIBLING of `.pinWrap`, `position: absolute; inset: 0` inside
+  `.ground`. Its element box is therefore the band's border box — the full
+  viewport width and the band's full natural height — at every viewport:
+
+      viewport      .scrim box       the wrap inside it      gutter/side
+      375 x 812     375 x 1507       375 (x=0)                 0px
+      768 x 1024    768 x 1124       768 (x=0)                 0px
+      1088 x 900   1088 x 1057      1088 (x=0)                 0px
+      1280 x 800   1280 x 1116      1088 (x=96)              96px
+      1600 x 900   1600 x 1140      1088 (x=256)            256px
+      1920 x 1080  1920 x 1140      1088 (x=416)            416px
+      2560 x 1440  2560 x 1140      1088 (x=736)            736px
+
+  Walking every ancestor of `.scrim` up to <html> for `overflow`, `clip-path`
+  or `contain`: the set is EMPTY. `.ground` refuses `overflow: clip` on
+  purpose (focus rings; its own comment says so), `.frame`'s `overflow: clip`
+  is on the picture and is not an ancestor of the veil, and the `.pinWrap`
+  added by THE PIN is a sibling.
+
+  So a gradient on `.scrim` may run the full 375..2560px of width and the full
+  1057..1507px of height. The 96px is a choice of stop position, not a wall.
+  A wash whose falloff is scoped to the FRAME rather than to the gutter has
+  room at every viewport including the phone, where the gutter has none.
+
+  THE ONE PRICE, and it is the trade this round exists to make: a falloff that
+  wide reaches the margins, so the margins get slightly darker too. That is
+  what the reference buys its seamlessness with — its pocket is a radial whose
+  radius covers most of the frame, so the falloff never terminates inside the
+  visible area and there is no boundary to perceive because there is no
+  boundary.
+
+  ── 2. THE VEIL IS A SQUASHING LAYER, AND IT IS 4.6x ITS OWN BOX ──────────
+
+  Read off Chromium's layer tree (CDP LayerTree + snapshotCommandLog), NOT
+  reasoned about:
+
+      layer                       size           compositing reason
+      DIV .pin                     1280 x 1056   Overlap        (draws nothing)
+      DIV .bg                      1280 x 1056   WillChangeTransform
+      DIV .layer.sharp             1280 x 1056   WillChangeTransform
+      DIV .scrim                   1280 x 5168   Overlap    <- 143 text blobs
+
+  `.bg` and `.sharp` are promoted on purpose (the file header's numbers).
+  `.scrim` is promoted because it OVERLAPS them, and Chromium then squashes
+  every later non-composited thing that also overlaps into the same backing.
+  The snapshot's paint ops say what ended up in there: 143 `drawTextBlob`
+  spanning document y 200 .. 4675 — the hero's entire copy plus the bands
+  below it. Same shape at every viewport (375: 375x6032/147 blobs; 1600:
+  1600x5389/141).
+
+  TWO CONSEQUENCES FOR THE WASH, both hard:
+
+    a. A repaint of the veil is a repaint of ~5,000px of page, not of the
+       1,116px band. At dpr 2 that backing is ~106 MB. Cost the gradient
+       accordingly — it is rasterised once, so a wide radial is fine, but
+
+    b. THE SCRIM MUST NEVER READ A PER-FRAME CUSTOM PROPERTY. The driver
+       rewrites --focus on <html> every frame; `.bg` and `.sharp` consume it
+       and are promoted, which is why that is free. If `.scrim` consumed it,
+       every frame would re-rasterise the squashing layer AND the 143 glyph
+       runs inside it. hero-scrim.module.css already declines a scroll-linked
+       scrim for a contrast reason ("a floor you can scroll out of is not a
+       floor"); this is the second, independent reason, and it also rules out
+       the "third additive layer" that block leaves the door open to unless
+       that layer is a separate promoted element.
+
+    TRIED AND REJECTED, MEASURED: `contain: paint` on `.pinWrap` to stop the
+    squashing. It changes the layer tree not at all — .scrim stays 5168px with
+    143 blobs at 1280, 6032/147 at 375 — and it is pixel-identical, so it buys
+    nothing and is not worth the containment's side effects. `contain: paint`
+    on `.ground` would probably work and must not be used: that element
+    refuses paint containment for the same reason it refuses `overflow: clip`,
+    and this band ends in three focusable controls.
+
+  ── 3. BANDING: REAL OVER A FLAT FIELD, NOT REAL OVER THIS PHOTOGRAPH ─────
+
+  A wide shallow ramp quantises, and 8-bit contours read as their own kind of
+  boundary. Measured by injecting candidate radial washes at three depths and
+  counting, along one scanline, runs of a single 8-bit value longer than the
+  6px CSF window (the blend gate's own window):
+
+      1600x900, horizontal      runs > 6px      longest run
+        flat field, wash 24%        24            629px
+        flat field, wash 12%        97            339px   <- textbook banding
+        flat field, wash  8%         8            753px
+        real photograph, wash 24%   20             24px
+        real photograph, wash 12%   16             18px
+        real photograph, shipped    25             24px
+
+      1280x800, horizontal
+        real photograph, shipped    26             24px
+        real photograph, wash 24%    5              8px   <- BETTER than shipped
+        real photograph, wash  8%   26             24px
+
+  Two things follow. The photograph's own texture dithers the ramp, so over
+  the real image a wash at ~24% peak does not band — it measurably REDUCES the
+  contouring the shipped scrim already has. And the flat-field case, where it
+  bands badly, is exactly the region below the dissolve where the veil has
+  painted the photograph out — so the coordinate fix in THE PIN removes the
+  banding risk along with the plate.
+
+  Depth matters in the counter-intuitive direction: 12% and 8% band worse than
+  24%, because a shallower ramp traverses fewer 8-bit levels over the same
+  span and so spreads its steps further apart. "Slightly darker margins" is
+  the depth banding likes. Re-measure after the wash lands rather than
+  assuming; if it does band, the fix is a pre-rasterised dither tile — TEXTURE
+  IS A FILE, never `feTurbulence` and never `backdrop-filter` — and that needs
+  a generator in scripts/, which is a different territory from this one.
+
+  ⚠ AND THE EDGE GATE CANNOT SEE BANDING. Each contour step is one sRGB level
+  (~0.35 L* down at these values), far under check-hero-blend's budget of 1.00
+  L* per 6px, so a render full of concentric rings scores green. The gate
+  measures a step; banding is a repeated step. Use the run-length metric
+  above. (Write the unit as "L* per 6px" in this file, never as "L*" followed
+  by a slash: that sequence closes the CSS comment and breaks the build.)
+
+  ── 4. WHY THE VEIL STAYS ANCHORED TO THE BAND AND THE PICTURE DOES NOT ───
+
+  The two are anchored to different things and that asymmetry is correct.
+
+  The veil's job is legibility of TEXT, and the text scrolls with the band. A
+  viewport-anchored veil would slide out from under the headline on the first
+  scroll — its transparent crest is legal only because it is provably
+  text-free, and pinning it would put glyphs in the crest. So: band.
+
+  The picture's job is to be behind whatever the reader is looking at, and
+  what the reader is looking at is the viewport. So: viewport.
+
+  The consequence is that veil and picture move relative to each other, and
+  the pairing of "veil density here" with "photo content here" changes with
+  scroll. That does not weaken the guarantee: the veil's floor is solved
+  against a PURE WHITE source pixel, so it holds for any pixel of the
+  photograph, wherever the pin puts it. It is also the one arrangement in
+  which the background has zero pixel velocity, which is why the pin survives
+  `prefers-reduced-motion` (see THE PIN SURVIVES above; re-verified — under
+  `reduce` --focus is never written, `.bg` transform is `none`, both
+  `will-change` hints are handed back to `auto`, and the pin stays sticky).
+
+  A wash positioned relative to the FRAME would travel with the photograph.
+  Do not build one. If a future veil genuinely needs both behaviours, it is
+  two elements — a band-anchored one shaped to the text and a pinned one
+  shaped to the picture — not one element with a compromise origin.
+  ═══════════════════════════════════════════════════════════════════════════
+*/

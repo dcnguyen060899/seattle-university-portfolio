@@ -1,0 +1,320 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://duyng-portfolio.com/schemas/corpus/misc.schema.json",
+  "title": "SupportingEntities",
+  "description": "Schemas for the supporting corpus files: orgs, people, roles, artifacts, concepts, skills, gaps, disputes, role-profiles, allowed-non-claim-numbers and meta. verify-corpus.mjs selects a subschema by $defs key.",
+  "$defs": {
+    "org": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "kind"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^org:[a-z0-9]+(-[a-z0-9]+)*$" },
+          "name": { "type": "string", "minLength": 2 },
+          "kind": { "enum": ["university", "research-lab", "student-organisation", "nonprofit", "company", "consortium", "conference", "funder"] },
+          "parentOrgId": { "type": ["string", "null"], "pattern": "^org:[a-z0-9]+(-[a-z0-9]+)*$" },
+          "url": { "type": ["string", "null"] },
+          "note": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "person": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "title", "orgId"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^per:[a-z0-9]+(-[a-z0-9]+)*$" },
+          "name": { "type": "string", "minLength": 2 },
+          "title": { "type": "string", "minLength": 2 },
+          "orgId": { "type": "string", "pattern": "^org:[a-z0-9]+(-[a-z0-9]+)*$" },
+          "url": { "type": ["string", "null"] },
+          "note": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "role": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "orgId", "period", "kind", "commitment", "status", "weight", "summary"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^rol:[a-z0-9]+(-[a-z0-9]+)*$" },
+          "title": { "type": "string", "minLength": 3 },
+          "orgId": { "type": "string", "pattern": "^org:[a-z0-9]+(-[a-z0-9]+)*$" },
+          "advisorIds": { "type": "array", "items": { "type": "string", "pattern": "^per:[a-z0-9]+(-[a-z0-9]+)*$" } },
+          "period": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["start", "end", "precision"],
+            "properties": {
+              "start": { "type": ["string", "null"], "pattern": "^[0-9]{4}(-[0-9]{2})?$" },
+              "end": { "type": ["string", "null"], "pattern": "^[0-9]{4}(-[0-9]{2})?$" },
+              "precision": { "enum": ["month", "quarter", "year"] }
+            }
+          },
+          "kind": { "enum": ["research", "engineering", "study", "volunteer", "self-directed"] },
+          "commitment": { "enum": ["full-time", "part-time", "concurrent-with-study", "unknown"] },
+          "status": { "enum": ["verified", "disputed"] },
+          "ongoing": { "type": "boolean", "description": "True when the role has not ended. Copy must use the present tense (Addendum A.5)." },
+          "weight": { "type": "number", "minimum": 0, "maximum": 1, "description": "Narrative weight per BRIEF section 2." },
+          "summary": { "type": "string", "minLength": 20, "maxLength": 400 },
+          "note": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "artifact": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "kind", "title", "url", "access"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$" },
+          "kind": { "enum": ["paper", "report", "repo", "website", "page", "pdf", "dataset", "award-page", "catalog-page", "post", "code", "database", "image"] },
+          "title": { "type": "string", "minLength": 3 },
+          "url": { "type": ["string", "null"], "description": "null when access is not 'public'." },
+          "access": { "enum": ["public", "on-request", "under-review", "private"] },
+          "roleId": { "type": ["string", "null"], "pattern": "^rol:[a-z0-9]+(-[a-z0-9]+)*$" },
+          "legacyPath": { "type": ["string", "null"], "description": "A path under public/ that MUST keep resolving (BRIEF section 6). Checked by C12." },
+          "provenance": {
+            "type": ["object", "null"],
+            "additionalProperties": false,
+            "description": "REQUIRED on any artifact this site PUBLISHES rather than merely cites — an image, in practice. Every other artifact record points OUTWARD at something Duy made or something a reader can open; a published image is the one case where the page reproduces a work whose rights may belong to someone else, and where the reader can be misled about what the picture even is. This block is what makes 'where did this come from', 'what may the page say about it' and 'does it imply an endorsement' answerable rather than assumed. Checked by C15.",
+            "required": [
+              "status", "origin", "depicts", "rightsBasis", "attributionRequired",
+              "captionRule", "captionText", "endorsement", "affiliationBasis",
+              "affiliationStatement", "assetDir", "sourcePaths", "sources",
+              "verifiedOn", "verificationPath", "openQuestions",
+              "containsThirdPartyMarks", "disclosureRequired", "sourceImagesProvenance"
+            ],
+            "properties": {
+              "status": {
+                "enum": ["pending-owner", "verified", "blocked"],
+                "description": "pending-owner = the origin has NOT been stated; the image may render as decoration and NOTHING may be asserted about it. verified = origin and rights recorded and dated. blocked = the answer came back and the image cannot ship; C15 fails the build if its files are still on disk."
+              },
+              "origin": {
+                "enum": ["unknown", "owner-photograph", "institutional-asset", "licensed-stock", "ai-generated", "ai-generated-composite", "third-party"],
+                "description": "'unknown' is the only legal value while status is pending-owner, and it is a statement of ignorance, not a guess. 'ai-generated' and 'ai-generated-composite' are called out separately because a synthetic image of a real, named place presented as a photograph is an unstated claim, and C15 forces either of them into a caption. 'ai-generated-composite' is the narrower case the hero is in: synthesized from several source images whose own origins are unstated (see sourceImagesProvenance)."
+              },
+              "depicts": { "type": "string", "minLength": 10, "description": "What the frame shows, as a CLASSIFICATION rather than a caption: 'real-place' means the image depicts an identifiable real location, which is the fact that makes a synthetic origin worth disclosing. It never reaches a reader — heroAltText() returns '' unconditionally, because the hero image is decorative and its disclosure is a visible page element (Addendum F, R-22), never an attribute only a machine reads." },
+              "rightsBasis": { "type": ["string", "null"], "minLength": 10, "description": "The licence or permission that makes publishing this lawful, in words. null while pending: 'we do not know' is not the same as 'no licence is needed'." },
+              "attributionRequired": { "type": ["boolean", "null"], "description": "null while pending — deliberately three-valued. `false` asserts that no credit is owed, and that is exactly the assertion an unanswered provenance record is not allowed to make." },
+              "captionRule": {
+                "enum": ["pending", "none", "attribution", "disclosure"],
+                "description": "What the page must SAY about the image. 'none' = decorative background, no caption (the ordinary case for a photograph the owner took). 'attribution' = a credit line the licence requires. 'disclosure' = the image is AI-generated or a render and the page must say so. 'pending' = the question is open, so the page says nothing at all."
+              },
+              "captionText": { "type": ["string", "null"], "minLength": 8, "maxLength": 300, "description": "The EXACT line rendered, written by a human in advance. Not assembled from fields at render time." },
+              "endorsement": {
+                "enum": ["none", "permitted-use", "claimed"],
+                "description": "What the depicted institution has actually granted. 'none' = nothing; the page must not imply otherwise. 'claimed' exists only so that a false value in this field is a schema-legal, reviewable statement rather than an omission."
+              },
+              "affiliationBasis": { "type": "string", "pattern": "^clm:[a-z0-9]+(-[a-z0-9]+)*$", "description": "The claim that says what the relationship to the depicted institution IS. The agent can then never overstate it, because the record it would have to cite says 'student'." },
+              "affiliationStatement": { "type": "string", "minLength": 40, "maxLength": 400, "description": "The sentence a surface renders when it pairs this image with the institution's marks." },
+              "assetDir": { "type": ["string", "null"], "description": "Repo-relative directory holding the derived renditions. C15 treats any image file in it as 'the asset is on disk'." },
+              "sourcePaths": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 4 }, "description": "Every path the master may legitimately arrive at. Listed rather than inferred by extension-swapping, so the contract with the owner is readable." },
+              "sources": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^src:[a-z0-9]+(-[a-z0-9]+)*$" } },
+              "verifiedOn": { "type": ["string", "null"], "format": "date" },
+              "verificationPath": { "type": "string", "minLength": 4 },
+              "openQuestions": { "type": "array", "items": { "type": "string", "minLength": 10 }, "description": "Non-empty while status is pending-owner. These are the sentences the owner answers; they are printed verbatim by C15's warning." },
+              "containsThirdPartyMarks": { "type": "boolean", "description": "Does the frame render a third party's name, wordmark or banner? True is not by itself a bar to publishing decorative art, but combined with a synthetic origin it is what turns an undisclosed image into an implied endorsement — which is why it is recorded as a field rather than left to a reviewer's eye." },
+              "disclosureRequired": { "type": "boolean", "description": "The record's own verdict, independent of captionRule, so the two can be checked against each other. C15 fails when this is true and captionRule is not \"disclosure\"." },
+              "sourceImagesProvenance": { "type": "string", "minLength": 4, "description": "The chain of title BEHIND the image, which is a different question from the image's own origin. \"unstated\" is the honest value for a composite the owner synthesized from images he has not identified: an internal note, never surfaced (Addendum F, R-26)." },
+              "note": { "type": ["string", "null"] }
+            }
+          },
+          "note": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "concept": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label", "family", "aliases", "adjacent", "negativeGapId"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^cpt:[a-z0-9]+(-[a-z0-9]+)*$" },
+          "label": { "type": "string", "minLength": 1, "description": "minLength 1, not 2: the R concept and the R gap are legitimately one character long." },
+          "family": { "enum": ["method", "tooling", "domain", "infrastructure", "communication", "scale", "rigor", "language", "frontend", "practice"] },
+          "aliases": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 2 },
+            "description": "Lowercased surface forms a JD may use. Matched on word boundaries, longest-first, with each matched span consumed. Plurals and hyphen/space variants are listed explicitly: no stemming, because a stemmer's mistakes are invisible and an alias list's are readable."
+          },
+          "adjacent": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "weight", "why"],
+              "properties": {
+                "id": { "type": "string", "pattern": "^cpt:[a-z0-9]+(-[a-z0-9]+)*$" },
+                "weight": { "type": "number", "minimum": 0.1, "maximum": 0.9 },
+                "why": { "type": "string", "minLength": 10 }
+              }
+            },
+            "description": "Related-but-not-the-same. Weight is strictly below 1: an adjacent hit can never outscore a direct one. Every edge carries `why` so a reviewer can disagree with it."
+          },
+          "negativeGapId": { "type": ["string", "null"], "pattern": "^gap:[a-z0-9]+(-[a-z0-9]+)*$" },
+          "note": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "skill": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label", "family", "level", "concepts", "groundedIn"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^skl:[a-z0-9]+(-[a-z0-9]+)*$" },
+          "label": { "type": "string", "minLength": 1 },
+          "family": { "enum": ["language", "ml", "data", "infra", "frontend", "practice"] },
+          "level": {
+            "enum": ["applied-in-production", "applied-in-research", "applied-in-coursework", "familiar"],
+            "description": "FOUR ORDERED BUCKETS, NO PERCENTAGES. A percentage on a skill is a number with no measurement behind it and this corpus has no way to source one."
+          },
+          "concepts": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^cpt:[a-z0-9]+(-[a-z0-9]+)*$" } },
+          "groundedIn": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "pattern": "^clm:[a-z0-9]+(-[a-z0-9]+)*$" },
+            "description": "NON-NEGOTIABLE, minItems 1. A skill nobody can point at a claim for cannot be written into the file."
+          },
+          "note": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "gap": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label", "concepts", "honestAnswer", "severity", "disclose", "nearestEvidence", "lastReviewed"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^gap:[a-z0-9]+(-[a-z0-9]+)*$" },
+          "label": { "type": "string", "minLength": 1 },
+          "concepts": { "type": "array", "items": { "type": "string", "pattern": "^cpt:[a-z0-9]+(-[a-z0-9]+)*$" } },
+          "honestAnswer": { "type": "string", "minLength": 40, "description": "THE SENTENCE THE AGENT SAYS. Written in advance, by a human, on a good day — not improvised by a model under pressure to be impressive." },
+          "nearestEvidence": { "type": "array", "items": { "type": "string", "pattern": "^clm:[a-z0-9]+(-[a-z0-9]+)*$" }, "description": "The closest true thing, offered AFTER the honest answer and never instead of it." },
+          "severity": { "enum": ["hard-blocker", "trainable", "adjacent-experience"] },
+          "disclose": { "type": "boolean", "description": "false = the agent declines and defers to Duy. Reserved for protected-status questions." },
+          "lastReviewed": { "type": "string", "format": "date" },
+          "reviewEvery": { "type": "integer", "minimum": 30, "maximum": 1095 },
+          "note": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "dispute": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "question", "positions", "resolution", "agentGuidance", "raisedOn", "blocksClaims"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^dsp:[a-z0-9]+(-[a-z0-9]+)*$" },
+          "question": { "type": "string", "minLength": 10 },
+          "positions": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["sourceId", "value", "sourceDate", "locator"],
+              "properties": {
+                "sourceId": { "type": "string", "pattern": "^src:[a-z0-9]+(-[a-z0-9]+)*$" },
+                "value": { "type": "string", "minLength": 3 },
+                "sourceDate": { "type": "string", "minLength": 3 },
+                "locator": { "type": "string", "minLength": 3 }
+              }
+            }
+          },
+          "resolution": { "enum": ["unresolved", "reconciled", "owner-resolved"] },
+          "reconciledAs": { "type": ["string", "null"] },
+          "resolvedValue": { "type": ["string", "null"] },
+          "resolvedOn": { "type": ["string", "null"], "format": "date" },
+          "leaning": { "type": ["string", "null"], "description": "A recommendation, explicitly NOT a decision. Rendered nowhere." },
+          "agentGuidance": { "type": "string", "minLength": 30, "description": "WHAT THE AGENT SAYS when the topic comes up. While resolution is 'unresolved' it must not assert either position." },
+          "raisedOn": { "type": "string", "format": "date" },
+          "blocksClaims": { "type": "array", "items": { "type": "string", "pattern": "^clm:[a-z0-9]+(-[a-z0-9]+)*$" } }
+        }
+      }
+    },
+    "roleProfile": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label", "blurb", "requirements"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^rp:[a-z0-9]+(-[a-z0-9]+)*$" },
+          "label": { "type": "string", "minLength": 3 },
+          "blurb": { "type": "string", "minLength": 20 },
+          "requirements": {
+            "type": "array",
+            "minItems": 3,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "label", "weight", "concepts", "pinned"],
+              "properties": {
+                "id": { "type": "string", "pattern": "^r:[a-z0-9]+(-[a-z0-9]+)*$" },
+                "label": { "type": "string", "minLength": 3 },
+                "weight": { "type": "number", "minimum": 0.1, "maximum": 1 },
+                "concepts": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^cpt:[a-z0-9]+(-[a-z0-9]+)*$" } },
+                "pinned": { "type": "array", "items": { "type": "string", "pattern": "^clm:[a-z0-9]+(-[a-z0-9]+)*$" } },
+                "fallback": { "type": ["string", "null"], "description": "The honest framing a renderer must keep when this requirement is weak. Not model output." }
+              }
+            }
+          }
+        }
+      }
+    },
+    "allowedNumber": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["value", "why"],
+        "properties": {
+          "value": { "type": "string", "minLength": 1 },
+          "why": { "type": "string", "minLength": 10, "description": "Every entry is an identifier or a structural number, never a measurement. If this list starts growing with things that look like results, the review notices — that is the mechanism." }
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "generatedAt", "corpusHash", "counts", "note"],
+      "properties": {
+        "version": { "type": "integer", "minimum": 1 },
+        "generatedAt": { "type": ["string", "null"] },
+        "corpusHash": { "type": ["string", "null"] },
+        "counts": { "type": "object" },
+        "note": { "type": "string", "minLength": 20 }
+      }
+    },
+    "fischerSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["generatedAt", "databasePath", "databaseMtime", "readOnly", "counts", "paradigms", "depthSource", "rawArchive"],
+      "properties": {
+        "generatedAt": { "type": "string", "format": "date" },
+        "databasePath": { "type": "string" },
+        "databaseMtime": { "type": ["string", "null"] },
+        "readOnly": { "type": "boolean" },
+        "counts": { "type": "object" },
+        "paradigms": { "type": "object" },
+        "depthSource": { "type": "object" },
+        "rawArchive": { "type": "object" },
+        "note": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

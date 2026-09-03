@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://duyng-portfolio.com/schemas/corpus/claim.schema.json",
+  "title": "EvidenceClaim",
+  "description": "One evidence atom. The statement is the sentence a surface is licensed to assert, verbatim or lightly re-cased. Retractions live in retractions.json, not here: a claim record is never a tombstone.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "id", "kind", "subject", "statement", "short", "status", "tense",
+      "confidence", "evidenceStrength", "sources", "verificationPath",
+      "concepts", "surfaces", "asserted", "lastReviewed", "reviewEvery"
+    ],
+    "properties": {
+      "id": { "type": "string", "pattern": "^clm:[a-z0-9]+(-[a-z0-9]+)*$" },
+      "kind": {
+        "enum": ["metric", "fact", "narrative", "caveat"],
+        "description": "metric = carries a number covered by the C8 numeric gate. fact = a checkable non-numeric assertion. narrative = a framing sentence built only from other claims (derivedFrom non-empty). caveat = an honesty rider emitted WITH the claims that list it."
+      },
+      "subject": {
+        "type": "string",
+        "pattern": "^(rol|art|org|per|skl):[a-z0-9]+(-[a-z0-9]+)*$",
+        "description": "What this claim is ABOUT. Exactly one subject, so 'tell me about the Fischer work' is a filter, not a search."
+      },
+      "statement": { "type": "string", "minLength": 12, "maxLength": 620 },
+      "short": { "type": "string", "minLength": 3, "maxLength": 90 },
+      "value": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["display", "numbers", "unit", "baseline", "n"],
+        "description": "REQUIRED when kind = metric. The single source of every digit that reaches a surface.",
+        "properties": {
+          "display": { "type": "string", "minLength": 1 },
+          "numbers": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" },
+            "description": "Every numeric token in display, as written, including sign and decimals. If a quantity can be rendered two ways (0.487 and 48.7%), list BOTH. This array feeds the C8 allowlist."
+          },
+          "unit": { "type": ["string", "null"] },
+          "baseline": { "type": ["string", "null"], "description": "What the value is measured against, in words. Required in practice when display carries a delta." },
+          "n": { "type": ["string", "null"] }
+        }
+      },
+      "period": {
+        "type": ["object", "null"],
+        "additionalProperties": false,
+        "required": ["start", "end", "precision"],
+        "properties": {
+          "start": { "type": ["string", "null"], "pattern": "^[0-9]{4}(-[0-9]{2})?$" },
+          "end": { "type": ["string", "null"], "pattern": "^[0-9]{4}(-[0-9]{2})?$", "description": "null = ongoing." },
+          "precision": { "enum": ["month", "quarter", "year"] }
+        }
+      },
+      "status": {
+        "enum": ["verified", "in-progress", "historical", "disputed"],
+        "description": "verified = happened, sourced, current. in-progress = underway and NOT shipped; copy stays present-progressive. historical = true and sourced but from a superseded phase; assertable, de-weighted. disputed = two sources of Duy's own disagree; NOT assertable, agent reports the disagreement."
+      },
+      "tense": { "enum": ["past", "present", "present-progressive"] },
+      "confidence": { "enum": ["high", "medium", "low"] },
+      "evidenceStrength": {
+        "enum": ["production", "research", "coursework", "personal-project", "credential"],
+        "description": "WHAT KIND of experience this is. Load-bearing for honesty: it is what lets a fit brief say 'coursework, not production' instead of letting a course sit silently next to a job."
+      },
+      "sources": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^src:[a-z0-9]+(-[a-z0-9]+)*$" } },
+      "verificationPath": { "type": "string", "minLength": 4, "description": "THE ONE THING A SKEPTIC OPENS. Repo-relative path (optionally with :Lnn), a git-object locator, an absolute local archive path, or an absolute URL." },
+      "verifiedOn": { "type": ["string", "null"], "format": "date", "description": "When the value was last checked against the primary source. MANDATORY on claims about live, moving work (Addendum A.5) — enforced by C13." },
+      "quote": { "type": ["string", "null"], "maxLength": 500 },
+      "caveats": { "type": "array", "items": { "type": "string", "pattern": "^clm:[a-z0-9]+(-[a-z0-9]+)*$" } },
+      "concepts": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^cpt:[a-z0-9]+(-[a-z0-9]+)*$" } },
+      "skills": { "type": "array", "items": { "type": "string", "pattern": "^skl:[a-z0-9]+(-[a-z0-9]+)*$" } },
+      "artifacts": { "type": "array", "items": { "type": "string", "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$" } },
+      "derivedFrom": { "type": "array", "items": { "type": "string", "pattern": "^clm:[a-z0-9]+(-[a-z0-9]+)*$" }, "description": "REQUIRED and non-empty for kind=narrative. A narrative sentence may combine claims; it may not add a fact." },
+      "surfaces": { "type": "array", "items": { "enum": ["page", "resume", "jsonld", "agent", "internal"] } },
+      "asserted": { "type": "boolean", "description": "May a surface state this as fact? MUST be false for status=disputed." },
+      "disputeId": { "type": ["string", "null"], "pattern": "^dsp:[a-z0-9]+(-[a-z0-9]+)*$" },
+      "lastReviewed": { "type": "string", "format": "date" },
+      "reviewEvery": { "type": "integer", "minimum": 30, "maximum": 1095 },
+      "note": { "type": ["string", "null"], "description": "For maintainers. Never rendered." }
+    },
+    "allOf": [
+      { "if": { "properties": { "kind": { "const": "metric" } }, "required": ["kind"] },
+        "then": { "required": ["value"] } },
+      { "if": { "properties": { "kind": { "const": "narrative" } }, "required": ["kind"] },
+        "then": { "required": ["derivedFrom"], "properties": { "derivedFrom": { "minItems": 1 } } } },
+      { "if": { "properties": { "status": { "const": "disputed" } }, "required": ["status"] },
+        "then": { "required": ["disputeId"], "properties": { "asserted": { "const": false } } } },
+      { "if": { "properties": { "status": { "const": "in-progress" } }, "required": ["status"] },
+        "then": { "properties": { "tense": { "const": "present-progressive" } } } }
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+[
+  { "id": "org:seattle-u", "name": "Seattle University", "kind": "university", "parentOrgId": null, "url": "https://www.seattleu.edu/science-engineering/discover-data-science/", "note": null },
+  { "id": "org:su-cns-lab", "name": "Computational Neuroscience Lab, Seattle University", "kind": "research-lab", "parentOrgId": "org:seattle-u", "url": null, "note": null },
+  { "id": "org:sfu", "name": "Simon Fraser University", "kind": "university", "parentOrgId": null, "url": null, "note": null },
+  { "id": "org:sfu-blueprint", "name": "SFU Blueprint", "kind": "student-organisation", "parentOrgId": "org:sfu", "url": "https://sfublueprint.org", "note": null },
+  { "id": "org:sfu-faisal-lab", "name": "SFU Faisal Lab", "kind": "research-lab", "parentOrgId": "org:sfu", "url": null, "note": null },
+  { "id": "org:mosaic", "name": "MOSAIC", "kind": "nonprofit", "parentOrgId": null, "url": null, "note": "Canadian immigrant- and refugee-settlement organisation; the client SFU Blueprint built for." },
+  { "id": "org:uc-berkeley", "name": "UC Berkeley College of Engineering", "kind": "university", "parentOrgId": null, "url": null, "note": null },
+  { "id": "org:mavterras", "name": "MAVTERRAS Design + Build", "kind": "company", "parentOrgId": null, "url": "https://mavterras.com", "note": "Duy's brother's construction company. Duy is the sole engineer of the website, not an owner or officer of the company." },
+  { "id": "org:cause", "name": "Consortium for the Advancement of Undergraduate Statistics Education (CAUSE)", "kind": "consortium", "parentOrgId": null, "url": "https://www.causeweb.org", "note": null },
+  { "id": "org:psb", "name": "Pacific Symposium on Biocomputing", "kind": "conference", "parentOrgId": null, "url": null, "note": null },
+  { "id": "org:nih", "name": "National Institutes of Health — CRCNS programme", "kind": "funder", "parentOrgId": null, "url": null, "note": "Collaborative Research in Computational Neuroscience." }
+]

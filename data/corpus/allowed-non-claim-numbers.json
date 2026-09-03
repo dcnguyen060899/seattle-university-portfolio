@@ -1,0 +1,158 @@
+[
+ {
+  "value": "2023",
+  "why": "Calendar year: B.A. completion."
+ },
+ {
+  "value": "2024",
+  "why": "Calendar year: certificate and earlier roles."
+ },
+ {
+  "value": "2025",
+  "why": "Calendar year: master's start."
+ },
+ {
+  "value": "2026",
+  "why": "Calendar year: current work and the copyright line."
+ },
+ {
+  "value": "2027",
+  "why": "Calendar year: expected graduation and the PSB conference year."
+ },
+ {
+  "value": "2022",
+  "why": "Calendar year: the MOSAIC annual report the reach figure is quoted from."
+ },
+ {
+  "value": "5330",
+  "why": "Course number CPSC 5330 — an identifier, not a measurement."
+ },
+ {
+  "value": "5100",
+  "why": "Course number DATA 5100."
+ },
+ {
+  "value": "5111",
+  "why": "Course number DATA 5111."
+ },
+ {
+  "value": "5120",
+  "why": "Course number DATA 5120."
+ },
+ {
+  "value": "5300",
+  "why": "Course number DATA 5300."
+ },
+ {
+  "value": "5310",
+  "why": "Course number DATA 5310."
+ },
+ {
+  "value": "5321",
+  "why": "Course number DATA 5321."
+ },
+ {
+  "value": "5322",
+  "why": "Course number DATA 5322."
+ },
+ {
+  "value": "5901",
+  "why": "Course number DATA 5901."
+ },
+ {
+  "value": "5902",
+  "why": "Course number DATA 5902."
+ },
+ {
+  "value": "5070",
+  "why": "Course number CPSC 5070."
+ },
+ {
+  "value": "5071",
+  "why": "Course number CPSC 5071."
+ },
+ {
+  "value": "5075",
+  "why": "Course number CPSC 5075."
+ },
+ {
+  "value": "5155",
+  "why": "Course number DATA 5155."
+ },
+ {
+  "value": "5760",
+  "why": "Course number ECEGR 5760."
+ },
+ {
+  "value": "5112",
+  "why": "Course number MATH 5112."
+ },
+ {
+  "value": "2.5",
+  "why": "Qwen2.5-VL — a model name, not a measurement."
+ },
+ {
+  "value": "32",
+  "why": "CLIP ViT-B/32 — a model name."
+ },
+ {
+  "value": "34",
+  "why": "ResNet34 — a model name."
+ },
+ {
+  "value": "16",
+  "why": "Next.js 16 — a version number."
+ },
+ {
+  "value": "19",
+  "why": "React 19 — a version number."
+ },
+ {
+  "value": "4",
+  "why": "Tailwind v4 and ESLint 9's sibling version numbers; also 'four views per study' and 'four retrieval encoders', both of which are also carried in claim values."
+ },
+ {
+  "value": "9",
+  "why": "ESLint 9 — a version number."
+ },
+ {
+  "value": "3",
+  "why": "HTTP and structural small integers in headings and lists; also carried in clm:yang-design-24cells."
+ },
+ {
+  "value": "7030.5",
+  "why": "California Business and Professions Code section number."
+ },
+ {
+  "value": "7027",
+  "why": "California Business and Professions Code section number."
+ },
+ {
+  "value": "200",
+  "why": "HTTP status code, where a page reports one. Also carried as a millisecond target in clm:fischer-perf-targets."
+ },
+ {
+  "value": "1",
+  "why": "Ordinal and structural, e.g. 'Part 1', 'step 1'."
+ },
+ {
+  "value": "2",
+  "why": "Ordinal and structural, e.g. 'two-quarter capstone'. Also carried in clm:cpsc5330-tf-artifact."
+ },
+ {
+  "value": "512",
+  "why": "Image preprocessing resolution 512x512, described on the research news archive."
+ },
+ {
+  "value": "5",
+  "why": "Structural small integer, e.g. 'five-class BI-RADS'. Also carried in clm:fischer-etl-formats and clm:fischer-db-shape."
+ },
+ {
+  "value": "404",
+  "why": "HTTP status code on the framework's not-found page."
+ },
+ {
+  "value": "500",
+  "why": "HTTP status code on the framework's error page."
+ }
+]

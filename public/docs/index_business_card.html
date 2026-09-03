@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programmatic Business Card Design - Duy Nguyen</title>
+    <link rel="stylesheet" href="css/portfolio_su.css">
+    <link rel="icon" type="image/x-icon" href="seattleu_2.ico?v=3">
+    <style>
+        /* Page-specific styles */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        #hero {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #AA0000 0%, #660000 100%);
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 15px rgba(170, 0, 0, 0.3);
+        }
+
+        #hero h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: white;
+            border-bottom: none;
+            padding-left: 0;
+        }
+
+        #hero .hero-subtitle {
+            font-size: 1.1em;
+            opacity: 0.95;
+            margin-bottom: 15px;
+            padding-left: 0;
+        }
+
+        /* Card Preview Section */
+        .card-preview-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+
+        .card-wrapper {
+            text-align: center;
+        }
+
+        .card-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ===================================
+           EXACT COPY FROM business_card.css
+           =================================== */
+        .business-card {
+            width: 3.5in;
+            height: 2in;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.4;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .business-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(170, 0, 0, 0.25);
+        }
+
+        .business-card * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* FRONT SIDE - Exact copy from business_card.css */
+        .business-card.front {
+            padding: 0;
+        }
+
+        .card-header {
+            background-color: #AA0000;
+            padding: 7px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 36px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+        }
+
+        .su-logo {
+            height: 29px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .card-body {
+            flex: 1;
+            padding: 8px 14px 8px 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .content-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            height: 100%;
+            position: relative;
+        }
+
+        .info-section {
+            flex: 1;
+            max-width: 185px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-right: 10px;
+            border-right: 2px solid #E5E5E5;
+            position: relative;
+        }
+
+        .info-section::after {
+            content: '';
+            position: absolute;
+            right: -2px;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 85%;
+            width: 2px;
+            background: linear-gradient(to bottom,
+                transparent 0%,
+                #AA0000 15%,
+                #AA0000 85%,
+                transparent 100%);
+        }
+
+        .photo-section {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .profile-photo {
+            width: 92px;
+            height: 92px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #AA0000;
+            box-shadow: 0 4px 12px rgba(170, 0, 0, 0.3);
+            background: white;
+            padding: 2.5px;
+        }
+
+        .name-section {
+            margin-bottom: 0;
+        }
+
+        .name-section h1 {
+            color: #AA0000;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 3px;
+            letter-spacing: 0.3px;
+            line-height: 1.1;
+        }
+
+        .name-section .title {
+            color: #000000;
+            font-size: 10.5px;
+            font-weight: 600;
+            margin-bottom: 2px;
+            line-height: 1.2;
+        }
+
+        .name-section .subtitle {
+            color: #333333;
+            font-size: 9.5px;
+            font-weight: normal;
+            line-height: 1.2;
+        }
+
+        .contact-section {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 9.5px;
+            color: #333333;
+        }
+
+        .contact-item .icon {
+            font-size: 10px;
+            color: #AA0000;
+            width: 14px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .contact-item .text {
+            font-weight: 500;
+            line-height: 1.3;
+        }
+
+        .card-footer {
+            height: 6px;
+            background: linear-gradient(90deg, #AA0000 0%, #880000 100%);
+        }
+
+        /* BACK SIDE - Minimalist Version */
+        .business-card.back.minimalist {
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            background: white;
+        }
+
+        .qr-section-centered {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .qr-container-large {
+            background: white;
+            padding: 5px;
+            border-radius: 5px;
+            box-shadow: 0 3px 10px rgba(170, 0, 0, 0.15);
+            border: 2px solid #AA0000;
+        }
+
+        .qr-label-large {
+            margin-top: 8px;
+            font-size: 10px;
+            font-weight: bold;
+            color: #AA0000;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .website-url-large {
+            font-size: 9px;
+            color: #333333;
+            font-weight: 600;
+            margin-top: 3px;
+        }
+
+        .back-footer {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            text-align: center;
+        }
+
+        .tagline {
+            font-size: 8px;
+            color: #333333;
+            font-style: italic;
+            font-weight: 500;
+        }
+
+        #qrcode-preview {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .feature-card {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            box-shadow: 0 4px 15px rgba(170, 0, 0, 0.1);
+        }
+
+        .feature-card h4 {
+            color: #AA0000;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            padding-left: 0;
+        }
+
+        .feature-card p {
+            font-size: 0.9rem;
+            color: #555;
+            padding-left: 0;
+            margin-bottom: 0;
+        }
+
+        /* Code Block */
+        .code-block {
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .code-block pre {
+            margin: 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #d4d4d4;
+        }
+
+        .code-block .keyword { color: #569cd6; }
+        .code-block .string { color: #ce9178; }
+        .code-block .comment { color: #6a9955; }
+        .code-block .property { color: #9cdcfe; }
+        .code-block .value { color: #b5cea8; }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+
+        .action-btn {
+            display: inline-block;
+            padding: 12px 25px;
+            border-radius: 5px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn.primary {
+            background: #AA0000;
+            color: white;
+        }
+
+        .action-btn.primary:hover {
+            background: #880000;
+            transform: translateY(-2px);
+        }
+
+        .action-btn.secondary {
+            background: white;
+            color: #AA0000;
+            border: 2px solid #AA0000;
+        }
+
+        .action-btn.secondary:hover {
+            background: #AA0000;
+            color: white;
+        }
+
+        /* Tech Stack */
+        .tech-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .tech-tag {
+            background: #f0f0f0;
+            color: #333;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            border: 1px solid #ddd;
+            transition: all 0.3s ease;
+        }
+
+        .tech-tag:hover {
+            background: #AA0000;
+            color: white;
+            border-color: #AA0000;
+        }
+
+        /* Specifications Table */
+        .specs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .specs-table th,
+        .specs-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .specs-table th {
+            background: #f5f5f5;
+            color: #AA0000;
+            font-weight: 600;
+        }
+
+        .specs-table tr:hover {
+            background: #f9f9f9;
+        }
+
+        @media (max-width: 768px) {
+            .card-preview-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .business-card {
+                transform: scale(0.9);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="https://www.seattleu.edu/science-engineering/discover-data-science/" class="logo-link">
+            <div class="logo">
+                <img src="images/seattle_university.png" alt="Seattle University logo">
+            </div>
+        </a>
+        <nav>
+            <a href="index_portfolio.html">Back to Portfolio</a>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero">
+            <h1>Programmatic Business Card Design</h1>
+            <p class="hero-subtitle">Professional Print-Ready Cards Built with Pure HTML/CSS/JavaScript</p>
+        </section>
+
+        <section id="overview">
+            <h2>Project Overview</h2>
+            <p>
+                A fully programmatic approach to business card design, eliminating the need for graphic design software like Adobe Illustrator or Photoshop. The cards are built entirely with web technologies, making them easy to modify, version control, and reproduce.
+            </p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h4>No Design Software</h4>
+                    <p>Built entirely with HTML, CSS, and JavaScript. No Photoshop or Illustrator required.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Print-Ready Output</h4>
+                    <p>Includes bleed margins and trim marks for professional printing at FedEx, Staples, etc.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Dynamic QR Code</h4>
+                    <p>Auto-generated QR code using qrcode.js, linking directly to portfolio.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Version Controlled</h4>
+                    <p>Design stored in Git, making updates and collaboration simple.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="live-preview">
+            <h2>Live Preview</h2>
+            <p style="text-align: center; color: #666;">Hover over the cards to see the interactive effect</p>
+
+            <div class="card-preview-container">
+                <!-- FRONT SIDE - Exact structure from business_card_design.html -->
+                <div class="card-wrapper">
+                    <p class="card-label">Front</p>
+                    <div class="business-card front">
+                        <div class="card-header">
+                            <div class="logo-section">
+                                <img src="images/seattle_university_logo.png" alt="Seattle University" class="su-logo">
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="content-wrapper">
+                                <div class="info-section">
+                                    <div class="name-section">
+                                        <h1>Duy Nguyen</h1>
+                                        <p class="title">MS Data Science Student</p>
+                                        <p class="subtitle">Seattle University</p>
+                                    </div>
+                                    <div class="contact-section">
+                                        <div class="contact-item">
+                                            <span class="icon">✉</span>
+                                            <span class="text">dnguyen44@seattleu.edu</span>
+                                        </div>
+                                        <div class="contact-item">
+                                            <span class="icon">🔗</span>
+                                            <span class="text">linkedin.com/in/duwe-ng</span>
+                                        </div>
+                                        <div class="contact-item">
+                                            <span class="icon">💻</span>
+                                            <span class="text">github.com/dcnguyen060899</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="photo-section">
+                                    <img src="images/Duy_Nguyen_3.jpg" alt="Duy Nguyen" class="profile-photo">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer"></div>
+                    </div>
+                </div>
+
+                <!-- BACK SIDE - Minimalist Version -->
+                <div class="card-wrapper">
+                    <p class="card-label">Back</p>
+                    <div class="business-card back minimalist">
+                        <div class="qr-section-centered">
+                            <div class="qr-container-large">
+                                <div id="qrcode-preview"></div>
+                            </div>
+                            <p class="qr-label-large">View My Portfolio</p>
+                            <p class="website-url-large">duyng-portfolio.com</p>
+                        </div>
+                        <div class="back-footer">
+                            <p class="tagline">Building Data-Driven Solutions</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="specifications">
+            <h2>Print Specifications</h2>
+            <table class="specs-table">
+                <tr>
+                    <th>Property</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>Card Size</td>
+                    <td>3.5" x 2" (88.9mm x 50.8mm) - Standard US Size</td>
+                </tr>
+                <tr>
+                    <td>Bleed Margin</td>
+                    <td>0.125" (3.175mm) on all sides</td>
+                </tr>
+                <tr>
+                    <td>Safe Zone</td>
+                    <td>0.125" from trim edge</td>
+                </tr>
+                <tr>
+                    <td>Recommended Paper</td>
+                    <td>300-350 GSM cardstock, matte finish</td>
+                </tr>
+                <tr>
+                    <td>Color Mode</td>
+                    <td>RGB (converts well to CMYK)</td>
+                </tr>
+                <tr>
+                    <td>Primary Color</td>
+                    <td>#AA0000 (Seattle University Red)</td>
+                </tr>
+            </table>
+        </section>
+
+        <section id="code-sample">
+            <h2>Code Implementation</h2>
+            <p>The entire design is built with semantic HTML and CSS. Here's a snippet of the card structure:</p>
+
+            <div class="code-block">
+                <pre><span class="comment">/* Business Card CSS - Key Styles */</span>
+<span class="property">.business-card</span> {
+    <span class="keyword">width</span>: <span class="value">3.5in</span>;
+    <span class="keyword">height</span>: <span class="value">2in</span>;
+    <span class="keyword">background</span>: <span class="string">white</span>;
+    <span class="keyword">border-radius</span>: <span class="value">8px</span>;
+    <span class="keyword">box-shadow</span>: <span class="value">0 4px 15px rgba(0,0,0,0.2)</span>;
+    <span class="keyword">overflow</span>: <span class="string">hidden</span>;
+}
+
+<span class="property">.card-header</span> {
+    <span class="keyword">background-color</span>: <span class="value">#AA0000</span>;  <span class="comment">/* Seattle Red */</span>
+    <span class="keyword">padding</span>: <span class="value">8px 16px</span>;
+}
+
+<span class="comment">/* QR Code Generation */</span>
+<span class="keyword">new</span> QRCode(document.getElementById(<span class="string">"qrcode"</span>), {
+    <span class="property">text</span>: <span class="string">'https://duyng-portfolio.com'</span>,
+    <span class="property">width</span>: <span class="value">100</span>,
+    <span class="property">colorDark</span>: <span class="string">"#AA0000"</span>
+});</pre>
+            </div>
+        </section>
+
+        <section id="tech-stack">
+            <h2>Technologies Used</h2>
+            <div class="tech-grid">
+                <span class="tech-tag">HTML5</span>
+                <span class="tech-tag">CSS3</span>
+                <span class="tech-tag">JavaScript</span>
+                <span class="tech-tag">QRCode.js</span>
+                <span class="tech-tag">CSS Print Media</span>
+                <span class="tech-tag">Flexbox Layout</span>
+                <span class="tech-tag">CSS Variables</span>
+                <span class="tech-tag">Web Fonts</span>
+            </div>
+        </section>
+
+        <section id="download">
+            <h2>Get the Cards</h2>
+            <p style="text-align: center;">Ready to print? Choose your preferred version:</p>
+
+            <div class="action-buttons">
+                <a href="business_card_design.html" class="action-btn primary">View Design Version</a>
+                <a href="business_card_print_ready_FedEx.html" class="action-btn secondary">Print-Ready (FedEx)</a>
+            </div>
+
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                <h3 style="color: #AA0000; padding-left: 0;">Printing Instructions</h3>
+                <ol style="padding-left: 40px; margin-top: 15px;">
+                    <li>Open the Print-Ready version in your browser</li>
+                    <li>Press <strong>Ctrl/Cmd + P</strong> to open print dialog</li>
+                    <li>Set scale to <strong>100%</strong> (Actual Size)</li>
+                    <li>Enable <strong>"Background graphics"</strong> in settings</li>
+                    <li>Save as PDF or print directly to cardstock</li>
+                    <li>Cut along the trim marks for perfect sizing</li>
+                </ol>
+            </div>
+        </section>
+
+        <section id="contact">
+            <h2>Contact</h2>
+            <p>Email: <a href="mailto:dnguyen44@seattleu.edu">dnguyen44@seattleu.edu</a></p>
+            <p>LinkedIn: <a href="https://www.linkedin.com/in/duwe-ng/">linkedin.com/in/duwe-ng</a></p>
+            <p>GitHub: <a href="https://github.com/dcnguyen060899">github.com/dcnguyen060899</a></p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Seattle University. All rights reserved.</p>
+    </footer>
+
+    <!-- QR Code Generation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        // Generate QR code - matches minimalist back (100x100)
+        new QRCode(document.getElementById("qrcode-preview"), {
+            text: 'https://duyng-portfolio.com/docs/index_portfolio.html',
+            width: 100,
+            height: 100,
+            colorDark: "#AA0000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    </script>
+</body>
+</html>

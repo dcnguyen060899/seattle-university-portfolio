@@ -1,0 +1,1531 @@
+{
+  "present": true,
+  "generator": "scripts/gen-hero-photo.mjs",
+  "source": {
+    "path": "public/brand/hero-source.png",
+    "bytes": 2643974,
+    "sha256": "2dd6752d828e4028771e037c9624615c6a98671e6e2a5a62a3ab635337ed15c3",
+    "width": 1536,
+    "height": 1024,
+    "aspect": 1.5,
+    "exifOrientation": 1
+  },
+  "artDirectionBreakpointPx": 861,
+  "breakpoint": 861,
+  "budgets": {
+    "smallestPortraitAvifBytes": 122880,
+    "portraitAvifBytes": 204800,
+    "landscapeAvifBytes": 286720,
+    "webpBytes": 389120,
+    "softBytes": 16384
+  },
+  "grade": {
+    "op": "sharp .modulate({ brightness, saturation })",
+    "brightness": 1,
+    "saturation": 1,
+    "warmth": 0,
+    "identity": true,
+    "solvedAgainst": null,
+    "pinned": true,
+    "appliedTo": "the native crop, once, before every resample — the ladder and the baked soft copy both derive from the graded pixels",
+    "claim": "Brightness is a multiplier on CIE L*, bisected at build time until the scrim requirement measured on the graded, sharpened, shipped pixels lands at or under the pinned value. Darkening in L* holds chroma constant and so inflates colour; saturation pulls that back, measured over the brightest half of the composited frame (the pixels that carry visible colour) rather than the whole frame, whose near-black majority hides the cast. The scrim below is measured after this grade, never before it."
+  },
+  "scrim": {
+    "requiredAlpha": 0.86,
+    "base": 0.86,
+    "exit": 0.92,
+    "scrimColor": "#14161A",
+    "targetRatio": 4.5,
+    "bindingForeground": "--fg-muted",
+    "claim": "Minimum opacity of a solid #14161A scrim at which every glyph-sized patch of the photograph still clears 4.5:1 against the weakest ink foreground the hero actually paints (--fg-muted #A3A2A8, 7.15:1 on flat ink). Measured by DECODING EVERY EMITTED RUNG and taking the worst, so it is a claim about the bytes a browser downloads rather than about the raw frame that went into the encoder; per orientation, `orientations[k].scrim.preEncode.drift` records how far the codec moved it. Not a per-pixel guarantee — see the generator header."
+  },
+  "coverage": [
+    {
+      "viewport": 375,
+      "band": {
+        "w": 375,
+        "h": 1685,
+        "aspect": 0.2226
+      },
+      "orientation": "p",
+      "box": {
+        "w": 375,
+        "h": 1685
+      },
+      "boxAspect": 0.2226,
+      "srcAspect": 0.7998,
+      "lostX": 0.7217,
+      "lostY": 0,
+      "kept": 0.2783,
+      "magnification": 1.6455,
+      "upscales": true
+    },
+    {
+      "viewport": 390,
+      "band": {
+        "w": 390,
+        "h": 1624,
+        "aspect": 0.2401
+      },
+      "orientation": "p",
+      "box": {
+        "w": 390,
+        "h": 1624
+      },
+      "boxAspect": 0.2401,
+      "srcAspect": 0.7998,
+      "lostX": 0.6997,
+      "lostY": 0,
+      "kept": 0.3003,
+      "magnification": 1.5859,
+      "upscales": true
+    },
+    {
+      "viewport": 768,
+      "band": {
+        "w": 768,
+        "h": 1285,
+        "aspect": 0.5977
+      },
+      "orientation": "p",
+      "box": {
+        "w": 768,
+        "h": 1285
+      },
+      "boxAspect": 0.5977,
+      "srcAspect": 0.7998,
+      "lostX": 0.2527,
+      "lostY": 0,
+      "kept": 0.7473,
+      "magnification": 1.2549,
+      "upscales": true
+    },
+    {
+      "viewport": 861,
+      "band": {
+        "w": 861,
+        "h": 1324,
+        "aspect": 0.6503
+      },
+      "orientation": "l",
+      "box": {
+        "w": 861,
+        "h": 1324
+      },
+      "boxAspect": 0.6503,
+      "srcAspect": 1.7778,
+      "lostX": 0.6342,
+      "lostY": 0,
+      "kept": 0.3658,
+      "magnification": 1.5324,
+      "upscales": true
+    },
+    {
+      "viewport": 1280,
+      "band": {
+        "w": 1280,
+        "h": 1306,
+        "aspect": 0.9801
+      },
+      "orientation": "l",
+      "box": {
+        "w": 1280,
+        "h": 1306
+      },
+      "boxAspect": 0.9801,
+      "srcAspect": 1.7778,
+      "lostX": 0.4487,
+      "lostY": 0,
+      "kept": 0.5513,
+      "magnification": 1.5116,
+      "upscales": true
+    },
+    {
+      "viewport": 1600,
+      "band": {
+        "w": 1600,
+        "h": 1338,
+        "aspect": 1.1958
+      },
+      "orientation": "l",
+      "box": {
+        "w": 1600,
+        "h": 1338
+      },
+      "boxAspect": 1.1958,
+      "srcAspect": 1.7778,
+      "lostX": 0.3274,
+      "lostY": 0,
+      "kept": 0.6726,
+      "magnification": 1.5486,
+      "upscales": true
+    }
+  ],
+  "droppedWidths": [
+    {
+      "orientation": "p",
+      "width": 828,
+      "why": "above the 819px native width of this crop — emitting it would upscale"
+    },
+    {
+      "orientation": "p",
+      "width": 1080,
+      "why": "above the 819px native width of this crop — emitting it would upscale"
+    },
+    {
+      "orientation": "l",
+      "width": 1600,
+      "why": "above the 1536px native width of this crop — emitting it would upscale"
+    }
+  ],
+  "orientations": {
+    "p": {
+      "key": "p",
+      "label": "portrait  (mobile)",
+      "media": "(max-width: 861px)",
+      "crop": {
+        "mode": "aspect+focus",
+        "targetAspect": 0.8,
+        "focusX": 0.42,
+        "focusY": null,
+        "pixels": {
+          "left": 236,
+          "top": 0,
+          "width": 819,
+          "height": 1024
+        },
+        "fractionOfSource": {
+          "left": 0.1536,
+          "top": 0,
+          "right": 0.6868,
+          "bottom": 1
+        }
+      },
+      "nativeWidth": 819,
+      "emittedWidths": [
+        640,
+        819
+      ],
+      "srcset": {
+        "avif": "/brand/hero/hero-p-640.avif 640w, /brand/hero/hero-p-819.avif 819w",
+        "webp": "/brand/hero/hero-p-640.webp 640w, /brand/hero/hero-p-819.webp 819w"
+      },
+      "sizes": "100vw",
+      "fallback": "/brand/hero/hero-p-819.webp",
+      "intrinsic": {
+        "width": 819,
+        "height": 1024
+      },
+      "files": [
+        {
+          "name": "hero-p-640.avif",
+          "publicPath": "/brand/hero/hero-p-640.avif",
+          "format": "avif",
+          "width": 640,
+          "height": 800,
+          "bytes": 84306,
+          "quality": 65
+        },
+        {
+          "name": "hero-p-640.webp",
+          "publicPath": "/brand/hero/hero-p-640.webp",
+          "format": "webp",
+          "width": 640,
+          "height": 800,
+          "bytes": 112826,
+          "quality": 85
+        },
+        {
+          "name": "hero-p-819.avif",
+          "publicPath": "/brand/hero/hero-p-819.avif",
+          "format": "avif",
+          "width": 819,
+          "height": 1024,
+          "bytes": 152869,
+          "quality": 65
+        },
+        {
+          "name": "hero-p-819.webp",
+          "publicPath": "/brand/hero/hero-p-819.webp",
+          "format": "webp",
+          "width": 819,
+          "height": 1024,
+          "bytes": 217012,
+          "quality": 85
+        }
+      ],
+      "soft": {
+        "name": "hero-soft-p.webp",
+        "publicPath": "/brand/hero/hero-soft-p.webp",
+        "width": 256,
+        "height": 320,
+        "bytes": 2428,
+        "cssEquivalentFilter": "blur(34px) saturate(0.78) brightness(1)",
+        "maxLocalLuma": 0.3421
+      },
+      "grade": {
+        "brightness": 1,
+        "ownSolvedBrightness": 1,
+        "binding": true,
+        "ungraded": {
+          "maxLocalLuma": 0.8995,
+          "requiredAlpha": 0.852
+        },
+        "graded": {
+          "maxLocalLuma": 0.8995,
+          "requiredAlpha": 0.852
+        }
+      },
+      "scrim": {
+        "requiredAlpha": 0.852,
+        "base": 0.852,
+        "exit": 0.912,
+        "bindingForeground": "--fg-muted",
+        "scrimColor": "#14161A",
+        "targetRatio": 4.5,
+        "glyphBoxPx": 10,
+        "brightestPatchLuma": 0.8903,
+        "brightestPatchAt": {
+          "x": 516,
+          "y": 1004
+        },
+        "diagnostics": {
+          "maxPixelLuma": 0.9981,
+          "p999PixelLuma": 0.902,
+          "alphaIfGatedOnMaxPixel": 0.86
+        },
+        "perRegion": [
+          {
+            "cell": "top-left",
+            "maxLocalLuma": 0.4296,
+            "requiredAlpha": 0.782
+          },
+          {
+            "cell": "top-centre",
+            "maxLocalLuma": 0.3491,
+            "requiredAlpha": 0.761
+          },
+          {
+            "cell": "top-right",
+            "maxLocalLuma": 0.5455,
+            "requiredAlpha": 0.808
+          },
+          {
+            "cell": "middle-left",
+            "maxLocalLuma": 0.45,
+            "requiredAlpha": 0.79
+          },
+          {
+            "cell": "middle-centre",
+            "maxLocalLuma": 0.5623,
+            "requiredAlpha": 0.813
+          },
+          {
+            "cell": "middle-right",
+            "maxLocalLuma": 0.6898,
+            "requiredAlpha": 0.832
+          },
+          {
+            "cell": "bottom-left",
+            "maxLocalLuma": 0.1487,
+            "requiredAlpha": 0.608
+          },
+          {
+            "cell": "bottom-centre",
+            "maxLocalLuma": 0.8903,
+            "requiredAlpha": 0.852
+          },
+          {
+            "cell": "bottom-right",
+            "maxLocalLuma": 0.1636,
+            "requiredAlpha": 0.631
+          }
+        ],
+        "achieved": [
+          {
+            "token": "--fg",
+            "hex": "#F2F1EE",
+            "flatInkRatio": 16.04,
+            "ratioOverBrightestPatch": 10.62
+          },
+          {
+            "token": "--fg-muted",
+            "hex": "#A3A2A8",
+            "flatInkRatio": 7.15,
+            "ratioOverBrightestPatch": 4.74
+          }
+        ],
+        "measuredOn": "hero-p-819.avif",
+        "preEncode": {
+          "requiredAlpha": 0.852,
+          "brightestPatchLuma": 0.8995,
+          "drift": 0
+        }
+      },
+      "demand": {
+        "viewports": [
+          {
+            "viewport": "375x1685",
+            "width": 375,
+            "bandHeight": 1685,
+            "glyphBoxPx": 6,
+            "coverScale": 1.6455,
+            "slack": {
+              "x": 973,
+              "y": 0
+            },
+            "textExtent": {
+              "x0": 0.033,
+              "x1": 0.966,
+              "y0": 0.12399999999999999,
+              "y1": 0.978
+            },
+            "positions": [
+              {
+                "objectPositionX": 0,
+                "p90": 0.546,
+                "p99": 0.69,
+                "max": 0.834,
+                "shareOver60": 0.0592,
+                "apertureP99": 0.1986
+              },
+              {
+                "objectPositionX": 0.25,
+                "p90": 0.585,
+                "p99": 0.717,
+                "max": 0.844,
+                "shareOver60": 0.0886,
+                "apertureP99": 0.2366
+              },
+              {
+                "objectPositionX": 0.5,
+                "p90": 0.642,
+                "p99": 0.74,
+                "max": 0.838,
+                "shareOver60": 0.1173,
+                "apertureP99": 0.3376
+              },
+              {
+                "objectPositionX": 0.75,
+                "p90": 0.702,
+                "p99": 0.795,
+                "max": 0.854,
+                "shareOver60": 0.1747,
+                "apertureP99": 0.3773
+              },
+              {
+                "objectPositionX": 1,
+                "p90": 0.747,
+                "p99": 0.8,
+                "max": 0.855,
+                "shareOver60": 0.2071,
+                "apertureP99": 0.4564
+              }
+            ],
+            "atDefault": {
+              "objectPositionX": 0.5,
+              "p50": 0,
+              "p75": 0.017,
+              "p90": 0.642,
+              "p99": 0.74,
+              "p999": 0.802,
+              "max": 0.838,
+              "shareNeedingNothing": 0.7463,
+              "shareOver60": 0.1173,
+              "shareOver80": 0.0011,
+              "apertureP99": 0.3376,
+              "samples": 126720
+            }
+          },
+          {
+            "viewport": "390x1624",
+            "width": 390,
+            "bandHeight": 1624,
+            "glyphBoxPx": 6,
+            "coverScale": 1.5859,
+            "slack": {
+              "x": 909,
+              "y": 0
+            },
+            "textExtent": {
+              "x0": 0.030999999999999996,
+              "x1": 0.964,
+              "y0": 0.133,
+              "y1": 0.976
+            },
+            "positions": [
+              {
+                "objectPositionX": 0,
+                "p90": 0.531,
+                "p99": 0.691,
+                "max": 0.827,
+                "shareOver60": 0.0518,
+                "apertureP99": 0.2006
+              },
+              {
+                "objectPositionX": 0.25,
+                "p90": 0.563,
+                "p99": 0.718,
+                "max": 0.843,
+                "shareOver60": 0.0773,
+                "apertureP99": 0.2403
+              },
+              {
+                "objectPositionX": 0.5,
+                "p90": 0.627,
+                "p99": 0.743,
+                "max": 0.838,
+                "shareOver60": 0.1101,
+                "apertureP99": 0.4043
+              },
+              {
+                "objectPositionX": 0.75,
+                "p90": 0.696,
+                "p99": 0.793,
+                "max": 0.855,
+                "shareOver60": 0.1665,
+                "apertureP99": 0.4098
+              },
+              {
+                "objectPositionX": 1,
+                "p90": 0.737,
+                "p99": 0.799,
+                "max": 0.856,
+                "shareOver60": 0.1968,
+                "apertureP99": 0.4688
+              }
+            ],
+            "atDefault": {
+              "objectPositionX": 0.5,
+              "p50": 0,
+              "p75": 0,
+              "p90": 0.627,
+              "p99": 0.743,
+              "p999": 0.805,
+              "max": 0.838,
+              "shareNeedingNothing": 0.7533,
+              "shareOver60": 0.1101,
+              "shareOver80": 0.0012,
+              "apertureP99": 0.4043,
+              "samples": 125355
+            }
+          },
+          {
+            "viewport": "768x1285",
+            "width": 768,
+            "bandHeight": 1285,
+            "glyphBoxPx": 10,
+            "coverScale": 1.2549,
+            "slack": {
+              "x": 260,
+              "y": 0
+            },
+            "textExtent": {
+              "x0": 0.024999999999999998,
+              "x1": 0.974,
+              "y0": 0.195,
+              "y1": 0.961
+            },
+            "positions": [
+              {
+                "objectPositionX": 0,
+                "p90": 0.337,
+                "p99": 0.726,
+                "max": 0.824,
+                "shareOver60": 0.0391,
+                "apertureP99": 0.3064
+              },
+              {
+                "objectPositionX": 0.25,
+                "p90": 0.414,
+                "p99": 0.752,
+                "max": 0.842,
+                "shareOver60": 0.0522,
+                "apertureP99": 0.3218
+              },
+              {
+                "objectPositionX": 0.5,
+                "p90": 0.476,
+                "p99": 0.76,
+                "max": 0.844,
+                "shareOver60": 0.0614,
+                "apertureP99": 0.3868
+              },
+              {
+                "objectPositionX": 0.75,
+                "p90": 0.507,
+                "p99": 0.766,
+                "max": 0.842,
+                "shareOver60": 0.0705,
+                "apertureP99": 0.4269
+              },
+              {
+                "objectPositionX": 1,
+                "p90": 0.537,
+                "p99": 0.773,
+                "max": 0.844,
+                "shareOver60": 0.08,
+                "apertureP99": 0.4608
+              }
+            ],
+            "atDefault": {
+              "objectPositionX": 0.5,
+              "p50": 0,
+              "p75": 0,
+              "p90": 0.476,
+              "p99": 0.76,
+              "p999": 0.809,
+              "max": 0.844,
+              "shareNeedingNothing": 0.7686,
+              "shareOver60": 0.0614,
+              "shareOver80": 0.0018,
+              "apertureP99": 0.3868,
+              "samples": 179945
+            }
+          }
+        ]
+      },
+      "washRelay": {
+        "measuredOn": "hero-p-819.webp",
+        "coreAlpha": 0.86,
+        "columns": 16,
+        "rows": 16,
+        "sampleStride": 2,
+        "jndSpanFactor": 10.5,
+        "gutterAlphas": [
+          0.25,
+          0.35,
+          0.45,
+          0.55,
+          0.65,
+          0.75
+        ],
+        "stepP95ByColumn": {
+          "0.25": [
+            23.87,
+            29.09,
+            24.71,
+            27.76,
+            28.33,
+            28.72,
+            34.07,
+            29.05,
+            31.98,
+            34.31,
+            34.49,
+            35.03,
+            36.53,
+            38.38,
+            37.84,
+            40.66
+          ],
+          "0.35": [
+            20.17,
+            24.58,
+            20.89,
+            23.48,
+            23.96,
+            24.3,
+            28.83,
+            24.58,
+            27.07,
+            29.03,
+            29.19,
+            29.65,
+            30.92,
+            32.49,
+            32.04,
+            34.45
+          ],
+          "0.45": [
+            16.38,
+            19.99,
+            17,
+            19.12,
+            19.51,
+            19.78,
+            23.49,
+            20.02,
+            22.05,
+            23.64,
+            23.77,
+            24.15,
+            25.2,
+            26.48,
+            26.1,
+            28.1
+          ],
+          "0.55": [
+            12.49,
+            15.3,
+            13.02,
+            14.65,
+            14.96,
+            15.15,
+            18.01,
+            15.35,
+            16.92,
+            18.13,
+            18.23,
+            18.52,
+            19.34,
+            20.32,
+            20.03,
+            21.58
+          ],
+          "0.65": [
+            8.55,
+            10.5,
+            8.94,
+            10.08,
+            10.29,
+            10.41,
+            12.39,
+            10.56,
+            11.64,
+            12.47,
+            12.54,
+            12.75,
+            13.31,
+            13.99,
+            13.78,
+            14.88
+          ],
+          "0.75": [
+            4.54,
+            5.58,
+            4.76,
+            5.37,
+            5.48,
+            5.54,
+            6.6,
+            5.62,
+            6.21,
+            6.64,
+            6.68,
+            6.8,
+            7.1,
+            7.46,
+            7.35,
+            7.94
+          ]
+        },
+        "stepP95ByRow": {
+          "0.25": [
+            30.95,
+            31.51,
+            40.92,
+            36.44,
+            28.28,
+            39.52,
+            46.2,
+            44.66,
+            12.88,
+            26.21,
+            26.36,
+            29.02,
+            17.32,
+            12.28,
+            10.21,
+            16.52
+          ],
+          "0.35": [
+            26.2,
+            26.67,
+            34.67,
+            30.87,
+            23.91,
+            33.46,
+            39.17,
+            37.85,
+            10.82,
+            22.09,
+            22.25,
+            24.54,
+            14.6,
+            10.3,
+            8.5,
+            13.83
+          ],
+          "0.45": [
+            21.34,
+            21.73,
+            28.27,
+            25.16,
+            19.46,
+            27.27,
+            31.98,
+            30.89,
+            8.75,
+            17.94,
+            18.06,
+            19.98,
+            11.83,
+            8.3,
+            6.8,
+            11.12
+          ],
+          "0.55": [
+            16.37,
+            16.66,
+            21.72,
+            19.32,
+            14.9,
+            20.92,
+            24.6,
+            23.74,
+            6.64,
+            13.73,
+            13.79,
+            15.31,
+            9.01,
+            6.29,
+            5.1,
+            8.4
+          ],
+          "0.65": [
+            11.27,
+            11.47,
+            14.97,
+            13.31,
+            10.24,
+            14.4,
+            16.98,
+            16.38,
+            4.52,
+            9.42,
+            9.44,
+            10.53,
+            6.15,
+            4.28,
+            3.42,
+            5.67
+          ],
+          "0.75": [
+            6.01,
+            6.11,
+            7.99,
+            7.11,
+            5.45,
+            7.67,
+            9.09,
+            8.76,
+            2.38,
+            5.01,
+            4.99,
+            5.6,
+            3.25,
+            2.25,
+            1.77,
+            2.95
+          ]
+        },
+        "worstStepP95": {
+          "0.25": 46.2,
+          "0.35": 39.17,
+          "0.45": 31.98,
+          "0.55": 24.6,
+          "0.65": 16.98,
+          "0.75": 9.09
+        },
+        "spanAtOneJndPx": {
+          "0.25": 486,
+          "0.35": 412,
+          "0.45": 336,
+          "0.55": 259,
+          "0.65": 179,
+          "0.75": 96
+        },
+        "claim": "For a veil that steps from `coreAlpha` inside the text column to the listed gutter alpha outside it: the 95th percentile, along each of `columns` evenly spaced columns (a VERTICAL boundary) and each of `rows` evenly spaced rows (a HORIZONTAL one), of the CIE L* difference between the two composites. `spanAtOneJndPx` is 10.5 x the worst of both — the CSS px a smoothstep needs to carry that step with its peak gradient under one JND. Indices are crop fractions: column i spans [i/columns, (i+1)/columns] of the crop WIDTH, row j the same of its HEIGHT, and mapping a CSS coordinate into one of them is `object-fit: cover` arithmetic the consumer owns."
+      }
+    },
+    "l": {
+      "key": "l",
+      "label": "landscape (desktop)",
+      "media": null,
+      "crop": {
+        "mode": "aspect+focus",
+        "targetAspect": 1.7778,
+        "focusX": 0.5,
+        "focusY": 0.62,
+        "pixels": {
+          "left": 0,
+          "top": 160,
+          "width": 1536,
+          "height": 864
+        },
+        "fractionOfSource": {
+          "left": 0,
+          "top": 0.1563,
+          "right": 1,
+          "bottom": 1
+        }
+      },
+      "nativeWidth": 1536,
+      "emittedWidths": [
+        960,
+        1280,
+        1536
+      ],
+      "srcset": {
+        "avif": "/brand/hero/hero-l-960.avif 960w, /brand/hero/hero-l-1280.avif 1280w, /brand/hero/hero-l-1536.avif 1536w",
+        "webp": "/brand/hero/hero-l-960.webp 960w, /brand/hero/hero-l-1280.webp 1280w, /brand/hero/hero-l-1536.webp 1536w"
+      },
+      "sizes": "100vw",
+      "fallback": "/brand/hero/hero-l-1536.webp",
+      "intrinsic": {
+        "width": 1536,
+        "height": 864
+      },
+      "files": [
+        {
+          "name": "hero-l-960.avif",
+          "publicPath": "/brand/hero/hero-l-960.avif",
+          "format": "avif",
+          "width": 960,
+          "height": 540,
+          "bytes": 106703,
+          "quality": 65
+        },
+        {
+          "name": "hero-l-960.webp",
+          "publicPath": "/brand/hero/hero-l-960.webp",
+          "format": "webp",
+          "width": 960,
+          "height": 540,
+          "bytes": 143572,
+          "quality": 85
+        },
+        {
+          "name": "hero-l-1280.avif",
+          "publicPath": "/brand/hero/hero-l-1280.avif",
+          "format": "avif",
+          "width": 1280,
+          "height": 720,
+          "bytes": 167341,
+          "quality": 65
+        },
+        {
+          "name": "hero-l-1280.webp",
+          "publicPath": "/brand/hero/hero-l-1280.webp",
+          "format": "webp",
+          "width": 1280,
+          "height": 720,
+          "bytes": 228070,
+          "quality": 85
+        },
+        {
+          "name": "hero-l-1536.avif",
+          "publicPath": "/brand/hero/hero-l-1536.avif",
+          "format": "avif",
+          "width": 1536,
+          "height": 864,
+          "bytes": 273777,
+          "quality": 65
+        },
+        {
+          "name": "hero-l-1536.webp",
+          "publicPath": "/brand/hero/hero-l-1536.webp",
+          "format": "webp",
+          "width": 1536,
+          "height": 864,
+          "bytes": 366494,
+          "quality": 83
+        }
+      ],
+      "soft": {
+        "name": "hero-soft-l.webp",
+        "publicPath": "/brand/hero/hero-soft-l.webp",
+        "width": 320,
+        "height": 180,
+        "bytes": 2072,
+        "cssEquivalentFilter": "blur(34px) saturate(0.78) brightness(1)",
+        "maxLocalLuma": 0.3826
+      },
+      "grade": {
+        "brightness": 1,
+        "ownSolvedBrightness": 1,
+        "binding": true,
+        "ungraded": {
+          "maxLocalLuma": 0.6928,
+          "requiredAlpha": 0.832
+        },
+        "graded": {
+          "maxLocalLuma": 0.6928,
+          "requiredAlpha": 0.832
+        }
+      },
+      "scrim": {
+        "requiredAlpha": 0.834,
+        "base": 0.834,
+        "exit": 0.894,
+        "bindingForeground": "--fg-muted",
+        "scrimColor": "#14161A",
+        "targetRatio": 4.5,
+        "glyphBoxPx": 12,
+        "brightestPatchLuma": 0.7073,
+        "brightestPatchAt": {
+          "x": 905,
+          "y": 172
+        },
+        "diagnostics": {
+          "maxPixelLuma": 0.9981,
+          "p999PixelLuma": 0.795,
+          "alphaIfGatedOnMaxPixel": 0.86
+        },
+        "perRegion": [
+          {
+            "cell": "top-left",
+            "maxLocalLuma": 0.3162,
+            "requiredAlpha": 0.744
+          },
+          {
+            "cell": "top-centre",
+            "maxLocalLuma": 0.5509,
+            "requiredAlpha": 0.811
+          },
+          {
+            "cell": "top-right",
+            "maxLocalLuma": 0.6786,
+            "requiredAlpha": 0.829
+          },
+          {
+            "cell": "middle-left",
+            "maxLocalLuma": 0.6718,
+            "requiredAlpha": 0.829
+          },
+          {
+            "cell": "middle-centre",
+            "maxLocalLuma": 0.4086,
+            "requiredAlpha": 0.779
+          },
+          {
+            "cell": "middle-right",
+            "maxLocalLuma": 0.4777,
+            "requiredAlpha": 0.795
+          },
+          {
+            "cell": "bottom-left",
+            "maxLocalLuma": 0.4988,
+            "requiredAlpha": 0.8
+          },
+          {
+            "cell": "bottom-centre",
+            "maxLocalLuma": 0.405,
+            "requiredAlpha": 0.776
+          },
+          {
+            "cell": "bottom-right",
+            "maxLocalLuma": 0.4295,
+            "requiredAlpha": 0.784
+          }
+        ],
+        "achieved": [
+          {
+            "token": "--fg",
+            "hex": "#F2F1EE",
+            "flatInkRatio": 16.04,
+            "ratioOverBrightestPatch": 10.63
+          },
+          {
+            "token": "--fg-muted",
+            "hex": "#A3A2A8",
+            "flatInkRatio": 7.15,
+            "ratioOverBrightestPatch": 4.74
+          }
+        ],
+        "measuredOn": "hero-l-960.avif",
+        "preEncode": {
+          "requiredAlpha": 0.832,
+          "brightestPatchLuma": 0.6928,
+          "drift": 0.002
+        }
+      },
+      "demand": {
+        "viewports": [
+          {
+            "viewport": "861x1324",
+            "width": 861,
+            "bandHeight": 1324,
+            "glyphBoxPx": 11,
+            "coverScale": 1.5324,
+            "slack": {
+              "x": 1493,
+              "y": 0
+            },
+            "textExtent": {
+              "x0": 0.024999999999999998,
+              "x1": 0.971,
+              "y0": 0.196,
+              "y1": 0.9560000000000001
+            },
+            "positions": [
+              {
+                "objectPositionX": 0,
+                "p90": 0.278,
+                "p99": 0.734,
+                "max": 0.853,
+                "shareOver60": 0.032,
+                "apertureP99": 0.2071
+              },
+              {
+                "objectPositionX": 0.25,
+                "p90": 0.111,
+                "p99": 0.721,
+                "max": 0.825,
+                "shareOver60": 0.0263,
+                "apertureP99": 0.2805
+              },
+              {
+                "objectPositionX": 0.5,
+                "p90": 0.532,
+                "p99": 0.778,
+                "max": 0.844,
+                "shareOver60": 0.0802,
+                "apertureP99": 0.4569
+              },
+              {
+                "objectPositionX": 0.75,
+                "p90": 0.588,
+                "p99": 0.783,
+                "max": 0.853,
+                "shareOver60": 0.0954,
+                "apertureP99": 0.5733
+              },
+              {
+                "objectPositionX": 1,
+                "p90": 0.414,
+                "p99": 0.762,
+                "max": 0.855,
+                "shareOver60": 0.0531,
+                "apertureP99": 0.6544
+              }
+            ],
+            "atDefault": {
+              "objectPositionX": 0.5,
+              "p50": 0,
+              "p75": 0,
+              "p90": 0.532,
+              "p99": 0.778,
+              "p999": 0.816,
+              "max": 0.844,
+              "shareNeedingNothing": 0.7536,
+              "shareOver60": 0.0802,
+              "shareOver80": 0.0037,
+              "apertureP99": 0.4569,
+              "samples": 205632
+            }
+          },
+          {
+            "viewport": "1280x1306",
+            "width": 1280,
+            "bandHeight": 1306,
+            "glyphBoxPx": 16,
+            "coverScale": 1.5116,
+            "slack": {
+              "x": 1042,
+              "y": 0
+            },
+            "textExtent": {
+              "x0": 0.089,
+              "x1": 0.906,
+              "y0": 0.078,
+              "y1": 0.923
+            },
+            "positions": [
+              {
+                "objectPositionX": 0,
+                "p90": 0.328,
+                "p99": 0.728,
+                "max": 0.848,
+                "shareOver60": 0.0335,
+                "apertureP99": 0.3107
+              },
+              {
+                "objectPositionX": 0.25,
+                "p90": 0.386,
+                "p99": 0.748,
+                "max": 0.834,
+                "shareOver60": 0.0424,
+                "apertureP99": 0.4282
+              },
+              {
+                "objectPositionX": 0.5,
+                "p90": 0.481,
+                "p99": 0.763,
+                "max": 0.834,
+                "shareOver60": 0.062,
+                "apertureP99": 0.5249
+              },
+              {
+                "objectPositionX": 0.75,
+                "p90": 0.517,
+                "p99": 0.765,
+                "max": 0.847,
+                "shareOver60": 0.072,
+                "apertureP99": 0.5864
+              },
+              {
+                "objectPositionX": 1,
+                "p90": 0.508,
+                "p99": 0.766,
+                "max": 0.847,
+                "shareOver60": 0.0687,
+                "apertureP99": 0.6316
+              }
+            ],
+            "atDefault": {
+              "objectPositionX": 0.5,
+              "p50": 0,
+              "p75": 0,
+              "p90": 0.481,
+              "p99": 0.763,
+              "p999": 0.806,
+              "max": 0.834,
+              "shareNeedingNothing": 0.7541,
+              "shareOver60": 0.062,
+              "shareOver80": 0.0016,
+              "apertureP99": 0.5249,
+              "samples": 289248
+            }
+          },
+          {
+            "viewport": "1600x1338",
+            "width": 1600,
+            "bandHeight": 1338,
+            "glyphBoxPx": 20,
+            "coverScale": 1.5486,
+            "slack": {
+              "x": 779,
+              "y": 0
+            },
+            "textExtent": {
+              "x0": 0.167,
+              "x1": 0.8290000000000001,
+              "y0": 0.08399999999999999,
+              "y1": 0.916
+            },
+            "positions": [
+              {
+                "objectPositionX": 0,
+                "p90": 0.325,
+                "p99": 0.726,
+                "max": 0.821,
+                "shareOver60": 0.0351,
+                "apertureP99": 0.4239
+              },
+              {
+                "objectPositionX": 0.25,
+                "p90": 0.415,
+                "p99": 0.749,
+                "max": 0.832,
+                "shareOver60": 0.0455,
+                "apertureP99": 0.4965
+              },
+              {
+                "objectPositionX": 0.5,
+                "p90": 0.479,
+                "p99": 0.758,
+                "max": 0.832,
+                "shareOver60": 0.0601,
+                "apertureP99": 0.5417
+              },
+              {
+                "objectPositionX": 0.75,
+                "p90": 0.513,
+                "p99": 0.761,
+                "max": 0.837,
+                "shareOver60": 0.0702,
+                "apertureP99": 0.5677
+              },
+              {
+                "objectPositionX": 1,
+                "p90": 0.529,
+                "p99": 0.761,
+                "max": 0.836,
+                "shareOver60": 0.0733,
+                "apertureP99": 0.6113
+              }
+            ],
+            "atDefault": {
+              "objectPositionX": 0.5,
+              "p50": 0,
+              "p75": 0,
+              "p90": 0.479,
+              "p99": 0.758,
+              "p999": 0.801,
+              "max": 0.832,
+              "shareNeedingNothing": 0.7583,
+              "shareOver60": 0.0601,
+              "shareOver80": 0.001,
+              "apertureP99": 0.5417,
+              "samples": 295740
+            }
+          }
+        ]
+      },
+      "washRelay": {
+        "measuredOn": "hero-l-1536.webp",
+        "coreAlpha": 0.86,
+        "columns": 16,
+        "rows": 16,
+        "sampleStride": 2,
+        "jndSpanFactor": 10.5,
+        "gutterAlphas": [
+          0.25,
+          0.35,
+          0.45,
+          0.55,
+          0.65,
+          0.75
+        ],
+        "stepP95ByColumn": {
+          "0.25": [
+            12.92,
+            32.99,
+            27.07,
+            21.34,
+            23.8,
+            28.37,
+            13.12,
+            34.11,
+            39.71,
+            38.9,
+            41.9,
+            41.61,
+            42.91,
+            41.47,
+            16.29,
+            45.05
+          ],
+          "0.35": [
+            10.87,
+            27.92,
+            22.86,
+            18.02,
+            20.11,
+            23.97,
+            11.03,
+            28.85,
+            33.62,
+            32.95,
+            35.5,
+            35.26,
+            36.36,
+            35.13,
+            13.7,
+            38.18
+          ],
+          "0.45": [
+            8.79,
+            22.74,
+            18.57,
+            14.65,
+            16.35,
+            19.47,
+            8.92,
+            23.49,
+            27.4,
+            26.86,
+            28.95,
+            28.75,
+            29.66,
+            28.64,
+            11.08,
+            31.15
+          ],
+          "0.55": [
+            6.69,
+            17.43,
+            14.2,
+            11.19,
+            12.52,
+            14.89,
+            6.79,
+            18,
+            21.02,
+            20.61,
+            22.23,
+            22.07,
+            22.79,
+            21.98,
+            8.43,
+            23.94
+          ],
+          "0.65": [
+            4.56,
+            11.99,
+            9.73,
+            7.65,
+            8.59,
+            10.21,
+            4.63,
+            12.37,
+            14.47,
+            14.2,
+            15.32,
+            15.2,
+            15.71,
+            15.14,
+            5.74,
+            16.52
+          ],
+          "0.75": [
+            2.4,
+            6.37,
+            5.14,
+            4.06,
+            4.57,
+            5.41,
+            2.44,
+            6.58,
+            7.71,
+            7.57,
+            8.18,
+            8.11,
+            8.39,
+            8.07,
+            3.02,
+            8.83
+          ]
+        },
+        "stepP95ByRow": {
+          "0.25": [
+            45.82,
+            25.11,
+            25.55,
+            33.19,
+            45.18,
+            41.53,
+            27.28,
+            17.89,
+            34.46,
+            29.39,
+            27.57,
+            17.03,
+            16.26,
+            22.27,
+            31.79,
+            23.71
+          ],
+          "0.35": [
+            38.84,
+            21.22,
+            21.6,
+            28.08,
+            38.31,
+            35.18,
+            23.06,
+            15.05,
+            29.14,
+            24.82,
+            23.3,
+            14.35,
+            13.67,
+            18.75,
+            26.86,
+            19.94
+          ],
+          "0.45": [
+            31.7,
+            17.26,
+            17.57,
+            22.86,
+            31.28,
+            28.69,
+            18.75,
+            12.17,
+            23.71,
+            20.17,
+            18.95,
+            11.63,
+            11.05,
+            15.17,
+            21.83,
+            16.12
+          ],
+          "0.55": [
+            24.37,
+            13.22,
+            13.46,
+            17.52,
+            24.06,
+            22.03,
+            14.35,
+            9.25,
+            18.16,
+            15.41,
+            14.51,
+            8.87,
+            8.4,
+            11.54,
+            16.69,
+            12.24
+          ],
+          "0.65": [
+            16.82,
+            9.08,
+            9.24,
+            12.04,
+            16.61,
+            15.18,
+            9.85,
+            6.3,
+            12.47,
+            10.56,
+            9.96,
+            6.06,
+            5.72,
+            7.87,
+            11.44,
+            8.35
+          ],
+          "0.75": [
+            8.99,
+            4.83,
+            4.92,
+            6.39,
+            8.89,
+            8.11,
+            5.23,
+            3.31,
+            6.62,
+            5.59,
+            5.3,
+            3.2,
+            3.01,
+            4.14,
+            6.06,
+            4.39
+          ]
+        },
+        "worstStepP95": {
+          "0.25": 45.82,
+          "0.35": 38.84,
+          "0.45": 31.7,
+          "0.55": 24.37,
+          "0.65": 16.82,
+          "0.75": 8.99
+        },
+        "spanAtOneJndPx": {
+          "0.25": 482,
+          "0.35": 408,
+          "0.45": 333,
+          "0.55": 256,
+          "0.65": 177,
+          "0.75": 95
+        },
+        "claim": "For a veil that steps from `coreAlpha` inside the text column to the listed gutter alpha outside it: the 95th percentile, along each of `columns` evenly spaced columns (a VERTICAL boundary) and each of `rows` evenly spaced rows (a HORIZONTAL one), of the CIE L* difference between the two composites. `spanAtOneJndPx` is 10.5 x the worst of both — the CSS px a smoothstep needs to carry that step with its peak gradient under one JND. Indices are crop fractions: column i spans [i/columns, (i+1)/columns] of the crop WIDTH, row j the same of its HEIGHT, and mapping a CSS coordinate into one of them is `object-fit: cover` arithmetic the consumer owns."
+      }
+    }
+  },
+  "proof": {
+    "publicPath": "/brand/hero/hero-proof.webp"
+  },
+  "warnings": [
+    {
+      "scope": "scrim/p",
+      "why": "the portrait  (mobile) crop needs an ink scrim at alpha 0.852 for --fg-muted to clear 4.5:1, so UNDER THE TEXT this frame is barely visible — above 0.85 it always is, and no grade changes that (the composite ceiling under a glyph is fixed; see SHARP_TONE for the arithmetic). What decides whether the hero reads as a photograph is the APERTURE — the text-free regions where the veil is thin — not this number. Check it in components/site/hero-scrim.module.css and in check-hero-contrast's VISIBILITY table before reaching for a darker crop or a heavier grade."
+    }
+  ]
+}

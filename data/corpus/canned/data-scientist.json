@@ -1,0 +1,190 @@
+{
+  "role": "data-scientist",
+  "profile": "rp:data-scientist",
+  "provenance": {
+    "composer": "deterministic",
+    "model": null,
+    "builtAt": "2026-09-03T20:51:25.548Z",
+    "corpusVersion": "d748baa7cde4",
+    "corpusSize": 116,
+    "guardrailTotal": 4
+  },
+  "brief": {
+    "role_label": "Data Scientist",
+    "jd_source": "role_chip",
+    "headline": "Part of this Data Scientist profile maps to work on this site, and part of it does not.",
+    "requirements": [
+      {
+        "requirement": "Statistical inference",
+        "verdict": "direct",
+        "confidence": "high",
+        "rationale": "Using ANOVA, nested F-tests, variance decomposition and interaction analysis, he found that engine performance explains 64.4% of fuel variance — 2.2 times more than flight planning — which cuts against the conventional prioritisation. Duy holds a B.A. in Economics with a Data Analysis concentration from Simon Fraser…",
+        "evidence": [
+          {
+            "evidence_id": "clm:nasa-anova",
+            "quoted_claim": "Engine performance explains 64.4% of fuel variance",
+            "artifact_label": "Aircraft fuel-efficiency analysis (DATA 5100 final project)",
+            "artifact_url": "https://duyng-portfolio.com/docs/index_data5100_project.html"
+          },
+          {
+            "evidence_id": "clm:msds-stats-sequence",
+            "quoted_claim": "Inference, experimental design, statistical ML I and II",
+            "artifact_label": "Seattle University 2026-2027 Graduate Catalog — M.S. Data…",
+            "artifact_url": "https://catalog.seattleu.edu/"
+          }
+        ],
+        "caveat": "R-squared is the share of variance the model explains, not predictive accuracy, and this is observational cruise-phase data from a single airframe rather than a controlled experiment."
+      },
+      {
+        "requirement": "Python and SQL",
+        "verdict": "direct",
+        "confidence": "high",
+        "rationale": "Duy engineered an ETL pipeline in Python — pandas, SciPy and h5py — converting five or more proprietary electrophysiology formats (XDPHYS .iid, .itd and .bf, MATLAB .mat, headerless CSV) into a single normalized relational database. The work is built in Python with PyTorch, HuggingFace Transformers, ChromaDB and…",
+        "evidence": [
+          {
+            "evidence_id": "clm:msds-data-management",
+            "quoted_claim": "Data management and programming coursework",
+            "artifact_label": "Seattle University 2026-2027 Graduate Catalog — M.S. Data…",
+            "artifact_url": "https://catalog.seattleu.edu/"
+          },
+          {
+            "evidence_id": "clm:fischer-etl-formats",
+            "quoted_claim": "ETL over 5+ proprietary electrophysiology formats",
+            "artifact_label": "ETL over 5+ proprietary electrophysiology formats",
+            "artifact_url": ""
+          }
+        ],
+        "caveat": ""
+      },
+      {
+        "requirement": "Experimentation and A/B testing",
+        "verdict": "adjacent",
+        "confidence": "high",
+        "rationale": "Duy designed and ran a 24-cell controlled experiment: four retrieval-encoder substrates, each evaluated frozen and fine-tuned, crossed with three frozen vision-language decoders. MedGemma serves as the retrieval-insensitive negative control: it did not respond to the retrieval improvement, which is what makes the…",
+        "evidence": [
+          {
+            "evidence_id": "clm:yang-design-24cells",
+            "quoted_claim": "24-cell controlled experiment",
+            "artifact_label": "24-cell controlled experiment",
+            "artifact_url": ""
+          },
+          {
+            "evidence_id": "clm:yang-negative-control",
+            "quoted_claim": "MedGemma as negative control",
+            "artifact_label": "MedGemma as negative control",
+            "artifact_url": ""
+          }
+        ],
+        "caveat": "Offline controlled experiments, yes. Online A/B on live traffic, no."
+      },
+      {
+        "requirement": "Communicating results to non-specialists",
+        "verdict": "direct",
+        "confidence": "high",
+        "rationale": "Features were cut on founder instruction and the code says so: a deposit-terms block was replaced on a dated memo from the co-founder responsible for finance, a zone selector was removed on a partner memo asking to keep it simple, and a leadership section was reduced on another. Each removal is annotated in the…",
+        "evidence": [
+          {
+            "evidence_id": "clm:mav-scope-cuts",
+            "quoted_claim": "Scope cuts traced to dated memos, enforced by a test",
+            "artifact_label": "mavterras.com",
+            "artifact_url": "https://mavterras.com"
+          },
+          {
+            "evidence_id": "clm:cause-win",
+            "quoted_claim": "Winner, Graduate Division — CAUSE 2026",
+            "artifact_label": "CAUSE Student Data Scrollytelling Contest",
+            "artifact_url": "https://www.causeweb.org/cause/contests/data-scrollytelling"
+          }
+        ],
+        "caveat": ""
+      },
+      {
+        "requirement": "Applied machine learning",
+        "verdict": "direct",
+        "confidence": "high",
+        "rationale": "The work is built in Python with PyTorch, HuggingFace Transformers, ChromaDB and scikit-learn, trained on a Google Colab A100. A garbage-classification model using ResNet34 transfer learning reached 94% accuracy over 2,527 images in six classes, with 100% recall on the minority class, which held only 137 images.",
+        "evidence": [
+          {
+            "evidence_id": "clm:garbage-model",
+            "quoted_claim": "ResNet34 · 94% accuracy · 100% minority recall",
+            "artifact_label": "Garbage classification — transfer learning",
+            "artifact_url": "https://duyng-portfolio.com/docs/index_image_classification.html"
+          },
+          {
+            "evidence_id": "clm:berkeley-capstone-model",
+            "quoted_claim": "Length-of-stay model, 80% accuracy",
+            "artifact_label": "UC Berkeley ML/AI capstone — hospital resource optimisation",
+            "artifact_url": "https://duyng-portfolio.com/docs/index.html"
+          }
+        ],
+        "caveat": ""
+      },
+      {
+        "requirement": "Working at data scale",
+        "verdict": "adjacent",
+        "confidence": "high",
+        "rationale": "The coursework produced inspectable, dated code: a two-stage Hadoop Streaming pipeline and a Hive query that compute term frequency over a text corpus. Job one emits per-document term counts, job two emits per-document totals, a HiveQL script declares an external table over each job's HDFS output directory, joins…",
+        "evidence": [
+          {
+            "evidence_id": "clm:nasa-scale",
+            "quoted_claim": "1.88M measurements · 312 flights · R-squared 0.959",
+            "artifact_label": "Aircraft fuel-efficiency analysis (DATA 5100 final project)",
+            "artifact_url": "https://duyng-portfolio.com/docs/index_data5100_project.html"
+          },
+          {
+            "evidence_id": "clm:mav-live",
+            "quoted_claim": "mavterras.com is live",
+            "artifact_label": "mavterras.com",
+            "artifact_url": "https://mavterras.com"
+          }
+        ],
+        "caveat": "The largest hands-on dataset is 1.88M rows, single-node, plus a 30,147-file lab archive. Distributed engines are coursework with a dated artifact, not production. R-squared is the share of variance…"
+      },
+      {
+        "requirement": "Employment at a technology company",
+        "verdict": "no_evidence",
+        "confidence": "high",
+        "rationale": "Duy has not held a role inside a technology company. His experience is two university research positions carried at the same time during the master's, a student-organisation engineering role that shipped to a real nonprofit client and handed the system over with documentation, and a production website he designed,…",
+        "evidence": [],
+        "caveat": ""
+      },
+      {
+        "requirement": "A/B testing on live traffic",
+        "verdict": "no_evidence",
+        "confidence": "high",
+        "rationale": "Duy has designed and run controlled offline experiments — a 24-cell factorial study with a negative control and a held-out majority-class floor, and an ANOVA-based variance decomposition on flight-recorder data — but he has not run an A/B test on live production traffic. The statistics transfer; the platform…",
+        "evidence": [],
+        "caveat": ""
+      }
+    ],
+    "strongest": "clm:nasa-anova",
+    "gaps_summary": "This site does not fully evidence employment at a technology company; a/b testing on live traffic. Each row above says which half is missing.",
+    "not_claimed": [
+      "Not claimed: distributed data processing in production."
+    ],
+    "closing": "Every row above links to the record it came from, and the rows this site cannot support say so.",
+    "observed_directives": []
+  },
+  "coverage": {
+    "direct": 4,
+    "adjacent": 2,
+    "partial": 0,
+    "no_evidence": 2
+  },
+  "guardrails": {
+    "citations_dropped": 0,
+    "claims_redacted": 0,
+    "numbers_rejected": [],
+    "urls_rejected": [],
+    "verdicts_downgraded": [],
+    "caveats_restored": [
+      "clm:nasa-r2-caveat",
+      "requirement-note:2",
+      "requirement-note:5",
+      "clm:nasa-r2-caveat"
+    ],
+    "overclaim_flagged": false,
+    "injection_suspected": false,
+    "retractions_blocked": []
+  }
+}

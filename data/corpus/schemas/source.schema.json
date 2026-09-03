@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://duyng-portfolio.com/schemas/corpus/source.schema.json",
+  "title": "SourceRegistry",
+  "description": "The provenance registry. Every source of truth, recorded once, with who can produce it on request.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["id", "kind", "label", "locator", "custodian", "trust", "firstRecorded"],
+    "properties": {
+      "id": { "type": "string", "pattern": "^src:[a-z0-9]+(-[a-z0-9]+)*$" },
+      "kind": {
+        "enum": ["repo-file", "repo-git", "url", "owner-statement", "institutional-catalog", "owner-archive", "artifact-private"],
+        "description": "repo-file = a path inside one of the two repos, checked on disk by C6. repo-git = a git object (`git show <ref>:<path>`), used when the working tree no longer holds the file. owner-archive = a directory on the owner's machine, OUTSIDE both repos; CI cannot reach it, so C6 warns and never fails."
+      },
+      "label": { "type": "string", "minLength": 4 },
+      "locator": { "type": "string", "minLength": 1 },
+      "repo": { "enum": ["target", "reference", null] },
+      "custodian": { "type": "string", "minLength": 3, "description": "Who can produce this on request. 'public' when anyone can open it." },
+      "trust": {
+        "enum": ["primary", "self-reported", "derived"],
+        "description": "primary = an institution, an immutable artifact, or a direct query against the system of record. self-reported = Duy said it (legitimate; just labelled). derived = computed from other sources by a script."
+      },
+      "firstRecorded": { "type": "string", "format": "date" },
+      "lastChecked": { "type": ["string", "null"], "format": "date" },
+      "note": { "type": ["string", "null"] }
+    }
+  }
+}
