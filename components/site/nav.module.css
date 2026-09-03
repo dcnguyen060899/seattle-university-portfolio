@@ -288,12 +288,26 @@
   z-index: 0;
   block-size: 160px;
   pointer-events: none;
+  /*
+    THE TAIL STARTS WHERE THE BAR ENDS, AND THAT IS NOT A STYLE CHOICE.
+
+    Its first stop must equal the plateau above it. When the plateau came down
+    from 82% and this rule was left at 70%, the tail was DARKER than the bar it
+    continues — a step the wrong way at exactly the seam this element exists to
+    hide, which reads as a bright bar laid on a darker picture. The whole point
+    of the tail is that the bar's paint decays to nothing without an edge; it
+    cannot do that starting from a different value.
+
+    The shape below is the old ramp rescaled by 55/70, so the decay curve is
+    unchanged and only its origin moved. IF THE PLATEAU MOVES AGAIN, THIS FIRST
+    STOP MOVES WITH IT.
+  */
   background: linear-gradient(
     to bottom,
-    color-mix(in srgb, var(--ground) 70%, transparent) 0,
-    color-mix(in srgb, var(--ground) 56%, transparent) 30%,
-    color-mix(in srgb, var(--ground) 29%, transparent) 58%,
-    color-mix(in srgb, var(--ground) 10%, transparent) 80%,
+    color-mix(in srgb, var(--ground) 55%, transparent) 0,
+    color-mix(in srgb, var(--ground) 44%, transparent) 30%,
+    color-mix(in srgb, var(--ground) 23%, transparent) 58%,
+    color-mix(in srgb, var(--ground) 8%, transparent) 80%,
     transparent 100%
   );
   transition: opacity 400ms var(--ease);
