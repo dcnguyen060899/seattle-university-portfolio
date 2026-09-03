@@ -298,16 +298,23 @@
     of the tail is that the bar's paint decays to nothing without an edge; it
     cannot do that starting from a different value.
 
-    The shape below is the old ramp rescaled by 55/70, so the decay curve is
-    unchanged and only its origin moved. IF THE PLATEAU MOVES AGAIN, THIS FIRST
-    STOP MOVES WITH IT.
+    THE VALUE TO MATCH IS THE BAR'S LAST STOP, NOT ITS FIRST. The bar is not
+    flat: it holds the plateau to 72% of its height and then eases to 43% at
+    its foot, so 43% is the alpha in contact with this element. Opening here at
+    the plateau's 55% was a 12-point step to DARKER across a zero-width
+    boundary - subtler than the 70% it replaced, and still a line, which a
+    reader sees as the sky changing brightness at a horizontal edge.
+
+    The decay curve below is the same shape, rescaled to begin at 43%. TWO
+    NUMBERS ARE COUPLED, NOT ONE: the plateau's closing stop and this opening
+    stop are the same edge seen from either side, and they move together.
   */
   background: linear-gradient(
     to bottom,
-    color-mix(in srgb, var(--ground) 55%, transparent) 0,
-    color-mix(in srgb, var(--ground) 44%, transparent) 30%,
-    color-mix(in srgb, var(--ground) 23%, transparent) 58%,
-    color-mix(in srgb, var(--ground) 8%, transparent) 80%,
+    color-mix(in srgb, var(--ground) 43%, transparent) 0,
+    color-mix(in srgb, var(--ground) 34%, transparent) 30%,
+    color-mix(in srgb, var(--ground) 18%, transparent) 58%,
+    color-mix(in srgb, var(--ground) 6%, transparent) 80%,
     transparent 100%
   );
   transition: opacity 400ms var(--ease);
