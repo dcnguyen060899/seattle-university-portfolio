@@ -5,7 +5,7 @@
     "api/index.py": {
       "maxDuration": 60,
       "memory": 1024,
-      "excludeFiles": "{backend/tests/**,backend/scripts/**,backend/dependencies/**,backend/src/app.py,backend/src/agent.py,backend/src/chatservice.py,backend/src/llm.py,backend/src/tools/**,public/**,app/**,components/**,lib/**,hooks/**,data/**,tests/**,node_modules/**,second-brain/**,ml-demos/**,notebook/**,presentation/**,documentation/**,duy-portfolio-mcp/**,images/**}"
+      "excludeFiles": "{public/**,app/**,components/**,lib/**,hooks/**,data/**,scripts/**,resume/**,node_modules/**,.next/**}"
     },
     "app/api/agent/brief/route.ts": {
       "maxDuration": 60,
@@ -17,7 +17,13 @@
     }
   },
   "rewrites": [
-    { "source": "/evaluate-challenge", "destination": "/api/index" },
-    { "source": "/evaluate-challenge/(.*)", "destination": "/api/index" }
+    {
+      "source": "/evaluate-challenge",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/evaluate-challenge/(.*)",
+      "destination": "/api/index"
+    }
   ]
 }
