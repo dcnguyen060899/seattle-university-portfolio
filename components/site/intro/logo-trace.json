@@ -1,0 +1,1273 @@
+{
+  "generator": "scripts/gen-logo-paths.mjs",
+  "source": "public/brand/logo-source.png",
+  "sourceSize": {
+    "width": 2046,
+    "height": 769
+  },
+  "plateauAlpha": 253,
+  "inkLevel": 126.5,
+  "params": {
+    "levelFraction": 0.5,
+    "rdpEpsilon": 0,
+    "cornerWindow": 2,
+    "cornerAngleDeg": 36,
+    "fitTolerance": 0.3,
+    "fitMaxDeviation": 0.75,
+    "fitAlphaMaxFactor": 3,
+    "pixelCentre": 0.5,
+    "origin": [
+      -150,
+      -216
+    ],
+    "coordDecimals": 1,
+    "taglineTracking": 0.34
+  },
+  "gates": {
+    "discGrowth": 0.15,
+    "discAbsUnits": 2,
+    "hairlineGrowth": 0.15,
+    "hairlineMinRunPx": 1.5,
+    "hairlineMinSamples": 12,
+    "contrastDrift": 0.4,
+    "counterMinPx": 2,
+    "resolutionExempt": [
+      "D[1]"
+    ]
+  },
+  "totals": {
+    "glyphs": 24,
+    "cubics": 1058,
+    "pathBytes": 38866,
+    "sourceInkPx": 52589,
+    "tracedInkPx": 52507,
+    "addedPct": 0.639,
+    "removedPct": 0.795,
+    "worstCurveDeviationPx": 0.398
+  },
+  "dropped": {
+    "specks": [
+      {
+        "layer": "cream",
+        "x": 386,
+        "y": 364,
+        "px": 1
+      },
+      {
+        "layer": "cream",
+        "x": 378,
+        "y": 387,
+        "px": 1
+      }
+    ],
+    "contours": [
+      {
+        "run": "D",
+        "idx": 1,
+        "area": 0.062,
+        "at": [
+          381,
+          382
+        ]
+      }
+    ]
+  },
+  "pens": {
+    "D": {
+      "pens": [
+        "dStem",
+        "dBowl"
+      ],
+      "ink": 10619,
+      "covered": 10619,
+      "fraction": 1
+    },
+    "N": {
+      "pens": [
+        "nLeft",
+        "nDiag",
+        "nRight"
+      ],
+      "ink": 9677,
+      "covered": 9650,
+      "fraction": 0.9972
+    },
+    "FLOURISH": {
+      "pens": [
+        "flourish"
+      ],
+      "ink": 3863,
+      "covered": 3863,
+      "fraction": 1
+    }
+  },
+  "subPixel": [
+    {
+      "glyph": "D[1]",
+      "label": "D-fragment",
+      "note": "tip is one source pixel wide; a 1 px ridge never reaches the opaque plateau, so the 50%-of-plateau level set is narrower than the artwork's own coverage",
+      "sourceHairlinePx": 1.798,
+      "tracedHairlinePx": 2.412
+    }
+  ],
+  "glyphs": [
+    {
+      "key": "D[0]",
+      "label": "D",
+      "layer": "cream",
+      "sourceBox": [
+        156,
+        241,
+        385,
+        466
+      ],
+      "cubics": 77,
+      "counters": {
+        "source": [],
+        "traced": []
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 9.937,
+          "traced": 10.357,
+          "samples": 346
+        },
+        "column": {
+          "source": 3.407,
+          "traced": 3.506,
+          "samples": 333
+        }
+      },
+      "contrastRatio": {
+        "source": 4.07,
+        "traced": 3.91
+      },
+      "maxInscribedUnits": {
+        "source": 27.2,
+        "traced": 27.2
+      },
+      "inkPx": {
+        "source": 10277,
+        "traced": 10208
+      },
+      "addedPct": 0.2,
+      "removedPct": 0.88,
+      "curveDeviationPx": 0.306
+    },
+    {
+      "key": "D[1]",
+      "label": "D-fragment",
+      "layer": "cream",
+      "sourceBox": [
+        379,
+        347,
+        394,
+        395
+      ],
+      "cubics": 34,
+      "counters": {
+        "source": [],
+        "traced": []
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 1.798,
+          "traced": 2.412,
+          "samples": 40
+        },
+        "column": {
+          "source": 3.478,
+          "traced": 4.251,
+          "samples": 17
+        }
+      },
+      "contrastRatio": {
+        "source": 10.78,
+        "traced": 14.2
+      },
+      "maxInscribedUnits": {
+        "source": 12.65,
+        "traced": 13.42
+      },
+      "inkPx": {
+        "source": 342,
+        "traced": 344
+      },
+      "addedPct": 1.75,
+      "removedPct": 1.17,
+      "curveDeviationPx": 0.309
+    },
+    {
+      "key": "N[0]",
+      "label": "N",
+      "layer": "cream",
+      "sourceBox": [
+        269,
+        316,
+        502,
+        527
+      ],
+      "cubics": 75,
+      "counters": {
+        "source": [],
+        "traced": []
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 8.458,
+          "traced": 8.62,
+          "samples": 553
+        },
+        "column": {
+          "source": 3.063,
+          "traced": 3.118,
+          "samples": 260
+        }
+      },
+      "contrastRatio": {
+        "source": 3.78,
+        "traced": 3.75
+      },
+      "maxInscribedUnits": {
+        "source": 26,
+        "traced": 26
+      },
+      "inkPx": {
+        "source": 9677,
+        "traced": 9714
+      },
+      "addedPct": 0.75,
+      "removedPct": 0.37,
+      "curveDeviationPx": 0.29
+    },
+    {
+      "key": "FLOURISH[0]",
+      "label": "flourish-lower",
+      "layer": "crimson",
+      "sourceBox": [
+        265,
+        402,
+        368,
+        523
+      ],
+      "cubics": 26,
+      "counters": {
+        "source": [],
+        "traced": []
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 8.115,
+          "traced": 7.914,
+          "samples": 132
+        },
+        "column": {
+          "source": 3.004,
+          "traced": 3.059,
+          "samples": 103
+        }
+      },
+      "contrastRatio": {
+        "source": 1.91,
+        "traced": 1.89
+      },
+      "maxInscribedUnits": {
+        "source": 14.14,
+        "traced": 14.42
+      },
+      "inkPx": {
+        "source": 1560,
+        "traced": 1552
+      },
+      "addedPct": 0.71,
+      "removedPct": 1.22,
+      "curveDeviationPx": 0.305
+    },
+    {
+      "key": "FLOURISH[1]",
+      "label": "flourish-upper",
+      "layer": "crimson",
+      "sourceBox": [
+        366,
+        221,
+        475,
+        388
+      ],
+      "cubics": 74,
+      "counters": {
+        "source": [],
+        "traced": []
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 8.059,
+          "traced": 8.702,
+          "samples": 179
+        },
+        "column": {
+          "source": 2.763,
+          "traced": 2.875,
+          "samples": 109
+        }
+      },
+      "contrastRatio": {
+        "source": 1.92,
+        "traced": 1.81
+      },
+      "maxInscribedUnits": {
+        "source": 15.23,
+        "traced": 15.23
+      },
+      "inkPx": {
+        "source": 2303,
+        "traced": 2296
+      },
+      "addedPct": 0.56,
+      "removedPct": 0.87,
+      "curveDeviationPx": 0.398
+    },
+    {
+      "key": "WORDMARK[0]",
+      "label": "D",
+      "layer": "cream",
+      "sourceBox": [
+        625,
+        311,
+        742,
+        419
+      ],
+      "cubics": 34,
+      "counters": {
+        "source": [
+          5995
+        ],
+        "traced": [
+          5992
+        ]
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 15.937,
+          "traced": 15.929,
+          "samples": 209
+        },
+        "column": {
+          "source": 3.292,
+          "traced": 3.671,
+          "samples": 202
+        }
+      },
+      "contrastRatio": {
+        "source": 1.6,
+        "traced": 1.72
+      },
+      "maxInscribedUnits": {
+        "source": 18.97,
+        "traced": 18.44
+      },
+      "inkPx": {
+        "source": 4081,
+        "traced": 4098
+      },
+      "addedPct": 0.86,
+      "removedPct": 0.44,
+      "curveDeviationPx": 0.301
+    },
+    {
+      "key": "WORDMARK[1]",
+      "label": "U",
+      "layer": "cream",
+      "sourceBox": [
+        775,
+        317,
+        887,
+        421
+      ],
+      "cubics": 51,
+      "counters": {
+        "source": [],
+        "traced": []
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 4.877,
+          "traced": 4.627,
+          "samples": 203
+        },
+        "column": {
+          "source": 2.206,
+          "traced": 2.329,
+          "samples": 135
+        }
+      },
+      "contrastRatio": {
+        "source": 5.13,
+        "traced": 5.48
+      },
+      "maxInscribedUnits": {
+        "source": 16.49,
+        "traced": 17.09
+      },
+      "inkPx": {
+        "source": 2640,
+        "traced": 2644
+      },
+      "addedPct": 0.76,
+      "removedPct": 0.61,
+      "curveDeviationPx": 0.307
+    },
+    {
+      "key": "WORDMARK[2]",
+      "label": "Y",
+      "layer": "cream",
+      "sourceBox": [
+        919,
+        317,
+        1020,
+        419
+      ],
+      "cubics": 61,
+      "counters": {
+        "source": [],
+        "traced": []
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 5.747,
+          "traced": 5.757,
+          "samples": 150
+        },
+        "column": {
+          "source": 2.075,
+          "traced": 2.247,
+          "samples": 143
+        }
+      },
+      "contrastRatio": {
+        "source": 4.15,
+        "traced": 4.26
+      },
+      "maxInscribedUnits": {
+        "source": 17.2,
+        "traced": 17.2
+      },
+      "inkPx": {
+        "source": 2316,
+        "traced": 2309
+      },
+      "addedPct": 0.6,
+      "removedPct": 0.91,
+      "curveDeviationPx": 0.3
+    },
+    {
+      "key": "WORDMARK[3]",
+      "label": "N",
+      "layer": "cream",
+      "sourceBox": [
+        1133,
+        314,
+        1246,
+        420
+      ],
+      "cubics": 63,
+      "counters": {
+        "source": [],
+        "traced": []
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 4.7,
+          "traced": 4.624,
+          "samples": 274
+        },
+        "column": {
+          "source": 2.336,
+          "traced": 2.29,
+          "samples": 153
+        }
+      },
+      "contrastRatio": {
+        "source": 5.08,
+        "traced": 5.29
+      },
+      "maxInscribedUnits": {
+        "source": 18.44,
+        "traced": 18.44
+      },
+      "inkPx": {
+        "source": 3301,
+        "traced": 3312
+      },
+      "addedPct": 0.67,
+      "removedPct": 0.33,
+      "curveDeviationPx": 0.307
+    },
+    {
+      "key": "WORDMARK[4]",
+      "label": "G",
+      "layer": "cream",
+      "sourceBox": [
+        1274,
+        314,
+        1383,
+        420
+      ],
+      "cubics": 39,
+      "counters": {
+        "source": [],
+        "traced": []
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 5.447,
+          "traced": 6.192,
+          "samples": 176
+        },
+        "column": {
+          "source": 3.099,
+          "traced": 3.204,
+          "samples": 205
+        }
+      },
+      "contrastRatio": {
+        "source": 5.44,
+        "traced": 5.12
+      },
+      "maxInscribedUnits": {
+        "source": 18,
+        "traced": 18
+      },
+      "inkPx": {
+        "source": 3126,
+        "traced": 3121
+      },
+      "addedPct": 0.8,
+      "removedPct": 0.96,
+      "curveDeviationPx": 0.304
+    },
+    {
+      "key": "WORDMARK[5]",
+      "label": "U",
+      "layer": "cream",
+      "sourceBox": [
+        1409,
+        317,
+        1518,
+        420
+      ],
+      "cubics": 45,
+      "counters": {
+        "source": [],
+        "traced": []
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 4.636,
+          "traced": 4.678,
+          "samples": 202
+        },
+        "column": {
+          "source": 2.095,
+          "traced": 2.173,
+          "samples": 134
+        }
+      },
+      "contrastRatio": {
+        "source": 5.44,
+        "traced": 5.48
+      },
+      "maxInscribedUnits": {
+        "source": 18,
+        "traced": 18
+      },
+      "inkPx": {
+        "source": 2600,
+        "traced": 2577
+      },
+      "addedPct": 0.38,
+      "removedPct": 1.27,
+      "curveDeviationPx": 0.291
+    },
+    {
+      "key": "WORDMARK[6]",
+      "label": "Y",
+      "layer": "cream",
+      "sourceBox": [
+        1546,
+        317,
+        1645,
+        419
+      ],
+      "cubics": 57,
+      "counters": {
+        "source": [],
+        "traced": []
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 5.854,
+          "traced": 6.008,
+          "samples": 150
+        },
+        "column": {
+          "source": 2.091,
+          "traced": 2.184,
+          "samples": 139
+        }
+      },
+      "contrastRatio": {
+        "source": 4.19,
+        "traced": 4.21
+      },
+      "maxInscribedUnits": {
+        "source": 17.89,
+        "traced": 17.09
+      },
+      "inkPx": {
+        "source": 2289,
+        "traced": 2277
+      },
+      "addedPct": 0.66,
+      "removedPct": 1.18,
+      "curveDeviationPx": 0.31
+    },
+    {
+      "key": "WORDMARK[7]",
+      "label": "E",
+      "layer": "cream",
+      "sourceBox": [
+        1671,
+        317,
+        1752,
+        419
+      ],
+      "cubics": 71,
+      "counters": {
+        "source": [],
+        "traced": []
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 2.557,
+          "traced": 2.604,
+          "samples": 164
+        },
+        "column": {
+          "source": 2.727,
+          "traced": 3.012,
+          "samples": 176
+        }
+      },
+      "contrastRatio": {
+        "source": 20.88,
+        "traced": 20.69
+      },
+      "maxInscribedUnits": {
+        "source": 16.49,
+        "traced": 16.49
+      },
+      "inkPx": {
+        "source": 2680,
+        "traced": 2680
+      },
+      "addedPct": 0.3,
+      "removedPct": 0.3,
+      "curveDeviationPx": 0.291
+    },
+    {
+      "key": "WORDMARK[8]",
+      "label": "N",
+      "layer": "cream",
+      "sourceBox": [
+        1778,
+        317,
+        1884,
+        420
+      ],
+      "cubics": 60,
+      "counters": {
+        "source": [],
+        "traced": []
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 4.968,
+          "traced": 5.008,
+          "samples": 264
+        },
+        "column": {
+          "source": 2.312,
+          "traced": 2.239,
+          "samples": 141
+        }
+      },
+      "contrastRatio": {
+        "source": 4.87,
+        "traced": 4.9
+      },
+      "maxInscribedUnits": {
+        "source": 18.44,
+        "traced": 18.44
+      },
+      "inkPx": {
+        "source": 3170,
+        "traced": 3140
+      },
+      "addedPct": 0.28,
+      "removedPct": 1.23,
+      "curveDeviationPx": 0.321
+    },
+    {
+      "key": "TAGLINE[0]",
+      "label": "P",
+      "layer": "crimson",
+      "sourceBox": [
+        973,
+        489,
+        993,
+        513
+      ],
+      "cubics": 24,
+      "counters": {
+        "source": [
+          113
+        ],
+        "traced": [
+          110
+        ]
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 3.937,
+          "traced": 3.91,
+          "samples": 35
+        },
+        "column": {
+          "source": 3.324,
+          "traced": 3.31,
+          "samples": 33
+        }
+      },
+      "contrastRatio": {
+        "source": 4.25,
+        "traced": 4.39
+      },
+      "maxInscribedUnits": {
+        "source": 6,
+        "traced": 5.66
+      },
+      "inkPx": {
+        "source": 229,
+        "traced": 224
+      },
+      "addedPct": 2.18,
+      "removedPct": 4.37,
+      "curveDeviationPx": 0.275
+    },
+    {
+      "key": "TAGLINE[1]",
+      "label": "R",
+      "layer": "crimson",
+      "sourceBox": [
+        1028,
+        489,
+        1047,
+        513
+      ],
+      "cubics": 32,
+      "counters": {
+        "source": [
+          107
+        ],
+        "traced": [
+          107
+        ]
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 3.565,
+          "traced": 3.635,
+          "samples": 44
+        },
+        "column": {
+          "source": 3.067,
+          "traced": 3.067,
+          "samples": 37
+        }
+      },
+      "contrastRatio": {
+        "source": 4.45,
+        "traced": 4.62
+      },
+      "maxInscribedUnits": {
+        "source": 5.66,
+        "traced": 5.66
+      },
+      "inkPx": {
+        "source": 260,
+        "traced": 266
+      },
+      "addedPct": 3.85,
+      "removedPct": 1.54,
+      "curveDeviationPx": 0.276
+    },
+    {
+      "key": "TAGLINE[2]",
+      "label": "O",
+      "layer": "crimson",
+      "sourceBox": [
+        1081,
+        488,
+        1108,
+        514
+      ],
+      "cubics": 6,
+      "counters": {
+        "source": [
+          304
+        ],
+        "traced": [
+          295
+        ]
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 3.945,
+          "traced": 4.027,
+          "samples": 46
+        },
+        "column": {
+          "source": 3.296,
+          "traced": 3.447,
+          "samples": 48
+        }
+      },
+      "contrastRatio": {
+        "source": 3.96,
+        "traced": 3.9
+      },
+      "maxInscribedUnits": {
+        "source": 4.47,
+        "traced": 4.47
+      },
+      "inkPx": {
+        "source": 286,
+        "traced": 285
+      },
+      "addedPct": 3.5,
+      "removedPct": 3.85,
+      "curveDeviationPx": 0.316
+    },
+    {
+      "key": "TAGLINE[3]",
+      "label": "V",
+      "layer": "crimson",
+      "sourceBox": [
+        1141,
+        489,
+        1165,
+        514
+      ],
+      "cubics": 27,
+      "counters": {
+        "source": [],
+        "traced": []
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 3.945,
+          "traced": 3.957,
+          "samples": 45
+        },
+        "column": {
+          "source": 3.466,
+          "traced": 3.435,
+          "samples": 24
+        }
+      },
+      "contrastRatio": {
+        "source": 1.65,
+        "traced": 1.83
+      },
+      "maxInscribedUnits": {
+        "source": 6,
+        "traced": 6
+      },
+      "inkPx": {
+        "source": 203,
+        "traced": 204
+      },
+      "addedPct": 1.97,
+      "removedPct": 1.48,
+      "curveDeviationPx": 0.286
+    },
+    {
+      "key": "TAGLINE[4]",
+      "label": "A",
+      "layer": "crimson",
+      "sourceBox": [
+        1196,
+        489,
+        1220,
+        514
+      ],
+      "cubics": 43,
+      "counters": {
+        "source": [
+          59
+        ],
+        "traced": [
+          57
+        ]
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 3.233,
+          "traced": 3.475,
+          "samples": 44
+        },
+        "column": {
+          "source": 3.34,
+          "traced": 3.435,
+          "samples": 34
+        }
+      },
+      "contrastRatio": {
+        "source": 5.25,
+        "traced": 5.33
+      },
+      "maxInscribedUnits": {
+        "source": 6,
+        "traced": 6
+      },
+      "inkPx": {
+        "source": 225,
+        "traced": 227
+      },
+      "addedPct": 2.67,
+      "removedPct": 1.78,
+      "curveDeviationPx": 0.231
+    },
+    {
+      "key": "TAGLINE[5]",
+      "label": "B",
+      "layer": "crimson",
+      "sourceBox": [
+        1255,
+        489,
+        1275,
+        514
+      ],
+      "cubics": 39,
+      "counters": {
+        "source": [
+          96,
+          88
+        ],
+        "traced": [
+          94,
+          86
+        ]
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 3.779,
+          "traced": 3.808,
+          "samples": 42
+        },
+        "column": {
+          "source": 3.17,
+          "traced": 3.133,
+          "samples": 49
+        }
+      },
+      "contrastRatio": {
+        "source": 4.51,
+        "traced": 4.74
+      },
+      "maxInscribedUnits": {
+        "source": 5.66,
+        "traced": 5.66
+      },
+      "inkPx": {
+        "source": 299,
+        "traced": 306
+      },
+      "addedPct": 3.34,
+      "removedPct": 1,
+      "curveDeviationPx": 0.254
+    },
+    {
+      "key": "TAGLINE[6]",
+      "label": "L",
+      "layer": "crimson",
+      "sourceBox": [
+        1310,
+        489,
+        1327,
+        514
+      ],
+      "cubics": 20,
+      "counters": {
+        "source": [],
+        "traced": []
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 3.889,
+          "traced": 3.918,
+          "samples": 26
+        },
+        "column": {
+          "source": 3.182,
+          "traced": 3.102,
+          "samples": 18
+        }
+      },
+      "contrastRatio": {
+        "source": 4.27,
+        "traced": 4.38
+      },
+      "maxInscribedUnits": {
+        "source": 5.66,
+        "traced": 5.66
+      },
+      "inkPx": {
+        "source": 155,
+        "traced": 152
+      },
+      "addedPct": 0,
+      "removedPct": 1.94,
+      "curveDeviationPx": 0.176
+    },
+    {
+      "key": "TAGLINE[7]",
+      "label": "E",
+      "layer": "crimson",
+      "sourceBox": [
+        1361,
+        489,
+        1379,
+        514
+      ],
+      "cubics": 45,
+      "counters": {
+        "source": [],
+        "traced": []
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 3.862,
+          "traced": 3.851,
+          "samples": 26
+        },
+        "column": {
+          "source": 3.265,
+          "traced": 3.169,
+          "samples": 44
+        }
+      },
+      "contrastRatio": {
+        "source": 4.75,
+        "traced": 4.77
+      },
+      "maxInscribedUnits": {
+        "source": 5.66,
+        "traced": 5.66
+      },
+      "inkPx": {
+        "source": 239,
+        "traced": 237
+      },
+      "addedPct": 0,
+      "removedPct": 0.84,
+      "curveDeviationPx": 0.232
+    },
+    {
+      "key": "TAGLINE[8]",
+      "label": "A",
+      "layer": "crimson",
+      "sourceBox": [
+        1452,
+        489,
+        1477,
+        514
+      ],
+      "cubics": 42,
+      "counters": {
+        "source": [
+          54
+        ],
+        "traced": [
+          54
+        ]
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 3.794,
+          "traced": 3.675,
+          "samples": 43
+        },
+        "column": {
+          "source": 3.542,
+          "traced": 3.647,
+          "samples": 34
+        }
+      },
+      "contrastRatio": {
+        "source": 4.6,
+        "traced": 5.03
+      },
+      "maxInscribedUnits": {
+        "source": 6,
+        "traced": 6
+      },
+      "inkPx": {
+        "source": 244,
+        "traced": 245
+      },
+      "addedPct": 2.46,
+      "removedPct": 2.05,
+      "curveDeviationPx": 0.26
+    },
+    {
+      "key": "TAGLINE[9]",
+      "label": "I",
+      "layer": "crimson",
+      "sourceBox": [
+        1512,
+        489,
+        1515,
+        513
+      ],
+      "cubics": 13,
+      "counters": {
+        "source": [],
+        "traced": []
+      },
+      "inkParts": {
+        "source": 1,
+        "traced": 1
+      },
+      "hairlinePx": {
+        "row": {
+          "source": 3.49,
+          "traced": 3.643,
+          "samples": 25
+        },
+        "column": {
+          "source": 6.739,
+          "traced": 9.204,
+          "samples": 4
+        }
+      },
+      "contrastRatio": {
+        "source": 1.12,
+        "traced": 1.11
+      },
+      "maxInscribedUnits": {
+        "source": 4,
+        "traced": 4
+      },
+      "inkPx": {
+        "source": 87,
+        "traced": 89
+      },
+      "addedPct": 3.45,
+      "removedPct": 1.15,
+      "curveDeviationPx": 0.259
+    }
+  ]
+}
