@@ -1,0 +1,375 @@
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  LOGO REVEAL — the timing, the paint and the legibility guarantee for the
+  brand mark that opens the homepage. Geometry lives in LogoReveal.tsx; read
+  that header first, it explains where every path came from.
+
+  ── WHY THIS IS CSS ON INLINE SVG AND NOT A VIDEO ─────────────────────────
+
+  The reference implementation (MAVTERRAS, components/site/intro.tsx) plays a
+  3.4 MB H.264 film over a dark ground. That medium cannot satisfy this
+  page's requirement, which is the owner's, verbatim:
+
+      "instead of black, the blurred background — the whole animation still
+       shows the room photograph softly, then it resolves to the sharp image"
+
+  An mp4 carries an OPAQUE BAKED BACKGROUND. Composited over a photograph it
+  is a rectangle of someone else's ground, and no blend mode fixes that
+  without eating the mark's own colour. Alpha video (WebM VP9 alpha, HEVC
+  alpha) is transparent but its support matrix is patchy enough that the
+  fallback would have to be built anyway.
+
+  Inline SVG + CSS is transparent BY CONSTRUCTION, is ~11 KB of path data
+  (~3 KB over the wire), needs no decode before first paint, is sharp at
+  every DPI, and honours prefers-reduced-motion natively. What is ported from
+  the reference is its STRUCTURE — the gate, the skip control, the
+  sequencing, the inertness discipline — not its medium.
+
+  ── THE LEGIBILITY PROBLEM, AND WHY THERE IS NO SCRIM HERE ────────────────
+
+  The mark plays over the hero photograph, not over a flat ground. Cream
+  (#F2DCBD, relative luminance ~0.72) on a bright sunset sky (~1.0) is
+  1.36:1. That is the hard case and it is unavoidable, because the whole
+  point of the feature is that the photograph stays visible.
+
+  hero-scrim.module.css spent seven rounds establishing that the answer is
+  PER-GLYPH TREATMENT AND NEVER A SHEET, and it records the failure mode of
+  the naive per-glyph fix too: a collar merges into a slab at small sizes
+  with wide tracking. "PROVABLE AI" is exactly small-with-wide-tracking, so
+  that warning is aimed straight at this file.
+
+  IT DOES NOT BIND HERE, AND THE GEOMETRY SAYS SO. Measured off the traced
+  outlines, in viewBox units:
+
+      run          glyph height   min inter-glyph gap   gap : height
+      monogram        306              n/a (one lockup)
+      DUY NGUYEN      109               25                0.23
+      PROVABLE AI      26               29                1.12
+
+  A halo of width w closes each gap by 2w, so a run fuses into a slab only
+  once w >= gap/2. That threshold is 12.5 units for the wordmark and 14.5 for
+  the tagline — 11% and 56% of their own glyph heights. THE WIDE TRACKING
+  THAT MAKES A CSS COLLAR DANGEROUS IS PROTECTIVE HERE: the tagline's gaps
+  are wider than its glyphs are tall, so it is the SAFEST run in the mark,
+  not the most dangerous. The wordmark is the binding one at 12.5.
+
+  The shipped widths are well under both, and are chosen per run so the halo
+  is a constant WEIGHT rather than a constant width — a collar should scale
+  with the stroke it protects:
+
+      run          halo w   as % of glyph height   gap left   px @ 1280 (*)
+      monogram       7.0           2.3%              n/a         2.3
+      DUY NGUYEN     5.0           4.6%             15.0         1.6
+      PROVABLE AI    4.6          17.7%             19.8         1.5
+
+      (*) the mark renders ~560 CSS px wide at 1280, so 1 viewBox unit is
+          ~0.32 px. Below ~1.4 px a halo stops reading as an edge, which is
+          the floor the tagline's 4.6 is sized against — it is the smallest
+          run and therefore needs the largest RELATIVE collar.
+
+  --halo-w-* are knobs, but 12.5 IS A CEILING, NOT A PREFERENCE. Past it the
+  wordmark becomes a slab and this file has re-made the mistake the scrim
+  already paid for.
+
+  ── AND IT WORKS. MEASURED, NOT ASSERTED ──────────────────────────────────
+
+  The mark was composited over the hero photograph with the shell's veil, the
+  hero scrim and the defocus ALL STRIPPED — i.e. over the raw, sharp sunset
+  frame, a harsher ground than the intro ever actually shows. Contrast was
+  then measured between each glyph's fill and the ring of background at a
+  given distance outside it (Chromium, 1280 x 800 at DPR 2, 23,835 glyph
+  pixels; the background under the mark runs from luminance 0.000 to 0.810):
+
+      ring distance     ring luminance        glyph : ring contrast
+      from the glyph    no halo -> halo    5th pct           under 3:1
+      0.5 CSS px        0.1065 -> 0.0261   1.50 -> 5.81      19% -> 0%
+      1.0 CSS px        0.1065 -> 0.0544   1.50 -> 2.47      19% -> 7%
+      1.5 CSS px        0.1071 -> 0.0721   1.50 -> 1.89      19% -> 11%
+      3.0 CSS px        0.1065 -> 0.0890   1.50 -> 1.64      19% -> 15%
+
+  READ THE FIRST ROW. At the glyph's own edge — which is where a reader's eye
+  resolves a letterform — the halo takes the worst fifth of the perimeter from
+  1.50:1 to 5.81:1 and leaves NOTHING on the perimeter under 3:1. The lower
+  rows are not failures, they are the halo being ~1.6 CSS px wide: measure
+  3 px out and most of the ring is untouched photograph, as it should be. A
+  treatment that darkened the ground 3 px out would be the sheet this whole
+  section exists to avoid.
+
+  WHAT THIS DOES NOT CLAIM. 19% of the perimeter under 3:1 with no halo is
+  what the mark would face ALONE. In production it is never alone: the shell
+  paints a veil and the hero is defocused and scrimmed underneath. Legibility
+  is a joint property of the halo and that veil, and this file only owns the
+  half that travels with the glyph. If the shell's veil is ever lightened,
+  re-run this measurement rather than assuming.
+
+  ── PAINT ORDER IS THE MECHANISM ──────────────────────────────────────────
+
+  `paint-order: stroke fill` draws the halo UNDER the glyph's own fill, so
+  the stroke only ever shows outside the letterform. Painted the default way
+  round, a 7-unit stroke would eat 3.5 units off every stem of the mark and
+  the serif would go soft. This is the SVG-native equivalent of the scrim's
+  per-glyph treatment, and it hugs each contour instead of boxing it.
+
+  ═══════════════════════════════════════════════════════════════════════════
+  ── THE SEQUENCE, AND WHY EACH BEAT IS WHERE IT IS ────────────────────────
+
+  Total 2.60s. The brief asked for 2-3s and for ASSEMBLY rather than a fade.
+
+      t (s)         beat
+      0.00-0.12     nothing painted. The blurred photograph alone.
+      0.12-0.86     the cream D is DRAWN: stem down, turn right along the
+                    foot, then the top arm sweeping into the bowl
+      0.58-1.24     the cream N is DRAWN: left stem, diagonal, right stem
+      0.92-1.70     the crimson flourish is DRAWN as one continuous stroke,
+                    top curl to bottom curl
+      1.44-2.00     DUY NGUYEN, per glyph, 28 ms apart
+      1.90-2.50     PROVABLE AI, per glyph, tracking settling inward
+      2.50-2.60     hold, complete and still
+
+  WHY THE BEATS OVERLAP. The D's bowl is still drawing when the N's left
+  stem starts, and the N is still drawing when the flourish starts. Queued
+  end-to-end the mark reads as three separate objects taking turns; overlapped
+  it reads as one object being built. The overlap is 0.26s at each seam,
+  which is about one beat of the eye.
+
+  WHY THE FLOURISH STARTS AT 0.92 AND NOT AFTER THE N. THIS IS THE WHOLE
+  POINT OF THE ANIMATION. The crimson stroke passes OVER the D and UNDER the
+  N — that interlock is the mark's one real gesture, and it is a fact about
+  the artwork, not a decision (the trace found the flourish cut into two
+  components by the N crossing it, and the D's bowl cut by the flourish
+  crossing THAT; see LogoReveal.tsx). Starting the flourish while the N is
+  still resolving means the viewer WATCHES the crossing happen instead of
+  being handed a finished knot. The pen reaches the occluded band at ~1.33s,
+  by which time the N is fully painted and the crimson visibly slides
+  underneath it and comes out the other side.
+
+  WHY THE TAGLINE IS LAST AND SETTLES INWARD. Wide tracking closing is the
+  natural "resolve" gesture, and PROVABLE AI is the claim the rest of the
+  page has to earn — it should land after the name, not with it.
+
+  WHY THE HOLD. The reference learned this the expensive way: its film's last
+  frame is black, so `ended` was never a safe dissolve trigger and the cut
+  had to come off a PAUSED frame. 0.10s of stillness gives the shell a
+  guaranteed static mark to dissolve from.
+
+  ── REDUCED MOTION IS NOT A LESSER VERSION ────────────────────────────────
+
+  Under `reduce` the mark is composed and at rest, in zero time: no drawing,
+  no movement, no stagger, no tracking settle, and no fade either. Verified in
+  Chromium with prefers-reduced-motion: reduce —
+
+      document.getAnimations().length   0
+      pen stroke-dashoffset             0px      (drawn, not drawing)
+      pen animation-name                none
+      coverage rect opacity             1
+      wordmark glyph opacity/transform  1 / none
+      tagline  glyph opacity/transform  1 / none
+
+  Every animation is switched off at the source rather than shortened, and
+  each animated property is then given its FINAL value explicitly. That
+  restatement is load-bearing, not belt-and-braces: these rules' resting
+  states are their START states, and a pen resting at dashoffset 1 is an
+  invisible pen, so `animation: none` alone would erase the mark completely.
+  ═══════════════════════════════════════════════════════════════════════════
+*/
+
+.mark {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+
+  /* ── colour ──────────────────────────────────────────────────────────
+     The brand cream and the brand crimson are NOT ground roles, and they
+     should not be: a logo's colours are ground-independent — that is what
+     makes it a logo. They are requested as palette entries in
+     app/globals.css (--brand-cream, --brand-crimson).
+
+     UNTIL THOSE LAND, the fallbacks resolve from the ground, so the mark is
+     legible and this file names no colour of its own. The fallback red is
+     the ink ground's crimson-lift, which is a brighter coral than the
+     brand's deep crimson — the intro is CORRECT but not yet BRAND-EXACT.
+     That is the shipping state and it is deliberate: a wrong-but-legible
+     red is recoverable, a hardcoded hex is a second home for the palette. */
+  --mark-cream: var(--brand-cream, var(--fg));
+  --mark-red: var(--brand-crimson, var(--fg-accent));
+  --mark-halo: var(--ground);
+  --halo-strength: 0.7;
+
+  /* Halo widths, in viewBox units. See the table above. CEILING: 12.5. */
+  --halo-w-mono: 7;
+  --halo-w-word: 5;
+  --halo-w-tag: 4.6;
+
+  /* A pen accelerates off the mark and decelerates into the terminal. This
+     is deliberately NOT --ease-brand: an expo-out pen shoots and then
+     crawls, which reads as a swipe rather than as a hand. */
+  --pen-ease: cubic-bezier(0.45, 0.05, 0.25, 1);
+  --settle-ease: var(--ease-brand, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+/* ── paint ──────────────────────────────────────────────────────────── */
+
+.cream,
+.red {
+  paint-order: stroke fill;
+  stroke: var(--mark-halo);
+  stroke-opacity: var(--halo-strength);
+  stroke-linejoin: round;
+}
+
+.cream {
+  fill: var(--mark-cream);
+}
+
+.red {
+  fill: var(--mark-red);
+}
+
+.mono {
+  stroke-width: var(--halo-w-mono);
+}
+
+.word {
+  stroke-width: var(--halo-w-word);
+}
+
+.tag {
+  stroke-width: var(--halo-w-tag);
+}
+
+/* ── the pen ─────────────────────────────────────────────────────────
+   Each stroke lives inside a <mask>, where WHITE means "reveal". That is
+   an alpha channel encoded as luminance, not a palette choice — there is
+   no ground role for "fully opaque", and a mask painted in --fg would
+   reveal at whatever luminance the ground happened to resolve to.
+
+   `pathLength="1"` on the path normalises its arc length, so one
+   dasharray covers every stroke regardless of how long it actually is and
+   nothing has to be measured in JS. */
+.pen {
+  fill: none;
+  stroke: white;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw var(--dur) var(--pen-ease) var(--at) both;
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/*
+  THE COVERAGE GUARANTEE.
+
+  The pen strokes are centreline approximations of the letterforms. They are
+  measured (LogoReveal.tsx shows the checks) and they do cover the mark, but
+  "the animation is correct only if six hand-authored centrelines are each
+  wide enough everywhere" is a fragile contract — a missed sliver would mean
+  a piece of the mark NEVER APPEARS, which is a silent, permanent defect.
+
+  So each mask also carries a full-bleed rect that fades in over the last
+  ~0.17s of its own beat. The pen carries the motion; the rect carries the
+  correctness. Where the pen has already painted, compositing white over
+  white changes nothing, so the ramp is invisible on everything already
+  drawn and only ever closes a gap.
+*/
+.cover {
+  fill: white;
+  opacity: 0;
+  animation: cover 0.17s linear var(--at) both;
+}
+
+@keyframes cover {
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── the lockup: per-glyph, never a group fade ───────────────────────── */
+
+.wordGlyph {
+  opacity: 0;
+  animation: glyphIn 0.34s var(--settle-ease) calc(1.44s + var(--i) * 0.028s)
+    both;
+}
+
+@keyframes glyphIn {
+  from {
+    opacity: 0;
+    transform: translateY(9px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* --dx is the glyph's own distance from the tagline's centre, times 0.34.
+   Animating it to zero IS a tracking settle: the run opens 34% wider than
+   its final metric and closes onto it. Doing it per glyph rather than with
+   letter-spacing keeps it on the compositor and needs no live text. */
+.tagGlyph {
+  opacity: 0;
+  animation: tagIn 0.4s var(--settle-ease) calc(1.9s + var(--i) * 0.022s) both;
+}
+
+@keyframes tagIn {
+  from {
+    opacity: 0;
+    transform: translateX(var(--dx));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── reduced motion ─────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .mark :is(.pen, .cover, .wordGlyph, .tagGlyph) {
+    animation: none !important;
+  }
+
+  /* Each animated property restated at its FINAL value. Without this the
+     pens rest at dashoffset 1 and the mark is invisible. */
+  .pen {
+    stroke-dashoffset: 0;
+  }
+
+  .cover {
+    opacity: 1;
+  }
+
+  .wordGlyph,
+  .tagGlyph {
+    opacity: 1;
+    transform: none;
+  }
+
+  /*
+    AND NOTHING ELSE. The mark is simply THERE — no fade, no delay, duration
+    zero.
+
+    THIS WAS A FADE AND THE FADE WAS WRONG. It ran `markAppear 0.3s linear
+    0.1s both`, so the mark held at opacity 0 for its first 100 ms. Measured
+    against the real shell (Chromium, prefers-reduced-motion: reduce): the
+    overlay is mounted at 0 ms and GONE by 150 ms, because the shell's own
+    reduced-motion path takes the intro down almost immediately. The mark was
+    therefore at opacity 0 for its entire life and NOTHING WAS EVER VISIBLE.
+
+    A resting state that depends on 400 ms of shell cooperation is not a
+    resting state. Fading the overlay in and out is the shell's job and it is
+    the right seam for it; composing the mark is this file's, and "composed"
+    means finished the instant it is rendered.
+  */
+  .mark {
+    opacity: 1;
+    animation: none !important;
+  }
+}

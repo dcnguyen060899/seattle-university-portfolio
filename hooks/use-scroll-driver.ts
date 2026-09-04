@@ -114,6 +114,59 @@ function clamp01(n: number): number {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
+   THE FOCUS OVERRIDE — the homepage intro's one hook into this module
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * `--focus` is the hero's blur→sharp cross-fade (0 = sharp). Normally it is a
+ * pure function of scroll position. The homepage intro
+ * (components/site/intro/Intro.tsx) needs the SAME property driven by TIME
+ * instead: held at 1 while the logo reveal plays, ramped to 0 as the intro
+ * dissolves, so the photograph resolving from blur to sharp IS the transition
+ * into the page.
+ *
+ * IT IS AN OVERRIDE RATHER THAN A SECOND WRITER, and that distinction is the
+ * whole reason it lives here. This file's contract — "exactly one component
+ * writes styles" — is not a style preference; two writers racing for one
+ * custom property on <html> is a property whose value depends on which rAF
+ * won, which is exactly the class of bug this module was extracted to
+ * prevent. So the intro publishes a NUMBER and the driver keeps writing.
+ *
+ * `null` releases it. Release is not "stop writing": it must force the driver
+ * to re-publish the scroll-derived value, because the skip-redundant-writes
+ * cache would otherwise hold whatever it last wrote and the hero would stay
+ * out of focus. Hence the invalidator set.
+ */
+let focusOverride: number | null = null;
+
+/** Registered by the claiming driver; resets its `lastFocus` memo. */
+const focusInvalidators = new Set<() => void>();
+
+/**
+ * Set (or, with `null`, release) the time-driven value of `--focus`.
+ *
+ * With a driver mounted this goes through the shared rAF like every other
+ * scroll-linked write, one frame later. With NO driver mounted — a route with
+ * no hero, or the vanishingly small window before <ScrollDriver /> has run its
+ * effect — it writes the property directly, because a hand-off that silently
+ * did nothing would leave the hero soft forever. Same property, same element,
+ * so the two paths cannot disagree; only one of them is ever live.
+ */
+export function setIntroFocus(value: number | null): void {
+  focusOverride = value === null ? null : clamp01(value);
+  for (const invalidate of focusInvalidators) invalidate();
+
+  if (focusInvalidators.size > 0) {
+    pokeScroll();
+    return;
+  }
+
+  const root = document.documentElement;
+  if (focusOverride === null) root.style.removeProperty('--focus');
+  else root.style.setProperty('--focus', focusOverride.toFixed(4));
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
    prefers-reduced-motion
    ══════════════════════════════════════════════════════════════════════════ */
 
@@ -178,6 +231,12 @@ let writerClaimed = false;
  * viewport or the document height changes, so the per-frame path stays free
  * of layout reads it does not already make.
  *
+ * `--focus` HAS ONE OTHER INPUT, and it is declared rather than smuggled in:
+ * `setIntroFocus()` above lets the homepage intro drive the same property from
+ * time instead of scroll for about three and a half seconds after a first
+ * load. It is an
+ * override read by this loop, not a second writer — see that function.
+ *
  * `--focus` and `--exit` are never written under prefers-reduced-motion; the
  * CSS defaults (`var(--focus, 0)`) and the `reduce` block already put the
  * hero in its sharp, still, resting state.
@@ -207,6 +266,12 @@ export function useScrollDriver(heroElementId = 'top'): void {
     let lastDocH = -1;
     let span = 0;
 
+    // Release must be able to force a write past the redundancy cache above.
+    const invalidateFocus = (): void => {
+      lastFocus = -1;
+    };
+    focusInvalidators.add(invalidateFocus);
+
     const unsubscribe = subscribeScroll(({ y, vh, docH }) => {
       if (vh !== lastVh || docH !== lastDocH) {
         lastVh = vh;
@@ -221,13 +286,26 @@ export function useScrollDriver(heroElementId = 'top'): void {
         root.style.setProperty('--page', page.toFixed(4));
       }
 
-      if (reduced) return;
-
-      const focus = clamp01(span > 0 ? y / span : 1);
-      if (focus !== lastFocus) {
-        lastFocus = focus;
-        root.style.setProperty('--focus', focus.toFixed(4));
+      // The intro's time-driven value wins over both the scroll mapping and
+      // the `reduce` early-return. It is only ever non-null while the intro
+      // is on screen, and the intro cannot start under `reduce` — the gate
+      // script refuses — so in practice these two never meet. Ordering them
+      // anyway means a preference toggled MID-INTRO ends with --focus at 0
+      // rather than stuck at 1.
+      if (focusOverride !== null) {
+        if (focusOverride !== lastFocus) {
+          lastFocus = focusOverride;
+          root.style.setProperty('--focus', focusOverride.toFixed(4));
+        }
+      } else if (!reduced) {
+        const focus = clamp01(span > 0 ? y / span : 1);
+        if (focus !== lastFocus) {
+          lastFocus = focus;
+          root.style.setProperty('--focus', focus.toFixed(4));
+        }
       }
+
+      if (reduced) return;
 
       if (hero !== null) {
         const exit = clamp01((y - span * 0.55) / Math.max(1, vh * 0.5));
@@ -240,6 +318,7 @@ export function useScrollDriver(heroElementId = 'top'): void {
 
     return () => {
       unsubscribe();
+      focusInvalidators.delete(invalidateFocus);
       root.style.removeProperty('--page');
       root.style.removeProperty('--focus');
       hero?.style.removeProperty('--exit');

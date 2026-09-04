@@ -536,5 +536,29 @@
     "firstRecorded": "2026-09-03",
     "lastChecked": "2026-09-03",
     "note": "THE PERMISSION QUESTION, IN SEATTLE UNIVERSITY'S OWN WORDS. Read on 2026-09-03. Licensing FAQs, verbatim: \"Any trademark that identifies or is associated with Seattle University may not be used without prior, expressed, written permission from Marketing Communications.\" And, on the only carve-out: \"Other activities, such as some noncommercial use of trademarks/logos, may or may not need to be licensed... Some activity may constitute fair use or free speech so as not to require a license. Advice in that regard should be sought from your own legal counsel.\" Licensed-content policy, verbatim: \"All university content represents intellectual property and registered federal trademarks owned exclusively by Seattle University\" and \"Any use of the university's content for commercial purposes or by any person or organization is prohibited without the express permission of the university\" — with the covered channels enumerated, including \"Web sites and pages (commercial and personal)\". A personal portfolio is named in that list. NOTE WHAT THIS SOURCE DOES AND DOES NOT ESTABLISH. It establishes that the university requires written permission and that it considers personal web pages in scope. It does NOT establish that no permission exists — the owner may hold one this repo has never seen — and it is not legal advice; the university itself points to counsel on fair use. That is why art:su-mark is pending-owner and not blocked. Separately, the detailed asset library (including any reverse/white variants) sits behind the Redhawk Hub login, so no white lockup could be verified from the public web; the public brand page directs questions to brand@seattleu.edu."
+  },
+  {
+    "id": "src:personal-mark-origin",
+    "kind": "owner-statement",
+    "label": "Owner's statement of origin for the DUY NGUYEN / PROVABLE AI lockup",
+    "locator": "UNANSWERED as of 2026-09-03. Registered EMPTY on purpose, so the silence is countable — the same device src:hero-photo-origin used for eleven months before the owner answered it. What is on disk is public/brand/logo-source.png, a 2046x769 RGBA PNG, byte-identical to public/brand/personal_brand.png (both sha256 877b7813906640f564337a5972a680d4b13c3f55db73ae02914a8ecd526f6f06), which appeared in the working tree on 2026-09-03 untracked and with no statement attached. The questions put to the owner are held verbatim in art:personal-mark's provenance.openQuestions and are printed by verify-corpus.mjs C15 on every build while the file is on disk. When he answers, the answer is pasted HERE verbatim and trust stays 'self-reported' — it is him telling us what he did, and there is no second document to corroborate it.",
+    "repo": null,
+    "custodian": "Duy Nguyen",
+    "trust": "self-reported",
+    "firstRecorded": "2026-09-03",
+    "lastChecked": "2026-09-03",
+    "note": "WHY THIS IS AN owner-statement AND NOT A repo-file. The obvious move was to register the PNG itself as kind 'repo-file' pointing at public/brand/logo-source.png, and it would have been wrong twice over. First, the file is UNTRACKED — C6 fails a repo-file locator that does not exist on disk, so a CI checkout without that binary would turn the build red for a record about a feature that is supposed to degrade to nothing when the file is absent. Second and more important, a file is not an origin. Knowing the bytes exist tells us nothing about who drew them, which is the only question this record was opened to hold. art:hero-photo made the same call for the same reason: its master is a repo file too, and its origin source is still an owner-statement. The file's existence is tracked where it belongs — provenance.sourcePaths, which C15 stats without failing on absence."
+  },
+  {
+    "id": "src:wcag-logotype-exemption",
+    "kind": "url",
+    "label": "WCAG 2.2 Success Criterion 1.4.3 Contrast (Minimum) — the logotype exception",
+    "locator": "https://www.w3.org/TR/WCAG22/#contrast-minimum",
+    "repo": null,
+    "custodian": "public",
+    "trust": "primary",
+    "firstRecorded": "2026-09-03",
+    "lastChecked": "2026-09-03",
+    "note": "THE RULE art:personal-mark INVOKES, recorded so the exemption is checkable rather than assumed. SC 1.4.3 carries three exceptions; the third is titled Logotypes and reads: \"Text that is part of a logo or brand name has no contrast requirement.\" That single sentence is why the measured 1.57:1 of the PROVABLE AI tagline over the blurred hero is filed as a LEGIBILITY fact and not as an accessibility failure — this corpus does not manufacture violations any more than it manufactures results. NOTE CAREFULLY WHAT THE EXEMPTION DOES AND DOES NOT COVER. It covers glyphs rendered as part of the lockup. It does NOT cover copy a component sets in the same crimson outside the lockup, and it does not turn an unreadable line into an informative one: a tagline nobody can read is exempt and still unread. If any surface ever repeats \"PROVABLE AI\" as page text rather than as part of the mark, the exemption stops applying and #8D131B measures 1.93:1 on the ink ground, which fails 1.4.3 at every size — worse than the site's own --color-crimson, which globals.css already documents at 2.34:1 as illegal for text."
   }
 ]

@@ -1,0 +1,454 @@
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  HOMEPAGE INTRO OVERLAY — the ground the brand mark draws on, and the three
+  things that have to get out of its way.
+
+  Visibility is keyed on html[data-intro], which ONLY the gate script in
+  app/layout.tsx can set before paint (lib/intro.ts INTRO_GATE_SCRIPT).
+  Without the attribute every rule in this file is inert and the overlay is
+  display:none — so a repeat visit, a no-JS visit, a /docs/* visit, a 404 and
+  every automated run render nothing and cost nothing.
+
+  ── THE REQUIREMENT THIS FILE EXISTS TO SATISFY ───────────────────────────
+
+  Stated by the owner, in Vietnamese, and it is the load-bearing part of the
+  whole feature:
+
+      "instead of black chuyển wa blur ... nguyên cái animation vẫn thấy cái
+       tấm hình của cái phòng chính mờ mờ xong chuyển qua tấm hình chính"
+
+  — the intro must NOT play over black. The hero photograph stays softly
+  visible for the whole animation and then resolves to the sharp image.
+
+  That single sentence rules out the reference implementation's medium (an
+  mp4 carries an opaque baked background) and it rules out an opaque ground
+  here. So this overlay paints a VEIL, not a floor, and the picture behind it
+  is the hero's own — held out of focus by `--focus`, which the gate script
+  sets to 1 before the first paint and the intro ramps to 0 as it dissolves.
+  There is no second photograph in this file and no `filter: blur()` anywhere
+  near it; components/site/hero.module.css's header explains at length why a
+  live blur filter is a defect on this site.
+
+  ── THE VEIL, AND THE ONLY NUMBERS IN THIS FILE ───────────────────────────
+
+  A veil is needed at all because a brand mark cannot know what pixel is
+  behind it, and this one is behind a photograph of a sunlit campus. It is a
+  RADIAL veil for the same reason hero-scrim.module.css's is an aperture: the
+  mark needs a ground under IT, and the requirement needs the picture open
+  everywhere else. One gradient, two stops, no bitmap.
+
+  Both stops are `color-mix(… var(--ground) …)` so the ink comes from the
+  overlay's declared data-ground and no hex is named here —
+  scripts/check-ground-tokens.mjs enforces that and it is right to.
+
+  ── WHY THE CORE IS SMALL AND THE FIELD IS LIGHT ──────────────────────────
+
+  Because the veils COMPOUND, and the owner has already rejected the result
+  of over-veiling this exact photograph once ("it is currently too dark ...
+  look at mavterras. we can see the image clearly"). Two veils of a and b
+  compose to 1 - (1-a)(1-b), so a lazy full-screen 88% on top of the hero's
+  own scrim puts a black rectangle over the thing the requirement is about.
+
+  THIS FILE SHIPPED 82% / 32% ONCE AND IT FAILED THE REQUIREMENT. The frame
+  it produced had no campus in it — a mark on a warm near-black field, which
+  is the mp4's failure mode reached by a different route. The numbers below
+  are the re-measurement that replaced it, and the correction was in TWO
+  places, only one of which is this file:
+
+    · lib/intro.ts INTRO_FOCUS_HOLD went 1 -> 0.78. That is the bigger half.
+      hero.module.css cross-fades the two baked copies with
+      `opacity: calc(1 - var(--focus))`, so at 1 the SHARP copy contributes
+      nothing at all and the veil is sitting on a low-pass-filtered image
+      under the hero scrim. No veil setting rescues that; measured with the
+      veil removed ENTIRELY at --focus 1, the picture still only reached 23.
+    · the veil went 82/32 -> 50/12, which is what this file owns. Once the
+      ground is a photograph rather than a flat field, the veil no longer has
+      to carry the mark's legibility by itself.
+
+  MEASURED, 2026-09-03, production build, headless Chromium 1280x800 dpr 1,
+  intro playing, overlay opacity pinned to 1. Rec.709 luma over the decoded
+  screenshot; `range` is p98 - p2, i.e. the surviving dynamic range of the
+  picture, which is the number hero-scrim.module.css's own complaint is
+  stated in ("Eighteen levels out of 255. That is the black rectangle."). The
+  band is 1160x200 of open picture clear of the lockup, x 60-1220, y 100-300.
+  THE SHARP PHOTOGRAPH READS 182 ON THIS BAND, which is the scale everything
+  below is against:
+
+      focus  veil          mean   range
+      1.00   82% / 32%     28.9      14   <- the failing state: no campus
+      1.00   62% / 18%     32.0      16
+      1.00   50% / 12%     33.7      18
+      1.00   none          39.8      23   <- veil gone, still no campus
+      0.85   50% / 12%     33.3      18   present but murky
+      0.78   62% / 18%     31.5      17
+      0.78   50% / 12%     33.1      19   <- SHIPS
+      0.70   50% / 12%     32.9      20
+      0.70   none          39.0      32   reads as barely defocused
+
+  Range alone does not decide this and should not be read as if it did — the
+  band is mostly sky and skyline, where a blur destroys fine structure by
+  construction. What 0.78 / 50-12 buys is the LARGE masses: the Lemieux
+  building, the tree line and the SEATTLE UNIVERSITY sign all read, softly,
+  and the frame is unmistakably a photograph rather than a field. The frames
+  are the evidence, not this table.
+
+  THE REMAINING CEILING IS THE HERO'S, NOT THIS FILE'S. With no overlay veil
+  at all and the photograph fully soft the band still only reaches 23. A blur
+  is a low-pass filter, so the baked soft copy has less local range than the
+  sharp one BY CONSTRUCTION, and the hero's own scrim is under it
+  (--scrim-base 0.86 from public/brand/hero/manifest.json resolves
+  --scrim-alpha to its 53% floor). Opening the picture further than this means
+  a lighter scrim or a different grade for the soft bitmap — hero territory,
+  not this file, and a change that would have to clear
+  scripts/check-hero-contrast.mjs.
+
+  The ellipse is sized to the LOCKUP rather than to the viewport: the 50%
+  core reaches ±38% of a 62%-wide ellipse — about ±300px at 1280, against a
+  mark that is at most 560px wide — and everything outside it is the 12%
+  field, where the picture is at its most open.
+
+  ── THE GROUND'S CONTRAST CONTRACT ────────────────────────────────────────
+
+  MEASURED THIS TIME, not derived: the overlay was rendered at the shipping
+  settings with the mark's own <svg> hidden, and the ground was sampled over
+  the lockup's exact box (560x108 at 360,346 on a 1280x800 viewport). WCAG
+  2.1 relative luminance; `worst` is the 95th percentile of that ground, i.e.
+  the brightest pixel the mark realistically has to sit on.
+
+      ground under the lockup   L median   L p95
+      82% / 32% at focus 1.00     0.0098   0.0110   (the old, failing veil)
+      50% / 12% at focus 0.78     0.0133   0.0194   <- ships
+
+      ink                          old worst   new worst
+      --fg #F2F1EE (the cream)       15.24:1     13.40:1
+      brand cream #F0DCBC            12.84:1     11.30:1
+      --fg-accent #FF5252             5.39:1      4.74:1
+      brand crimson #8D131B           1.84:1      1.62:1
+
+  So the whole cost of opening the picture is 15.2 -> 13.4 on the cream and
+  5.4 -> 4.7 on the accent. Both still clear AA for small text, which is more
+  than a logotype is owed. The consequences binding on whoever draws the mark
+  are unchanged in kind:
+
+      · cream/ivory artwork is AA at any size, with a wide margin;
+      · --fg-accent (#FF5252) still clears 4.5:1 here, but it is the ink with
+        the least headroom and the one to re-measure if this veil moves again;
+      · the mark's own crimson is NOT usable as small type on a photograph.
+        #8D131B measures 1.62:1 on the shipping ground and the site's #AA0000
+        is no better, exactly the way app/globals.css rule 1 says crimson is
+        illegal on ink. That is a fact about the artwork, not about this veil:
+        no veil that leaves a photograph visible can rescue a 2:1 red. It is
+        why logo-reveal.module.css falls back to --fg-accent until real brand
+        tokens land;
+      · NOTHING may rely on the 12% field for legibility — and less than ever
+        now that it is 12%. Anything that must read out there carries its own
+        opaque field: see .skip, which is the only such thing on the screen.
+
+  ── DURATIONS COME FROM lib/intro.ts ──────────────────────────────────────
+
+  --intro-reveal and --intro-dissolve are published onto <html> by the gate
+  script, from the same TypeScript constants the timers use, so the
+  stylesheet and the JavaScript cannot drift. The fallbacks below are for the
+  dev-remount window only and must be kept equal to those constants.
+  ═══════════════════════════════════════════════════════════════════════════
+*/
+
+.overlay {
+  --intro-veil-mark: 50%;
+  --intro-veil-edge: 12%;
+
+  position: fixed;
+  inset: 0;
+  /* Above the nav (50). The focus-only skip-to-content link is also 100 and
+     is EARLIER in the document, so this wins the tie for three and a half
+     seconds. */
+  z-index: 100;
+  display: none;
+  overflow: hidden;
+  /* Blocks the iOS rubber-band under a fixed layer. Scroll is held by
+     preventDefault in Intro.tsx and never by `overflow: hidden` on the root:
+     removing the scrollbar reflows the page, and a reflow under a
+     SEE-THROUGH overlay is visible layout shift. CLS is a hard 0 here. */
+  touch-action: none;
+
+  /* Sized to the lockup, not to the viewport — see WHY THE CORE IS SMALL.
+     Past the ellipse's 100% the last stop holds, so the whole screen outside
+     it is the 50% field. */
+  background: radial-gradient(
+    62% 44% at 50% 47%,
+    color-mix(in srgb, var(--ground) var(--intro-veil-mark), transparent) 0%,
+    color-mix(in srgb, var(--ground) var(--intro-veil-mark), transparent) 38%,
+    color-mix(in srgb, var(--ground) var(--intro-veil-edge), transparent) 100%
+  );
+}
+
+:global(html[data-intro="pending"]) .overlay,
+:global(html[data-intro="playing"]) .overlay,
+:global(html[data-intro="done"]) .overlay {
+  display: block;
+}
+
+/*
+  THE PURE-CSS HALF OF THE DEAD-MAN'S SWITCH. If the gate stamped `pending`
+  and the client bundle never took over — a chunk 404, a hydration failure —
+  this fades the veil out on its own. The selector stops matching the instant
+  the component stamps `playing`, which cancels it.
+
+  THE TWO HALVES ARE STAGGERED, NOT SIMULTANEOUS, and that is a measurement
+  rather than a preference. MEASURED 2026-09-03, production build, with every
+  `_next/static` JavaScript chunk aborted so hydration never happens: with
+  both halves at 4000 ms the gate's own timeout removed the attribute at the
+  same instant this fade began, so the overlay SNAPPED away instead of
+  dissolving. It now starts at
+  INTRO_CSS_FAILSAFE_DELAY_MS (3100 ms) and takes INTRO_DISSOLVE_MS, finishing
+  exactly as the gate's timeout fires at INTRO_FAILSAFE_MS (4000 ms).
+
+  The gate's timeout is what removes the attribute and `--focus`, which is the
+  half CSS cannot do: an unregistered custom property cannot be reliably
+  reverted by an animation in every engine, and a hero photograph stuck out of
+  focus forever is a far worse failure than a stuck overlay.
+
+  3100ms IS A LITERAL AND lib/intro.ts KNOWS IT — it is
+  INTRO_CSS_FAILSAFE_DELAY_MS there, and that module asserts, at build time,
+  both relationships this number lives in: INTRO_LATE_MOUNT_MS must be below
+  it (or a late hydration flips a half-faded overlay back to opaque), and
+  delay + dissolve must not run past INTRO_FAILSAFE_MS.
+*/
+:global(html[data-intro="pending"]) .overlay {
+  animation: introFailsafe var(--intro-dissolve, 900ms) var(--ease-brand) 3100ms forwards;
+}
+
+@keyframes introFailsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* The mark's stage. `place-items: center` and a gutter; nothing else, because
+   the artwork's own proportions belong to whoever draws it. */
+.stage {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding-inline: var(--spacing-gutter);
+}
+
+/*
+  The slot the reveal renders into. It publishes a width and no appearance:
+  the lockup is a wide horizontal one, so it is bounded by the viewport on a
+  phone and by a comfortable optical size on a desktop. IT MUST STAY INSIDE
+  THE VEIL'S CORE: the 50% stop reaches 38% of a 62%-wide ellipse, i.e. ~±300px
+  at 1280 and ~±43% of the viewport's width on a phone, against a mark that is
+  at most 560px or 78vw wide. Widening one without the other puts cream
+  artwork out on the 12% field, over open photograph, where nothing is
+  guaranteed.
+*/
+.mark {
+  inline-size: min(560px, 78vw);
+  max-inline-size: 100%;
+}
+
+/*
+  ── THE DISSOLVE ─────────────────────────────────────────────────────────
+
+  Opacity only, and no `will-change`: this element unmounts on transitionend,
+  so a hint that keeps a viewport-sized layer live outlives its usefulness by
+  design. hero.module.css measured that exact trade and came to the same
+  answer.
+
+  NO `pointer-events: none` ON THIS RULE, and it is deliberate. It would take
+  effect on the FIRST frame of the dissolve while the overlay is still nearly
+  opaque, and every tap for the next 900 ms would reach whatever is painted
+  underneath. The reference measured that as a real bug — an impatient second
+  tap on Skip went through to a link and navigated the visitor away mid-fade.
+
+  It is released a beat later instead, by `.released` below, which Intro.tsx
+  adds INTRO_POINTER_GUARD_MS after the dissolve begins. Holding it for the
+  WHOLE dissolve was measured to be its own defect in the other direction: the
+  veil is imperceptible long before it unmounts, so the visitor spends a
+  quarter of a second (half a second on the natural dissolve) clicking a page
+  they can see and having those clicks eaten. lib/intro.ts
+  INTRO_POINTER_GUARD_MS carries the numbers.
+
+  The Skip button is REMOVED FROM THE DOM at `done` (Intro.tsx), so nothing
+  focusable is left behind either: hidden means inert, not merely
+  transparent.
+*/
+/*
+  The dissolve is past its guard window: there is nothing left on this overlay
+  to aim at (Skip is gone from the DOM, and its own onClick is a finish() that
+  has already run), so it must stop standing between the visitor and the page.
+  See lib/intro.ts INTRO_POINTER_GUARD_MS.
+*/
+.released {
+  pointer-events: none;
+}
+
+.done {
+  opacity: 0;
+  transition: opacity var(--intro-dissolve, 900ms) var(--ease-brand);
+}
+
+/* Skip: the visitor has said they are done, so the same move, faster. */
+.quick {
+  transition-duration: 450ms;
+}
+
+/*
+  ── SKIP ─────────────────────────────────────────────────────────────────
+
+  It sits at the top right, over the veil's EDGE stop, where --fg-muted
+  measures 1.70:1 in the worst case above. So it carries its own field, the
+  same way app/globals.css's `.mark-plate` and `.skip` do and for the same
+  stated reason: an element that renders above everything cannot know what is
+  underneath it. On an opaque --ground the published ink ratios are true
+  again — --fg-muted 7.15:1, --fg 16.04:1.
+
+  1px --edge, radius <= 4px, no shadow. 44px minimum target.
+*/
+.bar {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  max-width: var(--container-wrap);
+  margin-inline: auto;
+  padding: 14px var(--spacing-gutter) 0;
+}
+
+.skip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: 16px;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-xs);
+  background: var(--ground);
+  /* The site's small-caps voice is the mono face — every Eyebrow, every
+     label, every readout. A display-face control here would be the only one
+     on the site. */
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  cursor: pointer;
+  transition: color 200ms var(--ease-brand);
+}
+
+.skip:hover,
+.skip:focus-visible {
+  color: var(--fg);
+}
+
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  WHAT GETS OUT OF THE WAY, AND WHY IT IS OPACITY AND NOT display
+
+  Two things on the page would otherwise sit ON TOP OF the veil and read
+  straight through the brand moment:
+
+    #site-nav      the fixed bar — which carries the owner's name as its home
+                   link, i.e. the wordmark that is mid-reveal two inches below
+    #top .wrap     the hero's copy column — whose <h1> is, again, "Duy Nguyen"
+
+  Both are hidden with OPACITY, never `display: none` and never `visibility`.
+  That is a layout-shift decision and a Core Web Vitals decision at once:
+  opacity takes an element out of the picture without taking it out of flow,
+  so nothing below it moves and CLS stays 0. (What opacity DOES cost is LCP
+  candidacy for the hero copy — but the hero's soft photograph is a full-bleed
+  <img> that stays fully visible throughout, so the page keeps a large,
+  early, cheap LCP candidate that the intro does not touch.)
+
+  Both are keyed on ids, not on CSS-module class names, because those two ids
+  are the stable public handles their own files already commit to
+  (`<header id="site-nav">` in nav.tsx, `<Band id="top">` in hero.tsx). This
+  is the one place this territory reaches into another's markup, so it is
+  written to FAIL SAFE: if either selector ever stops matching, the element
+  simply stays visible under a veil. Nothing breaks; the composition is
+  merely busier than intended.
+
+  The return is a transition on the `done` state, so the page fades UP as the
+  overlay fades DOWN and as the photograph resolves — one event, three
+  properties, one duration.
+  ═══════════════════════════════════════════════════════════════════════════
+*/
+:global(html[data-intro="pending"]) :global(#site-nav),
+:global(html[data-intro="playing"]) :global(#site-nav),
+:global(html[data-intro="pending"]) :global(#top .wrap),
+:global(html[data-intro="playing"]) :global(#top .wrap) {
+  opacity: 0;
+}
+
+:global(html[data-intro="pending"]) :global(#site-nav),
+:global(html[data-intro="playing"]) :global(#site-nav) {
+  pointer-events: none;
+}
+
+:global(html[data-intro="done"]) :global(#site-nav) {
+  opacity: 1;
+  transition: opacity var(--intro-dissolve, 900ms) var(--ease-brand);
+}
+
+/*
+  THE HERO COPY COMES BACK FASTER THAN THE VEIL LIFTS, AND THAT IS AN LCP
+  DECISION WITH A MEASUREMENT BEHIND IT.
+
+  MEASURED, production build, headless Chromium 1280x800, warm cache
+  (2026-09-03). The hero's lede <p> is this page's LCP element:
+
+      repeat visit, no intro      FCP 212 ms   LCP 1012 ms
+      first visit, intro playing  FCP 116 ms   LCP 3432 ms
+
+  An element at opacity 0 is not an LCP candidate, so hiding the hero copy
+  for the reveal moves LCP to whenever it comes back — and fading it in
+  LOCKSTEP with the veil put that at the END of the dissolve, 3432 ms, which
+  is past the 2.5 s "good" threshold for a reason that is pure animation
+  bookkeeping. Restoring it in 400 ms instead puts it back at the START of
+  the dissolve, under a veil that is still nearly opaque, so nothing about
+  what the visitor sees changes and the metric stops lying about when the
+  content arrived.
+
+  It is also the better composition, which is why it is not a trick: the
+  reading is "the page is already there and the veil lifts off it", not "the
+  page assembles itself once the veil has gone".
+
+  WHAT IS LEFT IS HONEST AND IS NOT THIS FILE'S TO SPEND: the remaining delay
+  is INTRO_REVEAL_MS (2600 ms), i.e. the length of the draw itself, which is
+  set by LOGO_REVEAL_MS in LogoReveal.tsx and not by this territory. MEASURED
+  after this change: LCP 3204 ms with the intro against 884 ms without, on a
+  warm cache. A brand intro that withholds the page for 2.6 s HAS an LCP of
+  about 2.6 s on the first view of a session, and no amount of CSS changes
+  that. Shortening the DRAW is the only remaining lever and it is a
+  conversation with whoever owns it, not a knob here.
+*/
+:global(html[data-intro="done"]) :global(#top .wrap) {
+  opacity: 1;
+  transition: opacity 400ms var(--ease-brand);
+}
+
+/*
+  Belt under the braces. The gate script refuses to stamp anything under
+  `reduce` and the component refuses to play, so nothing below can normally
+  match — this is for a preference toggled mid-session, and for the reading
+  that matters: a 900 ms cross-fade of a whole viewport is motion, so the
+  correct "reduced" intro is NO intro, not a shorter one. The page is the
+  content; the logo is an ornament in front of it.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .overlay {
+    display: none !important;
+  }
+
+  :global(html[data-intro]) :global(#site-nav),
+  :global(html[data-intro]) :global(#top .wrap) {
+    opacity: 1 !important;
+    transition: none;
+  }
+}

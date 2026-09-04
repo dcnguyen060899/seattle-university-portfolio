@@ -2,7 +2,9 @@ import type { Metadata, Viewport } from 'next';
 import { IBM_Plex_Mono, Inter, Montserrat } from 'next/font/google';
 import type { ReactNode } from 'react';
 import { SiteFooter } from '@/components/site/footer';
+import { introLogo } from '@/components/site/intro/source';
 import { SiteNav } from '@/components/site/nav';
+import { INTRO_GATE_SCRIPT } from '@/lib/intro';
 import { buildSiteMetadata, personSchema } from '@/lib/seo';
 import './globals.css';
 
@@ -129,11 +131,41 @@ export const viewport: Viewport = {
  * invisible over the dark hero.
  */
 export default function RootLayout({ children }: { children: ReactNode }) {
+  /*
+    THE HOMEPAGE INTRO'S GATE, and the two conditions it is under.
+
+    (1) It is only emitted when brand artwork actually exists on disk
+    (components/site/intro/source.ts). Absent artwork means no script, no
+    attribute, no overlay markup and no behaviour change of any kind — the
+    homepage as it ships today. That is the shipping state until the owner
+    lands a file, so it is the well-tested path rather than an afterthought.
+
+    (2) The script itself is inert off "/" — it checks location.pathname — so
+    app/not-found.tsx and every future route pay these ~600 bytes of <head>
+    and nothing else. It is in the layout rather than the page because a
+    blocking inline script in <head> is the only thing that runs before ANY
+    body content is parsed, let alone painted, and that position is what makes
+    two guarantees structural rather than a race: no flash of the overlay on a
+    repeat visit, and no flash of the SHARP photograph before the soft one
+    (the script sets `--focus` to 1, which is the hero's own cross-fade).
+
+    Reading a cookie with cookies() instead would opt the whole app out of
+    static prerendering; a client component cannot run before hydration. The
+    idiom is next/docs 01-app/02-guides/preventing-flash-before-hydration.md,
+    themes section. Repo-controlled constants, no user input — the same
+    dangerouslySetInnerHTML shape as the JSON-LD below.
+  */
+  const intro = introLogo();
+
   return (
+    // suppressHydrationWarning: the gate script adds data-intro and inline
+    // custom properties to this element during parsing, before React sees it.
     <html
       lang="en"
       className={`${montserrat.variable} ${inter.variable} ${plexMono.variable}`}
+      suppressHydrationWarning
     >
+      <head>{intro !== null && <script dangerouslySetInnerHTML={{ __html: INTRO_GATE_SCRIPT }} />}</head>
       <body>
         <a className="skip" href="#main">
           Skip to content

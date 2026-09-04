@@ -60,12 +60,39 @@ import { ContactBand } from '@/components/site/contact-band';
 import { CourseworkBand } from '@/components/site/coursework-band';
 import { FitBand } from '@/components/site/fit-band';
 import { Hero } from '@/components/site/hero';
+import { Intro, LogoReveal } from '@/components/site/intro';
+import { introLogo } from '@/components/site/intro/source';
 import { MavterrasBand } from '@/components/site/mavterras-band';
 import { ProductionBand } from '@/components/site/production-band';
 import { ResearchBand } from '@/components/site/research-band';
 import { SelectedWorkBand } from '@/components/site/selected-work-band';
 
+/**
+ * ── THE INTRO, AND WHY IT IS MOUNTED HERE AND NOT IN THE LAYOUT ───────────
+ *
+ * The overlay renders LAST, after every band, and only when brand artwork
+ * exists on disk. Three reasons, in order of how much they matter:
+ *
+ *  1. ABSENT ARTWORK MUST MEAN NOTHING AT ALL. `introLogo()` is the single
+ *     answer the layout's gate script and this mount both read, so a document
+ *     can never be stamped `pending` with no overlay in it. With no file
+ *     there is no script, no attribute, no markup — the page as it ships
+ *     today.
+ *  2. The root layout wraps app/not-found.tsx too, and a 404 must never get a
+ *     brand reveal. The gate script is inert off "/" as well; this is the
+ *     second, structural half of the same guarantee.
+ *  3. Last in document order so every word of the hero — the LCP copy, the
+ *     three measured figures — is parsed and painted before the overlay's
+ *     markup is even reached. The intro is an overlay on a page that has
+ *     already rendered; it is never the reason the hero is late.
+ *
+ * The mark is passed as `children` rather than imported by <Intro>: the
+ * artwork and its keyframes belong to whoever draws the lockup, and this line
+ * is the only place in the app that knows their component's shape.
+ */
 export default function HomePage() {
+  const logo = introLogo();
+
   return (
     <>
       <Hero />
@@ -77,6 +104,11 @@ export default function HomePage() {
       <MavterrasBand />
       <SelectedWorkBand />
       <ContactBand />
+      {logo !== null && (
+        <Intro>
+          <LogoReveal src={logo.href} />
+        </Intro>
+      )}
     </>
   );
 }
