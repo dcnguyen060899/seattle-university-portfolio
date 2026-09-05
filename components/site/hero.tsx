@@ -645,7 +645,19 @@ export function Hero() {
       <ScrollDriver />
 
       <div className={`wrap ${styles.inner}`}>
-        <Eyebrow>Seattle, Washington · M.S. Data Science, Seattle University</Eyebrow>
+        {/*
+          THE CITY IS DELIBERATELY NOT HERE. This line used to read
+          "Seattle, Washington · M.S. Data Science, Seattle University", which
+          put SEATTLE twice in one line and a third time in the nav directly
+          above it — three of the same word stacked vertically in the first
+          two lines a reader sees. "Seattle University" already places him, so
+          the city was the repetition that bought nothing.
+
+          The location signal is NOT lost: lib/seo.ts publishes homeLocation
+          with addressLocality "Seattle" / addressRegion "WA" in the Person
+          schema, which is what a search engine and an ATS actually read.
+        */}
+        <Eyebrow>M.S. Data Science · Seattle University</Eyebrow>
 
         <h1 className="mt-[20px] max-w-[14ch]">Duy Nguyen</h1>
 
