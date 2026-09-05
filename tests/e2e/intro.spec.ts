@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import path from 'node:path'
 
 import type { Page } from '@playwright/test'
-import { expect, test } from '@playwright/test'
+import { expect, test, webkit } from '@playwright/test'
 
 import { decodePng, type DecodedImage } from './helpers/pixels'
 
@@ -954,5 +954,108 @@ test.describe('§7 the logo source', () => {
     // reveal is inline SVG + CSS precisely so it is sharp at any DPI, and a
     // traced raster is the one thing that can quietly give that up.
     expect(existsSync(source!)).toBe(true)
+  })
+})
+
+/* ══════════════════════════════════════════════════════════════════════════
+   §8  NOTHING DRAWS BEFORE THE DRAW — AND THE ENGINE THAT PROVED IT
+
+   THIS TEST LAUNCHES WEBKIT ITSELF, on purpose. playwright.config.ts runs one
+   project, chromium, and the defect this guards was invisible there: measured
+   2026-09-05 on a 412x915 first load, WebKit painted 44 bright pixels of the
+   mark at 60ms and 160 by 80ms — while `data-intro` was still `pending` —
+   then snapped back to 14 when the component took over and drew the stroke
+   again. Chromium painted nothing until 140ms. The owner saw a partial D
+   before the D on Safari and nothing wrong on Chrome, and both observations
+   were correct.
+
+   TWO CAUSES, BOTH FIXED, BOTH GUARDED HERE:
+
+     1. logo-reveal.module.css scoped none of its animations to the intro's
+        state. The overlay is server-rendered, so the keyframes began at first
+        paint, before hydration. Now paused while `pending`.
+
+     2. The N's diagonal pen leaked at its supposedly-empty rest state:
+        `pathLength: 1` with `stroke-dasharray: 1` and `stroke-dashoffset: 1`
+        should retract the dash completely, and in WebKit it left 2528 px of
+        stroke at the path's end. The dash pattern is now `1 2`, so the path
+        parks in the middle of a gap wider than itself.
+
+   It asserts the OUTCOME rather than either mechanism: no ink inside the
+   mark's own box at any moment before the state is `playing`. A future change
+   that reintroduces the flash by some third route still fails here.
+
+   SKIPS RATHER THAN FAILS when the WebKit build is absent — a CI runner that
+   installed only chromium should not go red for a browser it does not have.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+test.describe('§8 the reveal does not start before it starts', () => {
+  test('WebKit paints no ink while the intro is still pending', async () => {
+    const baseURL = test.info().project.use.baseURL ?? 'http://localhost:3000'
+
+    let browser
+    try {
+      browser = await webkit.launch()
+    } catch {
+      test.skip(true, 'WebKit is not installed for Playwright on this machine')
+      return
+    }
+
+    try {
+      const page = await browser.newPage({ viewport: { width: 412, height: 915 } })
+      await page.addInitScript(() => {
+        try {
+          sessionStorage.setItem('duyng.intro.force', '1')
+          sessionStorage.removeItem('duyng.intro.seen')
+        } catch {
+          /* a locked-down privacy mode; the gate then declines and the intro never runs */
+        }
+      })
+
+      const started = Date.now()
+      await page.goto(baseURL, { waitUntil: 'commit' })
+
+      const leaks: Array<{ t: number; attr: string | null; ink: number }> = []
+
+      for (let t = 20; t <= 300; t += 20) {
+        const wait = t - (Date.now() - started)
+        if (wait > 0) await page.waitForTimeout(wait)
+
+        const state = await page.evaluate(() => {
+          const svg = document.querySelector('svg[class*="logo-reveal"]')
+          const attr = document.documentElement.getAttribute('data-intro')
+          if (!svg) return { attr, box: null as null | { x: number; y: number; width: number; height: number } }
+          const r = svg.getBoundingClientRect()
+          return { attr, box: { x: r.x, y: r.y, width: r.width, height: r.height } }
+        })
+
+        // Once it is legitimately drawing there is nothing left to police.
+        if (state.attr === 'playing' || state.attr === 'done') break
+        if (!state.box || state.box.width < 2) continue
+
+        const image: DecodedImage = decodePng(await page.screenshot({ clip: state.box }))
+        let ink = 0
+        for (let i = 0; i < image.data.length; i += 4) {
+          const px = image.data[i]
+          if (px !== undefined && px > 150) ink++
+        }
+        if (ink > 0) leaks.push({ t, attr: state.attr, ink })
+      }
+
+      expect(
+        leaks,
+        'The mark painted before `data-intro` reached "playing". A reader on ' +
+          'Safari sees a fragment of the monogram appear, freeze, and then be ' +
+          'redrawn from the start — the overlay is server-rendered, so anything ' +
+          'in logo-reveal.module.css that is not scoped to the intro state ' +
+          'begins at first paint. Check two things: that the animations are ' +
+          'still paused under html[data-intro="pending"], and that the pens\' ' +
+          'dash gap is still wider than pathLength (stroke-dasharray: 1 2), ' +
+          'which is what keeps a rounding residue from leaving a sliver of the ' +
+          "N's diagonal on screen.",
+      ).toEqual([])
+    } finally {
+      await browser.close()
+    }
   })
 })

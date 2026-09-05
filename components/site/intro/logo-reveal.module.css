@@ -238,6 +238,42 @@
   stroke-width: var(--halo-w-tag);
 }
 
+/* ── NOTHING DRAWS UNTIL THE COMPONENT HAS TAKEN OVER ────────────────────
+   THE BUG THIS FIXES, MEASURED IN BOTH ENGINES on 2026-09-05, counting bright
+   pixels inside the mark's own box on a 412x915 first load:
+
+                       WebKit                Chromium
+       60ms  pending   ink 44                ink 0
+       80ms  pending   ink 160               ink 0
+      100ms  playing   ink 14  <- RESET      ink 0
+      140ms  playing   ...                   ink 17  (first ink)
+
+   The overlay is SERVER-RENDERED, so the SVG and its keyframes exist in the
+   first paint — before React has hydrated and before `data-intro` has moved
+   from `pending` to `playing`. Nothing here was scoped to that state, so the
+   pens simply began at first paint. WebKit painted those frames; it drew a
+   third of the D's stem, then the state flipped, the animations restarted,
+   and the stroke SNAPPED BACK to the beginning and drew again. That is the
+   "partial D before the D" the owner reported, and the reason it looked like
+   a Safari-only defect is that Chromium happens not to paint the mark that
+   early — the same unscoped animation is running there too.
+
+   PAUSED, NOT DISABLED. `animation-play-state: paused` during `pending` holds
+   every animation in this file at its first frame — inside the delay, so the
+   pens sit at `stroke-dashoffset: 1`, drawing nothing. Unpausing resumes from
+   that held position rather than restarting, so the sequence plays once, in
+   full, beginning when the component says it begins. Re-declaring the
+   animations under `playing` instead would restart them, which is the half of
+   the bug that produced the visible snap.
+
+   The selector reaches every descendant on purpose: the pens are not the only
+   timed things here — the cover rects, the wordmark glyphs and the tagline
+   glyphs all carry their own delays off the same clock. */
+:global(html[data-intro="pending"]) .mark,
+:global(html[data-intro="pending"]) .mark * {
+  animation-play-state: paused;
+}
+
 /* ── the pen ─────────────────────────────────────────────────────────
    Each stroke lives inside a <mask>, where WHITE means "reveal". That is
    an alpha channel encoded as luminance, not a palette choice — there is
@@ -252,7 +288,27 @@
   stroke: white;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-dasharray: 1;
+  /* "1 2", NOT "1". THE GAP IS DELIBERATELY WIDER THAN THE PATH.
+
+     With `pathLength: 1` the path is one unit long, so `stroke-dasharray: 1`
+     makes one dash exactly cover it and `stroke-dashoffset: 1` retracts that
+     dash entirely — on paper. MEASURED 2026-09-05, the N's diagonal pen
+     (`M152 104 L326 300`, the only one of the six this hits) painted 2528 px
+     at that supposedly-empty rest state in WebKit and 0 in Chromium: the
+     normalisation leaves a rounding residue and the NEXT period's dash bleeds
+     in at the path's end. That sliver is at (326,300), which is exactly where
+     the stray wedge the owner photographed sat.
+
+     A period of 3 with the path parked in the middle of a 2-unit gap puts a
+     whole unit of slack on either side of it, so no rounding slip can reach a
+     dash. "1 1" is NOT enough — measured, it still leaks 1708 px in WebKit,
+     because the path ends exactly where the next dash begins. Nudging the
+     offset to 1.002 instead is worse: it clears WebKit and starts painting in
+     CHROMIUM, which is how a one-engine fix becomes a two-engine bug.
+
+     The drawing is unaffected: at offset 0.5 and 0 the rendered pixel counts
+     are identical to the old pattern in both engines. */
+  stroke-dasharray: 1 2;
   stroke-dashoffset: 1;
   animation: draw var(--dur) var(--pen-ease) var(--at) both;
 }
