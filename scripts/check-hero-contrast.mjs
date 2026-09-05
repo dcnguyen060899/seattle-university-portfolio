@@ -372,6 +372,11 @@ const VIEWPORTS = VIEWPORT_BOXES.map((vp) => {
 const ROLE_THRESHOLDS = {
   '--fg': 4.5,
   '--fg-muted': 4.5,
+  /* The display name, and held to the SMALL-text bar on purpose. It is set at
+     clamp() display sizes so 1.4.3 would allow 3:1, but it measures far above
+     4.5 anyway — taking the exemption would buy nothing and would quietly
+     licence a warmer, weaker cream later. */
+  '--fg-brand': 4.5,
   '--fg-accent': 4.5,
   // Display-size role by definition (>=24px in this system), so 1.4.3 large.
   // Same hex as --fg-accent on ink, so it never sets the floor here.

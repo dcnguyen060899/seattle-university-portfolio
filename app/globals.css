@@ -142,6 +142,16 @@
   --color-text-muted: #5E5C60;   /* on paper   —  6.34:1 · sunk  5.76:1 · wash  5.45:1 */
   --color-on-ink: #F2F1EE;       /* on ink     — 16.04:1 · raised 14.63:1 */
   --color-on-ink-muted: #A3A2A8; /* on ink     —  7.15:1 · raised  6.52:1 */
+  --color-brand-cream: #EAD6B6;  /* on ink     — 12.82:1 · raised 11.64:1.
+                                    THE MARK'S OWN CREAM, and the only warm ink
+                                    in this palette. It exists so the display
+                                    name can carry the brand rather than the
+                                    default near-white, which is the one place
+                                    on the page where the lockup and the
+                                    typography should agree. NOT a body colour:
+                                    on paper it is 1.21:1 and illegal, which is
+                                    why --fg-brand falls back to --fg on every
+                                    ground but ink. */
   --color-on-crimson: #FFFFFF;   /* on crimson —  7.75:1 · deep  10.26:1 */
   --color-rose: #F3D4D4;         /* on crimson —  5.60:1 · deep   7.42:1
                                     The crimson ground's muted AND accent. It
@@ -356,6 +366,11 @@
   --surface-pressed: var(--color-crimson-wash);
   --fg: var(--color-text);                      /* 17.30:1 · sunk 15.71:1 */
   --fg-muted: var(--color-text-muted);          /*  6.34:1 · sunk  5.76:1 · wash 5.45:1 */
+  /* The brand cream is an INK-GROUND treatment. On paper it measures 1.21:1
+     and would be unreadable, so this ground resolves the role to plain --fg
+     rather than shipping a warm tint nobody could read. A component asking for
+     --fg-brand on paper gets the heading colour, which is the honest answer. */
+  --fg-brand: var(--fg);                        /* 17.30:1 */
   --fg-accent: var(--color-crimson);            /*  7.43:1 · sunk  6.75:1 · wash 6.39:1 */
   /* Same value as --fg-accent, and that is the point: unlike brass, SU
      crimson clears AA at every size on light, so this ground needs no split.
@@ -377,6 +392,7 @@
   --surface-pressed: var(--color-ink-raised);
   --fg: var(--color-on-ink);                    /* 16.04:1 · raised 14.63:1 */
   --fg-muted: var(--color-on-ink-muted);        /*  7.15:1 · raised  6.52:1 */
+  --fg-brand: var(--color-brand-cream);         /* 12.82:1 · raised 11.64:1 */
   --fg-accent: var(--color-crimson-lift);       /*  5.68:1 · raised  5.18:1 */
   --fg-accent-display: var(--color-crimson-lift);
   --fg-pressed: var(--color-crimson-lift);      /*  5.18:1 on --surface-pressed */
@@ -396,6 +412,8 @@
   --surface-pressed: var(--color-crimson-deep);
   --fg: var(--color-on-crimson);                /*  7.75:1 · deep 10.26:1 */
   --fg-muted: var(--color-rose);                /*  5.60:1 · deep  7.42:1 */
+  /* Same reasoning as paper: cream on crimson is a muddy 2.4:1. */
+  --fg-brand: var(--fg);                        /*  7.75:1 · deep 10.26:1 */
   /* Accent-by-tint. The hue IS the ground here, so the accent role — quieter
      than the heading, louder than nothing — is carried by lightness. Not
      --color-on-ink-muted, which is 3.06:1 on crimson and fails body. */

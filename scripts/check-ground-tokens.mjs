@@ -78,6 +78,7 @@ const REQUIRED_ROLES = [
   'surface-pressed',
   'fg',
   'fg-muted',
+  'fg-brand',
   'fg-accent',
   'fg-accent-display',
   'fg-pressed',
@@ -90,8 +91,8 @@ const REQUIRED_ROLES = [
 const VIOLATIONS = [
   {
     name: 'palette custom property',
-    re: /--color-(?:paper|ink|text|on-ink|on-crimson|rose|crimson)(?:-[a-z-]+)?\b/g,
-    fix: 'read a ground role: --fg / --fg-muted / --fg-accent / --fg-accent-display / --fg-pressed / --rule / --edge / --focus-ring / --fg-error / --ground / --ground-sunk / --surface-pressed',
+    re: /--color-(?:paper|ink|text|on-ink|on-crimson|rose|crimson|brand-cream)(?:-[a-z-]+)?\b/g,
+    fix: 'read a ground role: --fg / --fg-muted / --fg-brand / --fg-accent / --fg-accent-display / --fg-pressed / --rule / --edge / --focus-ring / --fg-error / --ground / --ground-sunk / --surface-pressed',
   },
   {
     name: 'bare palette alias',
@@ -311,7 +312,8 @@ if (!existsSync(GLOBALS)) {
  */
 if (failures.length === 0) {
   console.log(
-    'check-ground-tokens: OK — no component names a colour, every data-ground is real, all three grounds resolve all 12 roles.',
+    'check-ground-tokens: OK — no component names a colour, every data-ground is real, '
+      + `all three grounds resolve all ${REQUIRED_ROLES.length} roles.`,
   );
 } else {
   console.error(`check-ground-tokens: ${failures.length} problem(s)\n`);

@@ -659,7 +659,25 @@ export function Hero() {
         */}
         <Eyebrow>M.S. Data Science · Seattle University</Eyebrow>
 
-        <h1 className="mt-[20px] max-w-[14ch]">Duy Nguyen</h1>
+        {/*
+          THE NAME CARRIES THE BRAND CREAM, THE LEDE DOES NOT — and that split
+          is the whole idea rather than a decoration.
+
+          The earlier advice against colouring this was that warm type on a
+          warm sunset loses separation. That is true of BODY copy and false
+          here: the owner's own reference render puts the name at #EAD6B6 and
+          leaves the sentence below it near-white, so the warmth marks the one
+          word that is a name while everything that has to be READ stays
+          neutral. Measured on the composited photograph the cream lands about
+          9.7:1 against the veil's pocket floor, versus 11.9:1 for --fg — both
+          far above the 4.5 this role is held to.
+
+          A ROLE, NOT THE HEX. --fg-brand is the mark's cream on ink and plain
+          --fg on paper and crimson, where the same cream would be 1.21:1 and
+          2.4:1 respectively. So this line is safe on any ground a future band
+          puts it on, and check-ground-tokens.mjs still holds.
+        */}
+        <h1 className="mt-[20px] max-w-[14ch] text-[color:var(--fg-brand)]">Duy Nguyen</h1>
 
         {/*
           THE MEASURE IS 32ch, NOT 26ch, AND IT IS A COPY DECISION (browser-

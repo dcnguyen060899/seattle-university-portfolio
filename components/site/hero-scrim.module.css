@@ -2481,6 +2481,41 @@
     0 0 18.56px var(--ground), 0 0 18.56px var(--ground), 0 0 18.56px var(--ground), 0 0 18.56px var(--ground);
 }
 
+/* ── 5b · THE DISPLAY NAME IN BRAND CREAM ────────────────────────────────
+     --fg-brand is the mark's cream, luminance 0.690. That is BRIGHT — close
+     to --fg's 0.856 and nothing like --fg-accent-display's 0.279 — so
+     darkening its local ground walks the ratio monotonically UP and the
+     crossover trap described in rule 5 does not apply here. What it does
+     need is reach, because it is the palest warm ink on the page and the
+     band's brightest source pixels are the sunset itself: bare against a
+     #FFFFFF source pixel at the shipped veil it measures 2.75:1 against a
+     4.5 obligation, which is the failure this rule exists to answer.
+
+     SCALED TO --text-h1, NOT --text-micro. The name is set at
+     clamp(2.25rem, 5.4vw, 4rem) — 36px at the phone step — in the display
+     face at weight 200, which is a THIN stem for its size, so the collar is
+     scaled to that step rather than to body copy. Same 0.14 / 0.32 / 0.58
+     fractions as rule 5, on 36px: 5.04 / 11.52 / 20.88px.
+
+     The role is declared so scripts/check-hero-contrast.mjs can attribute
+     the collar; it cannot infer it from the DOM. Without the attribution the
+     gate reads this role as bare and fails the build, which is exactly what
+     it did when --fg-brand was introduced with no rule here. */
+.ground :global(.wrap) [class*="--fg-brand"] {
+  --halo-role: --fg-brand;
+  --halo-type: var(--text-h1) 200 display;
+  text-shadow:
+    0 0 5.04px var(--ground), 0 0 5.04px var(--ground), 0 0 5.04px var(--ground), 0 0 5.04px var(--ground),
+    0 0 5.04px var(--ground), 0 0 5.04px var(--ground), 0 0 5.04px var(--ground), 0 0 5.04px var(--ground),
+    0 0 5.04px var(--ground), 0 0 5.04px var(--ground), 0 0 5.04px var(--ground), 0 0 5.04px var(--ground),
+    0 0 11.52px var(--ground), 0 0 11.52px var(--ground), 0 0 11.52px var(--ground), 0 0 11.52px var(--ground),
+    0 0 11.52px var(--ground), 0 0 11.52px var(--ground), 0 0 11.52px var(--ground), 0 0 11.52px var(--ground),
+    0 0 11.52px var(--ground), 0 0 11.52px var(--ground), 0 0 11.52px var(--ground), 0 0 11.52px var(--ground),
+    0 0 20.88px var(--ground), 0 0 20.88px var(--ground), 0 0 20.88px var(--ground), 0 0 20.88px var(--ground),
+    0 0 20.88px var(--ground), 0 0 20.88px var(--ground), 0 0 20.88px var(--ground), 0 0 20.88px var(--ground),
+    0 0 20.88px var(--ground), 0 0 20.88px var(--ground), 0 0 20.88px var(--ground), 0 0 20.88px var(--ground);
+}
+
 /* ── 6 · WHERE THE COLLAR MUST NOT GO ────────────────────────────────────
      The solid Btn paints its own surface — background-color: var(--fg) —
      and its label is --ground on top of it. A ground-coloured collar there
