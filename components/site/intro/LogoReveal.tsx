@@ -516,3 +516,103 @@ export function LogoReveal({
     </svg>
   );
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE MONOGRAM ALONE — the same geometry, at nav scale, not animated.
+
+   WHY IT LIVES IN THIS FILE. The path arrays above are written by
+   scripts/gen-logo-paths.mjs between the BEGIN/END markers, and the generator
+   owns every byte between them. A second component in another file would have
+   to import those arrays, which means the generator would have to emit
+   `export` — so the cheapest correct home for a second consumer is here,
+   BELOW the fence, where it can read them directly and the generator never
+   sees it. A retrace updates this component for free.
+
+   WHY currentColor AND NOT A FILL. The nav paints two faces: over the
+   photograph at rest, on paper once stuck. A fill baked into this component
+   could not follow that swap, which is the entire argument
+   components/ui/Mark.tsx already makes about why the affiliation is type and
+   not a raster. `fill="currentColor"` inherits whatever `color` the nav's
+   stylesheet resolves for the face it is currently on, so the mark follows
+   the ground for free — and, just as important, the colour stays declared in
+   nav.module.css where scripts/check-nav-contrast.mjs already reads it.
+
+   THE FLOURISH KEEPS ITS RED, and the contrast objection to it was wrong.
+
+   The first version of this component painted the whole mark in one ink,
+   reasoning that the artwork's crimson #8D131B measures 1.06–2.01:1 against
+   this photograph and never clears 4.5:1. Both halves of that are true and
+   neither one applies. WCAG 1.4.3 exempts logotypes outright — the corpus
+   already records the citation as src:wcag-logotype-exemption — and 1.4.11
+   asks after graphical objects needed to UNDERSTAND the content, which the
+   swash through a monogram is not: the letters D and N carry that, in cream,
+   at 6–11:1, and that is the box scripts/check-nav-contrast.mjs measures.
+
+   The geometry also argues against the objection. The flourish crosses OVER
+   the D and UNDER the N, so most of its length lies on cream rather than on
+   the photograph, where crimson-on-cream is 7.08:1. Only its two tails reach
+   bare picture.
+
+   IT IS A ROLE, NOT THE ARTWORK'S HEX. `--fg-accent` on the ink ground is the
+   crimson-lift #FF5252, not the mark's #8D131B — a brighter red that survives
+   a dark ground, which is exactly the substitution LogoReveal already makes
+   above via `--mark-red`. Using the same chain here means the corner mark and
+   the intro's mark are the same colour rather than two reds that nearly
+   match. check-ground-tokens.mjs holds: no hex is named here.
+
+   THE VIEWBOX IS THE INK BOX, not the lockup's. The full mark's viewBox is
+   `-10 -10 1760 340` and the monogram occupies x 6..352, y 5..311 of it
+   (derived from logo-trace.json's per-glyph sourceBox plus params.origin), so
+   fitting the whole viewBox into a nav-sized square would draw the monogram
+   at a fifth of the height it was asked for and leave the wordmark's empty
+   space padding it. Two units of slack on each side keep the outermost
+   antialiased pixel from being clipped.
+
+   PAINT ORDER IS D, FLOURISH, N — the flourish passes OVER the D and UNDER
+   the N, which is the one crossing that makes the monogram read as woven
+   rather than stacked. It matches the animated order above; do not sort it.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/** The monogram's ink box in the shared viewBox, plus two units of slack. */
+const MONOGRAM_VIEWBOX = '4 3 350 310';
+
+export type BrandMonogramProps = {
+  /** Box height in px. Width follows the ink box's 1.13 aspect. */
+  height?: number;
+  className?: string;
+};
+
+/**
+ * The DN monogram as a static mark. Decorative by default: it carries no
+ * accessible name, because every caller so far puts it inside a link that
+ * already has one, and a mark that announced "Duy Nguyen" inside a link
+ * called "Duy Nguyen" would say it twice.
+ */
+export function BrandMonogram({ height = 28, className }: BrandMonogramProps) {
+  return (
+    <svg
+      viewBox={MONOGRAM_VIEWBOX}
+      height={height}
+      width={(height * 350) / 310}
+      fill="currentColor"
+      aria-hidden="true"
+      focusable="false"
+      className={className}
+    >
+      {D_PATHS.map((d) => (
+        <path key={d.slice(0, 24)} fillRule="evenodd" d={d} />
+      ))}
+      {FLOURISH_PATHS.map((d) => (
+        <path
+          key={d.slice(0, 24)}
+          fillRule="evenodd"
+          fill="var(--mark-accent, var(--brand-crimson, var(--fg-accent)))"
+          d={d}
+        />
+      ))}
+      {N_PATHS.map((d) => (
+        <path key={d.slice(0, 24)} fillRule="evenodd" d={d} />
+      ))}
+    </svg>
+  );
+}

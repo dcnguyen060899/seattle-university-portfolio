@@ -730,6 +730,7 @@ function gapPair(expr, ctx, M, fallback) {
 function deriveNavBoxes(vp, rootVars, model, M) {
   const {
     rules, labels, wordmark, separator, markText, markHeightPx, face, unknownMedia,
+    markWidthPx = null, markClass = 'markSlot', hasSeparator = true,
   } = model;
   const ctx = {
     vars: rootVars, ground: [0, 0, 0], vw: vp.w, vh: vp.h, boxW: vp.w, boxH: vp.h, axis: vp.w,
@@ -769,17 +770,29 @@ function deriveNavBoxes(vp, rootVars, model, M) {
   const brandGap = gapPair(brand.get('gap'), ctx, M, { row: 16, col: 16 });
   const linkGap = gapPair(links.get('gap'), ctx, M, { row: 8, col: 24 });
 
-  const sepShown = (sepC.get('display') ?? '').trim() !== 'none';
+  /* `hasSeparator` is about the MARKUP, `display` about the stylesheet. Both
+     have to be true. Reading only the stylesheet is what left a separator box
+     in the model after the element was deleted from nav.tsx: with no `.sep`
+     rule left to say `display: none`, the old expression evaluated to true and
+     the gate kept a phantom in the layout — and warned it could find no role
+     for it, which was the symptom rather than the cause. */
+  const sepShown = hasSeparator && (sepC.get('display') ?? '').trim() !== 'none';
   const markShown = (markC.get('display') ?? '').trim() !== 'none';
 
   /* ── the two clusters ─────────────────────────────────────────────── */
-  const wmW = monoWidth(wordmark, fontPx, trackingEm);
+  /* An empty wordmark is not a zero-width string to measure — it is a box that
+     is not there. A graphic mark carries its own width; only a TYPE mark is
+     measured from its glyphs. */
+  const wmW = wordmark ? monoWidth(wordmark, fontPx, trackingEm) : 0;
   const sepW = sepShown ? monoWidth(separator, fontPx, trackingEm) : 0;
-  const markW = markShown ? monoWidth(markText, fontPx, markTrackingEm) : 0;
+  const markW = markShown
+    ? (markWidthPx ?? monoWidth(markText, fontPx, markTrackingEm))
+    : 0;
+  const brandLead = wordmark ? 1 : 0;
   const brandW = wmW
     + (sepShown ? brandGap.col + sepW : 0)
-    + (markShown ? brandGap.col + markW : 0);
-  const brandH = Math.max(lineH, markShown ? markHeightPx : 0);
+    + (markShown ? (brandLead || sepShown ? brandGap.col : 0) + markW : 0);
+  const brandH = Math.max(wordmark ? lineH : 0, markShown ? markHeightPx : 0);
 
   const linkW = labels.map((l) => monoWidth(l, fontPx, trackingEm));
   const linksW = linkW.reduce((a, b) => a + b, 0) + linkGap.col * Math.max(0, linkW.length - 1);
@@ -830,16 +843,22 @@ function deriveNavBoxes(vp, rootVars, model, M) {
   };
 
   let x = wrap.x0;
-  push('wordmark', 'home', 'text', x, x + wmW, 0, lineH);
-  x += wmW;
+  if (wordmark) {
+    push('wordmark', 'home', 'text', x, x + wmW, 0, lineH);
+    x += wmW;
+  }
   if (sepShown) {
     x += brandGap.col;
     push('separator', 'sep', 'text', x, x + sepW, 0, lineH);
     x += sepW;
   }
   if (markShown) {
-    x += brandGap.col;
-    push('mark', 'markSlot', 'mark', x, x + markW, 0, markHeightPx);
+    if (wordmark || sepShown) x += brandGap.col;
+    /* `markClass`, not a literal: the monogram sits INSIDE `.home` and takes
+       its colour from that rule via `currentColor`, so resolving the box
+       against `.markSlot` — which declares layout only — would find no role
+       and measure the box against a default the bar does not paint. */
+    push('mark', markClass, 'mark', x, x + markW, 0, markHeightPx);
   }
 
   /* The link cluster. Unwrapped it is flush right (justify-content:
@@ -1088,6 +1107,51 @@ function minStuckFill(M, fillRgb, roles, surfaces, headroom, treatments) {
  * Pure: everything it reads arrives in `input`, so `--prove` can hand it a
  * synthetic stylesheet and get a real answer about a page nobody shipped.
  */
+/* ── the brand cluster, read from what shipped ──────────────────────────────
+   THE BRAND BOX CHANGED SHAPE ON 2026-09-05 and this reader is why the change
+   is visible here instead of silent. The bar used to hold "Duy Nguyen · SEATTLE
+   UNIVERSITY" as three type boxes; it now holds ONE graphic, the DN monogram,
+   inside the same `.home` link.
+
+   THE OLD READER DID NOT FAIL — IT FELL BACK, which is worse. Its wordmark
+   regex `/>\s*([^<>{}]+?)\s*<\/Link>/` cannot match a Link whose child is an
+   element, and `<Mark height={…}>` is simply gone, so every field defaulted:
+   "Duy Nguyen", 28px, "Seattle University". The gate went on modelling a
+   180px-wide cluster of type that is not in the bar, and sampled the
+   photograph under boxes that do not exist. It still said OK. A gate that
+   describes the previous version of the page is not a weaker gate, it is a
+   false one.
+
+   So: if the nav renders <BrandMonogram>, the cluster is one graphic box whose
+   width follows the monogram's own ink-box aspect, there is no wordmark and no
+   separator, and the box carries class `.home` because that is the rule that
+   declares its colour — the monogram fills with `currentColor`. */
+const MONOGRAM_ASPECT = 350 / 310;
+
+function readBrandCluster(tsx) {
+  const monoH = Number(/<BrandMonogram[^>]*\bheight=\{(\d+)\}/.exec(tsx)?.[1] ?? 0);
+  if (monoH > 0) {
+    return {
+      wordmark: '',
+      separator: '',
+      markText: '',
+      markHeightPx: monoH,
+      markWidthPx: monoH * MONOGRAM_ASPECT,
+      markClass: 'home',
+      hasSeparator: false,
+    };
+  }
+  return {
+    wordmark: (/>\s*([^<>{}]+?)\s*<\/Link>/.exec(tsx)?.[1] ?? 'Duy Nguyen').trim(),
+    separator: '\u00b7',
+    markText: (/<Mark[^>]*alt="([^"]*)"/.exec(tsx)?.[1] ?? 'Seattle University').toUpperCase(),
+    markHeightPx: Number(/<Mark[^>]*height=\{(\d+)\}/.exec(tsx)?.[1] ?? 28),
+    markWidthPx: null,
+    markClass: 'markSlot',
+    hasSeparator: true,
+  };
+}
+
 function analyseNav(input) {
   const { M, globalsSrc, nav, hero, assets, headroom, marks, markState } = input;
   if (!input.markRoles) input.markRoles = ['--fg-muted'];
@@ -1152,10 +1216,7 @@ function analyseNav(input) {
   /* ── the layout model, read from what shipped ────────────────────────── */
   const tsx = nav.tsx ?? '';
   const labels = [...tsx.matchAll(/label:\s*'([^']*)'/g)].map((m) => m[1]);
-  const wordmark = (/>\s*([^<>{}]+?)\s*<\/Link>/.exec(tsx)?.[1] ?? 'Duy Nguyen').trim();
-  const separator = '·';
-  const markHeightPx = Number(/<Mark[^>]*height=\{(\d+)\}/.exec(tsx)?.[1] ?? 28);
-  const markAlt = /<Mark[^>]*alt="([^"]*)"/.exec(tsx)?.[1] ?? 'Seattle University';
+  const brand0 = readBrandCluster(tsx);
   if (labels.length === 0) {
     fail(NAV_TSX, 'no section labels could be read out of the nav',
       'NAV_BOXES positions one box per label; with none, the link cluster is unmeasured',
@@ -1166,10 +1227,7 @@ function analyseNav(input) {
   const model = {
     rules: shape.rules,
     labels,
-    wordmark,
-    separator,
-    markText: markAlt.toUpperCase(),
-    markHeightPx,
+    ...brand0,
     face: 'rest',
     unknownMedia,
   };
@@ -2096,10 +2154,7 @@ async function main() {
     const model = {
       rules: shape.rules,
       labels: [...tsx.matchAll(/label:\s*'([^']*)'/g)].map((m) => m[1]),
-      wordmark: (/>\s*([^<>{}]+?)\s*<\/Link>/.exec(tsx)?.[1] ?? 'Duy Nguyen').trim(),
-      separator: '·',
-      markText: (/<Mark[^>]*alt="([^"]*)"/.exec(tsx)?.[1] ?? 'Seattle University').toUpperCase(),
-      markHeightPx: Number(/<Mark[^>]*height=\{(\d+)\}/.exec(tsx)?.[1] ?? 28),
+      ...readBrandCluster(tsx),
       face: 'rest',
       unknownMedia: new Set(),
     };

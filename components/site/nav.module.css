@@ -363,7 +363,6 @@
   the browser and to the instrument.
 */
 .nav[data-nav='over'] .home,
-.nav[data-nav='over'] .sep,
 .nav[data-nav='over'] .link {
   color: var(--fg);
 }
@@ -491,11 +490,25 @@
   is not on it.
 */
 
-/* ONE mark element on both faces. components/ui/Mark.tsx renders the
-   affiliation as TYPE while `art:su-mark` is unverified, and type follows
-   [data-ground] for free — so there is no variant to swap here and no plate.
-   This class exists to give the design territory a hook and to hide the mark
-   on the narrowest bars; see the 640px block. */
+/* ONE mark element on both faces, and it is now the DN monogram rather than
+   the affiliation set in type — see the note in nav.tsx for why the name and
+   the university left this bar.
+
+   IT IS NO LONGER HIDDEN BELOW 640px. The old rule hid this box on the
+   narrowest bars because it held "Seattle University" in mono, which cost
+   most of the width the four links needed. The monogram is ~29px wide at
+   26px tall, so it fits where the words did not — and it is now the ONLY
+   brand element in the bar, so hiding it would leave a link to the homepage
+   with nothing in it at exactly the width where a reader most needs to know
+   whose site this is.
+
+   NO COLOUR HERE. The monogram fills with `currentColor` and sits inside
+   `.home`, which declares `color: var(--fg)` and is the box
+   scripts/check-nav-contrast.mjs already measures — so the mark paints a role
+   the gate holds it to on both faces, and this class stays pure layout. The
+   class name is also that gate's hook (`resolveClass(rules, 'markSlot', …)`);
+   renaming it silently drops the one graphical object in this bar out of the
+   only script that checks it. */
 .markSlot {
   display: inline-flex;
   align-items: center;
@@ -614,9 +627,7 @@
   separator and the sections at --fg-muted — because it has a ground to be
   quiet against. Both selectors, so the 404 gets it with no JS at all.
 */
-.nav[data-nav='paper'] .sep,
 .nav[data-nav='paper'] .link,
-:global(body:not(:has(#top[data-ground='ink']))) .sep,
 :global(body:not(:has(#top[data-ground='ink']))) .link {
   color: var(--fg-muted);
 }
@@ -688,7 +699,6 @@
   }
 
   /* …and it is a paper bar, so it keeps the paper tonality. */
-  .nav[data-nav] .sep,
   .nav[data-nav] .link {
     color: var(--fg-muted);
   }
@@ -748,10 +758,6 @@
     padding-block: 12px;
   }
 
-  .sep,
-  .markSlot {
-    display: none;
-  }
 
   .inner {
     gap: 6px 20px;

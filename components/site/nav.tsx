@@ -122,26 +122,35 @@
  *
  * ── THE MARK ──────────────────────────────────────────────────────────────
  *
- * THIS SECTION USED TO ARGUE THE TRADEMARK PROBLEM AND IT NO LONGER HAS TO.
- * components/ui/Mark.tsx was rewritten on 2026-09-03 and answers it upstream:
- * the raster variants are GATED on `art:su-mark` being `verified` in the
- * corpus, permission has not been given, and until it is, <Mark> renders the
- * affiliation as TYPE. That is the only form compatible with what this bar is
- * doing — a raster cannot follow a ground, type resolves `--fg-muted` from
- * `[data-ground]` and so follows the swap for free.
+ * THE BAR CARRIES THE DN MONOGRAM, AND NOTHING ELSE. Until 2026-09-05 it read
+ * "Duy Nguyen · SEATTLE UNIVERSITY" in type: <Mark> rendered the affiliation
+ * because `art:su-mark` is unverified and type was the only form that could
+ * follow a ground swap. That reasoning was sound and it answered a question
+ * this bar no longer asks — because the words are gone from the chrome
+ * entirely, and <Mark> with them. The trademark argument still lives in
+ * components/ui/Mark.tsx, which the footer still uses; it simply no longer
+ * governs anything here.
  *
- * So there is ONE brand element here, not two variants: `<Mark>` is correct on
- * both faces without this file knowing which face it is on. The plate is gone,
- * and with it the small white box on the photograph.
+ * WHY THE WORDS WENT. This bar sits directly above a hero whose eyebrow reads
+ * "M.S. DATA SCIENCE · SEATTLE UNIVERSITY" and whose h1 reads "Duy Nguyen".
+ * Carrying both here put his name on screen twice and the university twice
+ * before a reader had scrolled a pixel — and with the intro's lockup, the name
+ * three times inside four seconds. The monogram is the same mark the intro
+ * draws, compressed: identity resolving into its shorthand rather than the
+ * same string set three ways.
  *
- * ⚠ THE ONE THING THIS FILE OWES IF PERMISSION ARRIVES. The moment
- * `art:su-mark` flips to `verified`, <Mark> starts rendering a BLACK raster
- * here, and Mark.tsx's own sweep measured that raster at 1.03–1.27:1 over this
- * photograph at every veil alpha and every viewport — it never reaches the 3:1
- * that WCAG 1.4.11 asks of a graphical object, and it gets WORSE as the veil
- * deepens. Whoever flips that flag must either have obtained the reverse
- * variant Mark.tsx says to ask for, or pass a tone here. It is not a change
- * this bar absorbs silently.
+ * IT IS A GRAPHIC, SO 1.4.11 IS THE STANDARD, NOT 1.4.3. A logotype is exempt
+ * from text contrast (src:wcag-logotype-exemption); what applies is the 3:1
+ * that WCAG asks of a graphical object needed to understand the content. That
+ * object is the cream D and N, which resolve `--fg` through `.home` and
+ * measure 5.99:1 at their worst viewport over the composited crest. The
+ * crimson flourish is a swash rather than a load-bearing form — it crosses
+ * OVER the D and UNDER the N, so most of its length lies on cream at 7.08:1,
+ * and the mark still reads as DN if a viewer never resolves it at all.
+ *
+ * scripts/check-nav-contrast.mjs measures this box; see the note on
+ * `.markSlot` in the stylesheet for why the class name is load-bearing to that
+ * gate and why the colour is declared on `.home` rather than on the SVG.
  *
  * ── THE LINKS ─────────────────────────────────────────────────────────────
  *
@@ -154,7 +163,7 @@
 
 import Link from 'next/link';
 import { useRef } from 'react';
-import { Mark } from '@/components/ui';
+import { BrandMonogram } from '@/components/site/intro/LogoReveal';
 import { useNavGround } from '@/hooks/use-scroll-driver';
 import styles from './nav.module.css';
 
@@ -195,19 +204,41 @@ export function SiteNav() {
 
       <div className={`wrap ${styles.inner}`}>
         <div className={styles.brand}>
-          <Link href="/" className={styles.home}>
-            Duy Nguyen
-          </Link>
-          <span aria-hidden="true" className={styles.sep}>
-            ·
-          </span>
-
           {/*
-            ONE element on both faces. No `tone`: passing one would DECLARE a
-            ground under the mark, and the whole point is that it inherits the
-            one this header is currently on and follows the swap. See THE MARK.
+            THE MARK, NOT THE NAME IN TYPE — and the affiliation is gone from
+            this bar entirely.
+
+            What stood here was "Duy Nguyen · Seattle University", which put
+            the name on screen twice before a reader had scrolled (here and in
+            the hero's h1, with the intro's lockup making three inside four
+            seconds) and "Seattle University" twice (here and in the hero's
+            eyebrow). Both were the same word set in the same mono face a few
+            hundred pixels apart, which reads as a stutter rather than as
+            identity.
+
+            The monogram breaks the repetition instead of hiding it: the intro
+            draws the full lockup, this is that same mark compressed, and the
+            h1 below is the document's heading rather than a third piece of
+            branding. The affiliation is still stated where it is a claim
+            about him — the hero eyebrow and the footer — rather than as
+            chrome.
+
+            IT STAYS INSIDE `.home`. That class is what
+            scripts/check-nav-contrast.mjs measures for this box, and it
+            declares `color: var(--fg)`; the monogram fills with
+            `currentColor`, so it paints the role the gate already holds this
+            element to, on both faces, with nothing new for the gate to learn.
+            Swapping in an element that painted its own fill would have made
+            the one graphical object in this bar invisible to the one script
+            that checks it.
+
+            The link keeps an accessible name in `aria-label`: the monogram is
+            aria-hidden, so without it the only link to the homepage would
+            announce as empty.
           */}
-          <Mark height={28} alt="Seattle University" className={styles.markSlot} />
+          <Link href="/" className={styles.home} aria-label="Duy Nguyen — home">
+            <BrandMonogram height={26} className={styles.markSlot} />
+          </Link>
         </div>
 
         <nav aria-label="Portfolio sections">

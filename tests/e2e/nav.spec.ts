@@ -1026,15 +1026,35 @@ test.describe('§5 the Seattle University affiliation', () => {
     <img>, and none of them permits one to be recoloured.
   */
 
-  test('the affiliation is stated, and announced exactly once', async ({ page }) => {
+  /*
+    ── THE AFFILIATION LEFT THE CHROME ON 2026-09-05 ───────────────────────
+
+    This test used to assert the opposite: that the nav states "Seattle
+    University", because it was "the one credential the chrome carries". That
+    was a real design intent and it was deliberately reversed, so the test is
+    rewritten rather than deleted — and it now guards the reversal, so nobody
+    reinstates the words by accident.
+
+    WHY. The bar read "Duy Nguyen · SEATTLE UNIVERSITY" directly above a hero
+    whose eyebrow read "SEATTLE, WASHINGTON · M.S. DATA SCIENCE, SEATTLE
+    UNIVERSITY" and whose h1 read "Duy Nguyen". Three "Seattle"s and two of
+    his name in the first two lines of the page. The chrome now carries the DN
+    monogram instead, and the affiliation is stated where it is a CLAIM about
+    him — the hero eyebrow, the coursework band, the footer — rather than as
+    decoration repeated a few hundred pixels away.
+
+    WHAT SURVIVES UNCHANGED is the property the old test actually protected:
+    the affiliation is announced EXACTLY ONCE in the first viewport. It used
+    to be once in the nav; it is now once in the eyebrow. Two visible copies
+    is still two announcements to a screen reader, whichever elements carry
+    them.
+  */
+  test('the affiliation is out of the chrome and stated once above the fold', async ({ page }) => {
     await page.setViewportSize(DESIGN)
     await page.goto('/', { waitUntil: 'networkidle' })
     await settle(page)
 
-    const visible = await page.evaluate((selector) => {
-      const nav = document.querySelector<HTMLElement>(selector)
-      if (!nav) return []
-      const out: string[] = []
+    const found = await page.evaluate((selector) => {
       const shown = (el: Element): boolean => {
         let node: Element | null = el
         while (node) {
@@ -1044,35 +1064,49 @@ test.describe('§5 the Seattle University affiliation', () => {
         }
         return true
       }
-      for (const el of Array.from(nav.querySelectorAll<HTMLElement>('*'))) {
+      const hits: Array<{ inNav: boolean; aboveFold: boolean; text: string }> = []
+      for (const el of Array.from(document.querySelectorAll('*'))) {
         if (!shown(el)) continue
         const own = Array.from(el.childNodes)
           .filter((n) => n.nodeType === Node.TEXT_NODE)
           .map((n) => (n.textContent ?? '').trim())
           .join(' ')
-        if (/seattle\s+university/i.test(own)) out.push(el.tagName.toLowerCase())
-        const alt = el.getAttribute('alt')
-        if (alt && /seattle\s+university/i.test(alt)) out.push(`img[alt]`)
+        const alt = el.getAttribute('alt') ?? ''
+        if (!/seattle\s+university/i.test(own) && !/seattle\s+university/i.test(alt)) continue
+        const rect = el.getBoundingClientRect()
+        hits.push({
+          inNav: Boolean(el.closest(selector)),
+          aboveFold: rect.top < window.innerHeight,
+          text: (own || alt).slice(0, 80),
+        })
       }
-      return out
+      return hits
     }, NAV)
 
     expect(
-      visible.length,
-      'The nav states no affiliation at all. It is the one credential the ' +
-        'chrome carries, and both faces of the bar are supposed to have it — ' +
-        'the lockup on paper if permission is ever granted, the words over the ' +
-        'photograph either way.',
-    ).toBeGreaterThan(0)
+      found.filter((h) => h.inNav).map((h) => h.text),
+      'The nav states the affiliation again. It was moved out of the chrome ' +
+        'on purpose: the bar sits directly above a hero eyebrow that already ' +
+        'says "Seattle University", and carrying it in both put the same words ' +
+        'twice in the first two lines of the page. The bar carries the DN ' +
+        'monogram now. If the affiliation genuinely has to return to the ' +
+        'chrome, take it out of the eyebrow in the same commit.',
+    ).toEqual([])
+
+    const aboveFold = found.filter((h) => h.aboveFold)
+    expect(
+      aboveFold.map((h) => h.text),
+      'The affiliation is not stated anywhere in the first viewport. It is a ' +
+        'credential a recruiter should not have to scroll for, and removing it ' +
+        'from the nav was supposed to move it, not delete it.',
+    ).not.toEqual([])
 
     expect(
-      visible,
-      `"Seattle University" is rendered ${visible.length} times in the nav at ` +
-        `once (${visible.join(', ')}). Two variants swapped by ground is the ` +
-        'correct shape; two variants VISIBLE at once is the affiliation ' +
-        'announced twice to a screen reader and printed twice on screen. ' +
-        'Exactly one must be display:none at any moment — hidden, not merely ' +
-        'transparent, so it leaves the accessibility tree with it.',
+      aboveFold.map((h) => h.text),
+      `"Seattle University" is visible ${aboveFold.length} times above the ` +
+        'fold at once. Two copies is the affiliation announced twice to a ' +
+        'screen reader and printed twice on screen — the stutter this layout ' +
+        'was changed to remove.',
     ).toHaveLength(1)
   })
 
@@ -1174,7 +1208,28 @@ test.describe('§5 the Seattle University affiliation', () => {
     ).toEqual([])
   })
 
-  test('the affiliation reads in both grounds', async ({ page }) => {
+  /*
+    ── THE MARK IS A GRAPHIC NOW, SO THIS IS A PIXEL TEST ──────────────────
+
+    This asserted that the affiliation TEXT cleared AA on both faces. The
+    chrome no longer carries text at all — it carries the DN monogram — so the
+    same property is measured on the thing that is actually there.
+
+    THE STANDARD IS 3:1, NOT 4.5:1, and that is not a relaxation. A logotype is
+    exempt from 1.4.3 outright (src:wcag-logotype-exemption in the corpus);
+    what still applies is 1.4.11, non-text contrast, which asks 3:1 of a
+    graphical object needed to understand the content. The cream D and N are
+    that object. The crimson flourish is not — it is a swash, it crosses over
+    the D and under the N so most of its length lies on cream rather than on
+    the photograph, and the mark reads as DN without it.
+
+    MEASURED ON COMPOSITED PIXELS, not on declared colours: the bar is
+    translucent over a photograph on one face and frosted over paper on the
+    other, so what the mark is actually drawn against is a blend that no
+    stylesheet states. p95 is the mark's own ink, p05 the darkest ground inside
+    the same box.
+  */
+  test('the brand mark reads against both grounds', async ({ page }) => {
     test.skip(!photoLanded, NOT_LANDED_MESSAGE)
 
     await page.setViewportSize(DESIGN)
@@ -1183,37 +1238,51 @@ test.describe('§5 the Seattle University affiliation', () => {
     await settle(page)
     await page.waitForTimeout(400)
 
-    for (const [state, y] of [
-      ['over the photograph', 0],
-      ['on the paper face', 1],
+    for (const [state, scrolled] of [
+      ['over the photograph', false],
+      ['on the paper face', true],
     ] as const) {
-      if (y > 0) await scrollTo(page, await pastHero(page))
+      if (scrolled) await scrollTo(page, await pastHero(page))
+      await page.waitForTimeout(300)
 
-      const verdicts = await measureNavContrast(page)
-      const affiliation = verdicts.filter((v) => /seattle\s+university/i.test(v.run.text))
-      expect(
-        affiliation.length,
-        `No measurable "Seattle University" run in the nav ${state}. Either the ` +
-          'affiliation is carried by a raster there (in which case this ' +
-          'assertion needs a pixel test for that image, not a text one), or it ' +
-          'is not being stated at all.',
-      ).toBeGreaterThan(0)
+      const box = await page.evaluate((selector) => {
+        const svg = document.querySelector(`${selector} svg`)
+        if (!svg) return null
+        const r = svg.getBoundingClientRect()
+        return { x: r.x, y: r.y, width: r.width, height: r.height }
+      }, NAV)
 
-      const failures = affiliation.filter((v) => v.ratio < v.required)
       expect(
-        failures.map(
-          (v) =>
-            `${v.run.path} ${v.run.color} at ${v.run.fontSizePx}px/${v.run.fontWeight} — ` +
-            `${round2(v.ratio)}:1, needs ${v.required}:1 (backdrop ${v.backdrop})`,
-        ),
-        `The affiliation fails AA ${state}.\n` +
-          'Mark.tsx measured the alternative and wrote the numbers down: over ' +
-          'the bare crest at 1280, --fg reads 2.28:1 and --fg-muted 1.02:1, and ' +
-          'at the hero\'s own pocket floor (veil 0.8656) they reach 11.87:1 and ' +
-          '5.29:1. Type follows [data-ground] and the raster could not, which ' +
-          'is why type is the form here — but type is not a contrast fix on its ' +
-          'own. The bar has to paint a ground at rest.',
-      ).toEqual([])
+        box,
+        `No brand mark is rendered in the nav ${state}. The bar carries the ` +
+          'monogram as its only brand element; with it gone the link to the ' +
+          'homepage is an empty box.',
+      ).not.toBeNull()
+
+      const rect = box as Rect
+      expect(
+        rect.width > 8 && rect.height > 8,
+        `The brand mark measures ${round2(rect.width)}x${round2(rect.height)} ` +
+          `CSS px ${state} — too small to be the mark rather than a collapsed box.`,
+      ).toBe(true)
+
+      const image: DecodedImage = decodePng(await page.screenshot({ animations: 'disabled' }))
+      const scale = image.width / DESIGN.width
+      const stats = sampleRects(image, [rect], scale)
+
+      expect(stats, `The mark's box decoded no pixels ${state}.`).not.toBeNull()
+
+      const ratio = contrastRatio(stats!.p95, stats!.p05)
+      expect(
+        `${round2(ratio)}:1`,
+        `The brand mark does not separate from its ground ${state}: ` +
+          `${round2(ratio)}:1 between its own ink (p95 rgb ${stats!.p95.r},${stats!.p95.g},${stats!.p95.b}) ` +
+          `and the darkest ground inside its box (p05 rgb ${stats!.p05.r},${stats!.p05.g},${stats!.p05.b}). ` +
+          'WCAG 1.4.11 asks 3:1 of a graphical object. This is the failure the ' +
+          "nav veil exists to prevent — the bar has to paint a ground at rest, " +
+          'and no foreground survives an unpainted one over a photograph.',
+      ).toBe(`${round2(ratio)}:1`)
+      expect(ratio).toBeGreaterThanOrEqual(3)
     }
   })
 })
