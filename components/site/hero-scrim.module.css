@@ -2481,9 +2481,9 @@
     0 0 18.56px var(--ground), 0 0 18.56px var(--ground), 0 0 18.56px var(--ground), 0 0 18.56px var(--ground);
 }
 
-/* ── 5b · THE DISPLAY NAME IN BRAND CREAM ────────────────────────────────
-     --fg-brand is the mark's cream, luminance 0.690. That is BRIGHT — close
-     to --fg's 0.856 and nothing like --fg-accent-display's 0.279 — so
+/* ── 5b · THE DISPLAY NAME IN MIST BLUE ──────────────────────────────────
+     --fg-brand is mist blue, luminance 0.628. That is BRIGHT — nearer --fg's
+     0.856 than --fg-accent-display's 0.279 — so
      darkening its local ground walks the ratio monotonically UP and the
      crossover trap described in rule 5 does not apply here. What it does
      need is reach, because it is the palest warm ink on the page and the

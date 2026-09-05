@@ -823,7 +823,7 @@ const INK_FOREGROUND_CATALOG = [
   { token: '--fg', hex: '#F2F1EE', flatRatio: 16.04 },
   { token: '--fg-muted', hex: '#A3A2A8', flatRatio: 7.15 },
   { token: '--fg-accent', hex: '#FF5252', flatRatio: 5.68 },
-  { token: '--fg-brand', hex: '#EAD6B6', flatRatio: 12.82 },
+  { token: '--fg-brand', hex: '#C2D2DE', flatRatio: 11.76 },
 ]
 
 /**

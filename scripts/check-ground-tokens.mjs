@@ -91,7 +91,7 @@ const REQUIRED_ROLES = [
 const VIOLATIONS = [
   {
     name: 'palette custom property',
-    re: /--color-(?:paper|ink|text|on-ink|on-crimson|rose|crimson|brand-cream)(?:-[a-z-]+)?\b/g,
+    re: /--color-(?:paper|ink|text|on-ink|on-crimson|rose|crimson|mist)(?:-[a-z-]+)?\b/g,
     fix: 'read a ground role: --fg / --fg-muted / --fg-brand / --fg-accent / --fg-accent-display / --fg-pressed / --rule / --edge / --focus-ring / --fg-error / --ground / --ground-sunk / --surface-pressed',
   },
   {

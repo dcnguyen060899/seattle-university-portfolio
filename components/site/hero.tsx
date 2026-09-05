@@ -660,22 +660,31 @@ export function Hero() {
         <Eyebrow>M.S. Data Science · Seattle University</Eyebrow>
 
         {/*
-          THE NAME CARRIES THE BRAND CREAM, THE LEDE DOES NOT — and that split
-          is the whole idea rather than a decoration.
+          THE NAME IS MIST BLUE, THE LEDE IS NOT — and that split is the whole
+          idea rather than a decoration.
 
-          The earlier advice against colouring this was that warm type on a
-          warm sunset loses separation. That is true of BODY copy and false
-          here: the owner's own reference render puts the name at #EAD6B6 and
-          leaves the sentence below it near-white, so the warmth marks the one
-          word that is a name while everything that has to be READ stays
-          neutral. Measured on the composited photograph the cream lands about
-          9.7:1 against the veil's pocket floor, versus 11.9:1 for --fg — both
-          far above the 4.5 this role is held to.
+          WHY COOL AND NOT WARM. This went through a warm cream first, matching
+          the lockup, and the cream was the weaker answer for a reason worth
+          writing down: the photograph's lights are amber, so a warm name sits
+          INSIDE the picture's own hue and has only luminance left to separate
+          with. Mist blue sits across it. The name reads as a distinct object,
+          and the sunset reads warmer by comparison — the contrast flatters the
+          photograph instead of competing with it.
 
-          A ROLE, NOT THE HEX. --fg-brand is the mark's cream on ink and plain
-          --fg on paper and crimson, where the same cream would be 1.21:1 and
-          2.4:1 respectively. So this line is safe on any ground a future band
-          puts it on, and check-ground-tokens.mjs still holds.
+          The lede stays near-white. Only the NAME is coloured, so the hue
+          marks the one word that is a name while everything that has to be
+          READ keeps the neutral ink. That is the hierarchy; the hue is how it
+          is expressed.
+
+          A ROLE, NOT THE HEX. --fg-brand is mist on ink and plain --fg on
+          paper and crimson, where the same blue would be 1.48:1 and would be
+          unreadable. So this line is safe on any ground a future band puts it
+          on, and check-ground-tokens.mjs still holds.
+
+          IT IS DARKER THAN THE CREAM WAS (luminance 0.628 against 0.690), so
+          it has LESS headroom against the band's brightest sky, not more. The
+          collar in hero-scrim.module.css rule 5b is what carries it; see the
+          measured numbers there.
         */}
         <h1 className="mt-[20px] max-w-[14ch] text-[color:var(--fg-brand)]">Duy Nguyen</h1>
 
