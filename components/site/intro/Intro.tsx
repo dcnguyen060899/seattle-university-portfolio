@@ -135,7 +135,38 @@ export function Intro({ children }: { children?: ReactNode }) {
     Off the play path the shell unmounts, leaving nothing in the a11y tree.
   */
   useLayoutEffect(() => {
-    if (gateRef.current !== null) return;
+    if (gateRef.current !== null) {
+      /*
+        THE STRICT-MODE REMOUNT, AND WHY THIS BRANCH RE-ASSERTS THE HOLD.
+
+        In development React runs every effect, then every cleanup, then every
+        effect again. Pass 1 of this effect held `--focus`; the cleanup pass
+        ran the ramp effect's cancel(), which RELEASED it (setIntroFocus(null),
+        by design — that is the real unmount path); and pass 2 arrived here,
+        saw the ref already decided, and returned without holding again. The
+        driver then wrote the scroll-derived 0 on every frame, so for the whole
+        reveal the SHARP photograph sat behind the logo, and at dissolve onset
+        the ramp set 0.78 and the picture snapped from sharp to blurred before
+        resolving. MEASURED 2026-09-06 on `next dev`: --focus 0.0000 and the
+        sharp layer at opacity 1 throughout `playing`; tests/e2e/intro.spec.ts
+        §5.1 fails against the dev server with "the photograph behind the intro
+        is SHARP" and passes against a production build at 1x, 4x and 8x CPU
+        throttling. Present since the intro shipped; the owner found it by
+        recording localhost beside the deployed site.
+
+        Dev-only by construction — StrictMode double-invokes nothing in
+        production — so in production this branch never runs and the change is
+        inert. It is fixed anyway, because a localhost that cannot show the
+        transition it ships makes every design judgement about that transition
+        wrong, which is exactly what happened.
+
+        The re-assert is idempotent: setIntroFocus(0.78) when the override is
+        already 0.78 is a no-op, and the ramp effect below restarts on the same
+        pass and releases on its own schedule exactly as it does in production.
+      */
+      if (gateRef.current === true) setIntroFocus(INTRO_FOCUS_HOLD);
+      return;
+    }
     const playing = document.documentElement.getAttribute('data-intro') === 'pending';
     gateRef.current = playing;
     if (playing) setIntroFocus(INTRO_FOCUS_HOLD);
