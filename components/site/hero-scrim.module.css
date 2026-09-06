@@ -1567,7 +1567,29 @@
      THE WHOLE QUESTION: the mono --fg-muted labels visibly dissolve into the
      photograph down there. That is a judgement about the picture, it was made
      by looking, and it is recorded here because no gate in this repo makes it. */
-  --scrim-floor-min: 23%;
+  /* ── THE SHIPPED FLOOR IS 53%. THE 23% DERIVED ABOVE IS WHAT THE GATE PERMITS ──
+     Everything above is still true and none of it changed on 2026-09-06:
+     with both collars credited, scripts/check-hero-contrast.mjs's minimum
+     for this band is 23%, held by --fg-muted at 0.2253. What happened is
+     that the owner looked at the ORIGINAL photograph rendered at 23% and at
+     53%, side by side on a production build, and chose 53% — "this one
+     please". Measured on the open sky at 1280: 23% gave 0.0253 / 0.0642
+     (mean / p95); 53% gives 0.0161 / 0.0339. He preferred the darker picture.
+
+     So this literal is a TASTE floor sitting thirty points above the SAFETY
+     floor, and the two must not be confused. The gate accepts anything from
+     23% upward; a future hand that lowers this number toward 23% is changing
+     a look, not loosening a guarantee, and a hand that raises it is not
+     buying legibility the collars have not already bought. The wash
+     arithmetic below is worked at the 23% minimum ON PURPOSE — it is the
+     tightest case, and every margin it states only grows here.
+
+     KNOWN CONSEQUENCE. hero-blend.spec.ts's "never fully opaque over the
+     photograph" tests exist to catch a veil deeper than any foreground
+     needs. At 53% they fail, exactly as they did before bcb2bd8 read the box
+     collar. That is the suite disagreeing with a deliberate choice, recorded
+     so nobody resolves it by deepening a collar or weakening an assertion. */
+  --scrim-floor-min: 53%;
   /*
     ── THE WASH — THE RUNG THAT TURNS A ROUNDING ERROR INTO A MARGIN ─────
     The one layer that is never masked, so the one layer whose alpha is added
@@ -1582,7 +1604,7 @@
 
         0.0465 x 86%  =  4.00%      (the floor it was sized at)
         0.0465 x 53%  =  2.46%
-        0.0465 x 23%  =  1.07%      (today)
+        0.0465 x 23%  =  1.07%      (at the 23% gate minimum; the shipped floor is 53%, see above)
 
     AT 23% IT IS NO LONGER WHERE THE MARGIN COMES FROM, and saying so is the
     point of keeping the arithmetic here. --fg-muted needs 0.2253 collared; the
