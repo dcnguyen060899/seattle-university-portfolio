@@ -48,20 +48,48 @@
 
   ── WHAT IS DIFFERENT HERE, AND WHY ───────────────────────────────────────
 
-  1. NO `height: 100svh`. The reference hero is one headline, one lede and a
-     button. This one carries an eyebrow, an h1, a statement, a <Threshold>,
-     two <Readout>s, a <Limit> block and three buttons — the band is roughly
-     two viewports tall on a phone. Pinning it to the viewport would either
-     scroll internally or amputate the caveats, and the caveats are the point
-     of the band. The photograph therefore sits behind a band of natural
-     height, and --focus is mapped over the HERO's height rather than the
-     viewport's (see hooks/use-scroll-driver.ts).
+  1. A MIN OF ONE SCREEN, NOT A HEIGHT OF ONE SCREEN. The reference hero is
+     `height: 100svh` — one headline, one lede and a button. This one carries
+     a name, a statement, a <Threshold>, three titled evidence blocks, a
+     <Limit> block and three buttons, and for a long time this note said "NO
+     `height: 100svh`" because the band was roughly two viewports tall
+     everywhere and pinning it would have amputated the caveats.
+
+     On 2026-09-06 the desktop band was brought under one screen ON PURPOSE
+     (ONE SCREEN below; the owner approved the composition at 1280x800), and
+     it then measured 797.2px in an 800px viewport: three pixels of the next
+     band's paper showed at the fold, under a photograph that was meant to
+     fill the screen. `.band` therefore carries `min-block-size: 100svh`.
+
+     WHY A FLOOR AND NOT A FIXED HEIGHT. A floor removes that hairline —
+     the band is never shorter than the viewport, so the paper cannot show
+     above the fold — and on a taller desktop viewport it grows the
+     photograph's foot instead of leaving ground under the picture. It never
+     shortens anything: the phone band is ~1385-1400px against an 812px
+     screen and the floor is inert there; a 768 or 861 tablet is the same. No
+     copy is clipped and nothing scrolls internally, because a minimum cannot
+     bind on a band that is already taller than it. --focus is still mapped
+     over the HERO's height (hooks/use-scroll-driver.ts), which is now
+     max(natural, 100svh).
+
+     THE CROP MATHS HOLDS. The photo box is `min(band, 134svh)`, so on desktop
+     it is the band, and the band is the viewport whenever the floor binds.
+     Against the 3:2 landscape rung `cover` keeps every column as long as the
+     box is at least 1.5:1 — 1280x800 is 1.60, 1440x900 1.60, 1600x900 1.78,
+     1920x1080 1.78 — so at every desktop viewport the rung was framed for,
+     100% of the picture's width survives and what `cover` spends is rows
+     (6.25% at 16:10), exactly as ONE SCREEN records. A viewport squarer than
+     3:2 (1280x900, say) would trim a few percent of width; before the floor
+     the same viewport showed 100px of the next band's paper instead. The
+     browser gate (tests/e2e/hero-contrast.spec.ts) re-measures the box the
+     build gate assumes, and TEXT_EXTENT in scripts/check-hero-contrast.mjs
+     records the floored heights: 800 at 1280x800, 900 at 1600x900.
 
      WHAT *IS* PINNED IS THE PHOTOGRAPH, and only the photograph — see THE PIN
-     below. The band keeps its natural height and every word of its copy; the
-     picture box keeps the one-screenful size hero-scrim.module.css gives it
-     and stops scrolling out from under the lower half of the band. Those are
-     different claims, and the first one above is still true.
+     below. The band keeps its natural height (or the floor, on desktop) and
+     every word of its copy; the picture box keeps the size
+     hero-scrim.module.css gives it and stops scrolling out from under the
+     lower half of the band. Those are different claims, and both are true.
 
   2. THE HERO COPY DOES NOT DRIFT ON --exit. The reference fades and lifts its
      hero copy as it leaves. Here the copy is still being READ when --exit
@@ -165,27 +193,26 @@
   ═══════════════════════════════════════════════════════════════════════════
 
   Identity left, evidence right. LAYOUT ONLY — not one colour, size or face is
-  named here; the type is exactly what it was in one column, which is the whole
-  constraint this change was made under.
+  named here; the faces are the scale's (app/globals.css) and the hero's own
+  choices among them are made in hero.tsx, where each is argued.
 
   THE BREAKPOINT IS 900px, NOT THE PAGE'S 861px ART-DIRECTION SWITCH. They are
   different questions. 861 is where the photograph swaps from landscape to
-  portrait crop; this is where an evidence column stops having room to set
-  `195 neurons · 1,325 passes · 30,147 raw files` without wrapping mid-figure.
+  portrait crop; this is where an evidence column stops having room to set a
+  serif title such as "Winner, Graduate Division — CAUSE 2026" on one line.
   Tying them together would mean one of the two lands wrong.
 
-  THE RIGHT COLUMN IS CAPPED AT 420px rather than given a fraction. The three
-  readouts are compound mono strings; a fractional column keeps growing with
-  the viewport and at 1600 it would set them at a measure long enough that the
-  eye loses which figure belongs to which label. 420px holds the longest of
-  them — the barn-owl readout — on two lines at every width above the
-  breakpoint.
+  THE RIGHT COLUMN IS CAPPED AT 420px rather than given a fraction. A
+  fractional column keeps growing with the viewport and at 1600 it would set
+  the titles and their notes at a measure long enough that the eye loses
+  which line belongs to which block. 420px holds the longest title on one
+  line at every width above the breakpoint and the notes under ~50ch.
 
-  BELOW THE BREAKPOINT this collapses to the single column the band shipped
-  with, in source order: identity, actions, then the three evidence blocks.
-  That is the same reading order as the desktop layout, which is what keeps
-  the tab order and the screen-reader order honest without a single
-  `order:` declaration.
+  BELOW THE BREAKPOINT this collapses to a single column in source order:
+  identity, the three actions, then the three evidence blocks. That is the
+  same reading order as the desktop layout — name, lede, the things a reader
+  can do, then the evidence — which is what keeps the tab order and the
+  screen-reader order honest without a single `order:` declaration.
 */
 .split {
   display: grid;
@@ -194,10 +221,12 @@
 }
 
 /*
-  SOURCE ORDER IS identity -> evidence -> actions, which is the phone's reading
+  SOURCE ORDER IS identity -> actions -> evidence, which is the phone's reading
   order and the only order the DOM has. Desktop re-places the three by AREA, so
   the actions sit under the lede without `order:` and without the tab order
-  disagreeing with the visual one.
+  disagreeing with the visual one. hero.tsx carries the history of that order
+  (the 0.585 figure once measured 2.78:1 at the ink pixels with the actions
+  above the evidence) and names the test that guards it.
 */
 @media (min-width: 900px) {
   .split {
@@ -216,19 +245,105 @@
 }
 
 /*
-  The three evidence blocks. <Threshold> carries its own top margin
-  (`mt-[clamp(28px,4vw,44px)]`) and the readouts do not, so the gap here is
-  what makes the three sit on one rhythm; the first block's own margin is
-  cancelled so the column starts level with the eyebrow opposite it.
+  The three evidence blocks, on one rhythm. <Threshold> carries its own top
+  margin (`mt-[clamp(28px,4vw,44px)]`) for the paper bands; inside a block it
+  is reset to the same gap the other two blocks put under their titles, so a
+  title-to-content distance is one number here rather than three.
+
+  24px, FLAT, AND THAT IS THE ONE-SCREEN BUDGET — see ONE SCREEN below for
+  the arithmetic. It was clamp(28px, 3.5vw, 40px), 40px at every desktop
+  width; this column is the tallest thing in the split and its two gaps were
+  80px of the band. A 24px gap above a 32px dash still reads as a break —
+  the dash-to-title distance below it is 8px, a third of the gap, so the dash
+  belongs unambiguously to the title under it and not to the note above.
 */
 .evidence {
   display: flex;
   flex-direction: column;
-  gap: clamp(26px, 3.5vw, 38px);
+  gap: 24px;
 }
 
-.evidence > div:first-child > [data-numeric] {
-  margin-block-start: 14px;
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  THE DASH — a rule that encodes something, not a rule under everything
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Each evidence block and the limits block opens with a 32px stroke of
+  --rule, which .ground resolves to --fg here (crimson is spent on the
+  Threshold's figure and nowhere else in this band). It is the owner's own
+  device — every reference render he made marks a block with a short dash
+  above it and nothing below — and it replaces two full-width hairlines that
+  used to sit under the readouts.
+
+  WHY SHORT. A full-measure hairline over a photograph is a line laid across
+  a picture; at 1280 the limits' rule used to cross the lettering of the
+  SEATTLE UNIVERSITY sign, which read as a printing error. A 32px stroke
+  cannot cross anything at any viewport. And it carries information a
+  hairline did not: it marks where a block BEGINS, which is what the eye
+  needs when three blocks of different heights stack in one column.
+
+  WHY IT IS NOT A BORDER. `::before` rather than `border-block-start`, so the
+  stroke's width is its own and not the column's, and so the Threshold's rule
+  — the one 2px line in the band that has to mean "threshold" — is not
+  echoed by a second full-width 2px line above it.
+
+  8px UNDER THE DASH AND 8px UNDER THE TITLE. Both were larger (14 and 12)
+  and both are part of the one-screen budget below; 8px is the step the
+  Threshold already puts under its own figure (`mt-[8px]` on the label), so
+  a block's internal rhythm is one number rather than three.
+*/
+.block::before {
+  content: '';
+  display: block;
+  inline-size: 32px;
+  block-size: 2px;
+  margin-block-end: 8px;
+  background: var(--rule);
+}
+
+.block > [data-numeric] {
+  margin-block-start: 8px;
+}
+
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  THE THRESHOLD RULE IS A STUB, NOT A SPAN
+  ═══════════════════════════════════════════════════════════════════════════
+
+  `.threshold-rule` (app/globals.css) is a full-measure 2px line: under the
+  0.585 figure it ran the whole 420px evidence column, and once the readouts'
+  hairlines had gone it was the last full-width line in the band — a stroke
+  laid across the photograph, in a band whose every other block is marked by
+  a 32px dash and nothing else. So it is the dash here: 32px of --rule, the
+  width THE DASH above gives every block, in the token the dashes use.
+
+  THE DEVICE SURVIVES THE SHORTENING. What <Threshold> encodes is the SHAPE
+  of the claim — the clearing figure over the line, the floor on it — and a
+  32px line under "0.585" and over "P@1 0.487" still draws that. What it
+  loses is the length, which was never the meaning.
+
+  --rule, NOT --fg-accent, and the two are the same colour in this band:
+  `.ground` in hero-scrim.module.css resolves both to --fg, because the
+  crimson budget is spent on the 48px figure and nowhere else here. Naming
+  --rule says what the line IS — the band's block mark — rather than
+  re-asserting an accent the band does not paint.
+
+  ⚠ THE GATE READS THIS ELEMENT'S LENGTH. hero-scrim.module.css rule 7
+  credits the bar a box collar and declares its extent in --collar-box as a
+  FLOOR that tests/e2e/hero-contrast.spec.ts holds the real border box above;
+  that declaration was changed to 32px in the same edit as this rule. Widen
+  or narrow this stub and the extent moves with it, or the browser gate fails
+  — which is the right outcome for a collar credited against a length the
+  page does not paint.
+
+  Two class names deep so it beats the utility's single class without
+  !important, the same construction as the limits stub below. `inline-size`
+  rather than `width` so it composes with the scaleX draw-on, whose
+  transform-origin is already the left edge.
+*/
+.inner :global(.threshold-rule) {
+  inline-size: 32px;
+  background: var(--rule);
 }
 
 .actions {
@@ -379,21 +494,63 @@
   cannot cross anything, which is why the owner's reference render uses one.
 
   Two class names deep so it beats the utility's single class without
-  !important. The rule is not removed, it is shortened: same role, same
-  weight, same 14px gap to the label.
+  !important. The rule is not removed, it is shortened: it is THE DASH above,
+  the same 32px of --rule every evidence block opens with, so the limits read
+  as the fourth block of the band rather than as a footnote in another
+  register.
+
+  THE LABEL IS RE-FACED HERE, NOT IN <Limit>. On paper the block's label is
+  the same tracked-uppercase mono as every eyebrow on those bands, and it
+  should stay that: the paper bands are one register. This band has no
+  eyebrows any more — its blocks are titled in the serif and its labels are
+  sentence-case body face — so the label follows THIS band's rule. Unlayered
+  module CSS beats a Tailwind utility regardless of specificity, which is
+  what lets one selector retype it without touching the component.
 */
 .inner .limits {
   border-block-start: 0;
   padding-block-start: 0;
+  /* 16px above the fourth block's dash, against <Limit>'s own mt-[26px] for
+     the paper bands, and 8px under it like every other dash here. Part of
+     the one-screen budget below. */
+  margin-block-start: 16px;
 }
 
 .inner .limits::before {
   content: '';
   display: block;
-  inline-size: 64px;
+  inline-size: 32px;
   block-size: 2px;
-  margin-block-end: 14px;
-  background: var(--fg-accent);
+  margin-block-end: 8px;
+  background: var(--rule);
+}
+
+/*
+  THE CAVEATS' OWN LEADING AND GAPS, in the hero only. <Limit> sets its list
+  at `mt-[10px] gap-[8px]` and its lines at `leading-[1.6]` for the paper
+  bands, where they sit alone under a rule with room around them. Here the
+  block is the foot of a band that has to fit a screen, so the list opens 6px
+  under its label, the three caveats sit 6px apart, and the lines are set at
+  1.5 — the body's own --text-data leading, not a number invented for this.
+  Every caveat still renders in full (verify:corpus C10 / C15 read the built
+  HTML); nothing here can drop a line, only tighten the space between two.
+*/
+.inner .limits > ul {
+  margin-block-start: 6px;
+  gap: 6px;
+}
+
+.inner .limits li {
+  line-height: 1.5;
+}
+
+.inner .limits > p:first-child {
+  font-family: var(--font-body);
+  font-size: var(--text-data);
+  line-height: var(--text-data--line-height);
+  letter-spacing: 0;
+  font-weight: 500;
+  text-transform: none;
 }
 
 /*
@@ -415,6 +572,119 @@
 */
 .limits {
   max-inline-size: var(--container-prose);
+}
+
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  ONE SCREEN — the band fits the viewport it was written for, and this is
+  where the pixels came from
+  ═══════════════════════════════════════════════════════════════════════════
+
+  MEASURED, production build, headless Chromium dpr 1, 2026-09-06, before and
+  after the spacing in this file was re-cut. `#top` is the band; the photo
+  box is `min(band, 134svh)` and on every desktop row below that is the band.
+
+      viewport      band before   band after   photo box       rows kept
+      1280 x 800       968.7px      797.2px    1280 x 797  1.61:1   93.5%
+      1440 x 900       994.9px      811.4px    1440 x 811  1.78:1   84.5%
+      1600 x 900       994.9px      811.4px    1600 x 811  1.97:1   76.1%
+
+  ADDENDUM, later the same day: those "band after" heights are the band's
+  NATURAL heights, and the 797.2px at 1280x800 left 2.8px of the next band's
+  paper above the fold. `.band` now carries `min-block-size: 100svh` (item 1
+  of the header), so the band is max(natural, viewport) — 800px at 1280x800,
+  900px at 1440x900 and 1600x900 — and the photo box, being the band, grows
+  with it: 1280x800 = 1.60:1 and 1600x900 = 1.78:1, both wider than the
+  rung, so every column still survives. Nothing in the copy or the spacing
+  above moved; the caveat's bottom edge is still 749px at 1280x800.
+
+  Every column of the 3:2 rung is on screen in all three (x = 96%, the
+  flag's right edge, is inside the box); what `cover` discards is rows, and
+  hero-scrim.module.css's --hero-pos-y says which. The last caveat's bottom
+  edge lands at 749px in the 800px viewport and 763px in the 900px ones, so
+  the whole band — name, evidence, three caveats — is above the fold. The
+  same heights are recorded in the TEXT_EXTENT table of
+  scripts/check-hero-contrast.mjs, which the browser gate re-measures.
+
+  WHERE 968.7px CAME FROM AT 1280, TO THE PIXEL:
+      128     --spacing-band, the band's top padding
+      473     the split — bound by the evidence column: three blocks of
+              196.6 / 96.2 / 100.2 and two 40px gaps
+       26     <Limit>'s own top margin
+      213.75  the limits: dash 16, label 19.5, list 10 + three caveats on
+              seven lines of 13.6px at 1.6 with two 8px gaps
+      128     --spacing-band, the band's bottom padding
+
+  WHAT MOVED, in the order the brief prefers levers — vertical spacing first,
+  then leading, and never a word of content:
+      evidence gap             40  -> 24    x2     -32
+      dash -> title             14  ->  8    x4     -24
+      title -> figure           12  ->  8    x2      -8
+      <Limit> top margin        26  -> 16            -10
+      limits list open/gaps  10/8  -> 6/6            -8
+      limits leading          1.6  -> 1.5   x7 lines -9.5
+      the band's foot         128  -> 48            -80
+  and nothing else: the split's row gap, the lede's leading and the identity
+  column are not binding (that column is 280px against the evidence's 473)
+  and were left alone.
+
+  THE TWO PADDINGS ARE NOT THE SAME KIND OF NUMBER, which is why one moved
+  and the other did not. The TOP padding is scrim-coupled: hero-scrim.module
+  .css seals its pocket at `--hero-headroom + --spacing-band - 18px` and
+  scripts/check-hero-contrast.mjs models the first glyph at exactly
+  `--spacing-band + --hero-headroom`, so a hero that pulled its copy above
+  that line would put glyphs in the ramp the gate assumes is text-free. It
+  stays at --spacing-band. The BOTTOM padding is band geometry and nothing
+  else — the wash is already at full --ground where it ends — so it is the
+  hero's own: 48px, which is where the owner's reference render puts the
+  foot of "Methods & limitations" (about 6% of a 971px frame), and the paper
+  band below still brings its own --spacing-band above its first line, so the
+  distance between the last caveat and the next heading is 176px at 1280,
+  not 48.
+
+  WHAT IT DOES NOT DO: it does not make the band one screen at 1920x1080 or
+  on an ultrawide, where the band is the same ~800px and the viewport is
+  taller — there the picture is a wider strip, and hero-scrim.module.css's
+  --hero-pos-y is what decides which rows of it show. And it does not touch
+  the phone, where the band is 1.7 screens by construction (the three
+  evidence blocks stack under the lede) and where the fix is THE PHONE'S
+  FIRST SCREEN below.
+
+  ═══════════════════════════════════════════════════════════════════════════
+  THE PHONE'S FIRST SCREEN — the actions land under the lede
+  ═══════════════════════════════════════════════════════════════════════════
+
+  MEASURED, same build, the nav's two rows on screen (the bar is 112.8px at
+  both widths; it is fixed, so the band starts under it at y=0):
+
+      viewport     name        lede           Ask / Résumé / GitHub bottoms
+      375 x 812    280-318    348-441          522 / 523 / 558   all <= 812
+      390 x 844    286-324    355-448          529 / 530 / 565   all <= 844
+
+  Nothing in this file did that; source order did. hero.tsx puts the actions
+  BETWEEN the identity and the evidence, so below the 900px split — a single
+  column in DOM order — they follow the lede. Above it the grid places them
+  by area, exactly as before. The history of that order and the test that
+  guards it (the 0.585 figure at the ink pixels, 375) are in hero.tsx.
+*/
+
+/*
+  THE BAND'S FOOT. `<Band>` paints `py-[var(--spacing-band)]` on the section;
+  this class rides beside `.ground` on the same element and shortens only the
+  bottom, for the reasons under ONE SCREEN. Unlayered module CSS beats the
+  utility. 3rem is the number, written as 48px in the argument above.
+*/
+.band {
+  padding-block-end: 3rem;
+  /*
+    THE FLOOR — see item 1 of the header. A minimum, never a height: inert on
+    the phone and the tablet, where the band is already taller than a screen;
+    on desktop it closes the 3px paper sliver a 797px band left in an 800px
+    viewport and lets the photograph's foot reach the fold on taller screens.
+    svh, like every other viewport unit in these two files, so a phone's
+    collapsing URL bar cannot make the band jump.
+  */
+  min-block-size: 100svh;
 }
 
 /*

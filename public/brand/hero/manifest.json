@@ -44,120 +44,120 @@
       "viewport": 375,
       "band": {
         "w": 375,
-        "h": 1527,
-        "aspect": 0.2456
+        "h": 1385,
+        "aspect": 0.2708
       },
       "orientation": "p",
       "box": {
         "w": 375,
-        "h": 1527
+        "h": 1385
       },
-      "boxAspect": 0.2456,
+      "boxAspect": 0.2708,
       "srcAspect": 0.7998,
-      "lostX": 0.693,
+      "lostX": 0.6615,
       "lostY": 0,
-      "kept": 0.307,
-      "magnification": 1.4912,
+      "kept": 0.3385,
+      "magnification": 1.3525,
       "upscales": true
     },
     {
       "viewport": 390,
       "band": {
         "w": 390,
-        "h": 1466,
-        "aspect": 0.266
+        "h": 1350,
+        "aspect": 0.2889
       },
       "orientation": "p",
       "box": {
         "w": 390,
-        "h": 1466
+        "h": 1350
       },
-      "boxAspect": 0.266,
+      "boxAspect": 0.2889,
       "srcAspect": 0.7998,
-      "lostX": 0.6674,
+      "lostX": 0.6388,
       "lostY": 0,
-      "kept": 0.3326,
-      "magnification": 1.4316,
+      "kept": 0.3612,
+      "magnification": 1.3184,
       "upscales": true
     },
     {
       "viewport": 768,
       "band": {
         "w": 768,
-        "h": 1318,
-        "aspect": 0.5827
+        "h": 1225,
+        "aspect": 0.6269
       },
       "orientation": "p",
       "box": {
         "w": 768,
-        "h": 1318
+        "h": 1225
       },
-      "boxAspect": 0.5827,
+      "boxAspect": 0.6269,
       "srcAspect": 0.7998,
-      "lostX": 0.2714,
+      "lostX": 0.2161,
       "lostY": 0,
-      "kept": 0.7286,
-      "magnification": 1.2871,
+      "kept": 0.7839,
+      "magnification": 1.1963,
       "upscales": true
     },
     {
       "viewport": 861,
       "band": {
         "w": 861,
-        "h": 1371,
-        "aspect": 0.628
+        "h": 1257,
+        "aspect": 0.685
       },
       "orientation": "l",
       "box": {
         "w": 861,
-        "h": 1371
+        "h": 1257
       },
-      "boxAspect": 0.628,
-      "srcAspect": 1.7778,
-      "lostX": 0.6467,
+      "boxAspect": 0.685,
+      "srcAspect": 1.5,
+      "lostX": 0.5434,
       "lostY": 0,
-      "kept": 0.3533,
-      "magnification": 1.5868,
+      "kept": 0.4566,
+      "magnification": 1.2275,
       "upscales": true
     },
     {
       "viewport": 1280,
       "band": {
         "w": 1280,
-        "h": 1018,
-        "aspect": 1.2574
+        "h": 800,
+        "aspect": 1.6
       },
       "orientation": "l",
       "box": {
         "w": 1280,
-        "h": 1018
+        "h": 800
       },
-      "boxAspect": 1.2574,
-      "srcAspect": 1.7778,
-      "lostX": 0.2927,
-      "lostY": 0,
-      "kept": 0.7073,
-      "magnification": 1.1782,
-      "upscales": true
+      "boxAspect": 1.6,
+      "srcAspect": 1.5,
+      "lostX": 0,
+      "lostY": 0.0625,
+      "kept": 0.9375,
+      "magnification": 0.8333,
+      "upscales": false
     },
     {
       "viewport": 1600,
       "band": {
         "w": 1600,
-        "h": 1042,
-        "aspect": 1.5355
+        "h": 900,
+        "aspect": 1.7778
       },
       "orientation": "l",
       "box": {
         "w": 1600,
-        "h": 1042
+        "h": 900
       },
-      "boxAspect": 1.5355,
-      "srcAspect": 1.7778,
-      "lostX": 0.1363,
-      "lostY": 0,
-      "kept": 0.8637,
-      "magnification": 1.206,
+      "boxAspect": 1.7778,
+      "srcAspect": 1.5,
+      "lostX": 0,
+      "lostY": 0.1563,
+      "kept": 0.8438,
+      "magnification": 1.0417,
       "upscales": true
     }
   ],
@@ -371,222 +371,222 @@
       "demand": {
         "viewports": [
           {
-            "viewport": "375x1527",
+            "viewport": "375x1385",
             "width": 375,
-            "bandHeight": 1527,
+            "bandHeight": 1385,
             "glyphBoxPx": 6,
-            "coverScale": 1.4912,
+            "coverScale": 1.3525,
             "slack": {
-              "x": 846,
+              "x": 733,
               "y": 0
             },
             "textExtent": {
               "x0": 0.033,
               "x1": 0.966,
               "y0": 0.12399999999999999,
-              "y1": 0.978
+              "y1": 0.985
             },
             "positions": [
               {
                 "objectPositionX": 0,
-                "p90": 0.552,
-                "p99": 0.69,
-                "max": 0.831,
-                "shareOver60": 0.0608,
-                "apertureP99": 0.1993
+                "p90": 0.548,
+                "p99": 0.692,
+                "max": 0.824,
+                "shareOver60": 0.0628,
+                "apertureP99": 0.2084
               },
               {
                 "objectPositionX": 0.25,
-                "p90": 0.578,
+                "p90": 0.569,
                 "p99": 0.717,
-                "max": 0.841,
-                "shareOver60": 0.0854,
-                "apertureP99": 0.2374
+                "max": 0.835,
+                "shareOver60": 0.0824,
+                "apertureP99": 0.2461
               },
               {
                 "objectPositionX": 0.5,
-                "p90": 0.644,
-                "p99": 0.743,
-                "max": 0.839,
-                "shareOver60": 0.1194,
-                "apertureP99": 0.3838
+                "p90": 0.64,
+                "p99": 0.75,
+                "max": 0.854,
+                "shareOver60": 0.1188,
+                "apertureP99": 0.2904
               },
               {
                 "objectPositionX": 0.75,
-                "p90": 0.701,
-                "p99": 0.792,
-                "max": 0.855,
-                "shareOver60": 0.1757,
-                "apertureP99": 0.3774
+                "p90": 0.699,
+                "p99": 0.79,
+                "max": 0.854,
+                "shareOver60": 0.1713,
+                "apertureP99": 0.3759
               },
               {
                 "objectPositionX": 1,
-                "p90": 0.741,
-                "p99": 0.798,
-                "max": 0.854,
-                "shareOver60": 0.2047,
-                "apertureP99": 0.4482
+                "p90": 0.734,
+                "p99": 0.797,
+                "max": 0.852,
+                "shareOver60": 0.1946,
+                "apertureP99": 0.4609
               }
             ],
             "atDefault": {
               "objectPositionX": 0.5,
               "p50": 0,
-              "p75": 0.022,
-              "p90": 0.644,
-              "p99": 0.743,
-              "p999": 0.805,
-              "max": 0.839,
-              "shareNeedingNothing": 0.7452,
-              "shareOver60": 0.1194,
-              "shareOver80": 0.0013,
-              "apertureP99": 0.3838,
-              "samples": 114928
+              "p75": 0.025,
+              "p90": 0.64,
+              "p99": 0.75,
+              "p999": 0.812,
+              "max": 0.854,
+              "shareNeedingNothing": 0.7439,
+              "shareOver60": 0.1188,
+              "shareOver80": 0.0019,
+              "apertureP99": 0.2904,
+              "samples": 105072
             }
           },
           {
-            "viewport": "390x1466",
+            "viewport": "390x1350",
             "width": 390,
-            "bandHeight": 1466,
+            "bandHeight": 1350,
             "glyphBoxPx": 6,
-            "coverScale": 1.4316,
+            "coverScale": 1.3184,
             "slack": {
-              "x": 783,
+              "x": 690,
               "y": 0
             },
             "textExtent": {
               "x0": 0.030999999999999996,
               "x1": 0.964,
               "y0": 0.133,
-              "y1": 0.976
+              "y1": 0.984
             },
             "positions": [
               {
                 "objectPositionX": 0,
-                "p90": 0.53,
-                "p99": 0.691,
-                "max": 0.827,
-                "shareOver60": 0.0546,
-                "apertureP99": 0.2083
+                "p90": 0.528,
+                "p99": 0.696,
+                "max": 0.833,
+                "shareOver60": 0.0574,
+                "apertureP99": 0.216
               },
               {
                 "objectPositionX": 0.25,
-                "p90": 0.55,
+                "p90": 0.545,
                 "p99": 0.718,
-                "max": 0.837,
-                "shareOver60": 0.0742,
-                "apertureP99": 0.2504
+                "max": 0.839,
+                "shareOver60": 0.0738,
+                "apertureP99": 0.25
               },
               {
                 "objectPositionX": 0.5,
-                "p90": 0.625,
-                "p99": 0.748,
-                "max": 0.843,
-                "shareOver60": 0.1099,
-                "apertureP99": 0.3475
+                "p90": 0.623,
+                "p99": 0.751,
+                "max": 0.854,
+                "shareOver60": 0.1091,
+                "apertureP99": 0.3031
               },
               {
                 "objectPositionX": 0.75,
-                "p90": 0.694,
-                "p99": 0.79,
-                "max": 0.851,
-                "shareOver60": 0.164,
-                "apertureP99": 0.3875
+                "p90": 0.691,
+                "p99": 0.789,
+                "max": 0.854,
+                "shareOver60": 0.1602,
+                "apertureP99": 0.3779
               },
               {
                 "objectPositionX": 1,
-                "p90": 0.731,
+                "p90": 0.726,
                 "p99": 0.797,
-                "max": 0.851,
-                "shareOver60": 0.1903,
-                "apertureP99": 0.4694
+                "max": 0.853,
+                "shareOver60": 0.1811,
+                "apertureP99": 0.4669
               }
             ],
             "atDefault": {
               "objectPositionX": 0.5,
               "p50": 0,
               "p75": 0,
-              "p90": 0.625,
-              "p99": 0.748,
-              "p999": 0.807,
-              "max": 0.843,
-              "shareNeedingNothing": 0.7513,
-              "shareOver60": 0.1099,
-              "shareOver80": 0.0016,
-              "apertureP99": 0.3475,
-              "samples": 113277
+              "p90": 0.623,
+              "p99": 0.751,
+              "p999": 0.811,
+              "max": 0.854,
+              "shareNeedingNothing": 0.7536,
+              "shareOver60": 0.1091,
+              "shareOver80": 0.0019,
+              "apertureP99": 0.3031,
+              "samples": 105225
             }
           },
           {
-            "viewport": "768x1318",
+            "viewport": "768x1225",
             "width": 768,
-            "bandHeight": 1318,
+            "bandHeight": 1225,
             "glyphBoxPx": 10,
-            "coverScale": 1.2871,
+            "coverScale": 1.1963,
             "slack": {
-              "x": 286,
+              "x": 212,
               "y": 0
             },
             "textExtent": {
               "x0": 0.024999999999999998,
               "x1": 0.974,
               "y0": 0.18200000000000002,
-              "y1": 0.961
+              "y1": 0.979
             },
             "positions": [
               {
                 "objectPositionX": 0,
-                "p90": 0.374,
-                "p99": 0.725,
-                "max": 0.82,
-                "shareOver60": 0.0458,
-                "apertureP99": 0.2954
+                "p90": 0.403,
+                "p99": 0.742,
+                "max": 0.844,
+                "shareOver60": 0.0511,
+                "apertureP99": 0.3287
               },
               {
                 "objectPositionX": 0.25,
-                "p90": 0.448,
-                "p99": 0.754,
-                "max": 0.845,
-                "shareOver60": 0.0604,
-                "apertureP99": 0.3089
+                "p90": 0.462,
+                "p99": 0.756,
+                "max": 0.843,
+                "shareOver60": 0.0615,
+                "apertureP99": 0.3477
               },
               {
                 "objectPositionX": 0.5,
-                "p90": 0.513,
-                "p99": 0.763,
+                "p90": 0.504,
+                "p99": 0.764,
                 "max": 0.844,
-                "shareOver60": 0.0722,
-                "apertureP99": 0.3671
+                "shareOver60": 0.0698,
+                "apertureP99": 0.3936
               },
               {
                 "objectPositionX": 0.75,
-                "p90": 0.546,
-                "p99": 0.773,
-                "max": 0.844,
-                "shareOver60": 0.0827,
-                "apertureP99": 0.4201
+                "p90": 0.537,
+                "p99": 0.771,
+                "max": 0.843,
+                "shareOver60": 0.0786,
+                "apertureP99": 0.4281
               },
               {
                 "objectPositionX": 1,
-                "p90": 0.581,
-                "p99": 0.781,
-                "max": 0.845,
-                "shareOver60": 0.0939,
-                "apertureP99": 0.4532
+                "p90": 0.563,
+                "p99": 0.778,
+                "max": 0.844,
+                "shareOver60": 0.0879,
+                "apertureP99": 0.4539
               }
             ],
             "atDefault": {
               "objectPositionX": 0.5,
               "p50": 0,
               "p75": 0,
-              "p90": 0.513,
-              "p99": 0.763,
-              "p999": 0.81,
+              "p90": 0.504,
+              "p99": 0.764,
+              "p999": 0.808,
               "max": 0.844,
-              "shareNeedingNothing": 0.7583,
-              "shareOver60": 0.0722,
-              "shareOver80": 0.0019,
-              "apertureP99": 0.3671,
-              "samples": 187610
+              "shareNeedingNothing": 0.7605,
+              "shareOver60": 0.0698,
+              "shareOver80": 0.0017,
+              "apertureP99": 0.3936,
+              "samples": 178485
             }
           }
         ]
@@ -851,18 +851,18 @@
       "media": null,
       "crop": {
         "mode": "aspect+focus",
-        "targetAspect": 1.7778,
+        "targetAspect": 1.5,
         "focusX": 0.5,
-        "focusY": 0.62,
+        "focusY": null,
         "pixels": {
           "left": 0,
-          "top": 160,
+          "top": 0,
           "width": 1536,
-          "height": 864
+          "height": 1024
         },
         "fractionOfSource": {
           "left": 0,
-          "top": 0.1563,
+          "top": 0,
           "right": 1,
           "bottom": 1
         }
@@ -881,7 +881,7 @@
       "fallback": "/brand/hero/hero-l-1536.webp",
       "intrinsic": {
         "width": 1536,
-        "height": 864
+        "height": 1024
       },
       "files": [
         {
@@ -889,8 +889,8 @@
           "publicPath": "/brand/hero/hero-l-960.avif",
           "format": "avif",
           "width": 960,
-          "height": 540,
-          "bytes": 106703,
+          "height": 640,
+          "bytes": 115120,
           "quality": 65
         },
         {
@@ -898,8 +898,8 @@
           "publicPath": "/brand/hero/hero-l-960.webp",
           "format": "webp",
           "width": 960,
-          "height": 540,
-          "bytes": 143572,
+          "height": 640,
+          "bytes": 153640,
           "quality": 85
         },
         {
@@ -907,8 +907,8 @@
           "publicPath": "/brand/hero/hero-l-1280.avif",
           "format": "avif",
           "width": 1280,
-          "height": 720,
-          "bytes": 167341,
+          "height": 853,
+          "bytes": 180792,
           "quality": 65
         },
         {
@@ -916,8 +916,8 @@
           "publicPath": "/brand/hero/hero-l-1280.webp",
           "format": "webp",
           "width": 1280,
-          "height": 720,
-          "bytes": 228070,
+          "height": 853,
+          "bytes": 242100,
           "quality": 85
         },
         {
@@ -925,17 +925,17 @@
           "publicPath": "/brand/hero/hero-l-1536.avif",
           "format": "avif",
           "width": 1536,
-          "height": 864,
-          "bytes": 273777,
-          "quality": 65
+          "height": 1024,
+          "bytes": 281214,
+          "quality": 63
         },
         {
           "name": "hero-l-1536.webp",
           "publicPath": "/brand/hero/hero-l-1536.webp",
           "format": "webp",
           "width": 1536,
-          "height": 864,
-          "bytes": 366494,
+          "height": 1024,
+          "bytes": 388604,
           "quality": 83
         }
       ],
@@ -943,87 +943,87 @@
         "name": "hero-soft-l.webp",
         "publicPath": "/brand/hero/hero-soft-l.webp",
         "width": 320,
-        "height": 180,
-        "bytes": 2072,
+        "height": 213,
+        "bytes": 2308,
         "cssEquivalentFilter": "blur(34px) saturate(0.78) brightness(1)",
-        "maxLocalLuma": 0.3826
+        "maxLocalLuma": 0.4512
       },
       "grade": {
         "brightness": 1,
         "ownSolvedBrightness": 1,
         "binding": true,
         "ungraded": {
-          "maxLocalLuma": 0.6928,
-          "requiredAlpha": 0.832
+          "maxLocalLuma": 0.7239,
+          "requiredAlpha": 0.835
         },
         "graded": {
-          "maxLocalLuma": 0.6928,
-          "requiredAlpha": 0.832
+          "maxLocalLuma": 0.7239,
+          "requiredAlpha": 0.835
         }
       },
       "scrim": {
-        "requiredAlpha": 0.834,
-        "base": 0.834,
-        "exit": 0.894,
+        "requiredAlpha": 0.835,
+        "base": 0.835,
+        "exit": 0.895,
         "bindingForeground": "--fg-muted",
         "scrimColor": "#14161A",
         "targetRatio": 4.5,
         "glyphBoxPx": 12,
-        "brightestPatchLuma": 0.7073,
+        "brightestPatchLuma": 0.728,
         "brightestPatchAt": {
-          "x": 905,
-          "y": 172
+          "x": 947,
+          "y": 90
         },
         "diagnostics": {
-          "maxPixelLuma": 0.9981,
-          "p999PixelLuma": 0.795,
+          "maxPixelLuma": 0.9975,
+          "p999PixelLuma": 0.794,
           "alphaIfGatedOnMaxPixel": 0.86
         },
         "perRegion": [
           {
             "cell": "top-left",
-            "maxLocalLuma": 0.3162,
+            "maxLocalLuma": 0.3161,
             "requiredAlpha": 0.744
           },
           {
             "cell": "top-centre",
-            "maxLocalLuma": 0.5509,
-            "requiredAlpha": 0.811
+            "maxLocalLuma": 0.4588,
+            "requiredAlpha": 0.79
           },
           {
             "cell": "top-right",
-            "maxLocalLuma": 0.6786,
-            "requiredAlpha": 0.829
+            "maxLocalLuma": 0.728,
+            "requiredAlpha": 0.835
           },
           {
             "cell": "middle-left",
-            "maxLocalLuma": 0.6718,
+            "maxLocalLuma": 0.6715,
             "requiredAlpha": 0.829
           },
           {
             "cell": "middle-centre",
-            "maxLocalLuma": 0.4086,
-            "requiredAlpha": 0.779
+            "maxLocalLuma": 0.5485,
+            "requiredAlpha": 0.811
           },
           {
             "cell": "middle-right",
-            "maxLocalLuma": 0.4777,
-            "requiredAlpha": 0.795
+            "maxLocalLuma": 0.7085,
+            "requiredAlpha": 0.834
           },
           {
             "cell": "bottom-left",
-            "maxLocalLuma": 0.4988,
+            "maxLocalLuma": 0.4976,
             "requiredAlpha": 0.8
           },
           {
             "cell": "bottom-centre",
-            "maxLocalLuma": 0.405,
+            "maxLocalLuma": 0.4046,
             "requiredAlpha": 0.776
           },
           {
             "cell": "bottom-right",
-            "maxLocalLuma": 0.4295,
-            "requiredAlpha": 0.784
+            "maxLocalLuma": 0.4292,
+            "requiredAlpha": 0.783
           }
         ],
         "achieved": [
@@ -1031,247 +1031,247 @@
             "token": "--fg",
             "hex": "#F2F1EE",
             "flatInkRatio": 16.04,
-            "ratioOverBrightestPatch": 10.63
+            "ratioOverBrightestPatch": 10.6
           },
           {
             "token": "--fg-muted",
             "hex": "#A3A2A8",
             "flatInkRatio": 7.15,
-            "ratioOverBrightestPatch": 4.74
+            "ratioOverBrightestPatch": 4.73
           },
           {
             "token": "--fg-brand",
             "hex": "#C2D2DE",
             "flatInkRatio": 11.76,
-            "ratioOverBrightestPatch": 7.75
+            "ratioOverBrightestPatch": 7.74
           }
         ],
         "measuredOn": "hero-l-960.avif",
         "preEncode": {
-          "requiredAlpha": 0.832,
-          "brightestPatchLuma": 0.6928,
-          "drift": 0.002
+          "requiredAlpha": 0.835,
+          "brightestPatchLuma": 0.7239,
+          "drift": 0
         }
       },
       "demand": {
         "viewports": [
           {
-            "viewport": "861x1371",
+            "viewport": "861x1257",
             "width": 861,
-            "bandHeight": 1371,
+            "bandHeight": 1257,
             "glyphBoxPx": 11,
-            "coverScale": 1.5868,
+            "coverScale": 1.2275,
             "slack": {
-              "x": 1576,
+              "x": 1025,
               "y": 0
             },
             "textExtent": {
               "x0": 0.024999999999999998,
               "x1": 0.971,
               "y0": 0.18100000000000002,
-              "y1": 0.9560000000000001
+              "y1": 0.981
             },
             "positions": [
               {
                 "objectPositionX": 0,
-                "p90": 0.289,
-                "p99": 0.734,
-                "max": 0.853,
-                "shareOver60": 0.0323,
-                "apertureP99": 0.2255
+                "p90": 0.348,
+                "p99": 0.709,
+                "max": 0.851,
+                "shareOver60": 0.0371,
+                "apertureP99": 0.2635
               },
               {
                 "objectPositionX": 0.25,
-                "p90": 0.116,
-                "p99": 0.715,
-                "max": 0.827,
-                "shareOver60": 0.0251,
-                "apertureP99": 0.2929
+                "p90": 0.423,
+                "p99": 0.749,
+                "max": 0.851,
+                "shareOver60": 0.0537,
+                "apertureP99": 0.3142
               },
               {
                 "objectPositionX": 0.5,
-                "p90": 0.536,
-                "p99": 0.779,
-                "max": 0.846,
-                "shareOver60": 0.0803,
-                "apertureP99": 0.4511
+                "p90": 0.558,
+                "p99": 0.782,
+                "max": 0.85,
+                "shareOver60": 0.0857,
+                "apertureP99": 0.4912
               },
               {
                 "objectPositionX": 0.75,
-                "p90": 0.59,
-                "p99": 0.783,
-                "max": 0.853,
-                "shareOver60": 0.0957,
-                "apertureP99": 0.5742
+                "p90": 0.62,
+                "p99": 0.798,
+                "max": 0.852,
+                "shareOver60": 0.1075,
+                "apertureP99": 0.6108
               },
               {
                 "objectPositionX": 1,
-                "p90": 0.393,
-                "p99": 0.757,
-                "max": 0.856,
-                "shareOver60": 0.0488,
-                "apertureP99": 0.6549
+                "p90": 0.592,
+                "p99": 0.805,
+                "max": 0.854,
+                "shareOver60": 0.0976,
+                "apertureP99": 0.6753
               }
             ],
             "atDefault": {
               "objectPositionX": 0.5,
               "p50": 0,
-              "p75": 0.01,
-              "p90": 0.536,
-              "p99": 0.779,
-              "p999": 0.816,
-              "max": 0.846,
-              "shareNeedingNothing": 0.7477,
-              "shareOver60": 0.0803,
-              "shareOver80": 0.004,
-              "apertureP99": 0.4511,
-              "samples": 217056
+              "p75": 0.061,
+              "p90": 0.558,
+              "p99": 0.782,
+              "p999": 0.809,
+              "max": 0.85,
+              "shareNeedingNothing": 0.732,
+              "shareOver60": 0.0857,
+              "shareOver80": 0.0022,
+              "apertureP99": 0.4912,
+              "samples": 205224
             }
           },
           {
-            "viewport": "1280x1018",
+            "viewport": "1280x800",
             "width": 1280,
-            "bandHeight": 1018,
+            "bandHeight": 800,
             "glyphBoxPx": 16,
-            "coverScale": 1.1782,
+            "coverScale": 0.8333,
             "slack": {
-              "x": 530,
-              "y": 0
+              "x": 0,
+              "y": 53
             },
             "textExtent": {
               "x0": 0.089,
               "x1": 0.906,
               "y0": 0.078,
-              "y1": 0.923
+              "y1": 0.958
             },
             "positions": [
               {
                 "objectPositionX": 0,
-                "p90": 0.429,
-                "p99": 0.75,
-                "max": 0.833,
-                "shareOver60": 0.0485,
-                "apertureP99": 0.4606
+                "p90": 0.668,
+                "p99": 0.812,
+                "max": 0.828,
+                "shareOver60": 0.1365,
+                "apertureP99": 0.6067
               },
               {
                 "objectPositionX": 0.25,
-                "p90": 0.405,
-                "p99": 0.745,
-                "max": 0.831,
-                "shareOver60": 0.045,
-                "apertureP99": 0.5262
+                "p90": 0.668,
+                "p99": 0.812,
+                "max": 0.828,
+                "shareOver60": 0.1365,
+                "apertureP99": 0.6067
               },
               {
                 "objectPositionX": 0.5,
-                "p90": 0.448,
-                "p99": 0.752,
-                "max": 0.831,
-                "shareOver60": 0.0532,
-                "apertureP99": 0.5603
+                "p90": 0.668,
+                "p99": 0.812,
+                "max": 0.828,
+                "shareOver60": 0.1365,
+                "apertureP99": 0.6067
               },
               {
                 "objectPositionX": 0.75,
-                "p90": 0.472,
-                "p99": 0.753,
-                "max": 0.832,
-                "shareOver60": 0.0581,
-                "apertureP99": 0.5772
+                "p90": 0.668,
+                "p99": 0.812,
+                "max": 0.828,
+                "shareOver60": 0.1365,
+                "apertureP99": 0.6067
               },
               {
                 "objectPositionX": 1,
-                "p90": 0.467,
-                "p99": 0.753,
-                "max": 0.832,
-                "shareOver60": 0.0584,
-                "apertureP99": 0.6201
+                "p90": 0.668,
+                "p99": 0.812,
+                "max": 0.828,
+                "shareOver60": 0.1365,
+                "apertureP99": 0.6067
               }
             ],
             "atDefault": {
               "objectPositionX": 0.5,
               "p50": 0,
-              "p75": 0,
-              "p90": 0.448,
-              "p99": 0.752,
-              "p999": 0.795,
-              "max": 0.831,
-              "shareNeedingNothing": 0.766,
-              "shareOver60": 0.0532,
-              "shareOver80": 0.0006,
-              "apertureP99": 0.5603,
-              "samples": 225844
+              "p75": 0.263,
+              "p90": 0.668,
+              "p99": 0.812,
+              "p999": 0.82,
+              "max": 0.828,
+              "shareNeedingNothing": 0.6707,
+              "shareOver60": 0.1365,
+              "shareOver80": 0.0216,
+              "apertureP99": 0.6067,
+              "samples": 184972
             }
           },
           {
-            "viewport": "1600x1042",
+            "viewport": "1600x900",
             "width": 1600,
-            "bandHeight": 1042,
+            "bandHeight": 900,
             "glyphBoxPx": 20,
-            "coverScale": 1.206,
+            "coverScale": 1.0417,
             "slack": {
-              "x": 252,
-              "y": 0
+              "x": 0,
+              "y": 167
             },
             "textExtent": {
               "x0": 0.167,
               "x1": 0.8290000000000001,
               "y0": 0.08399999999999999,
-              "y1": 0.916
+              "y1": 0.959
             },
             "positions": [
               {
                 "objectPositionX": 0,
-                "p90": 0.402,
-                "p99": 0.738,
-                "max": 0.825,
-                "shareOver60": 0.0432,
-                "apertureP99": 0.5456
+                "p90": 0.597,
+                "p99": 0.8,
+                "max": 0.816,
+                "shareOver60": 0.0982,
+                "apertureP99": 0.6093
               },
               {
                 "objectPositionX": 0.25,
-                "p90": 0.434,
-                "p99": 0.746,
-                "max": 0.823,
-                "shareOver60": 0.0492,
-                "apertureP99": 0.5592
+                "p90": 0.597,
+                "p99": 0.8,
+                "max": 0.816,
+                "shareOver60": 0.0982,
+                "apertureP99": 0.6093
               },
               {
                 "objectPositionX": 0.5,
-                "p90": 0.444,
-                "p99": 0.745,
-                "max": 0.825,
-                "shareOver60": 0.0508,
-                "apertureP99": 0.5596
+                "p90": 0.597,
+                "p99": 0.8,
+                "max": 0.816,
+                "shareOver60": 0.0982,
+                "apertureP99": 0.6093
               },
               {
                 "objectPositionX": 0.75,
-                "p90": 0.463,
-                "p99": 0.748,
-                "max": 0.823,
-                "shareOver60": 0.0546,
-                "apertureP99": 0.5676
+                "p90": 0.597,
+                "p99": 0.8,
+                "max": 0.816,
+                "shareOver60": 0.0982,
+                "apertureP99": 0.6093
               },
               {
                 "objectPositionX": 1,
-                "p90": 0.463,
-                "p99": 0.748,
-                "max": 0.825,
-                "shareOver60": 0.0547,
-                "apertureP99": 0.5839
+                "p90": 0.597,
+                "p99": 0.8,
+                "max": 0.816,
+                "shareOver60": 0.0982,
+                "apertureP99": 0.6093
               }
             ],
             "atDefault": {
               "objectPositionX": 0.5,
               "p50": 0,
-              "p75": 0,
-              "p90": 0.444,
-              "p99": 0.745,
-              "p999": 0.788,
-              "max": 0.825,
-              "shareNeedingNothing": 0.7708,
-              "shareOver60": 0.0508,
-              "shareOver80": 0.0003,
-              "apertureP99": 0.5596,
-              "samples": 230020
+              "p75": 0.16,
+              "p90": 0.597,
+              "p99": 0.8,
+              "p999": 0.813,
+              "max": 0.816,
+              "shareNeedingNothing": 0.7009,
+              "shareOver60": 0.0982,
+              "shareOver80": 0.0098,
+              "apertureP99": 0.6093,
+              "samples": 208820
             }
           }
         ]
@@ -1293,239 +1293,239 @@
         ],
         "stepP95ByColumn": {
           "0.25": [
-            12.74,
-            32.52,
-            26.69,
-            21.03,
-            23.46,
-            27.97,
-            12.94,
-            33.62,
-            39.14,
-            38.34,
-            41.3,
-            41,
-            42.28,
-            40.87,
-            16.07,
-            44.39
+            13,
+            31.88,
+            25.78,
+            24.43,
+            26.25,
+            28.83,
+            28.87,
+            32.95,
+            37.56,
+            37.5,
+            40.11,
+            41.07,
+            43.74,
+            44.55,
+            44.24,
+            45.2
           ],
           "0.35": [
-            10.69,
-            27.45,
-            22.48,
-            17.72,
-            19.77,
-            23.57,
-            10.85,
-            28.37,
-            33.05,
-            32.38,
-            34.89,
-            34.66,
-            35.74,
-            34.53,
-            13.48,
-            37.52
+            10.92,
+            26.9,
+            21.75,
+            20.6,
+            22.14,
+            24.3,
+            24.36,
+            27.82,
+            31.74,
+            31.66,
+            33.88,
+            34.71,
+            36.98,
+            37.67,
+            37.4,
+            38.22
           ],
           "0.45": [
-            8.61,
-            22.26,
-            18.19,
-            14.35,
-            16.02,
-            19.08,
-            8.74,
-            23,
-            26.83,
-            26.29,
-            28.34,
-            28.15,
-            29.04,
-            28.04,
-            10.86,
-            30.5
+            8.81,
+            21.81,
+            17.63,
+            16.69,
+            17.95,
+            19.71,
+            19.76,
+            22.58,
+            25.78,
+            25.7,
+            27.51,
+            28.2,
+            30.06,
+            30.63,
+            30.41,
+            31.07
           ],
           "0.55": [
-            6.51,
-            16.96,
-            13.82,
-            10.89,
-            12.18,
-            14.49,
-            6.61,
-            17.51,
-            20.45,
-            20.05,
-            21.62,
-            21.47,
-            22.16,
-            21.38,
-            8.21,
-            23.29
+            6.66,
+            16.61,
+            13.42,
+            12.7,
+            13.67,
+            15.02,
+            15.05,
+            17.21,
+            19.68,
+            19.59,
+            20.99,
+            21.53,
+            22.95,
+            23.39,
+            23.23,
+            23.73
           ],
           "0.65": [
-            4.38,
-            11.52,
-            9.35,
-            7.36,
-            8.26,
-            9.81,
-            4.45,
-            11.88,
-            13.9,
-            13.63,
-            14.71,
-            14.6,
-            15.09,
-            14.54,
-            5.52,
-            15.86
+            4.48,
+            11.27,
+            9.11,
+            8.62,
+            9.28,
+            10.2,
+            10.22,
+            11.7,
+            13.39,
+            13.31,
+            14.27,
+            14.65,
+            15.63,
+            15.93,
+            15.82,
+            16.17
           ],
           "0.75": [
-            2.23,
-            5.9,
-            4.77,
-            3.76,
-            4.23,
-            5.01,
             2.26,
-            6.09,
-            7.14,
-            7.01,
-            7.57,
-            7.51,
-            7.77,
-            7.47,
-            2.8,
-            8.17
+            5.78,
+            4.67,
+            4.42,
+            4.76,
+            5.24,
+            5.25,
+            6.01,
+            6.9,
+            6.84,
+            7.34,
+            7.55,
+            8.05,
+            8.21,
+            8.16,
+            8.34
           ]
         },
         "stepP95ByRow": {
           "0.25": [
-            45.15,
-            24.75,
-            25.19,
-            32.71,
-            44.52,
-            40.93,
-            26.9,
-            17.65,
-            33.98,
-            28.98,
-            27.17,
-            16.79,
-            16.04,
-            21.97,
-            31.35,
-            23.39
+            38.72,
+            44.26,
+            46.89,
+            35.88,
+            25.02,
+            32.77,
+            43.32,
+            36.76,
+            13.88,
+            34.59,
+            30.82,
+            27.41,
+            20.6,
+            24.96,
+            32.85,
+            20.45
           ],
           "0.35": [
-            38.17,
-            20.86,
-            21.24,
-            27.6,
-            37.65,
-            34.58,
-            22.67,
-            14.8,
-            28.66,
-            24.41,
-            22.91,
-            14.11,
-            13.45,
-            18.44,
-            26.41,
-            19.63
+            32.72,
+            37.42,
+            39.66,
+            30.28,
+            21.08,
+            27.64,
+            36.62,
+            31.05,
+            11.65,
+            29.17,
+            25.99,
+            23.1,
+            17.29,
+            21.01,
+            27.7,
+            17.2
           ],
           "0.45": [
-            31.03,
-            16.91,
-            17.21,
-            22.38,
-            30.61,
-            28.09,
-            18.36,
-            11.92,
-            23.23,
-            19.75,
-            18.56,
-            11.39,
-            10.83,
-            14.87,
-            21.38,
-            15.8
+            26.58,
+            30.42,
+            32.25,
+            24.55,
+            17.07,
+            22.4,
+            29.76,
+            25.21,
+            9.4,
+            23.65,
+            21.05,
+            18.71,
+            13.93,
+            17,
+            22.44,
+            13.89
           ],
           "0.55": [
-            23.7,
-            12.86,
-            13.09,
+            20.29,
+            23.24,
+            24.65,
+            18.69,
+            12.97,
             17.04,
-            23.39,
-            21.43,
-            13.96,
-            9.01,
-            17.67,
-            15,
-            14.12,
-            8.63,
-            8.18,
-            11.24,
-            16.24,
-            11.93
+            22.72,
+            19.22,
+            7.04,
+            17.99,
+            16.01,
+            14.21,
+            10.53,
+            12.9,
+            17.07,
+            10.53
           ],
           "0.65": [
-            16.15,
-            8.72,
-            8.88,
+            13.81,
+            15.84,
+            16.8,
+            12.68,
+            8.78,
+            11.56,
+            15.48,
+            13.07,
+            4.69,
+            12.2,
+            10.85,
+            9.62,
+            7.08,
+            8.73,
             11.57,
-            15.95,
-            14.58,
-            9.46,
-            6.06,
-            11.98,
-            10.15,
-            9.57,
-            5.82,
-            5.5,
-            7.56,
-            10.99,
-            8.03
+            7.11
           ],
           "0.75": [
-            8.32,
-            4.47,
-            4.55,
+            7.11,
+            8.17,
+            8.67,
+            6.5,
+            4.49,
             5.92,
-            8.23,
-            7.5,
-            4.85,
-            3.07,
-            6.14,
-            5.18,
-            4.9,
-            2.96,
-            2.79,
-            3.84,
-            5.61,
-            4.07
+            7.98,
+            6.72,
+            2.37,
+            6.25,
+            5.55,
+            4.91,
+            3.59,
+            4.46,
+            5.92,
+            3.62
           ]
         },
         "worstStepP95": {
-          "0.25": 45.15,
-          "0.35": 38.17,
-          "0.45": 31.03,
-          "0.55": 23.7,
-          "0.65": 16.15,
-          "0.75": 8.32
+          "0.25": 46.89,
+          "0.35": 39.66,
+          "0.45": 32.25,
+          "0.55": 24.65,
+          "0.65": 16.8,
+          "0.75": 8.67
         },
         "spanAtOneJndPx": {
-          "0.25": 475,
-          "0.35": 401,
-          "0.45": 326,
-          "0.55": 249,
-          "0.65": 170,
-          "0.75": 88
+          "0.25": 493,
+          "0.35": 417,
+          "0.45": 339,
+          "0.55": 259,
+          "0.65": 177,
+          "0.75": 92
         },
         "claim": "For a veil that steps from `coreAlpha` inside the text column to the listed gutter alpha outside it: the 95th percentile, along each of `columns` evenly spaced columns (a VERTICAL boundary) and each of `rows` evenly spaced rows (a HORIZONTAL one), of the CIE L* difference between the two composites. `spanAtOneJndPx` is 10.5 x the worst of both — the CSS px a smoothstep needs to carry that step with its peak gradient under one JND. Indices are crop fractions: column i spans [i/columns, (i+1)/columns] of the crop WIDTH, row j the same of its HEIGHT, and mapping a CSS coordinate into one of them is `object-fit: cover` arithmetic the consumer owns."
       }

@@ -43,9 +43,25 @@ export type ThresholdProps = {
  * already has — the 2px accent rule above the news list in docs/css/news.css.
  *
  *     0.585                                        <- cleared, display face
- *     MAMMO-CLIP, FINE-TUNED — THE ONLY ARM OF 24
+ *     Fine-tuned, the only arm of 24 to clear it   <- its label, body face
  *     ==========================================   <- the 2px rule, --fg-accent
- *     P@1 0.487   HELD-OUT MAJORITY-CLASS FLOOR    <- the threshold, mono
+ *     P@1 0.487   held-out majority-class floor    <- the threshold: figure in
+ *                                                     mono, label in body
+ *     0.513 frozen → 0.585 fine-tuned, …           <- the qualification, body
+ *
+ * THE SENTENCES ARE BODY FACE AND THE BARE FIGURE IS MONO, and the split is
+ * the rule rather than a look: mono is the measurement voice, so it is
+ * reserved for the run that IS a measurement and nothing else — "P@1 0.487".
+ * A label in tracked uppercase mono was borrowing the authority of a readout
+ * for a sentence, and read as a template's eyebrow rather than as a caption.
+ * Case and weight now carry the hierarchy.
+ *
+ * THE `cleared` LINE IS A SENTENCE, NOT A READOUT. It carries figures — "0.513
+ * frozen → 0.585 fine-tuned, the decoder frozen throughout" — but it is a
+ * clause with a verb in it, and prose set in a code face was the one tell left
+ * in the hero once the buttons went to sentence case. It is body face at
+ * --text-fine now, on every surface that renders one (the hero and the 404),
+ * for the same reason the other two labels already were.
  *
  * THE TRAP THIS CLOSES — and it is the reason this is a component and not a
  * `<hr className="threshold-rule">` an author writes by hand: this line is a
@@ -96,7 +112,7 @@ export function Threshold({
             </strong>
           )}
           {clearedLabel !== undefined && (
-            <span className="mt-[8px] block font-mono text-micro uppercase text-[color:var(--fg-muted)]">
+            <span className="mt-[8px] block text-data text-[color:var(--fg-muted)]">
               {clearedLabel}
             </span>
           )}
@@ -109,13 +125,13 @@ export function Threshold({
         <span className="font-mono text-data text-[color:var(--fg-accent)]">
           {value}
         </span>
-        <span className="font-mono text-fine uppercase tracking-[0.14em] text-[color:var(--fg-muted)]">
+        <span className="text-fine text-[color:var(--fg-muted)]">
           {label}
         </span>
       </div>
 
       {cleared !== undefined && (
-        <p className="mt-[6px] font-mono text-fine text-[color:var(--fg-muted)]">
+        <p className="mt-[6px] text-fine text-[color:var(--fg-muted)]">
           {cleared}
         </p>
       )}

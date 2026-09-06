@@ -159,6 +159,15 @@ export type LimitProps = {
    * band that uses it says why in a comment beside the call.
    */
   children?: ReactNode;
+  /**
+   * The block's label. Defaults to the record-quoting form every paper band
+   * uses; the hero passes the owner's own label for it, "Methods &
+   * limitations", because that band sets its labels in sentence case and has
+   * already said, in its own titles, what kind of thing each figure is. A
+   * label is the one string here a band may re-word — the sentences under it
+   * are never passed in.
+   */
+  label?: string;
   className?: string;
 };
 
@@ -170,7 +179,12 @@ export type LimitProps = {
  * every ground (paper 7.43:1, ink 5.68:1, crimson 5.60:1). A coloured “warning
  * box” would need a second hue nothing has measured.
  */
-export function Limit({ ids, children, className }: LimitProps) {
+export function Limit({
+  ids,
+  children,
+  label = 'Stated limits — quoted from the record',
+  className,
+}: LimitProps) {
   return (
     <aside
       className={[
@@ -188,7 +202,7 @@ export function Limit({ ids, children, className }: LimitProps) {
         file can do.
       */}
       <p className="font-mono text-micro uppercase text-[color:var(--fg-accent)]">
-        Stated limits — quoted from the record
+        {label}
       </p>
       <ul className="mt-[10px] grid gap-[8px]">
         {ids.map((id) => (
@@ -255,6 +269,8 @@ export type EvidenceLinkProps = {
   /** Overrides the artifact's own title. Use it to make the verb explicit. */
   label?: string;
   className?: string;
+  /** Forwarded to `<Btn>`; see its `face`. */
+  face?: 'mono' | 'body';
 };
 
 /**
@@ -269,7 +285,7 @@ export type EvidenceLinkProps = {
  * External links get `rel="noopener noreferrer"` and `target="_blank"`;
  * anything under this origin opens in place.
  */
-export function EvidenceLink({ id, label, className }: EvidenceLinkProps) {
+export function EvidenceLink({ id, label, className, face }: EvidenceLinkProps) {
   const link = artifactLink(id);
   const text = label ?? link.title;
 
@@ -292,6 +308,7 @@ export function EvidenceLink({ id, label, className }: EvidenceLinkProps) {
       href={link.href}
       variant="quiet"
       className={className}
+      face={face}
       {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
     >
       {text}

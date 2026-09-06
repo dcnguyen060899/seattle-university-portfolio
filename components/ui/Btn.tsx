@@ -14,6 +14,14 @@ export type BtnProps = {
   target?: string;
   rel?: string;
   className?: string;
+  /**
+   * The label's face. `mono` is the default and the site-wide idiom: tracked
+   * small caps at --text-micro. `body` sets the label as a sentence-case
+   * phrase in Inter 500 at 14px, for a surface where every other tracked cap
+   * has been taken out — the hero — and the buttons would otherwise be the
+   * last thing on it still shaped like a form control.
+   */
+  face?: 'mono' | 'body';
 };
 
 /**
@@ -52,9 +60,12 @@ export function Btn({
   target,
   rel,
   className,
+  face = 'mono',
 }: BtnProps) {
   const shared = cx(
-    'font-mono text-micro uppercase no-underline',
+    face === 'body'
+      ? 'font-body text-[0.875rem] leading-[1.4] font-[500] no-underline'
+      : 'font-mono text-micro uppercase no-underline',
     'transition-[background-color,color,border-color,text-decoration-color] duration-200 ease-brand',
     'motion-reduce:transition-none',
   );
@@ -62,13 +73,15 @@ export function Btn({
   const skin =
     variant === 'solid'
       ? cx(
-          'inline-block rounded-brand px-[22px] py-[14px]',
+          'inline-block rounded-brand',
+          face === 'body' ? 'px-[20px] py-[12px]' : 'px-[22px] py-[14px]',
           'bg-[var(--fg)] text-[color:var(--ground)]',
           'hover:bg-[var(--fg-accent)]',
         )
       : variant === 'ghost'
         ? cx(
-            'inline-block rounded-brand px-[22px] py-[14px]',
+            'inline-block rounded-brand',
+            face === 'body' ? 'px-[20px] py-[12px]' : 'px-[22px] py-[14px]',
             'border border-[color:var(--edge)] text-[color:var(--fg)]',
             'hover:border-[color:var(--fg-accent)] hover:text-[color:var(--fg-accent)]',
           )

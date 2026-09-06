@@ -224,6 +224,18 @@
                Menlo, Monaco, Consolas, monospace;
   --font-sans: var(--font-body);
 
+  /* THE NAME'S FACE. A serif with exactly two jobs: the owner's name in the
+     hero, and the three evidence titles beside it. It is not the display
+     face — that is Montserrat, for the reason app/layout.tsx gives — and it
+     must not reach a band heading, the lede or any institutional surface.
+     Newsreader carries an optical-size axis, so `font-optical-sizing: auto`
+     (the default) gives the 64px name a display cut and the 22px titles a
+     text cut from the same file. Georgia is the fallback because it is the
+     one serif every platform ships that was drawn for a screen.
+     --font-newsreader is published by next/font in app/layout.tsx. */
+  --font-serif: var(--font-newsreader, "Newsreader"), Georgia, "Times New Roman",
+                Times, serif;
+
   /* Scale. Weight / leading / tracking travel WITH the size, in the
      reference's --text-*--line-height idiom, so a heading cannot be set at
      the wrong weight by omission. */
@@ -253,6 +265,15 @@
   --text-stat--line-height: 1;
   --text-stat--letter-spacing: -0.02em;
   --text-stat--font-weight: 200;
+
+  /* The SERIF's text step — an evidence title. Sits in the gap rule 2 leaves
+     between --text-h3 (20px, body) and --text-h2 (26px, display), which the
+     geometric display face may not enter and a serif text cut is drawn for.
+     Only --font-serif sets this step. */
+  --text-title: clamp(1.25rem, 1.75vw, 1.4375rem);   /*  20 →  23px */
+  --text-title--line-height: 1.2;
+  --text-title--letter-spacing: -0.005em;
+  --text-title--font-weight: 400;
 
   --text-lede: clamp(1.0625rem, 1.35vw, 1.1875rem);  /*  17 →  19px */
   --text-lede--line-height: 1.6;
@@ -339,6 +360,7 @@
   --crimson-lift: var(--color-crimson-lift);
   --crimson-wash: var(--color-crimson-wash);
   --display: var(--font-display);
+  --serif: var(--font-serif);
   --body: var(--font-body);
   --mono: var(--font-mono);
   --ease: var(--ease-brand);

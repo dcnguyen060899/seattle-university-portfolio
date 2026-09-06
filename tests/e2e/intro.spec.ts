@@ -330,6 +330,136 @@ const PHOTO_VISIBLE_MIN_MEAN = 0.012
 /** Between the measured blurred (0.0263) and sharp (0.0774) states. */
 const BLUR_SHARP_DIVIDE = 0.045
 
+/*
+  ── THE BLUR JUDGEMENT IS RELATIVE, NOT A DIVIDE (2026-09-06) ──────────────
+
+  BLUR_SHARP_DIVIDE was calibrated on the old 16:9 desktop crop, where the
+  sample band held sky and masonry and a blurred frame measured 0.026. The
+  3:2 rung that shipped on 2026-09-06 puts the sunset's gradient under the
+  fixed SAMPLE_BAND, and a gradient survives a 34px Gaussian: the BAKED SOFT
+  copy alone measures 0.122 there (the sharp copy alone, 0.224). "Spread
+  under 0.045" therefore stopped describing a soft photograph on this page —
+  it described the old crop — and a divide re-tuned to this crop would break
+  on the next one.
+
+  So §5.1 now measures the two things it is choosing between IN THE SAME
+  PAGE: with the `.sharp` layer forced to opacity 0 (the soft copy alone) and
+  to 1 (the sharp copy alone), around each sample of what is actually shown.
+  SOFT_SHARE is where the shown spread sits between those two references —
+  0 is the soft copy exactly, 1 the sharp copy exactly — and it survives any
+  re-crop or re-grade because both references move with it.
+
+  MEASURED, this build, 1280x800: during the reveal shown 0.143, soft 0.123,
+  sharp 0.225 — a share of 0.19-0.20. That is not noise: the intro holds
+  --focus at 0.78, so `.sharp` sits at opacity 0.22 behind the reveal ON
+  PURPOSE (commit 5872de4, "thin the veil to 23% behind the reveal"), and the
+  spread blends about linearly (0.22·0.225 + 0.78·0.123 = 0.145). After the
+  intro: shown 0.106, soft 0.059, sharp 0.106 — a share of 1.00.
+*/
+
+/**
+ * The most of the sharp copy the reveal may show through: a third of the way
+ * from soft to sharp. The midpoint is 0.5, so this is "clearly nearer soft"
+ * with a margin; the design's 22% sits at ~0.20, and nudging the held --focus
+ * to 0.67 (a third of the sharp copy) is where this trips.
+ */
+const SOFT_SHARE_MAX = 1 / 3
+/**
+ * And an absolute cap on how far the shown spread may sit above the soft
+ * reference — the "within a small tolerance of the soft value" half of the
+ * claim, so a huge soft→sharp gap cannot hide a visibly sharp picture behind
+ * a small share. Measured 0.020 (22% of a 0.102 gap); 0.03 trips at ~30%.
+ */
+const SOFT_TOLERANCE = 0.03
+/** After the intro the shown frame must be the sharp copy: at least two thirds
+ *  of the way from soft to sharp (measured 1.00 — --focus resolves to 0). */
+const SHARP_SHARE_MIN = 2 / 3
+/**
+ * The references must actually differ for a share to mean anything. Measured
+ * gaps: 0.102 during the reveal (23% veil), 0.047 after it (53% veil).
+ */
+const MIN_REFERENCE_GAP = 0.02
+/**
+ * Four screenshots make one sample, and the page keeps animating between
+ * them. A sample is only trusted when the shown frame measured the same
+ * before and after its two references. Two things move it: the mark's own
+ * strokes crossing the sample band as they draw (measured 0.005 between the
+ * first and fourth shot), and the veil settling from 23% to 53% as the
+ * reveal ends (measured 0.07, and the references cross each other). 0.01
+ * sits between them — twice the draw's drift, a seventh of the settle's —
+ * so the samples taken while --focus is held are judged and the dissolve
+ * sample, which is not the window the requirement speaks about, is not.
+ */
+const STABLE_EPSILON = 0.01
+
+/**
+ * The `.sharp` layer of components/site/hero.module.css — the promoted div
+ * whose opacity is `calc(1 - var(--focus))`. CSS modules hash the file and
+ * keep the local name, so the class ends in `sharp` in every build.
+ */
+const SHARP_LAYER = '#top [class*="sharp"]'
+
+interface Reference {
+  /** The composited frame as the reader sees it. */
+  shown: Structure
+  /** `.sharp` forced to opacity 0: the baked soft copy alone. */
+  soft: Structure
+  /** `.sharp` forced to opacity 1: the sharp copy alone. */
+  sharp: Structure
+  /** The shown frame again, after both forces were lifted. */
+  again: Structure
+}
+
+/** Where `shown` sits between the two references: 0 soft, 1 sharp. */
+const shareOf = (r: Reference): number =>
+  (r.shown.spread - r.soft.spread) / (r.sharp.spread - r.soft.spread)
+const gapOf = (r: Reference): number => r.sharp.spread - r.soft.spread
+const isStable = (r: Reference): boolean => Math.abs(r.shown.spread - r.again.spread) <= STABLE_EPSILON
+
+const describeRef = (r: Reference): string =>
+  `shown ${r.shown.spread.toFixed(4)} · soft ${r.soft.spread.toFixed(4)} · sharp ${r.sharp.spread.toFixed(4)} · ` +
+  `share ${shareOf(r).toFixed(2)} · again ${r.again.spread.toFixed(4)}`
+
+/**
+ * Forces the `.sharp` layer's opacity through an inline `!important` so it
+ * beats the stylesheet's calc(), and RESTORES it with `null`. Two rAFs so the
+ * compositor has painted the change before the screenshot.
+ */
+async function forceSharp(page: Page, opacity: number | null): Promise<void> {
+  const count = await page.evaluate(
+    ({ selector, value }) => {
+      const layers = document.querySelectorAll<HTMLElement>(selector)
+      for (const el of Array.from(layers)) {
+        if (value === null) el.style.removeProperty('opacity')
+        else el.style.setProperty('opacity', String(value), 'important')
+      }
+      return layers.length
+    },
+    { selector: SHARP_LAYER, value: opacity },
+  )
+  expect(count, `expected exactly one .sharp layer at ${SHARP_LAYER}`).toBe(1)
+  await page.evaluate(
+    () => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))),
+  )
+}
+
+/** One sample of the frame, bracketed by its soft and sharp references. Every
+ *  force is lifted before this returns, whatever it measured. */
+async function sampleWithReferences(page: Page): Promise<Reference> {
+  const shown = await sampleStructure(page)
+  try {
+    await forceSharp(page, 0)
+    const soft = await sampleStructure(page)
+    await forceSharp(page, 1)
+    const sharp = await sampleStructure(page)
+    await forceSharp(page, null)
+    const again = await sampleStructure(page)
+    return { shown, soft, sharp, again }
+  } finally {
+    await forceSharp(page, null)
+  }
+}
+
 const srgb = (v: number): number => {
   const c = v / 255
   return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
@@ -346,7 +476,10 @@ interface Structure {
   pixels: number
 }
 
-function structureOf(image: DecodedImage, rect: typeof SAMPLE_BAND): Structure {
+function structureOf(
+  image: DecodedImage,
+  rect: { x: number; y: number; width: number; height: number },
+): Structure {
   const values: number[] = []
   const x1 = Math.min(image.width, rect.x + rect.width)
   const y1 = Math.min(image.height, rect.y + rect.height)
@@ -374,8 +507,12 @@ const describe = (s: Structure): string =>
   `spread ${s.spread.toFixed(5)} · ${s.pixels}px`
 
 async function sampleStructure(page: Page): Promise<Structure> {
-  const image = decodePng(await page.screenshot())
-  return structureOf(image, SAMPLE_BAND)
+  // Clipped to the band: the same pixels as cropping a full-viewport
+  // screenshot, at a sixth of the encode + decode cost. §5.1 takes four of
+  // these per sample and has to fit three samples inside the draw while the
+  // rest of the suite is running.
+  const image = decodePng(await page.screenshot({ clip: SAMPLE_BAND }))
+  return structureOf(image, { ...SAMPLE_BAND, x: 0, y: 0 })
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
@@ -667,14 +804,17 @@ test.describe('§5 the intro plays over the BLURRED photograph, not over black',
 
     // Sample the COMPOSITED frame repeatedly while the animation runs. Every
     // sample must show a photograph, and every sample must show it defocused.
-    const during: Structure[] = []
+    // Each sample is bracketed by its own soft and sharp references — see
+    // THE BLUR JUDGEMENT IS RELATIVE above.
+    const during: Reference[] = []
     for (let i = 0; i < 12; i += 1) {
       // Bounded by the DRAW, not by the overlay's visibility — see
       // introIsDrawing. Everything in `during` is a frame the mark was still
       // being written on, which is the window the requirement speaks about.
       if (!(await introIsDrawing(page))) break
-      during.push(await sampleStructure(page))
-      await page.waitForTimeout(120)
+      // Four screenshots per sample is already ~half a second of the draw;
+      // no extra wait between samples.
+      during.push(await sampleWithReferences(page))
     }
 
     expect(
@@ -682,7 +822,8 @@ test.describe('§5 the intro plays over the BLURRED photograph, not over black',
       'the intro finished before it could be sampled — it is too fast to measure, or it never painted',
     ).toBeGreaterThanOrEqual(3)
 
-    for (const [i, s] of during.entries()) {
+    for (const [i, r] of during.entries()) {
+      const s = r.shown
       // (a) NOT BLACK, NOT A FLAT GROUND. An opaque ground measures spread 0
       //     and mean 0.0043; even a 92%-opaque scrim only reaches spread
       //     0.00125. A visible photograph cannot look like either.
@@ -696,13 +837,39 @@ test.describe('§5 the intro plays over the BLURRED photograph, not over black',
         `sample ${i}: no photographic structure behind the intro — this is a flat ground, not a ` +
           `veiled image. ${describe(s)}`,
       ).toBeGreaterThan(PHOTO_VISIBLE_MIN_SPREAD)
+    }
 
-      // (b) AND IT IS BLURRED. "mờ mờ" — softly visible, not the sharp copy.
+    // (b) AND IT IS BLURRED. "mờ mờ" — softly visible, not the sharp copy.
+    //     Judged against the soft and sharp copies measured in this same
+    //     page, on the samples the page held still for (the veil settles as
+    //     the reveal ends, and a sample whose frame moved between its two
+    //     references is not evidence either way).
+    // The last sample usually lands on the dissolve and is unstable by
+    // design; the ones before it are the reveal holding --focus, and every
+    // one of those is judged. None at all means nothing was measured.
+    const stable = during.filter(isStable)
+    expect(
+      stable.map(describeRef),
+      `no sample held still long enough to be judged — every one of ${during.length} moved by more ` +
+        `than ${STABLE_EPSILON} between its shown frames:\n  ${during.map(describeRef).join('\n  ')}`,
+    ).not.toHaveLength(0)
+    for (const [i, r] of stable.entries()) {
       expect(
-        s.spread,
-        `sample ${i}: the photograph behind the intro is SHARP, but the requirement is that it ` +
-          `stays soft for the whole animation and only then resolves. ${describe(s)}`,
-      ).toBeLessThan(BLUR_SHARP_DIVIDE)
+        gapOf(r),
+        `sample ${i}: the soft and sharp copies measure the same in the sample band, so nothing here ` +
+          `can tell blur from focus — move SAMPLE_BAND or re-check the baked soft bitmap. ${describeRef(r)}`,
+      ).toBeGreaterThan(MIN_REFERENCE_GAP)
+      expect(
+        shareOf(r),
+        `sample ${i}: the photograph behind the intro is nearer the SHARP copy than the soft one, but ` +
+          `the requirement is that it stays soft for the whole animation and only then resolves. ` +
+          `The reveal holds --focus at 0.78 (a 0.22 share); this is where that hold is checked. ${describeRef(r)}`,
+      ).toBeLessThanOrEqual(SOFT_SHARE_MAX)
+      expect(
+        r.shown.spread - r.soft.spread,
+        `sample ${i}: the shown frame sits ${(r.shown.spread - r.soft.spread).toFixed(4)} above the soft ` +
+          `copy alone — more than the ${SOFT_TOLERANCE} a 22% sharp share accounts for. ${describeRef(r)}`,
+      ).toBeLessThanOrEqual(SOFT_TOLERANCE)
     }
 
     // (c) AND IT RESOLVES. Once the intro is gone the hero is the sharp copy.
@@ -714,28 +881,44 @@ test.describe('§5 the intro plays over the BLURRED photograph, not over black',
     await waitIntroGone(page)
     await page.waitForTimeout(400)
 
-    const after = await sampleStructure(page)
+    const after = await sampleWithReferences(page)
     expect(
-      after.spread,
+      after.shown.spread,
       `the hero never resolved to the sharp photograph after the intro. ` +
-        `during ${describe(during[during.length - 1]!)} → after ${describe(after)}`,
+        `during ${describeRef(during[during.length - 1]!)} → after ${describeRef(after)}`,
     ).toBeGreaterThan(BLUR_SHARP_DIVIDE)
 
     // The RELATIVE claim, which survives a re-grade of the photograph that
     // would move every absolute number above.
-    const softest = Math.min(...during.map((s) => s.spread))
+    //
+    // THIS USED TO BE `after.spread / min(during spread) > 1.6`, and on
+    // 2026-09-06 that ratio stopped describing the resolve: the veil is 23%
+    // behind the reveal and settles to 53% once the focus lands (commit
+    // 5872de4), so under the 3:2 rung the resolved frame measures LESS spread
+    // (0.106) than the soft frame did behind the thinner veil (0.143). The
+    // ratio was measuring the veil, not the focus. Judged against the two
+    // copies under the SAME veil instead, the resolved frame is the sharp
+    // copy exactly (share 1.00).
     expect(
-      after.spread / softest,
-      `blur → sharp must be a real transition, not a nudge (measured baseline 2.94x)`,
-    ).toBeGreaterThan(1.6)
+      gapOf(after),
+      `after the intro the soft and sharp copies measure the same, so the resolve cannot be judged. ` +
+        describeRef(after),
+    ).toBeGreaterThan(MIN_REFERENCE_GAP)
+    expect(
+      shareOf(after),
+      `blur → sharp must be a real transition, not a nudge: after the intro the shown frame should ` +
+        `be the sharp copy (share ≥ ${SHARP_SHARE_MIN.toFixed(2)}). ${describeRef(after)}`,
+    ).toBeGreaterThanOrEqual(SHARP_SHARE_MIN)
 
     test.info().annotations.push({
       type: 'intro-ground',
       description: JSON.stringify({
         samples: during.length,
-        duringSpread: during.map((s) => Number(s.spread.toFixed(5))),
-        afterSpread: Number(after.spread.toFixed(5)),
-        ratio: Number((after.spread / softest).toFixed(2)),
+        stable: stable.length,
+        duringShare: stable.map((r) => Number(shareOf(r).toFixed(3))),
+        duringSpread: during.map((r) => Number(r.shown.spread.toFixed(5))),
+        afterSpread: Number(after.shown.spread.toFixed(5)),
+        afterShare: Number(shareOf(after).toFixed(3)),
       }),
     })
   })

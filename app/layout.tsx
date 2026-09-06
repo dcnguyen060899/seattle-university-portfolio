@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { IBM_Plex_Mono, Inter, Montserrat } from 'next/font/google';
+import { IBM_Plex_Mono, Inter, Montserrat, Newsreader } from 'next/font/google';
 import type { ReactNode } from 'react';
 import { SiteFooter } from '@/components/site/footer';
 import { introLogo } from '@/components/site/intro/source';
@@ -30,11 +30,95 @@ import './globals.css';
  * x-height is noticeably larger than Neutraface's, so it reads less airy at
  * the same size. globals.css compensates with tighter tracking and a hard
  * floor — the display face never sets type below 26px.
+ *
+ * ── AND THE ONE THING THAT LEAVES IT: THE NAME ────────────────────────────
+ *
+ * The hero's h1 — "Duy Nguyen" — and the three evidence titles beside it are
+ * set in the SERIF below, not in Montserrat. That is a deliberate exception
+ * to the paragraph above, and here is why it does not break the SU tie.
+ *
+ * What the university's guideline governs is INSTITUTIONAL surfaces: the
+ * wordmark, the seal, the crimson, the display face on university
+ * communications. This site carries that alignment in the two places it
+ * belongs — the colourway (SU crimson resolved by ground, the mark on its
+ * white plate in the identity band and footer) and the DN monogram, whose
+ * geometry is derived from the seal's. The lede, the band headings and every
+ * display-size sentence on the page stay in Montserrat, so the institutional
+ * register is intact everywhere the page speaks in the university's voice.
+ *
+ * A person's name on that person's own page is not one of those surfaces.
+ * It is a personal mark, in the same sense the monogram is, and a personal
+ * mark is entitled to its own register — nobody reads a signature on a
+ * letterhead as a breach of the letterhead. Setting the name in Montserrat
+ * was making it the university's name; setting it in a serif of his own
+ * makes it his, sitting on the university's ground. The three evidence titles
+ * take the same face for the same reason: they are the titles of HIS work,
+ * and a serif is the register in which a paper's title is set.
+ *
+ * Where this argument would stop being honest: if the serif reached the band
+ * headings, the lede, or any institutional surface. It must not. The scale
+ * in globals.css publishes it as `--font-serif` with exactly two jobs, and the
+ * hero is the only band that asks for it.
  */
 const montserrat = Montserrat({
   subsets: ['latin'],
   weight: ['200', '300'],
   variable: '--font-montserrat',
+  display: 'swap',
+});
+
+/**
+ * THE NAME'S FACE — Newsreader, and the choice is argued rather than liked.
+ *
+ * The brief for this face is "academic-professional and premium, not
+ * fashionable", over a photograph, at 36-64px for one name and 20-23px for
+ * three titles. Five candidates were held to it:
+ *
+ *   Cormorant Garamond   the most beautiful and the wrong answer: its
+ *                        hairlines at display size are thinner than
+ *                        Montserrat 200's, so over a photograph it would be
+ *                        the THINNEST stem in the band and would drag the
+ *                        collar with it. It is also the fashion register —
+ *                        the wedding-invitation serif.
+ *   EB Garamond          a book face, tuned for 10-12pt text; at 64px the
+ *                        fitting is loose and the forms read as a facsimile.
+ *   Libre Caslon         handsome, but its display cut is heavy and a little
+ *                        eccentric (the curly-tailed Q, the pointed A), and
+ *                        it has no text cut for the 20px titles.
+ *   Source Serif 4       the safe workhorse. It is the face of documentation
+ *                        rather than of a journal, and it is the one you
+ *                        stop noticing — which is a virtue for body text and
+ *                        a failure for the one memorable thing on the page.
+ *   Newsreader           commissioned by Google from Production Type for
+ *                        on-screen editorial reading, with an OPTICAL-SIZE
+ *                        axis (6-72) that is the whole point here: at 64px it
+ *                        sharpens into a display cut with genuine contrast;
+ *                        at 22px it thickens into a text cut whose hairlines
+ *                        survive a photograph. One family, two registers,
+ *                        one file. Its lineage is the newspaper and the
+ *                        journal — the register in which a paper's title is
+ *                        set — which is exactly what a research portfolio's
+ *                        titles are.
+ *
+ * Two weights are USED: 500 for the name, so it outweighs the 300 lede beside
+ * it by a full step rather than one, and 400 for the titles. The loader is
+ * `weight: 'variable'` because next/font only ships an extra axis on the
+ * variable instance — and `axes: ['opsz']` is the point; without it the file
+ * would be the 16pt cut at every size. That costs the unused part of the
+ * weight axis in one file; it is the only variable family on the page.
+ *
+ * ⚠ THE CONTRAST GATE MODELS THIS CUT. scripts/check-hero-contrast.mjs
+ * carries MEASURED stem and counter widths for `serif:400` and `serif:500`,
+ * taken from the file this loader emits at the axis's 72pt end (the thinnest
+ * the stem ever is). Changing the family, the weights or the axes here
+ * without re-measuring there makes the gate model a stem that no longer
+ * exists.
+ */
+const newsreader = Newsreader({
+  subsets: ['latin'],
+  weight: 'variable',
+  axes: ['opsz'],
+  variable: '--font-newsreader',
   display: 'swap',
 });
 
@@ -66,10 +150,12 @@ const plexMono = IBM_Plex_Mono({
 });
 
 /*
- * Static weight instances, not the variable axes. The scale in globals.css
- * uses exactly these six cuts (Montserrat 200/300, Inter 400/500, Plex Mono
- * 400/500); shipping the full weight axis of three variable families to save
- * request count costs far more bytes than it saves.
+ * Static weight instances, not the variable axes, for the three sans faces.
+ * The scale in globals.css uses exactly these six cuts (Montserrat 200/300,
+ * Inter 400/500, Plex Mono 400/500); shipping the full weight axis of three
+ * variable families to save request count costs far more bytes than it saves.
+ * Newsreader is the exception and carries its optical axis on purpose — see
+ * its own note — because that axis IS the reason it was chosen.
  */
 
 /**
@@ -162,7 +248,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     // custom properties to this element during parsing, before React sees it.
     <html
       lang="en"
-      className={`${montserrat.variable} ${inter.variable} ${plexMono.variable}`}
+      className={`${montserrat.variable} ${newsreader.variable} ${inter.variable} ${plexMono.variable}`}
       suppressHydrationWarning
     >
       <head>{intro !== null && <script dangerouslySetInnerHTML={{ __html: INTRO_GATE_SCRIPT }} />}</head>

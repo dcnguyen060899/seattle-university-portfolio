@@ -230,33 +230,67 @@ const ART_DIRECTION_BREAKPOINT = 861
  */
 
 /**
- * THE DESKTOP CROP — a wide band, biased low.
+ * THE DESKTOP CROP — the whole master, and the browser does the framing.
  *
- * ASPECT 16:9. Two reasons, and they agree. It is the shape a full-bleed
- * desktop hero band actually is, so `object-fit: cover` has almost nothing to
- * throw away at the design width; and it lands within 0.4% of the reference
- * hero's shipped 1.784:1, so the geometry that pipeline's `object-position`
- * notes were measured against carries over.
+ * ASPECT 3:2 — THE MASTER'S OWN (1536x1024), SO THE WINDOW IS THE FULL FRAME.
+ * It was 16:9, and the reasoning was sound for the box it was written
+ * against: a full-bleed hero that was ONE SCREENFUL, where a 16:9 rung under
+ * `object-fit: cover` has almost nothing to throw away. That box no longer
+ * exists. The hero's photo box is `min(band height, 134svh)`, the band carries
+ * two columns of copy, and every desktop box is TALLER than 16:9 — at 1280x800
+ * the box was 1280x987 (1.30:1) and `cover` could only discard WIDTH: 27% of
+ * the 16:9 rung, measured, which cut the SEATTLE UNIVERSITY flag (image x
+ * 89-94%, with its lamp to 97%) off the right and the lamp and wisteria off
+ * the left. A crop decided here had already thrown away the rows that would
+ * have let the browser keep those columns.
  *
- * FOCUS Y 0.62 — BELOW CENTRE, WHICH IS THE WHOLE POINT. The subject sits low
- * in this frame and the upper half is sky. A centred 16:9 band would spend its
- * cut equally on sky and on ground; biasing the window down spends the entire
- * cut on sky. For any master wider than 16:9 the window is shorter than the
- * frame and a 0.62 focus lands it flush to the bottom edge — which is the
- * intent, not an accident of the clamp.
+ * So the rung is the master. In a box wider than 3:2 `cover` now discards
+ * HEIGHT, from the sky above the skyline and the paving below the flowers,
+ * and every column of the composition survives; in a box narrower than 3:2 it
+ * discards width exactly as the 16:9 rung did, from a frame that is taller
+ * to begin with. Measured with `--evaluate-crops` against the band boxes the
+ * contrast gate declares, same grade, same ladder:
  *
- * AND IT IS A CONTRAST DECISION, NOT ONLY A COMPOSITION ONE. The brightest
- * region of a dusk campus photograph is the sky. Every row of sky the crop
- * drops lowers the frame's brightest glyph-sized patch, which lowers
- * `scrim.requiredAlpha`, which is how much of the photograph survives the
- * scrim. Cropping sky out is the cheapest contrast headroom available here,
- * and it costs nothing anyone will miss.
+ *     rung     kept@861   kept@1280   kept@1600     top-rung avif
+ *     16:9      35.7%      73.0%       88.8%         164KB   (shipped)
+ *     3:2       42.4%      86.5%       95.0%         175KB   <- this
  *
- * FOCUS X 0.50 — the desktop band is full width on most masters, so X only
- * bites when the master is TALLER than 16:9 and the window has to be narrower
- * than the frame. Centre is the right default for that rare case.
+ * (Those boxes are the band as it was measured that morning; the band has
+ * since been brought under one screenful on desktop, which only widens every
+ * desktop box and moves the trade further in this crop's favour.)
+ *
+ * FOCUS Y IS NULL — TAKE EVERY ROW — FOR THE SAME REASON THE PORTRAIT CROP'S
+ * IS. A 3:2 window out of a 3:2 master has no vertical slack, so a focal
+ * point here would decide nothing on this master; the vertical framing is
+ * the browser's, from `--hero-pos-y` in components/site/hero-scrim.module.css,
+ * which is now the consequential knob on desktop (that file says where it
+ * lands the picture and why). Should a TALLER master arrive, null centres
+ * the window on it, and the 0.62 low bias the 16:9 crop carried is the first
+ * thing to put back — the argument for it (spend the cut on sky) still holds.
+ *
+ * THE CONTRAST ARGUMENT IS PRICED, NOT LOST. The 16:9 crop dropped the top
+ * 160 rows of sky, and the brightest glyph-sized patch of a dusk photograph
+ * is the sky, so it bought veil headroom. The 3:2 rung keeps those rows and
+ * the solve on the shipped bytes moves accordingly — the table above prints
+ * the pre-encode alpha for both (0.832 -> 0.835, three thousandths); the run
+ * below publishes the post-encode number in the manifest, where the scrim
+ * reads it. Every row in the frame is still measured; none is assumed.
+ *
+ * THE BYTE COST, AND HOW IT WAS PAID. The 3:2 rung has 18.5% more rows than
+ * the 16:9 one, and the shipped 16:9 top rung was 273,777 bytes at q65
+ * against the 280KB landscape AVIF budget. The budget is NOT raised: the
+ * added rows are sky, which compresses well (+6.7% of bytes at matched
+ * quality in the table above, not +18.5%), and the quality ladder is built
+ * for exactly this — "the first rung that fits the file's byte budget wins".
+ * The measured landing is printed in the run's table and recorded in
+ * manifest.json's `files[].quality`; the cost is stated beside BUDGETS below
+ * so nobody has to re-derive it.
+ *
+ * FOCUS X 0.50 — the window is the full width of this master, so X decides
+ * nothing here either. It bites only on a master WIDER than 3:2, where centre
+ * is the right default.
  */
-const LANDSCAPE_CROP = { aspect: 16 / 9, focusX: 0.5, focusY: 0.62, window: null }
+const LANDSCAPE_CROP = { aspect: 3 / 2, focusX: 0.5, focusY: null, window: null }
 
 /**
  * THE MOBILE CROP — a tall slice, taken LEFT of centre.
@@ -427,6 +461,24 @@ const WEBP_EFFORT = 6
  *
  * A passing run is NOT a measurement of LCP. A byte budget is a necessary
  * condition; LCP is measured in a browser, on the deployed page.
+ *
+ * ── WHERE THE LANDSCAPE BUDGET BINDS TODAY, MEASURED (2026-09-06) ─────────
+ * When LANDSCAPE_CROP went from 16:9 to the master's own 3:2 (see its header),
+ * the top landscape rung grew from 1536x864 to 1536x1024 and this is what the
+ * ladder did about it, on this master, at the shipped grade:
+ *
+ *     hero-l-1536.avif   16:9  q65  273,777 B        3:2  q63  281,214 B
+ *     hero-l-1536.webp   16:9  q83  366,494 B        3:2  q83  388,604 B
+ *
+ * The AVIF stepped down ONE ladder rung, from q65 to q63, to fit 286,720 B —
+ * eight quality points above the sanctioned floor of 55 — and its contour
+ * statistic read 2.23 against an alarm of 4.51 calibrated on that rung
+ * (clean 1.14, gross 6.75), so the step cost nothing the banding check can
+ * see. The budget was deliberately NOT raised: the extra rows are sky, which
+ * compresses well, and a cap that moves whenever a crop grows is not a cap.
+ * The WebP fits at q83 with 516 bytes to spare, which is worth knowing: a
+ * heavier master than this one lands that file at q82, and the run will say
+ * so in its table rather than fail.
  */
 const BUDGETS = {
   lcpAvif: 120 * 1024,

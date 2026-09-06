@@ -116,11 +116,11 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
-import { Band, Btn, Eyebrow, Reveal, Threshold } from '@/components/ui';
+import { Band, Btn, Reveal, Threshold } from '@/components/ui';
 import { heroCaption } from '@/lib/corpus/hero-asset';
-import { EvidenceLink, Limit, Readout, figureAt, pageShort } from './evidence';
+import { EvidenceLink, Limit, figureAt, pageShort } from './evidence';
 import { ScrollDriver } from './scroll-driver';
 import scrim from './hero-scrim.module.css';
 import styles from './hero.module.css';
@@ -429,6 +429,59 @@ const PHOTO: HeroPhoto | null = readHeroPhoto();
 const HERO_DISCLOSURE = PHOTO === null ? null : heroCaption();
 
 /* ══════════════════════════════════════════════════════════════════════════
+   THE EVIDENCE BLOCK
+   ══════════════════════════════════════════════════════════════════════════
+
+   One titled block in the evidence column: a 32px dash of --rule (painted by
+   hero.module.css), a title in the serif, and whatever the block measures.
+
+   THE TITLE IS THE LABEL. The previous band opened every block with a
+   tracked-uppercase mono eyebrow — RESEARCH, RECOGNITION, RESEARCH
+   INFRASTRUCTURE — and then a mono readout, and then a mono label under
+   that. Three registers to say one thing. A recruiter giving the page twenty
+   seconds reads a title in a serif as "the name of a piece of work", which is
+   what each of these is, and reads a category eyebrow as furniture. The
+   eyebrows are gone; the titles carry what they said.
+
+   AN h2, because it is one. The name is the band's h1 and these are the
+   three things the band says about it, so the outline a screen reader walks
+   is name → evidence → evidence → evidence, which is the visual order too.
+   The base `h2` rule in app/globals.css sets the display face at --text-h2;
+   every one of those is overridden here by a utility, on purpose — this is
+   the one place on the page a heading is set in the serif, and it is set at
+   --text-title, the serif's own step.
+*/
+/*
+   `proof` IS AN ATTRIBUTE FOR THE TESTS AND NOTHING ELSE. Added 2026-09-06:
+   the three blocks used to be counted through `[data-numeric]`, and the
+   recognition proof stopped carrying one when its readout became a serif
+   title ("Winner, Graduate Division — CAUSE 2026" has no figure in it). The
+   band still makes exactly three claims — research, recognition,
+   infrastructure — and tests/e2e/nav.spec.ts holds all three above the fold
+   by this attribute. No class, no style, nothing in the cascade reads it.
+*/
+type Proof = 'research' | 'recognition' | 'infrastructure';
+
+function Evidence({
+  title,
+  proof,
+  children,
+}: {
+  title: string;
+  proof: Proof;
+  children: ReactNode;
+}) {
+  return (
+    <section className={styles.block} data-proof={proof}>
+      <h2 className="font-serif text-title font-[400] leading-[1.2] tracking-[-0.005em] text-[color:var(--fg)]">
+        {title}
+      </h2>
+      {children}
+    </section>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
    THE BAND
    ══════════════════════════════════════════════════════════════════════════ */
 
@@ -442,7 +495,7 @@ export function Hero() {
   const rawFiles = figureAt('clm:fischer-raw-archive', ARCHIVE.RAW, ARCHIVE.COUNT);
 
   return (
-    <Band tone="ink" id="top" bleed className={scrim.ground}>
+    <Band tone="ink" id="top" bleed className={`${scrim.ground} ${styles.band}`}>
       {/*
         THE PHOTOGRAPH. Absent from this repository, and therefore absent from
         the DOM — not hidden, not transparent, not a 1x1: `PHOTO` is null
@@ -654,23 +707,24 @@ export function Hero() {
           the order it happened to be written.
 
           It is now identity on the left and EVIDENCE on the right, three
-          blocks each opening with the kind of thing it is — research,
-          recognition, research infrastructure. Two consequences, and the
-          second is the one that matters:
+          blocks each opening with a serif TITLE that names the work — the
+          Mammo-CLIP evaluation, the contest win, the barn-owl database. Two
+          consequences, and the second is the one that matters:
 
             · the figures rise. On one column the readouts sat at the bottom of
               the band; beside the lede they are level with it, so the first
               screen carries the claim and its evidence at the same time
               instead of asking the reader to scroll for the second.
             · the blocks say WHAT THEY ARE before they say what they measure.
-              "P@1 0.585" is a number until something calls it research; the
-              eyebrow is the difference between a figure a reader has to
-              interpret and one they can file.
+              "P@1 0.585" is a number until something names the work it
+              belongs to; the title is the difference between a figure a
+              reader has to interpret and one they can file.
 
-          The CATEGORY EYEBROWS ARE THE ONLY NEW WORDS. Every figure, label,
-          note and caveat below is the string it already was, from the accessor
-          it already used — this is a reorganisation, not a rewrite, and the
-          numeric licensing gate (C8) would fail the build if it were not.
+          EVERY FIGURE, NOTE AND CAVEAT BELOW IS THE STRING IT ALREADY WAS,
+          from the accessor it already used. What changed are LABELS — the
+          words that say what a figure is — and the faces they are set in;
+          this is a re-setting, not a rewrite, and the numeric licensing gate
+          (C8) would fail the build if it were not.
         */}
         <div className={styles.split}>
           {/* ── LEFT: who, in his own words ──────────────────────────────── */}
@@ -685,8 +739,16 @@ export function Hero() {
               homeLocation with addressLocality "Seattle" / addressRegion "WA"
               in the Person schema, which is what a search engine and an ATS
               actually read.
+
+              SENTENCE CASE, BODY FACE, A COMMA. It was a tracked-uppercase
+              mono eyebrow with a middle dot, which is the first thing on the
+              page and the first tell of a template. As a line of body face it
+              reads as what it is — where he is, said once — and leaves the
+              name below it as the only display-size object in the column.
             */}
-            <Eyebrow>M.S. Data Science · Seattle University</Eyebrow>
+            <p className="font-body text-[0.9375rem] leading-[1.4] text-[color:var(--fg-muted)]">
+              M.S. Data Science, Seattle University
+            </p>
 
             {/*
               THE NAME IS MIST BLUE, THE LEDE IS NOT — and that split is the
@@ -707,22 +769,30 @@ export function Hero() {
               carries it.
             */}
             {/*
-              THE WEIGHT IS SET HERE BECAUSE THE SCALE HAD IT BACKWARDS.
-              --text-h1--font-weight is 200 and the lede below sets font-[300],
-              so the name was the THINNEST ink in the block while being the
-              largest — big enough to be the heading, light enough to read as
-              background, and at a glance weight wins. That is the whole reason
-              it looked crammed in with the sentence under it rather than
-              leading it. 400 puts it a full step above the lede instead of one
-              below, which is the relationship every reference render of this
-              page has and this one did not.
+              THE NAME IS THE ONE THING ON THE PAGE SET IN THE SERIF — that,
+              and the three evidence titles beside it. app/layout.tsx carries
+              the argument for why a personal name may leave the university's
+              display face; this comment carries the setting.
 
-              SCOPED TO THE HERO, not to the scale. `h1, h2 { font-weight: 200 }`
-              in app/globals.css is right for the band headings further down the
-              page, which sit on paper at a smaller step and would go heavy and
-              cheap at 400. This is the one h1 set at 64px over a photograph.
+              WEIGHT 500, AGAINST THE LEDE'S 300. The scale's h1 is 200 and
+              the lede is 300, so in the display face the name was the
+              THINNEST ink in the block while being the largest, and at a
+              glance weight wins. A serif at 500 is a full step above the
+              lede rather than one below, and its stem — 0.104em at the
+              thinnest point of Newsreader's optical axis, 3.75px at the phone
+              step — is three times what Montserrat 200 gave the collar to
+              work with. The tracking is loosened from the scale's -0.025em to
+              -0.01em because a serif's serifs already close its fit; the
+              geometric sans needed the pull, this does not.
+
+              SCOPED TO THE HERO, not to the scale. `h1, h2` in
+              app/globals.css stay in the display face for the band headings
+              further down the page, which sit on paper and are the
+              university's register. This is the one h1 set at 64px over a
+              photograph, and the one heading that is his mark rather than a
+              section's.
             */}
-            <h1 className="mt-[20px] max-w-[14ch] font-[400] text-[color:var(--fg-brand)]">
+            <h1 className="mt-[16px] max-w-[14ch] font-serif font-[500] tracking-[-0.01em] text-[color:var(--fg-brand)]">
               Duy Nguyen
             </h1>
 
@@ -768,91 +838,138 @@ export function Hero() {
 
           </div>
 
-          {/* ── RIGHT: the evidence, filed ───────────────────────────────── */}
+          {/*
+            ── THE ACTIONS ARE A THIRD GRID CHILD, NOT A CHILD OF THE LEFT
+               COLUMN, AND THEY SIT BETWEEN THE IDENTITY AND THE EVIDENCE IN
+               SOURCE ORDER.
+
+            They belong under the lede on desktop, which is where the reference
+            render puts them and where a reader who has decided can act without
+            passing every caveat first. Above the 900px split hero.module.css
+            places them there by AREA, so no `order:` declaration is involved
+            and the DOM order, the tab order and the screen-reader order are
+            the one order this comment describes: identity → actions →
+            evidence.
+
+            BELOW THE SPLIT THAT ORDER IS THE PHONE'S LAYOUT, and it is the
+            point. With the actions AFTER the evidence in source order they
+            sat under three evidence blocks at 375x812 and 390x844 — below
+            the fold by more than a screen, with the nav's two rows already
+            spending 104px of the first one. Under the lede they land inside
+            the first screen; the measured positions are in hero.module.css
+            under THE PHONE'S FIRST SCREEN.
+
+            HISTORY, BECAUSE THIS ARRANGEMENT ONCE BROKE A GLYPH. The last time
+            the actions sat above the evidence on the phone, the "0.585" figure
+            landed on a brighter patch of the photograph and measured 2.78:1
+            against its 3:1 obligation, caught at the INK PIXELS by
+            tests/e2e/hero-contrast.spec.ts ("at the ink pixels themselves at
+            375") — a real failure, not a sampling artefact, because that test
+            differences the rendered frame against the same frame with the fill
+            removed and so already credits the collar. That test is the check
+            on this move, and the fix for a failure there is the collar for
+            that role in hero-scrim.module.css — never moving the actions back
+            and never the veil.
+
+            `face="body"`: sentence-case Inter 500 at 14px. With every other
+            tracked cap gone from the band, mono-caps buttons would have been
+            the last thing on it still shaped like a form control. The Btn
+            primitive's default is unchanged, so the contact band, the agent
+            panel and the 404 keep the tracked mono idiom.
+          */}
+          <div className={styles.actions}>
+            <Btn href="#fit" face="body">
+              Ask about a role
+            </Btn>
+            <Btn href="/docs/Resume.pdf" variant="ghost" face="body">
+              Résumé (PDF)
+            </Btn>
+            <EvidenceLink id="art:github" label="GitHub" face="body" />
+          </div>
+
+          {/* ── RIGHT: the evidence, titled ──────────────────────────────── */}
           <div className={styles.evidence}>
-            <div>
-              <Eyebrow>Research</Eyebrow>
-              {/*
-                FIGURE 1 — the threshold. The only <Threshold> in the hero, and
-                one of two on the whole page: past three the device stops
-                meaning "threshold" and starts meaning "line".
-              */}
+            {/*
+              FIGURE 1 — the threshold. The only <Threshold> in the hero, and
+              one of two on the whole page: past three the device stops
+              meaning "threshold" and starts meaning "line".
+
+              The title names the work; the label under the 0.585 used to
+              name it again ("Mammo-CLIP, fine-tuned — …"), so that label now
+              says only what the figure is: the fine-tuned arm, alone of the
+              twenty-four. Same figures, same accessors, one fewer repetition.
+
+              THE RULE UNDER THE 0.585 IS A 32px STUB HERE, in --rule, the
+              same dash every block in this band opens with — hero.module.css
+              shortens it (THE THRESHOLD RULE IS A STUB). It was the last
+              full-width hairline in the band. The device's shape survives:
+              the clearing figure still sits over the line and the floor
+              still sits on it; only the line's length changed.
+            */}
+            <Evidence title="Mammo-CLIP evaluation" proof="research">
               <Threshold
                 index={3}
                 clearedValue={fineTuned}
-                clearedLabel={`Mammo-CLIP, fine-tuned — the only arm of ${cells} to clear it`}
+                clearedLabel={`Fine-tuned, the only arm of ${cells} to clear the floor`}
                 value={`P@1 ${floor}`}
                 label="held-out majority-class retrieval floor"
                 cleared={`${frozen} frozen → ${fineTuned} fine-tuned, the decoder frozen throughout`}
               />
-            </div>
+            </Evidence>
 
             {/*
               FIGURES 2 and 3 — the award and the barn-owl database.
 
+              THE AWARD'S TITLE IS THE CORPUS'S OWN SHORT FORM, VERBATIM.
+              "Winner, Graduate Division — CAUSE 2026" is pageShort on
+              clm:cause-win; it carries a year, so it is not a string this
+              file may type, and it is set in the serif exactly as the record
+              renders it. The contest's name sits under it as a plain line.
+
               THE NOTES ARE `pageShort`, NOT `pageText`, AND THAT IS THE
               ACCESSOR DOING WHAT IT SAYS. evidence.tsx documents pageShort as
-              "a licensed short form — chip and READOUT length"; the corpus's
+              "a licensed short form — chip and readout length"; the corpus's
               full third-person sentences are two-line paragraphs under a
-              device whose whole shape is figure / label / one line.
+              title, and a title wants one line beneath it.
 
               Nothing left the page. clm:cause-blind-judging is still attached
               to clm:cause-win here, which its own corpus note requires ("Keep
               it attached to clm:cause-win in copy"), and clm:fischer-selfserve
               — the outcome claim for rol:fischer-rde — is still in short form.
             */}
-            <div>
-              <Eyebrow>Recognition</Eyebrow>
-              <Readout
-                className="mt-[14px]"
-                value={pageShort('clm:cause-win')}
-                label="Student Data Scrollytelling Contest"
-                note={pageShort('clm:cause-blind-judging')}
-              />
-            </div>
+            <Evidence title={pageShort('clm:cause-win')} proof="recognition">
+              <p className="mt-[8px] text-data text-[color:var(--fg)]">
+                Student Data Scrollytelling Contest
+              </p>
+              <p className="mt-[6px] text-[0.8rem] leading-[1.55] text-[color:var(--fg-muted)]">
+                {pageShort('clm:cause-blind-judging')}
+              </p>
+            </Evidence>
 
-            <div>
-              <Eyebrow>Research infrastructure</Eyebrow>
-              <Readout
-                className="mt-[14px]"
-                value={`${neurons} neurons · ${passes} passes · ${rawFiles} raw files`}
-                label="one queryable database for the barn-owl lab"
-                note={pageShort('clm:fischer-selfserve')}
-              />
-            </div>
-          </div>
-
-          {/*
-            ── THE ACTIONS ARE A THIRD GRID CHILD, NOT A CHILD OF THE LEFT
-               COLUMN, AND THAT IS A LEGIBILITY FIX RATHER THAN A LAYOUT ONE.
-
-            They belong under the lede on desktop, which is where the reference
-            render puts them and where a reader who has decided can act without
-            passing every caveat first. Nesting them in the identity column got
-            that — and, below the 900px split, pushed the whole evidence stack
-            down by the height of three buttons.
-
-            THAT MOVE BROKE A GLYPH. At 375 the "0.585" figure landed on a
-            brighter patch of the photograph and measured 2.78:1 against its
-            3:1 obligation, caught at the INK PIXELS by
-            tests/e2e/hero-contrast.spec.ts — a real failure, not a sampling
-            artefact, because that test differences the rendered frame against
-            the same frame with the fill removed and so already credits the
-            collar.
-
-            As its own grid child placed by AREA, the actions sit under the
-            lede on desktop and after the evidence in source order, so the
-            phone gets the stacking it had before and the figure lands back on
-            the ground it was solved against. No `order:` declaration is
-            involved, so the DOM order, the tab order and the screen-reader
-            order are the one order this comment describes.
-          */}
-          <div className={styles.actions}>
-            <Btn href="#fit">Ask about a role</Btn>
-            <Btn href="/docs/Resume.pdf" variant="ghost">
-              Résumé (PDF)
-            </Btn>
-            <EvidenceLink id="art:github" label="GitHub" />
+            {/*
+              THE THREE FIGURES ARE THREE RUNS, NOT ONE STRING. They used to be
+              joined with middle dots into a single mono line, which is the
+              second-commonest tell of a generated page after the eyebrow.
+              As three spans in a wrapping row they are still tabular mono —
+              this is data, and mono is the measurement voice — but the
+              separation is space rather than punctuation, and on a phone the
+              row breaks between figures instead of mid-figure. Each span's
+              text is the string the old line carried, so the numeric gate
+              sees exactly what it saw.
+            */}
+            <Evidence title="One database for the barn-owl lab" proof="infrastructure">
+              <p
+                data-numeric
+                className="mt-[8px] flex flex-wrap gap-x-[18px] gap-y-[2px] font-mono text-data text-[color:var(--fg)]"
+              >
+                <span>{neurons} neurons</span>
+                <span>{passes} passes</span>
+                <span>{rawFiles} raw files</span>
+              </p>
+              <p className="mt-[6px] text-[0.8rem] leading-[1.55] text-[color:var(--fg-muted)]">
+                {pageShort('clm:fischer-selfserve')}
+              </p>
+            </Evidence>
           </div>
         </div>
 
@@ -878,6 +995,16 @@ export function Hero() {
         */}
         <Limit
           ids={['clm:yang-label-caveat', 'clm:fischer-live-caveat']}
+          /*
+            THE LABEL IS THE OWNER'S, AND ONLY THE LABEL. "Stated limits —
+            quoted from the record" is the paper bands' form, in their tracked
+            mono. This band sets its labels in sentence-case body face
+            (hero.module.css re-faces this one), and "Methods & limitations"
+            is the label the owner wrote for this block in his reference
+            render. The sentences under it are the record's, verbatim, and
+            cannot be touched from here.
+          */
+          label="Methods & limitations"
           /*
             A READING MEASURE, not a decoration. These were the only lines of
             running prose on the site set to the full 1088px page measure —

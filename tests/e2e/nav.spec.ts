@@ -184,6 +184,14 @@ const NO_JS_WHEEL = 900
 
 const NAV = 'header'
 
+/**
+ * The hero's stated-limits block: the one `<aside>` in #top, rendered by
+ * `<Limit>` in components/site/evidence.tsx. Its sentences are the evidence
+ * record's, quoted verbatim, so the affiliation test does not count them as
+ * the page announcing itself.
+ */
+const HERO_LIMITS = '#top aside'
+
 interface NavGeometry {
   found: boolean
   count: number
@@ -1048,13 +1056,27 @@ test.describe('§5 the Seattle University affiliation', () => {
     to be once in the nav; it is now once in the eyebrow. Two visible copies
     is still two announcements to a screen reader, whichever elements carry
     them.
+
+    ── THE QUOTED RECORD IS NOT AN ANNOUNCEMENT (2026-09-06) ──────────────
+
+    When the desktop band was brought under one screen, the hero's stated
+    limits came above the fold with it — and the last of them is the corpus's
+    disclosure about the PICTURE: "…the Seattle University campus — not a
+    photograph of either." That sentence is quoted record text, rendered
+    verbatim by <Limit> (components/site/evidence.tsx) and matched against
+    the built HTML by corpus check C15; it is a caveat about what the
+    photograph is, not a statement of where he studied. Counting it made
+    this test report the affiliation stated twice when the page still states
+    it once, so anything inside the hero's <Limit> aside is left out of the
+    count — the one element in #top whose words this page is not allowed to
+    author. The nav still counts 0 and the eyebrow 1.
   */
   test('the affiliation is out of the chrome and stated once above the fold', async ({ page }) => {
     await page.setViewportSize(DESIGN)
     await page.goto('/', { waitUntil: 'networkidle' })
     await settle(page)
 
-    const found = await page.evaluate((selector) => {
+    const found = await page.evaluate(({ selector, quoted }) => {
       const shown = (el: Element): boolean => {
         let node: Element | null = el
         while (node) {
@@ -1073,6 +1095,8 @@ test.describe('§5 the Seattle University affiliation', () => {
           .join(' ')
         const alt = el.getAttribute('alt') ?? ''
         if (!/seattle\s+university/i.test(own) && !/seattle\s+university/i.test(alt)) continue
+        // The quoted limits — see THE QUOTED RECORD IS NOT AN ANNOUNCEMENT.
+        if (el.closest(quoted)) continue
         const rect = el.getBoundingClientRect()
         hits.push({
           inNav: Boolean(el.closest(selector)),
@@ -1081,7 +1105,7 @@ test.describe('§5 the Seattle University affiliation', () => {
         })
       }
       return hits
-    }, NAV)
+    }, { selector: NAV, quoted: HERO_LIMITS })
 
     expect(
       found.filter((h) => h.inNav).map((h) => h.text),
@@ -1334,6 +1358,18 @@ test.describe('§6 the page does not jump', () => {
     the missing flow height by padding the hero — which is the obvious way to
     "avoid layout shift" and also the way to reinstate the white gap — the
     figures go straight back under the fold and this fires.
+
+    ── COUNTED BY PROOF, NOT BY [data-numeric] (2026-09-06) ────────────────
+
+    This used to count `#top [data-numeric]` and expect three. On the serif
+    band the recognition proof is a title — "Winner, Graduate Division —
+    CAUSE 2026", the corpus's own short form — with no numeric readout under
+    it, so the band carries TWO numeric objects (the <Threshold> and the
+    barn-owl readout) and three PROOFS. The budget was always about the
+    three claims, so each evidence block now declares which claim it is
+    (`data-proof`, components/site/hero.tsx — an attribute, nothing visual),
+    and the fold is held against those three blocks' bottom edges. The two
+    numeric objects are still checked, by the mark they already carry.
   */
   test('the three hero figures are above the fold at 1280x800', async ({ page }) => {
     await page.setViewportSize(DESIGN)
@@ -1350,28 +1386,51 @@ test.describe('§6 the page does not jump', () => {
     })
     await settle(page)
 
-    const figures = await page.evaluate(() =>
-      Array.from(document.querySelectorAll('#top [data-numeric]')).map((el) => {
-        const b = el.getBoundingClientRect()
-        return { top: Math.round(b.top), bottom: Math.round(b.bottom) }
-      }),
-    )
+    const measure = (selector: string) =>
+      page.evaluate(
+        (sel) =>
+          Array.from(document.querySelectorAll(sel)).map((el) => {
+            const b = el.getBoundingClientRect()
+            return {
+              proof: el.getAttribute('data-proof') ?? '',
+              top: Math.round(b.top),
+              bottom: Math.round(b.bottom),
+            }
+          }),
+        selector,
+      )
 
+    const proofs = await measure('#top [data-proof]')
+    expect(
+      proofs.map((p) => p.proof).sort(),
+      'The hero makes three claims — research, recognition, infrastructure — ' +
+        'and each evidence block declares which one it is with data-proof. A ' +
+        'different set means the hero changed and this budget needs ' +
+        're-deriving, not relaxing.',
+    ).toEqual(['infrastructure', 'recognition', 'research'])
+
+    const below = proofs.filter((p) => p.bottom > DESIGN.height)
+    expect(
+      below.map((p) => `${p.proof}: top ${p.top} bottom ${p.bottom} (fold ${DESIGN.height})`),
+      'A hero proof is below the fold at the design width. BASELINE, with the ' +
+        'nav still in flow: 494-632, 688-784, 688-784 — 16px of headroom. ' +
+        'Taking the nav out of flow returns 61px, and the one-screen band of ' +
+        '2026-09-06 puts all three blocks inside 797px; if this is failing, ' +
+        'something is padding the top of the page back in.',
+    ).toEqual([])
+
+    // The objects that ARE numeric keep their own check: the <Threshold> and
+    // the barn-owl readout, by the [data-numeric] mark they already carry.
+    const figures = await measure('#top [data-numeric]')
     expect(
       figures.length,
-      'The hero carries three measured figures: one <Threshold> and two ' +
-        '<Readout>s, all marked [data-numeric]. A different count means the ' +
-        'hero changed and this budget needs re-deriving, not relaxing.',
-    ).toBe(3)
-
-    const below = figures.filter((f) => f.bottom > DESIGN.height)
+      'The serif band carries two numeric objects — the <Threshold> and the ' +
+        'barn-owl readout. A different count means a figure was added or ' +
+        'lost; re-derive this, do not relax it.',
+    ).toBe(2)
     expect(
-      below.map((f) => `top ${f.top} bottom ${f.bottom} (fold ${DESIGN.height})`),
-      'A hero figure is below the fold at the design width. BASELINE, with the ' +
-        'nav still in flow: 494-632, 688-784, 688-784 — 16px of headroom. ' +
-        'Taking the nav out of flow returns 61px, so this should now be ' +
-        'comfortable; if it is failing, something is padding the top of the ' +
-        'page back in.',
+      figures.filter((f) => f.bottom > DESIGN.height).map((f) => `top ${f.top} bottom ${f.bottom}`),
+      'A numeric hero figure is below the fold at the design width.',
     ).toEqual([])
   })
 })

@@ -667,7 +667,9 @@
   `object-fit: cover` arithmetic and it is permanent: the band is 0.22:1 at
   375px and 0.98:1 at 1280, and no photographic crop survives being covered
   into a box that shape. Uncapping entirely, measured against the crops on
-  disk (portrait 819x1024, landscape 1536x864):
+  disk AT THE TIME (portrait 819x1024, landscape 1536x864 — the landscape
+  rung has since become the 3:2 master, 1536x1024, and the desktop band one
+  screen, so the desktop rows below are history; the phone rows still hold):
 
       viewport    cap 106svh              no cap
                   source width kept       source width kept   upscale
@@ -1265,70 +1267,90 @@
 
     ── WHICH AXIS ACTUALLY GOVERNS ────────────────────────────────────────
     Under `object-fit: cover` the position only moves the axis that
-    OVERFLOWS. RECOMPUTED against the 132svh frame — the cap change moved
-    every row of this table, and moved one of them across the axis — with the
-    generator's own crops, portrait 4:5 and landscape 16:9:
+    OVERFLOWS. RECOMPUTED 2026-09-06 (later) for TWO changes that landed
+    together and reversed the previous table's conclusion: the desktop rung
+    is now the master's own 3:2 (scripts/gen-hero-photo.mjs, LANDSCAPE_CROP —
+    it was 16:9, and in a box taller than 16:9 `cover` could only throw away
+    WIDTH, which is how the SEATTLE UNIVERSITY flag left the right edge at
+    1280), and the band is one screen on desktop (hero.module.css, ONE
+    SCREEN), so the photo box `min(band, 134svh)` is the BAND there, and the
+    band is wider than 3:2 at every desktop width. The portrait crop and the
+    phone are untouched. Chromium, production build:
 
-      375 x 812   phone           frame  375x1072  0.350:1  X, 56.3% of width
-      780 x 400   phone, held     frame  780x528   1.477:1  Y, 45.7% of height
+      375 x 812   phone           box  375x1072   0.350:1  X, 56.3% of width
+      780 x 400   phone, held     box  780x536    1.455:1  Y, 45.7% of height
                   sideways (still the PORTRAIT crop, it is under 861px)
-      861 x 1000  breakpoint      frame  861x1320  0.652:1  X, 63.3% of width
-      1280 x 800  laptop          frame 1280x1056  1.212:1  X, 31.8% of width
-      1600 x 900  desktop         frame 1600x1188  1.347:1  X, 24.2% of width
-      3440 x 1440 ultrawide       frame 3440x1901  1.810:1  Y,  1.8% — inert
+      861 x 1000  breakpoint      box  861x1340   0.643:1  X, 57.2% of width
+      1280 x 800  laptop          box 1280x~800   1.60:1   Y,  6.2% of height
+      1440 x 900  laptop          box 1440x~810   1.78:1   Y, 15.6% of height
+      1600 x 900  desktop         box 1600x~810   1.98:1   Y, 24.1% of height
+      1920 x 1080 desktop         box 1920x~810   2.37:1   Y, 36.7% of height
+      3440 x 1440 ultrawide       box 3440x~810   4.25:1   Y, 64.7% of height
 
-    ⚠ THE ULTRAWIDE FLIPPED. A 106svh frame at 3440x1440 was 2.25:1 against a
-    1.78:1 crop and overflowed 21% on Y, which is what --hero-pos-y 36% was
-    tuned for. At 132svh the frame is 1.81:1 — within 2% of the crop's own
-    aspect — so Y is now inert there and X governs at every viewport at or
-    above the breakpoint. The Y knob still matters below it, on a phone held
-    sideways, and that is now its only job.
+    (the ~ heights are the band's, which is what the box is on every desktop
+    row; scripts/check-hero-contrast.mjs's TEXT_EXTENT holds the exact
+    numbers and the browser gate re-measures them.)
 
-    So X is the consequential knob everywhere, and it overflows roughly twice
-    as far as it used to at every desktop width. That is the coverage trade,
-    stated in the axis it is actually paid in.
+    ⚠ THE AXIS FLIPPED AGAIN, AND THIS TIME Y IS THE KNOB. With a 1.5:1 rung
+    in boxes from 1.6:1 to 4.25:1, X never overflows above the breakpoint —
+    every column of the composition is on screen at every desktop width,
+    which is the entire point of the 3:2 rung — and the picture's vertical
+    placement is decided HERE, by --hero-pos-y, because the generator no
+    longer crops a row (LANDSCAPE_CROP.focusY is null: take every row). X is
+    still the knob between 861 and the width at which the band box passes
+    1.5:1, and on the phone, where nothing changed.
 
-      X 50% — the generator centres each crop on the composition and declares
-      its own `focusX` in the manifest. Moving X here would undo a decision
-      already made against the actual pixels, and at 56.3% overflow on a
-      phone it is the most consequential number in this file.
+      X 50% — unchanged. The generator centres each crop on the composition
+      and declares its own `focusX` in the manifest; on the phone, at 56.3%
+      overflow, it is still the most consequential number in this file.
 
-      ⚠ X IS LOAD-BEARING FOR THE APERTURE TOO, AND THE CAP MOVED WHAT IS IN
-      IT. The margins the pocket leaves open are the frame's outer 15% (1280)
-      and 32% (1600) AFTER `cover` has cropped it. At 106svh and 1600x954 that
-      was image x 2.8%..17.9% and 82%..97% — the ivy arch with its lamp, and
-      the SEATTLE UNIVERSITY banner with its street lamp. At 132svh and
-      1600x1188 it is image x 12.1%..24.2% and 75.8%..87.9%: the arch and its
-      lamp survive, the banner does not, and the right jamb now frames the
-      fountain and the firs. That is the trade THE THIRD COMPLAINT prices —
-      the banner and the coverage are the same knob. Moving X slides the
-      aperture across the composition; re-check what lands in it before
-      changing this, and note that the phone crop is a different frame with no
-      aperture at all.
+      THE APERTURE'S CONTENTS, RE-CHECKED. Above --container-wrap the pocket
+      leaves the frame's outer 15% (1280) and 32% (1600) open, and with the
+      full-width rung those margins are image x 0..15% / 85..100% at 1280 and
+      0..32% / 68..100% at 1600: the ivy arch with its lamp on the left, and
+      on the right the SU flag (x 89-94%), its street lamp (to 97%) and the
+      firs. Both jambs now hold the things the 16:9 rung cut. That was the
+      trade the cap priced against coverage in THE THIRD COMPLAINT; the 3:2
+      rung pays it in rows instead of columns, and rows are cheaper here
+      because the rows it spends are sky and paving.
 
-      Y 52% (<861px) — for the landscape-held phone, the only place it
-      matters below the breakpoint. The 4:5 portrait crop lands in a 1.84:1
-      box and 56.5% of its height is discarded. At 52% the surviving window
-      is image 29%..73%, which keeps the subject band and spends the cut on
-      sky above and paving below. At 22% the window is 12%..56% and the
-      subject is clipped off the bottom.
+      Y 52% (<861px) — unchanged: for the landscape-held phone, the only
+      place it matters below the breakpoint. The 4:5 portrait crop lands in
+      a 1.46:1 box and 45.7% of its height is discarded. At 52% the surviving
+      window is image 24%..78%, which keeps the subject band and spends the
+      cut on sky above and paving below.
 
-      Y 36% (>=861px) — RETAINED BUT NOW NEARLY INERT: at 132svh the wide
-      frame's aspect sits within 2% of the crop's own, so this moves the
-      picture by a handful of pixels at 3440 and by nothing at all at 1280 or
-      1600, where Y does not overflow. It is kept so an even taller band on
-      some future viewport lands the same way it used to. The window is image 7.6%..86.5%: the frame stays high
-      enough that the crest opens on sky and skyline rather than on the
-      middle of the scene, without pushing the foreground out of the bottom.
+      Y 40% (>=861px), WAS 36%. The rung's rows, from the top: sky to ~8%,
+      the skyline to ~28%, the library to ~52%, the flag 49-68%, the
+      fountain 55-72%, the SEATTLE UNIVERSITY sign 67-77%, flowers and
+      paving to 100%. What each desktop box keeps at 40%:
 
-    ⚠ WHAT THIS KNOB CANNOT DO, and it is a contract on the generator rather
-    than a value to tune: it cannot put the horizon inside the crest. The
-    crest and its ramp are the top ~13% of the frame, and at the ultrawide's
-    21% overflow that band can only ever reach image rows 7.6%..17.9%. If the
-    skyline sits ~40% down the landscape crop, no `object-position` brings it
-    into the aperture. THE CROP HAS TO — `LANDSCAPE_CROP.top` in
-    scripts/gen-hero-photo.mjs must sit just above the skyline if the
-    aperture is to show anything but sky.
+        1280 x 800    image rows  2.5% .. 96.3%   everything
+        1440 x 900                6.2% .. 90.6%   everything but the paving
+        1600 x 900                9.6% .. 85.5%   the towers' crowns and the
+                                                  flowers go
+        1920 x 1080              14.7% .. 78.0%   skyline from mid-tower;
+                                                  the sign clears by 1%
+        3440 x 1440              25.9% .. 61.2%   a strip: library, fountain,
+                                                  flag — the sign is out
+
+      36% was kept from the 16:9 era, where it was "nearly inert". With the
+      3:2 rung it is not: at 1920x1080 it puts the visible bottom at 76.5%
+      and cuts the base of the sign, which is the one object in the frame
+      that names the place. 40% clears it there, keeps every row that matters
+      at 1280-1600, and costs the crowns of the tallest towers at 1600 and
+      above — sky and skyline are the rows this photograph can spare, and
+      they are also its brightest, so spending the cut there is the
+      contrast-friendly direction (the same argument the old 16:9 crop made
+      for dropping 160 rows of sky at the generator). The ultrawide is a
+      strip at any Y; 40% shows the campus rather than the sky.
+
+    ⚠ WHAT THIS KNOB CANNOT DO, still: it cannot put a row inside the crest
+    that the box does not hold. Below --container-wrap the crest and its
+    ramp are the top ~13% of the frame; on the phone that is the portrait
+    crop's own top rows, chosen by the generator, and no `object-position`
+    moves the skyline into it. On desktop there is no vertical crest at all
+    — the aperture is the two jambs — so the question does not arise.
 
     Both values are superseded by measurement. Run
     `node scripts/check-hero-contrast.mjs`: it prints the crest's actual
@@ -1417,13 +1439,19 @@
      quantisation the trade table above already prices.
      375 AND 390 ARE NOT FIXED BY THIS and are not pretending to be: they need
      200svh and 185svh, they were failing before this change, and closing a
-     550px hole is a crop decision, not a cap tweak. */
+     550px hole is a crop decision, not a cap tweak.
+     RE-CHECKED 2026-09-06 (the hybrid): the desktop band is now under one
+     screen (hero.module.css, ONE SCREEN — 797px at 1280x800, 811px at 1440
+     and 1600x900), so on desktop the `100%` arm of this min() is the one
+     that binds and the cap is inert there; the box IS the band. The cap
+     still governs the phone, where the band is ~1.7 screens, and nothing
+     about it moved. */
   --frame-foot: min(100%, 134svh);
 }
 
 @media (min-width: 861px) {
   .ground {
-    --hero-pos-y: 36%;
+    --hero-pos-y: 40%;
   }
 }
 
@@ -1451,8 +1479,11 @@
   ⚠ CONTRACT ON THE CROPS (for scripts/gen-hero-photo.mjs): even bounded, the
   phone frame is 375x1072 = 0.350:1 and a 4:5 portrait crop loses 56% of its
   width to `cover`. A ~2:5.7 (0.35:1) portrait crop would land exactly. The
-  landscape frame is 1.212:1 at 1280 against a 16:9 crop — a 32% horizontal
-  loss, which is what buys the coverage and is priced in THE THIRD COMPLAINT.
+  landscape frame is the band on desktop now — 1280x797 = 1.61:1 at 1280
+  against the 3:2 rung, so `cover` spends 6.6% of the rung's ROWS and none of
+  its columns (it was 1.212:1 against a 16:9 crop, a 32% horizontal loss,
+  before the rung and the band both changed on 2026-09-06; see WHICH AXIS
+  ACTUALLY GOVERNS on `.ground`).
 
   z-index -2 puts it under the scrim; both are under the content because
   `.ground` isolates.
@@ -2496,8 +2527,22 @@
 
      --halo-type names --text-data 400 mono because check-hero-contrast
      credits a role at the THINNEST STEM it is painted at anywhere in the
-     band, and mono 400 (0.084em) is thinner than --text-eyebrow's mono 500
-     and thinner than --text-h1's display 200 at the phone step. */
+     band, and mono 400 at 13px (0.084em -> 1.09px) is thinner than
+     --text-eyebrow's mono 500 and thinner than every other --fg run.
+
+     RE-CHECKED WHEN THE SERIF ARRIVED (2026-09-06). The three evidence
+     titles are Newsreader 400 at --text-title, 20-23px; that cut's stem is
+     0.0809em at its thinnest point on the optical axis (the gate's serif:400
+     row), which is 1.62px at the 20px step — half again the mono figure this
+     rule is keyed to. The serif is the LARGEST --fg type in the band, not the
+     thinnest, so the key does not move.
+
+     RE-CHECKED WHEN THE BUTTONS WENT TO INTER (2026-09-06, later). The ghost
+     Btn's label "Résumé (PDF)" is the one --fg run that changed face: Inter
+     500 at 14px (Btn `face="body"`), stem 0.1116em -> 1.56px, against the
+     1.09px this rule is keyed to. Thicker, so the key stays where it is; the
+     barn-owl figures are still mono at --text-data and still the thinnest
+     --fg ink in the band. */
 .ground :global(.wrap) {
   --halo-role: --fg;
   --halo-type: var(--text-data) 400 mono;
@@ -2527,11 +2572,22 @@
      Same stack as the base rule, deliberately: the collar is inherited, so
      this rule does not change what is painted. It exists so the gate can
      attribute the collar to this role, which it cannot do from the DOM.
-     --text-fine 400 mono is the thinnest stem the role is painted at
-     (1.008px at 12px, against --text-micro 500's 1.176px). */
+
+     THE KEY MOVED FROM MONO TO BODY (2026-09-06), AND THAT IS THE ROLE'S LAST
+     MONO RUN LEAVING THE BAND. It was keyed to --text-fine 400 mono (1.008px
+     at 12px) because the Threshold's qualification line — "0.513 frozen ->
+     0.585 fine-tuned, the decoder frozen throughout" — was the one --fg-muted
+     run set in the code face. That sentence is body face now
+     (components/ui/Threshold.tsx says why), so every --fg-muted run in the
+     band is Inter 400: the Threshold's two labels at --text-fine and
+     --text-data, the two notes at 0.8rem, the quoted limits at 0.85rem and
+     the M.S. line at 0.9375rem. The thinnest of those is --text-fine 400
+     body — 0.0928em, 1.11px at 12px — and that is what this names. It is a
+     tenth of a pixel more stem than the mono key, so the role's need falls
+     rather than rises; the 53% taste floor below does not move for it. */
 .ground :global(.wrap) [class*="--fg-muted"] {
   --halo-role: --fg-muted;
-  --halo-type: var(--text-fine) 400 mono;
+  --halo-type: var(--text-fine) 400 body;
   text-shadow:
     0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground),
     0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground),
@@ -2549,7 +2605,13 @@
      run still reads the role, so the role still has to be attributed.
      The trailing ")" in the selector is load-bearing: it keeps this off
      text-[color:var(--fg-accent-display)], which needs the deeper collar
-     below and would be actively harmed by this one. */
+     below and would be actively harmed by this one.
+
+     RE-CHECKED WHEN THE BUTTONS WENT TO INTER (2026-09-06). The quiet Btn
+     "GitHub" paints this role too, and it moved from tracked mono at
+     --text-micro to Inter 500 at 14px (stem 1.56px). "P@1 0.487" is still
+     mono at --text-data and still the thinnest run of the role, so the key
+     stays. */
 .ground :global(.wrap) [class*="--fg-accent)"] {
   --halo-role: --fg-accent;
   --halo-type: var(--text-data) 400 mono;
@@ -2641,10 +2703,20 @@
      4.5 obligation, which is the failure this rule exists to answer.
 
      SCALED TO --text-h1, NOT --text-micro. The name is set at
-     clamp(2.25rem, 5.4vw, 4rem) — 36px at the phone step — in the display
-     face at weight 200, which is a THIN stem for its size, so the collar is
+     clamp(2.25rem, 5.4vw, 4rem) — 36px at the phone step — so the collar is
      scaled to that step rather than to body copy. Same 0.14 / 0.32 / 0.58
      fractions as rule 5, on 36px: 5.04 / 11.52 / 20.88px.
+
+     THE FACE CHANGED AND THE TYPE DECLARATION CHANGED WITH IT. The name was
+     Montserrat 200 — a 0.0336em stem, 1.21px at the phone step, the thinnest
+     large type on the page. It is now Newsreader 500 (app/layout.tsx says
+     why), whose stem is 0.1041em at the thinnest point of its optical axis:
+     3.75px at 36px, 6.7px at 64px. Three times the ink to throw a shadow
+     from, so the same radii deliver a deeper collar than they did; they are
+     kept rather than thinned because the name is the palest ink on the page
+     over the band's brightest pixels, and depth there is not a cost.
+     `serif` is a face the gate knows: its stem and counter were measured
+     into STEM_EM / COUNTER_EM the same afternoon.
 
      The role is declared so scripts/check-hero-contrast.mjs can attribute
      the collar; it cannot infer it from the DOM. Without the attribution the
@@ -2652,7 +2724,7 @@
      it did when --fg-brand was introduced with no rule here. */
 .ground :global(.wrap) [class*="--fg-brand"] {
   --halo-role: --fg-brand;
-  --halo-type: var(--text-h1) 200 display;
+  --halo-type: var(--text-h1) 500 serif;
   text-shadow:
     0 0 5.04px var(--ground), 0 0 5.04px var(--ground), 0 0 5.04px var(--ground), 0 0 5.04px var(--ground),
     0 0 5.04px var(--ground), 0 0 5.04px var(--ground), 0 0 5.04px var(--ground), 0 0 5.04px var(--ground),
@@ -2738,11 +2810,20 @@
      THE NUMBERS BELOW ARE MEASURED, Chromium, production build, all six
      reference viewports, 2026-09-05:
        .threshold-rule   offsetHeight 2px exactly; offsetWidth 335px (375) to
-                         784px (861). 40px is declared as the extent because it
-                         is already past the point where the along-axis factor
-                         computes to 1.0000, and declaring it low is the
-                         conservative direction for the credit while the
+                         784px (861). 40px was declared as the extent because
+                         it is already past the point where the along-axis
+                         factor computes to 1.0000, and declaring it low is
+                         the conservative direction for the credit while the
                          browser check holds the real bar above it.
+       RE-DECLARED 2026-09-06: THE BAR IS A 32px STUB NOW. hero.module.css
+                         shortens `.threshold-rule` in this band to the width
+                         of the block dash (THE THRESHOLD RULE IS A STUB), so
+                         the extent floor is 32px — the bar's own width, which
+                         the browser check holds it at or above. The along-axis
+                         factor at 32px: the widest layer is 6.09px blur, sigma
+                         2.74px, spread 3px, so (32 + 6) / 2 / 2.74 = 6.9
+                         sigma and 2*Phi(6.9) - 1 = 1.0000 still. The credit
+                         does not change; only the floor the test holds does.
        :focus-visible    the band's transparent-background focusables measure
                          143.7x45.4px (the ghost Btn) and 48.8x15.4px (the
                          inline link). 12px is declared on both axes: under the
@@ -2751,7 +2832,7 @@
 .ground :global(.threshold-rule) {
   --collar-role: --rule;
   /* box-thickness  box-extent  ink-offset  ink-thickness */
-  --collar-box: 2px 40px 0px 2px;
+  --collar-box: 2px 32px 0px 2px;
   box-shadow:
     0 0 1.47px 1.47px var(--ground), 0 0 3.36px 2px var(--ground),
     0 0 6.09px 3px var(--ground);

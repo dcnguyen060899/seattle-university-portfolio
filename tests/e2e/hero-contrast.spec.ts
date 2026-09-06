@@ -133,6 +133,8 @@ const NON_TEXT_MINIMUM = 3
 
 interface ExtentRow {
   w: number
+  /** The viewport height the row was measured in — the gate's own box. */
+  h: number
   bandH: number
   x0: number
   x1: number
@@ -1426,7 +1428,15 @@ test.describe('hero: the geometry the build gate assumes', () => {
     test(`TEXT_EXTENT row w=${row.w} still describes where the glyphs are`, async ({
       page,
     }, testInfo) => {
-      await page.setViewportSize({ width: row.w, height: 900 })
+      // AT THE ROW'S OWN HEIGHT, not a flat 900 (2026-09-06). The band's
+      // height used to follow from its width alone, so one convenient height
+      // served every row. Since `.band` took `min-block-size: 100svh`
+      // (components/site/hero.module.css) the desktop band IS the viewport
+      // height: at 1280x900 it is 900px, and measuring there reported 12.5%
+      // "drift" against a row that correctly records 800 for the 1280x800
+      // box the build gate evaluates. Each row now says which box it
+      // describes, and this measures that box.
+      await page.setViewportSize({ width: row.w, height: row.h })
       await page.goto('/', { waitUntil: 'load' })
       await freezeMotion(page)
 

@@ -314,13 +314,95 @@ const EXTENT_MARGIN = 0.02;
   check for no gain. Only bandH is corrected to the measurement, because that
   is the number the drift assertion is about.
 */
+/*
+  RE-MEASURED 2026-09-06 (later), when the band was re-set in the serif: the
+  name Newsreader 500 at --text-h1, three serif titles at --text-title in
+  place of the category eyebrows, sentence-case body-face labels, and the
+  readouts' full-width hairlines replaced by 32px dashes. Same instrument.
+
+    width   band height          measured glyph box
+    375     1527 -> 1524         x  5.3% .. 94.2%   y 17.2% .. 95.0%
+    390     1466 -> 1452         x  5.1% .. 94.3%   y 18.0% .. 94.8%
+    768     1318 -> 1310         x  4.5% .. 74.3%   y 20.4% .. 93.9%
+    861     1371 -> 1355         x  4.5% .. 66.7%   y 20.4% .. 93.4%
+    1280    1018 ->  987         x 10.9% .. 87.1%   y 13.1% .. 86.7%
+    1600    1042 -> 1013         x 18.8% .. 80.4%   y 13.9% .. 85.8%
+
+  The band is SHORTER at every width — an eyebrow line left each block and
+  the serif titles set tighter than eyebrow-plus-readout did — and every
+  measured box sits INSIDE the box already declared, on all four sides at all
+  six widths. So, by the rule above, no box moves and only bandH is corrected.
+*/
+/*
+  RE-MEASURED 2026-09-06 (the hybrid), when the band was brought under one
+  screen on desktop (components/site/hero.module.css, ONE SCREEN: the
+  evidence gap, the block margins, the limits' leading and the band's foot
+  all tightened; the actions moved between the identity and the evidence in
+  source order, so on the phone they sit under the lede; the Threshold's
+  rule became a 32px stub). Same instrument, viewport height 900.
+
+    width   band height          measured glyph box
+    375     1524 -> 1403         x  5.3% .. 94.2%   y 18.7% .. 96.4%
+    390     1452 -> 1361         x  5.1% .. 94.3%   y 19.2% .. 96.3%
+    768     1310 -> 1214         x  4.5% .. 74.3%   y 22.0% .. 95.8%
+    861     1355 -> 1246         x  4.5% .. 66.7%   y 22.2% .. 96.0%
+    1280     987 ->  797         x 10.9% .. 87.1%   y 16.2% .. 93.7%
+    1600    1013 ->  811         x 18.8% .. 80.4%   y 17.4% .. 93.8%
+
+  THE BAND IS SHORTER AT EVERY WIDTH AND THE GLYPHS REACH LOWER IN IT. The
+  band's foot went from --spacing-band to 48px, so the last caveat line now
+  sits within 4-7% of the band's bottom edge at every width, and the
+  measured y1 is OUTSIDE the declared box on the bottom at all six widths
+  (96.4% against 95.8% at 375; 93.7% against 90.3% at 1280). By the rule
+  above y1 is widened to the measurement — rounded up, never down — and
+  every other side, where the measurement sits inside the declaration, is
+  left at the wider of the two. bandH is corrected to the measurement.
+*/
+/*
+  RE-MEASURED 2026-09-06 (the floor), when `.band` in
+  components/site/hero.module.css took `min-block-size: 100svh` to close the
+  2.8px of the next band's paper a 797.2px band left at the fold of an 800px
+  viewport. Same instrument, BUT AT EACH GATE BOX'S OWN HEIGHT this time —
+  375x812, 390x844, 768x1024, 861x1000, 1280x800, 1600x900, the VIEWPORT_BOXES
+  below — because with a floor the desktop band's height IS the viewport's,
+  and a row measured at 900 would declare 900 for the 1280x800 box the gate
+  evaluates. The phone rows move for the same reason in the other direction:
+  --hero-headroom is `clamp(7.5rem, 21svh, 12.5rem)`, so the band the previous
+  900-tall instrument measured (1403 at 375) is 18px taller than the band in
+  the 812px box the gate actually reasons about.
+
+    width   box height   band height          measured glyph box
+    375        812       1403 -> 1385         x  5.3% .. 94.2%   y 17.6% .. 96.4%
+    390        844       1361 -> 1350         x  5.1% .. 94.3%   y 18.5% .. 96.3%
+    768       1024       1214 -> 1225         x  4.5% .. 74.3%   y 22.7% .. 95.9%
+    861       1000       1246 -> 1257         x  4.5% .. 66.7%   y 22.8% .. 96.0%
+    1280       800        797 ->  800         x 10.9% .. 87.1%   y 16.1% .. 93.4%
+    1600       900        811 ->  900         x 18.8% .. 80.4%   y 15.7% .. 84.6%
+
+  The floor binds only on desktop (1280 and 1600 are now exactly the box),
+  and every measured glyph box sits INSIDE the box already declared on all
+  four sides at all six widths — on desktop the glyphs did not move and the
+  band grew under them, so every fraction shrank. By the rule above no box
+  moves and only bandH is corrected to the measurement.
+
+  EACH ROW NOW CARRIES `h`, THE VIEWPORT HEIGHT IT WAS MEASURED IN. A band
+  height used to be a function of width alone, so the browser gate could
+  re-measure every row at one convenient height (900) and the table did not
+  have to say. With `min-block-size: 100svh` the desktop band IS the viewport
+  height, and a row that does not name its height is a row the gate cannot
+  re-measure: at 1280x900 the band is 900 and "bandH 800" reads as 12.5%
+  drift when it is the right number for the 1280x800 box this gate
+  evaluates. `h` is the same height as VIEWPORT_BOXES below — asserted there
+  — and tests/e2e/hero-contrast.spec.ts reads it through --emit-extent and
+  sizes its viewport to it.
+*/
 export const TEXT_EXTENT = [
-  { w: 375, bandH: 1527, x0: 0.053, x1: 0.946, y0: 0.144, y1: 0.958 },
-  { w: 390, bandH: 1466, x0: 0.051, x1: 0.944, y0: 0.153, y1: 0.956 },
-  { w: 768, bandH: 1318, x0: 0.045, x1: 0.954, y0: 0.202, y1: 0.941 },
-  { w: 861, bandH: 1371, x0: 0.045, x1: 0.951, y0: 0.201, y1: 0.936 },
-  { w: 1280, bandH: 1018, x0: 0.109, x1: 0.886, y0: 0.098, y1: 0.903 },
-  { w: 1600, bandH: 1042, x0: 0.187, x1: 0.809, y0: 0.104, y1: 0.896 },
+  { w: 375, h: 812, bandH: 1385, x0: 0.053, x1: 0.946, y0: 0.144, y1: 0.965 },
+  { w: 390, h: 844, bandH: 1350, x0: 0.051, x1: 0.944, y0: 0.153, y1: 0.964 },
+  { w: 768, h: 1024, bandH: 1225, x0: 0.045, x1: 0.954, y0: 0.202, y1: 0.959 },
+  { w: 861, h: 1000, bandH: 1257, x0: 0.045, x1: 0.951, y0: 0.201, y1: 0.961 },
+  { w: 1280, h: 800, bandH: 800, x0: 0.109, x1: 0.886, y0: 0.098, y1: 0.938 },
+  { w: 1600, h: 900, bandH: 900, x0: 0.187, x1: 0.809, y0: 0.104, y1: 0.939 },
 ];
 
 /** The declared box for a viewport width, inflated by EXTENT_MARGIN. */
@@ -377,6 +459,14 @@ const VIEWPORTS = VIEWPORT_BOXES.map((vp) => {
       `check-hero-contrast: viewport ${vp.name} has no TEXT_EXTENT row. The band box is ` +
         'derived from that table so the browser gate validates it; add the measured row ' +
         'rather than typing a height here.',
+    );
+  }
+  if (row.h !== vp.h) {
+    throw new Error(
+      `check-hero-contrast: viewport ${vp.name} is ${vp.h}px tall but its TEXT_EXTENT row was ` +
+        `measured in a ${row.h}px viewport. Since the band took a 100svh floor its desktop height ` +
+        'IS the viewport height, so a row measured at another height describes another box; ' +
+        're-measure the row at this box and record h with it.',
     );
   }
   return { ...vp, bandH: row.bandH };
@@ -672,6 +762,29 @@ const CAP_HEIGHT_EM = 0.70;
  * generous on a bold sans is nearly invisible on this hero's headline, and no
  * amount of blur radius fixes that. That fact only exists in this file because
  * these numbers were measured rather than assumed.
+ *
+ * ── THE SERIF, AND WHY ITS ROW IS A MINIMUM RATHER THAN A NUMBER ──────────
+ *
+ * `serif` is Newsreader (app/layout.tsx), a VARIABLE font with an optical-size
+ * axis (opsz 6–72) that `font-optical-sizing: auto` drives from the rendered
+ * px size. So this cut does not have one stem width: it has one per size, and
+ * the "I" measured by the harness above at 400px lands at the axis's 72 end,
+ * which for this family is the THICKEST main stem — Newsreader's display cut
+ * gains contrast by thickening stems and thinning hairlines, not the reverse.
+ * Measured 2026-09-06, same harness (calibrated first against Montserrat 200
+ * and Inter 400, which it reproduced to all five figures), stepping the axis
+ * with `font-optical-sizing: none; font-variation-settings: 'opsz' N`:
+ *
+ *     opsz          6      12      16      20      23      28      36      48      64      72
+ *     serif:400  .10901  .09451  .08483  .08087  .08214  .08427  .08769  .09279  .09960  .10301
+ *     serif:500  .14102  .12202  .10934  .10414  .10579  .10861  .11307  .11979  .12875  .13322
+ *
+ * The page sets serif:500 at --text-h1 (36–64px) and serif:400 at
+ * --text-title (20–23px), so a per-size table would credit the name at
+ * 0.113–0.129 and the titles at 0.081–0.082. This file does not model the
+ * axis; it takes the MINIMUM OVER THE WHOLE AXIS for each weight, which is the
+ * one direction a contrast gate may be wrong in. Re-measure if the family,
+ * the axes loaded, or either size step changes.
  */
 const STEM_EM = {
   'display:200': 0.03357,
@@ -684,6 +797,8 @@ const STEM_EM = {
   'mono:400': 0.08401,
   'mono:500': 0.11201,
   'mono:600': 0.13000,
+  'serif:400': 0.08087,
+  'serif:500': 0.10414,
 };
 
 /**
@@ -724,6 +839,11 @@ const COUNTER_EM = {
   'mono:400': 0.2500,
   'mono:500': 0.2200,
   'mono:600': 0.2000,
+  /* Newsreader's counter also moves with the optical axis (serif:400 runs
+     0.215–0.260em, serif:500 0.1975–0.2325em across opsz 6–72); the NARROWEST
+     is taken, which is the strict direction for the counter-closure test. */
+  'serif:400': 0.2150,
+  'serif:500': 0.1975,
 };
 
 /**
@@ -1113,6 +1233,7 @@ function treatmentReachPx(t) {
        .someHeroText {
          --halo-role: --fg-muted;                  the foreground role painted
          --halo-type: var(--text-lede) 400 body;   size, weight, face
+                                                  (face: display | body | mono | serif)
          text-shadow: 0 0 2px  color-mix(in srgb, var(--ground)  95%, transparent),
                       0 0 16px color-mix(in srgb, var(--ground)  85%, transparent);
          -webkit-text-stroke: 3px color-mix(in srgb, var(--ground) 100%, transparent);
@@ -1197,14 +1318,14 @@ function resolveTreatment(rule, ctx, typeScale) {
      clamp() full of spaces and the other two are single tokens. */
   const parts = typeDecl.trim().split(/\s+/);
   if (parts.length < 3) {
-    bad('--halo-type must be `<font-size> <font-weight> <display|body|mono>`', typeDecl);
+    bad('--halo-type must be `<font-size> <font-weight> <display|body|mono|serif>`', typeDecl);
     return { problems };
   }
   const face = parts[parts.length - 1].toLowerCase();
   const weight = parts[parts.length - 2];
   const sizeExpr = parts.slice(0, parts.length - 2).join(' ');
-  if (!['display', 'body', 'mono'].includes(face)) {
-    bad('--halo-type face must be display, body or mono', face);
+  if (!['display', 'body', 'mono', 'serif'].includes(face)) {
+    bad('--halo-type face must be display, body, mono or serif', face);
     return { problems };
   }
   if (!/^[1-9]00$/.test(weight)) {
@@ -3097,7 +3218,7 @@ function analyse({ globalsSrc, scrimSrc, heroSrc, heroCss, assets, manifest, sou
       'halo the gate cannot read is a halo nothing checks, and the whole point of moving the ' +
       'darkening onto the letterforms is that it lets the veil get thinner. Declare ' +
       '`--halo-role: <the foreground role>` and `--halo-type: <font-size> <weight> ' +
-      '<display|body|mono>` on the same rule, write the colours as ' +
+      '<display|body|mono|serif>` on the same rule, write the colours as ' +
       'color-mix(in srgb, var(--ground) N%, transparent), and pair any text-stroke with ' +
       '`paint-order: stroke fill`');
   }
