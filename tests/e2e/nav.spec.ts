@@ -1,3 +1,7 @@
+import { execFileSync } from 'node:child_process'
+import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
+
 import { expect, test, type Page } from '@playwright/test'
 
 import {
@@ -31,7 +35,9 @@ import { decodePng, sampleRects, type DecodedImage, type Rect } from './helpers/
  *      .ts already guards inside the band ("it feel like it just cut of
  *      overlap on top the background image") — a perceptible geometric
  *      boundary — except this one is at the band's top instead of its bottom.
- *      §2 measures it.
+ *      §2 measures it — and since the veil turned along the inline axis
+ *      (nav.module.css, THE FOLD), §2b measures the same property ALONG the
+ *      bar, where a vertical probe cannot see.
  *
  *   2. THE STATE MACHINE IS INVERTED. The reference is transparent at rest and
  *      grows a frosted bar on scroll; this page was opaque at rest and had no
@@ -683,6 +689,236 @@ test.describe('§2 no hard edge under the nav at rest', () => {
           'Territory: components/site/nav.tsx and its stylesheet.',
       ).toBeLessThan(MAX_EDGE_STEP)
     })
+  }
+})
+
+/* ══════════════════════════════════════════════════════════════════════════
+   §2b  THE FOLD — no manufactured edge ALONG the bar either
+   ══════════════════════════════════════════════════════════════════════════
+
+   nav.module.css (THE FOLD) holds the veil at 36% under the mark — the one
+   element in the bar with no treatment of its own — and thins it across the
+   bar to 2% under the collared links, because the light is on the right and
+   the need is on the left. That gives the veil a second edge: the foot §2
+   measures, and a transition ALONG the bar that no vertical probe can see.
+   The tail carries the same profile under a vertical mask, so the seam
+   question has two axes now and this section asks the second.
+
+   THE CRITERION IS THE ONE THIS REPO ALREADY HOLDS THE VERTICAL AXIS TO —
+   scripts/check-hero-blend.mjs's derived budget, READ OUT OF THAT FILE
+   rather than retyped so it cannot drift from the derivation: at no point
+   may CIE L* change by more than one JND (MAX_WINDOW_DELTA_LSTAR, 1.0)
+   across half a cycle of the eye's peak spatial frequency (EDGE_WINDOW_PX,
+   6 CSS px), after the 1px point-spread blur (BLUR_SIGMA_PX) that keeps an
+   8-bit ramp's dither from counting as an edge. nav.module.css already
+   sizes its tail against that budget on two fields — a flat sRGB 128
+   (FLAT_FIELD_SRGB, about the 92nd percentile of the shipped rungs) and
+   white, the bound — and the fold is held to the same number on the same
+   two. The vertical step in the same frame is measured and reported beside
+   it, so the two axes are always read off one picture.
+
+   THE NAV'S OWN PAINT, ISOLATED. The hero is replaced by the flat field —
+   band, picture, scrim and copy all hidden — and the bar's content is
+   hidden too, halos included: a text-shadow is a per-glyph darkening that
+   check-nav-contrast.mjs judges on its own terms, and along a row of 10.5px
+   labels it would register as forty small edges that have nothing to do
+   with the veil. What is left in the frame is the bar's background and its
+   tail over the field, and every gradient in it belongs to them. That is
+   the same isolation hero-blend.spec.ts performs for the hero's veil.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+interface BlendBudget {
+  edgeWindowPx: number
+  maxWindowDeltaLstar: number
+  flatFieldSrgb: number
+  blurSigmaPx: number
+}
+
+let blendBudget: BlendBudget | null = null
+
+/**
+ * The edge budget, read out of scripts/check-hero-blend.mjs in a child
+ * process — the module is ESM with a guarded main(), so importing it runs
+ * nothing — and cached per worker. hero-blend.spec.ts §0 holds the same
+ * numbers to their derived values; this file only borrows them.
+ */
+function readBlendBudget(): BlendBudget {
+  if (blendBudget) return blendBudget
+  const script = pathToFileURL(join(process.cwd(), 'scripts', 'check-hero-blend.mjs')).href
+  const out = execFileSync(
+    'node',
+    [
+      '--input-type=module',
+      '-e',
+      `const m = await import(${JSON.stringify(script)}); ` +
+        'console.log(JSON.stringify({ edgeWindowPx: m.EDGE_WINDOW_PX, ' +
+        'maxWindowDeltaLstar: m.MAX_WINDOW_DELTA_LSTAR, flatFieldSrgb: m.FLAT_FIELD_SRGB, ' +
+        'blurSigmaPx: m.BLUR_SIGMA_PX }))',
+    ],
+    { encoding: 'utf8', cwd: process.cwd() },
+  )
+  blendBudget = JSON.parse(out.trim()) as BlendBudget
+  return blendBudget
+}
+
+/** CIE L* from relative luminance — the axis the budget is stated in. */
+function toLstar(y: number): number {
+  return y > 216 / 24389 ? 116 * Math.cbrt(y) - 16 : (24389 / 27) * y
+}
+
+interface SeamReading {
+  /** Worst L* change across one window along the axis. */
+  delta: number
+  /** Where it was found, in device px of the frame. */
+  x: number
+  y: number
+  lstarLo: number
+  lstarHi: number
+}
+
+/**
+ * The worst L* change across `windowPx` along one axis of a frame, on every
+ * line of the region, after a 1-D Gaussian blur of `sigmaPx` along that axis.
+ *
+ * Runs in Node over the decoded screenshot, like worstStep above, so a
+ * failure can show its working. The blur is the pre-filter
+ * check-hero-blend.mjs applies before differencing; the first and last
+ * `radius` samples of each line are not scored, because the clamped blur
+ * there is an artefact of the frame's edge rather than a gradient in it.
+ */
+function worstWindowStep(
+  image: DecodedImage,
+  axis: 'horizontal' | 'vertical',
+  windowPx: number,
+  sigmaPx: number,
+): SeamReading | null {
+  const { width, height, data } = image
+  const lstarAt = (x: number, y: number): number => {
+    const i = (y * width + x) * 4
+    return toLstar(
+      relativeLuminance({ r: data[i] ?? 0, g: data[i + 1] ?? 0, b: data[i + 2] ?? 0, a: 1 }),
+    )
+  }
+  const radius = Math.ceil(sigmaPx * 3)
+  const kernel: number[] = []
+  let norm = 0
+  for (let k = -radius; k <= radius; k += 1) {
+    const w = Math.exp(-(k * k) / (2 * sigmaPx * sigmaPx))
+    kernel.push(w)
+    norm += w
+  }
+  const lines = axis === 'horizontal' ? height : width
+  const along = axis === 'horizontal' ? width : height
+  if (along <= windowPx + 2 * radius + 1 || lines <= 0) return null
+
+  let best: SeamReading | null = null
+  const raw = new Float64Array(along)
+  const smooth = new Float64Array(along)
+  for (let l = 0; l < lines; l += 1) {
+    for (let a = 0; a < along; a += 1) {
+      raw[a] = axis === 'horizontal' ? lstarAt(a, l) : lstarAt(l, a)
+    }
+    for (let a = 0; a < along; a += 1) {
+      let s = 0
+      for (let k = -radius; k <= radius; k += 1) {
+        const idx = Math.min(along - 1, Math.max(0, a + k))
+        s += (raw[idx] ?? 0) * (kernel[k + radius] ?? 0)
+      }
+      smooth[a] = s / norm
+    }
+    for (let a = radius; a + windowPx < along - radius; a += 1) {
+      const lo = smooth[a] ?? 0
+      const hi = smooth[a + windowPx] ?? 0
+      const delta = Math.abs(hi - lo)
+      if (best === null || delta > best.delta) {
+        best =
+          axis === 'horizontal'
+            ? { delta, x: a, y: l, lstarLo: lo, lstarHi: hi }
+            : { delta, x: l, y: a, lstarLo: lo, lstarHi: hi }
+      }
+    }
+  }
+  return best
+}
+
+/**
+ * The two fields the fold is judged over. The flat one is the blend gate's
+ * own (read from it, see readBlendBudget); white is the bound, because a
+ * darkening's edge is at its most visible over the brightest source pixel.
+ */
+const SEAM_FIELDS = [
+  { name: 'the flat field', css: (b: BlendBudget) => `rgb(${b.flatFieldSrgb} ${b.flatFieldSrgb} ${b.flatFieldSrgb})` },
+  { name: 'white', css: () => '#ffffff' },
+] as const
+
+/** How far below the tail's own foot the frame extends: enough to include its last stop and the field beyond it. */
+const SEAM_MARGIN = 24
+
+test.describe('§2b no edge along the bar at rest', () => {
+  for (const { width, height, note } of VIEWPORTS) {
+    for (const field of SEAM_FIELDS) {
+      test(`the fold has no edge along the bar over ${field.name} at ${width}px (${note})`, async ({
+        page,
+      }) => {
+        const budget = readBlendBudget()
+
+        await page.setViewportSize({ width, height })
+        await page.goto('/', { waitUntil: 'networkidle' })
+        await hideDevChrome(page)
+        await settle(page)
+        await page.waitForTimeout(400)
+
+        const nav = await readNav(page)
+        expect(nav.found, `No <header> in the document at ${width}px.`).toBe(true)
+
+        /* The frame reaches past the tail's own foot, read off the element
+           rather than assumed, so the whole of the decay is in it. */
+        const tailBottom = await page.evaluate((selector) => {
+          const tail = document.querySelector<HTMLElement>(`${selector} > [aria-hidden]`)
+          return tail ? tail.getBoundingClientRect().bottom : null
+        }, NAV)
+        const clipH = Math.min(height, Math.ceil((tailBottom ?? nav.bottom) + SEAM_MARGIN))
+
+        await page.addStyleTag({
+          content:
+            `html, body, main { background: ${field.css(budget)} !important; }\n` +
+            `#top, #top *, [data-intro-overlay] { visibility: hidden !important; }\n` +
+            `${NAV} .wrap, ${NAV} .wrap * { visibility: hidden !important; }`,
+        })
+        await settle(page)
+
+        const image = decodePng(
+          await page.screenshot({ animations: 'disabled', clip: { x: 0, y: 0, width, height: clipH } }),
+        )
+        const scale = image.width / width
+        const windowPx = Math.round(budget.edgeWindowPx * scale)
+        const sigmaPx = budget.blurSigmaPx * scale
+
+        const along = worstWindowStep(image, 'horizontal', windowPx, sigmaPx)
+        const down = worstWindowStep(image, 'vertical', windowPx, sigmaPx)
+        expect(along, `Could not measure along the bar at ${width}px — a null reading is "did not measure".`).not.toBeNull()
+        expect(down, `Could not measure down the bar at ${width}px.`).not.toBeNull()
+        if (along === null || down === null) return
+
+        const where = (r: SeamReading): string =>
+          `${r.delta.toFixed(2)} L* across ${budget.edgeWindowPx}px at (${Math.round(r.x / scale)}, ` +
+          `${Math.round(r.y / scale)}) CSS px, L* ${r.lstarLo.toFixed(1)} -> ${r.lstarHi.toFixed(1)}`
+        test.info().annotations.push({
+          type: 'seam',
+          description: `${width}px over ${field.name}: along the bar ${where(along)}; down it ${where(down)}`,
+        })
+
+        expect(
+          along.delta,
+          `Along the bar over ${field.name} at ${width}px the worst step is ${where(along)}, ` +
+            `against the budget of ${budget.maxWindowDeltaLstar} L* across ${budget.edgeWindowPx}px ` +
+            `that scripts/check-hero-blend.mjs derives and nav.module.css sizes its tail against. ` +
+            `(Down the bar in the same frame: ${where(down)}.) A step over budget along a row is a ` +
+            'column drawn on the photograph — the plate, turned ninety degrees. Territory: ' +
+            'components/site/nav.module.css, THE FOLD: widen the fold or bring its two values closer.',
+        ).toBeLessThanOrEqual(budget.maxWindowDeltaLstar)
+      })
+    }
   }
 })
 

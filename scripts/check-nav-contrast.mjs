@@ -112,6 +112,24 @@
  *       rasterised over its own box — `calc(100% + 64px)`, ramp included — so
  *       a glyph that ever lands in the decay is measured in the decay.
  *
+ *       AND THE INLINE AXIS (2026-09-06). The plateau no longer varies along
+ *       y alone. nav.module.css holds it under the mark — the one box in the
+ *       bar with no treatment of its own — and thins it ACROSS the bar toward
+ *       the links, which wear a collar and, by this file's halo model, need
+ *       none of it (tests/e2e/nav.spec.ts §4 reads the rendered pixels under
+ *       each run's rect and sets their floor higher; the stylesheet records
+ *       both instruments and ships the stricter). That is the axis the light
+ *       varies along, so it is the axis the darkness is spent on.
+ *       Every box is therefore measured against the bar's alpha AT ITS OWN
+ *       x-range: the paint is sampled at each cell's extremes rather than its
+ *       centre, both extremes go through the worst-pairing search, and every
+ *       row prints the alpha its worst pairing was measured at. The tail
+ *       carries the same horizontal layer under a vertical MASK — a product
+ *       of two axes is a mask, not a layer — and the gate holds the bar's
+ *       closing alpha and the tail's opening alpha equal COLUMN BY COLUMN
+ *       (SEAM_TOLERANCE): the same-edge invariant the stylesheet states, now
+ *       per x. A mask it cannot rasterise fails by name. No alpha is guessed.
+ *
  *   S · STUCK, OVER THE PAGE.
  *       The paper face's fill composited over EVERY opaque surface any band on
  *       this page paints — paper, paper-sunk, crimson-wash, ink, ink-raised,
@@ -399,6 +417,29 @@ const PLATE_SEAM_ADVISORY_LSTAR = 10;
 /** CIE L* from relative luminance — the axis the plate seam is quoted in. */
 const toLstar = (y) => (y > 216 / 24389 ? 116 * Math.cbrt(y) - 16 : (24389 / 27) * y);
 
+/**
+ * How far the tail's opening alpha may sit from the bar's closing alpha at the
+ * same x, as a fraction of --ground.
+ *
+ * nav.module.css names the coupling: "the plateau's closing stop and this
+ * opening stop are the same edge seen from either side, and they move
+ * together." That used to be one pair of numbers; now that the profile runs
+ * along the inline axis it is a pair of FUNCTIONS of x, and the gate holds
+ * them equal column by column (THE INLINE AXIS). One point of alpha is
+ * under 0.4 L* over white — below the 1.0 L* per 6px this repo calls an edge —
+ * and the two samples are taken a quarter-pixel either side of the boundary,
+ * where the tail's own decay moves it by less than a tenth of a point.
+ */
+const SEAM_TOLERANCE = 0.01;
+
+/**
+ * Where the seam is sampled: this many columns across the bar, plus the two
+ * edges. Enough to land inside every segment of a four-stop profile at every
+ * viewport in VIEWPORTS; the check is a bound on a piecewise-linear pair, so
+ * the columns between samples cannot hide a step the samples miss.
+ */
+const SEAM_COLUMNS = 64;
+
 /* ════════════════════════════════════════════════════════════════════════════
    RECOGNISING THE TWO FACES
 
@@ -447,6 +488,10 @@ const MEASURED_PROPS = new Set([
   'row-gap', 'column-gap', 'font-size', 'letter-spacing', 'line-height',
   'block-size', 'height', 'inline-size', 'width', 'box-shadow', 'border-block-end',
   'text-shadow', '-webkit-text-stroke', 'paint-order',
+  /* The tail's mask. Read since the profile went horizontal (THE INLINE AXIS,
+     below): a mask MULTIPLIES every layer under it, so a rule that sets one
+     under a query this gate cannot place is an alpha it may be crediting. */
+  'mask-image', '-webkit-mask-image', 'mask',
 ]);
 
 /* ════════════════════════════════════════════════════════════════════════════
@@ -1498,7 +1543,7 @@ function analyseNav(input) {
       browser paints below them.
     */
     const paints = [];
-    const pushPaint = (decls, boxTop, boxH, label, groundRgb) => {
+    const pushPaint = (decls, boxTop, boxH, label, groundRgb, inherited = new Map()) => {
       if ((decls.get('display') ?? '').trim() === 'none') return;
       const op = parseFloat(decls.get('opacity') ?? '1');
       if (!(op > 0)) return;
@@ -1510,19 +1555,73 @@ function analyseNav(input) {
       const image = decls.get('background-image') ?? decls.get('background') ?? null;
       if (colour !== null) stack.push(colour);
       if (image !== null) stack.push(image);
+      /* Custom properties INHERIT: a length the bar declares — the fold's two
+         stops — is what its tail's own gradient reads through var(). The
+         document's, then the parent's, then the element's own, which is the
+         cascade's order for a child of the bar. */
+      const ctx = {
+        vars: new Map([...rootVars, ...inherited, ...decls]),
+        ground: groundRgb,
+        vw: vp.w, vh: vp.h, boxW: vp.w, boxH, axis: boxH, spacingBand: 0,
+      };
+
+      /*
+        THE MASK, read the way check-hero-contrast.mjs reads the pocket's.
+
+        A background layer can only ADD alpha, so a surface that has to be
+        shaped on BOTH axes — the tail, which carries the bar's horizontal
+        profile and decays to nothing downward — cannot be written as layers
+        alone: the product of an x-profile and a y-decay is a mask. With
+        `mask-mode: match-source` and a gradient source, what multiplies is
+        the source's ALPHA, so the stops this gate already parses are exactly
+        the quantity. One layer, as the hero gate allows; the prefixed and
+        unprefixed forms must agree, because a browser that takes the other one
+        is rendering a tail this gate did not measure. And a mask the gate
+        cannot rasterise FAILS BY NAME and the surface is left unpainted —
+        under-credited, which is the only direction this file may be wrong in.
+      */
+      const standard = decls.get('mask-image') ?? decls.get('mask') ?? null;
+      const prefixed = decls.get('-webkit-mask-image') ?? null;
+      if (standard !== null && prefixed !== null
+        && standard.replace(/\s+/g, ' ') !== prefixed.replace(/\s+/g, ' ')) {
+        fail(NAV_CSS, `${label} declares two different masks`,
+          `at ${vp.name}: mask-image and -webkit-mask-image do not match`,
+          'keep the two declarations byte-identical, or drop the prefixed one — WebKit and '
+          + 'Chromium would otherwise shape the tail differently and only one of them is the '
+          + 'tail this gate measured');
+        return;
+      }
+      const maskExpr = standard ?? prefixed;
+      let mask = null;
+      if (maskExpr !== null && maskExpr.trim().toLowerCase() !== 'none') {
+        try {
+          const maskLayers = M.splitTop(maskExpr).map((layer) => M.parseGradient(layer, ctx));
+          if (maskLayers.length !== 1) {
+            throw new Error(`a mask of ${maskLayers.length} layers — this gate evaluates exactly one, `
+              + 'as check-hero-contrast.mjs does');
+          }
+          mask = maskLayers[0];
+        } catch (err) {
+          fail(NAV_CSS, `${label} wears a mask this gate cannot rasterise`,
+            `at ${vp.name}: \`${maskExpr}\` — ${err && err.message ? err.message : String(err)}`,
+            'THIS IS A HARD FAILURE ON PURPOSE. A mask multiplies every layer beneath it, so a '
+            + 'mask the gate cannot evaluate is a surface whose alpha is unknown at every pixel. '
+            + 'Write it as ONE linear-gradient of the stop forms check-hero-contrast.mjs already '
+            + 'reads (the hero\'s pocket mask is the precedent)');
+          return;
+        }
+      }
+
       for (const bg of stack) {
         const t = bg.trim().toLowerCase();
         if (t === 'none' || t === 'transparent') continue;
-        const ctx = {
-          vars: new Map([...rootVars, ...decls]),
-          ground: groundRgb,
-          vw: vp.w, vh: vp.h, boxW: vp.w, boxH, axis: boxH, spacingBand: 0,
-        };
         try {
           const layers = M.splitTop(bg).map((layer) => M.parseGradient(layer, ctx));
-          const field = M.buildField([{ label, layers, mask: null }], op);
+          const field = M.buildField([{ label, layers, mask }], op);
           paints.push({
             label,
+            top: boxTop,
+            h: boxH,
             /* In the ELEMENT's own coordinates, offset by where the element
                sits in the bar, and empty outside it. */
             at: (x, y) => (y < boxTop || y > boxTop + boxH
@@ -1543,7 +1642,7 @@ function analyseNav(input) {
        children, and `.veil` is a child. Reversing these would put the tail's
        ramp OVER the plateau instead of under it. */
     pushPaint(g.navDecls, 0, g.navH, 'the nav\'s own background', restGround.ground);
-    pushPaint(g.veilDecls, g.veilTop, g.veilH, 'the veil', restGround.ground);
+    pushPaint(g.veilDecls, g.veilTop, g.veilH, 'the veil', restGround.ground, g.navDecls);
 
     const navPaintAt = (x, y) => {
       let rgb = [0, 0, 0];
@@ -1557,6 +1656,77 @@ function analyseNav(input) {
       }
       return a === 0 ? null : { rgb, a };
     };
+
+    /*
+      THE INLINE AXIS — the nav's paint at a cell's EXTREMES, not its centre.
+
+      Until 2026-09-06 the bar's paint was sampled once per cell, at the
+      centre, and that was exact: the plateau varied along y only, its stops
+      were 45px apart and a cell is a few px tall. The profile now varies along
+      x as well — nav.module.css holds the plateau under the mark and thins it
+      across the bar toward the links, because that is the axis the light
+      varies along (THE FOLD, there) — so a cell that straddles the fold has
+      one alpha at its left edge and another at its right. The centre is
+      neither. Sampled at the five points the scrim's alpha is already sampled
+      at, and both extremes go through worstOverCell: for a light role the
+      thinnest alpha is the worst pairing, for the dark raster the thickest,
+      and taking both is what "worst pixel-window in the box" means once the
+      window has two axes. Every box row reports the alpha its worst pairing
+      was measured at, so a box that has slid onto the fold shows up as a
+      number and not as a ratio that quietly moved.
+    */
+    const navPaintExtremes = (x0, y0, x1, y1) => {
+      let lo = null;
+      let hi = null;
+      for (const [px, py] of [[x0, y0], [x1, y0], [x0, y1], [x1, y1], [(x0 + x1) / 2, (y0 + y1) / 2]]) {
+        const s = navPaintAt(px, py) ?? { rgb: [0, 0, 0], a: 0 };
+        if (lo === null || s.a < lo.a) lo = s;
+        if (hi === null || s.a > hi.a) hi = s;
+      }
+      const asFill = (s) => (s.a === 0 ? null : s);
+      return lo.a === hi.a ? [asFill(lo)] : [asFill(lo), asFill(hi)];
+    };
+
+    /*
+      THE SAME EDGE, PER X.
+
+      nav.module.css: "the plateau's closing stop and this opening stop are the
+      same edge seen from either side, and they move together." When the
+      profile varied along y only that was one number checked by eye; along x
+      it is a function of x, and a tail that carried a different profile from
+      the bar — or the same profile under a mask that does not open at 1 —
+      would draw a horizontal step at the bar's foot across some columns and
+      not others, which is the seam this element exists to remove, in a form
+      no vertical check can see. So the bar's alpha a quarter-pixel above its
+      foot and the tail's a quarter-pixel below its head are compared column
+      by column, and a difference over SEAM_TOLERANCE fails by name. Only when
+      the tail actually starts at the bar's foot: an older form put the veil
+      OVER the bar, and there the invariant is meaningless rather than broken.
+    */
+    const barPaint = paints.find((p) => p.label === 'the nav\'s own background') ?? null;
+    const tailPaint = paints.find((p) => p.label === 'the veil') ?? null;
+    const seam = [];
+    if (barPaint && tailPaint && Math.abs(g.veilTop - g.navH) < 1) {
+      const eps = 0.25;
+      for (let i = 0; i <= SEAM_COLUMNS; i += 1) {
+        const x = (vp.w * i) / SEAM_COLUMNS;
+        const close = barPaint.at(x, g.navH - eps).a;
+        const open = tailPaint.at(x, g.veilTop + eps).a;
+        seam.push({ x, close, open });
+      }
+      const worst = seam.reduce((a, b) => (Math.abs(b.open - b.close) > Math.abs(a.open - a.close) ? b : a));
+      if (Math.abs(worst.open - worst.close) > SEAM_TOLERANCE) {
+        fail(NAV_CSS,
+          `the tail opens at a different alpha than the bar closes at, at ${vp.name}`,
+          `at x=${worst.x.toFixed(0)}px the bar's foot paints ${(worst.close * 100).toFixed(1)}% of --ground `
+          + `and the tail's head ${(worst.open * 100).toFixed(1)}% — a `
+          + `${(Math.abs(worst.open - worst.close) * 100).toFixed(1)}-point step across a zero-width boundary`,
+          'the two stops are the same edge seen from either side, and since the profile runs '
+          + 'along the inline axis that is true PER COLUMN: the tail carries the bar\'s own '
+          + 'horizontal layer under a vertical mask whose first stop is opaque, so the two agree '
+          + 'at every x. Move them together — nav.module.css, THE TAIL and THE FOLD');
+      }
+    }
 
     const isWideVp = vp.w >= 861;
     const rungs = assets.filter((a) => {
@@ -1580,6 +1750,20 @@ function analyseNav(input) {
             ? alphaExtremes(f.field, xA, yA, xB, yB)
             : { aLo: { rgb: hero.ground ?? [20, 22, 26], a: 1 }, aHi: { rgb: hero.ground ?? [20, 22, 26], a: 1 } };
           cells.push({ xA, yA, xB, yB, ...alphas });
+        }
+      }
+
+      /* The bar's own paint over each cell, at its extremes — foreground- and
+         rung-independent, so computed once. `navWin` is the alpha window the
+         whole box spans, printed beside the composited ground so a box that
+         has slid onto the fold is visible as a range rather than a ratio. */
+      const navWin = { lo: 1, hi: 0 };
+      for (const c of cells) {
+        c.fills = navPaintExtremes(c.xA, c.yA, c.xB, c.yB);
+        for (const f of c.fills) {
+          const a = f ? f.a : 0;
+          if (a < navWin.lo) navWin.lo = a;
+          if (a > navWin.hi) navWin.hi = a;
         }
       }
 
@@ -1653,14 +1837,15 @@ function analyseNav(input) {
         /* the window, foreground-independent */
         for (const c of cells) {
           const src = lumAt ? lumAt(c.xA, c.yA, c.xB, c.yB) : { lo: 0, hi: 0 };
-          const fill = navPaintAt((c.xA + c.xB) / 2, (c.yA + c.yB) / 2);
-          for (const l of [src.lo, src.hi]) {
-            for (const a of [c.aLo, c.aHi]) {
-              const base = rung ? M.greyOf(l) : (hero.ground ?? [20, 22, 26]);
-              const scrimmed = rung ? M.composite(a.rgb, a.a, base) : base;
-              const out = M.luminance(fill ? M.composite(fill.rgb, fill.a, scrimmed) : scrimmed);
-              if (out < win.lo) win.lo = out;
-              if (out > win.hi) win.hi = out;
+          for (const fill of c.fills) {
+            for (const l of [src.lo, src.hi]) {
+              for (const a of [c.aLo, c.aHi]) {
+                const base = rung ? M.greyOf(l) : (hero.ground ?? [20, 22, 26]);
+                const scrimmed = rung ? M.composite(a.rgb, a.a, base) : base;
+                const out = M.luminance(fill ? M.composite(fill.rgb, fill.a, scrimmed) : scrimmed);
+                if (out < win.lo) win.lo = out;
+                if (out > win.hi) win.hi = out;
+              }
             }
           }
         }
@@ -1728,17 +1913,18 @@ function analyseNav(input) {
           let needAlpha = 0;
           for (const c of cells) {
             const src = lumAt ? lumAt(c.xA, c.yA, c.xB, c.yB) : { lo: 0, hi: 0 };
-            const fill = navPaintAt((c.xA + c.xB) / 2, (c.yA + c.yB) / 2);
-            const r = worstOverCell(M, fg.rgb, {
-              lo: src.lo,
-              hi: src.hi,
-              aLo: c.aLo,
-              aHi: c.aHi,
-              hasPhoto: rung !== null,
-              bare: hero.ground ?? [20, 22, 26],
-            }, fill, fg.t, fg.need * headroom, restGround.ground);
-            if (r.needAlpha > needAlpha) needAlpha = r.needAlpha;
-            if (r.ratio < worst.ratio) worst = { ...r, x: (c.xA + c.xB) / 2, y: (c.yA + c.yB) / 2 };
+            for (const fill of c.fills) {
+              const r = worstOverCell(M, fg.rgb, {
+                lo: src.lo,
+                hi: src.hi,
+                aLo: c.aLo,
+                aHi: c.aHi,
+                hasPhoto: rung !== null,
+                bare: hero.ground ?? [20, 22, 26],
+              }, fill, fg.t, fg.need * headroom, restGround.ground);
+              if (r.needAlpha > needAlpha) needAlpha = r.needAlpha;
+              if (r.ratio < worst.ratio) worst = { ...r, x: (c.xA + c.xB) / 2, y: (c.yA + c.yB) / 2 };
+            }
           }
           const row = {
             state: 'rest',
@@ -1778,12 +1964,17 @@ function analyseNav(input) {
             y: worst.y,
             navH: g.navH,
             win,
+            /* The alpha of the nav's own paint at the worst pairing, and the
+               window the box spans — the number nav.module.css's bisect
+               tables are written against. */
+            navAlpha: worst.at ? worst.at.navAlpha : null,
+            navWin: { ...navWin },
           };
           (fg.raster ? rasterRows : rows).push(row);
         }
       }
 
-      if (box.kind === 'mark') markGround.push({ vp: vp.name, win, box });
+      if (box.kind === 'mark') markGround.push({ vp: vp.name, win, navWin: { ...navWin }, box });
     }
 
     geometryOut.push({
@@ -1801,6 +1992,7 @@ function analyseNav(input) {
       markShown: g.markShown,
       boxes: g.boxes,
       paints: paints.map((p) => p.label),
+      seam,
     });
   }
 
@@ -2037,6 +2229,20 @@ function printReport(M, r, { headroom }) {
   if (r.geometry[0]) {
     console.log(`     paint stack at rest, bottom-up: ${r.geometry[0].paints.join(' -> ') || '(nothing)'}`);
   }
+  if (r.geometry.some((g) => g.seam && g.seam.length)) {
+    console.log('\n     THE SAME EDGE, PER COLUMN — the bar\'s alpha a quarter-pixel above its foot');
+    console.log('     against the tail\'s a quarter-pixel below its head, at five columns of the');
+    console.log(`     ${SEAM_COLUMNS + 1} sampled (foot -> head, % of --ground), and the worst step found.`);
+    for (const g of r.geometry) {
+      if (!g.seam || !g.seam.length) continue;
+      const n = g.seam.length - 1;
+      const pick = [0, n / 4, n / 2, (3 * n) / 4, n].map((i) => g.seam[Math.round(i)]);
+      const worst = g.seam.reduce((a, b) => (Math.abs(b.open - b.close) > Math.abs(a.open - a.close) ? b : a));
+      console.log(`     ${g.vp.padEnd(9)} ${pick.map((s) => `x${String(Math.round(s.x)).padStart(4)} `
+        + `${(s.close * 100).toFixed(1)}->${(s.open * 100).toFixed(1)}`).join('   ')}`
+        + `   worst ${(Math.abs(worst.open - worst.close) * 100).toFixed(2)}pt`);
+    }
+  }
 
   const rest = r.rows;
   if (rest.length) {
@@ -2065,7 +2271,17 @@ function printReport(M, r, { headroom }) {
     console.log(`     credits its rule and ring with; its reach is in px against this bar's own`);
     console.log(`     measured ink gap (${NAV_COLLAR_REACH_PX_MAX.toFixed(1)}px). [bare] is the role's own colour on`);
     console.log('     the composited ground, with nothing credited.');
-    console.log('     viewport  box                ground     role          ratio    need   credit');
+    console.log('     The VEIL column is the alpha of the bar\'s own paint at the pairing the');
+    console.log('     ratio was taken at — the number the stylesheet\'s bisect tables are written');
+    console.log('     against. A [lo..hi] beside it is the window the box spans: a box that has');
+    console.log('     slid onto the fold shows a range, and its ratio was taken at the thin end.');
+    console.log('     viewport  box                ground     veil            role          ratio    need   credit');
+    const veilCol = (x) => {
+      if (x.navAlpha === null || x.navAlpha === undefined) return '—'.padEnd(15);
+      const at = `${(x.navAlpha * 100).toFixed(1)}%`.padStart(6);
+      const flat = !x.navWin || Math.abs(x.navWin.hi - x.navWin.lo) < 0.0005;
+      return (flat ? at : `${at} [${(x.navWin.lo * 100).toFixed(0)}..${(x.navWin.hi * 100).toFixed(0)}]`).padEnd(15);
+    };
     const perBox = new Map();
     for (const x of list) if (!perBox.has(`${x.vp}|${x.box}`)) perBox.set(`${x.vp}|${x.box}`, x);
     for (const x of perBox.values()) {
@@ -2080,7 +2296,7 @@ function printReport(M, r, { headroom }) {
             + `${x.collar.reachPx !== null ? `, reach ${x.collar.reachPx.toFixed(1)}px` : ''}]`
           : '[bare]';
       console.log(`   ${flag} ${x.vp.padEnd(9)} ${x.box.padEnd(18)} `
-        + `${String(byte(x.win.lo)).padStart(3)}..${String(byte(x.win.hi)).padStart(3)}   `
+        + `${String(byte(x.win.lo)).padStart(3)}..${String(byte(x.win.hi)).padStart(3)}   ${veilCol(x)} `
         + `${x.role.padEnd(13)} ${x.ratio.toFixed(3).padStart(7)}:1 ${x.need.toFixed(2).padStart(5)}  ${credit}`);
     }
 
@@ -2104,6 +2320,12 @@ function printReport(M, r, { headroom }) {
       console.log(`              treatment credited: ${bind.treated
         ? (bind.collar ? 'yes — the box collar on the mark' : 'yes — the per-glyph halo')
         : 'no — this is the role\'s own colour'}`);
+      if (bind.navAlpha !== null && bind.navAlpha !== undefined) {
+        console.log(`              the bar's own paint there: ${(bind.navAlpha * 100).toFixed(1)}% of --ground`
+          + (bind.navWin && Math.abs(bind.navWin.hi - bind.navWin.lo) >= 0.0005
+            ? ` (the box spans ${(bind.navWin.lo * 100).toFixed(1)}..${(bind.navWin.hi * 100).toFixed(1)}%)`
+            : ' (flat across the box)'));
+      }
     }
 
     if (r.restNeedAlpha !== null && r.restNeedBy) {
@@ -2248,6 +2470,20 @@ function printFailures(failures) {
                         paint deleted, and a collar declared on a text box.
                         Each must fail BY NAME; a claim read silently as
                         [bare] is the defect the break-tester found.
+     1g TWO LAYERS      a flat 20% on each axis. The mark must measure the
+                        source-over composite, 36%, and not 40% (additive) or
+                        20% (one layer read, the other dropped).
+     1h SEAM BROKEN     the tail opening at a flat 10% under a bar that
+                        closes at its own profile — a horizontal step at the
+                        foot across some columns and not others. Must fail BY
+                        NAME; it is the seam no vertical check can see.
+     1i FOLD ON THE MARK a fold run straight through the mark's box. The
+                        alpha printed for the mark must be the THIN end of its
+                        box, not the centre: the worst pixel-window has two
+                        axes now.
+     1j MASKS REFUSED   a url() mask, a two-layer mask, and a prefixed mask
+                        that disagrees with the unprefixed one. Each must
+                        fail BY NAME rather than be read as no mask at all.
      2 VEIL THINNED     the veil's plateau dropped to the 25% the hero's crest
                         already paints — the alpha components/ui/Mark.tsx
                         measured the lockup against at 1.04:1. Reproduces that
@@ -2304,6 +2540,13 @@ function withRestAlpha(src, alpha) {
       if (lastState > lastBrace && /--nav-state\s*:\s*(stuck|paper)/.test(before.slice(lastState))) {
         return m;
       }
+      /* A mask's stops are a SHAPE, not paint: flattening them to `alpha`
+         would turn the tail's decay into a flat multiplier and break the
+         same-edge invariant for a reason that has nothing to do with the
+         control. The layer under the mask is scaled; the mask keeps its
+         shape, so the tail still opens where the bar closes. */
+      const declStart = Math.max(before.lastIndexOf(';'), before.lastIndexOf('{'), before.lastIndexOf('*/') + 1);
+      if (/^\s*(?:-webkit-)?mask(?:-image)?\s*:/.test(before.slice(declStart + 1))) return m;
       n += 1;
       return `color-mix(in srgb, var(--ground) ${(alpha * 100).toFixed(0)}%, transparent)`;
     },
@@ -2376,6 +2619,35 @@ function withSyntheticCollar(raw, selector = null) {
   return { src: `${raw}\n${block}`, n: 1 };
 }
 
+/**
+ * Override the rest face's paint — the bar's, and the tail's to match — with
+ * a synthetic stack, appended so the cascade's later-wins carries it. The
+ * tail is given the SAME stack with no mask, so the bar closes and the tail
+ * opens at one alpha and the seam check stays silent; a control that wants
+ * the seam broken passes `tail` of its own. The tail's selector is a bare
+ * `.veil` on purpose: the gate resolves the bar's own declarations from every
+ * rule whose selector names `.nav`, so a `.nav ... .veil` override would land
+ * on the bar as well.
+ */
+const GROUND = (pct) => `color-mix(in srgb, var(--ground) ${pct}%, transparent)`;
+function withRestPaint(raw, bar, tail = bar) {
+  return {
+    src: `${raw}\n.nav[data-nav='over'] { background-image: ${bar}; }\n`
+      + `.veil { background-image: ${tail}; mask-image: none; -webkit-mask-image: none; }\n`,
+    n: 2,
+  };
+}
+/** Two flat layers on both axes — the composition itself, as a control. */
+const TWO_FLAT_LAYERS = `linear-gradient(to right, ${GROUND(20)} 0, ${GROUND(20)} 100%), `
+  + `linear-gradient(to bottom, ${GROUND(20)} 0, ${GROUND(20)} 100%)`;
+/** A fold that runs across the mark's box at every viewport: 40% at x=0 to nothing at 200px. */
+const FOLD_ACROSS_THE_MARK = `linear-gradient(to right, ${GROUND(40)} 0, transparent 200px, transparent 100%), `
+  + 'linear-gradient(to bottom, transparent 0, transparent 100%)';
+/** Override the tail's mask alone. */
+function withTailMask(raw, standard, prefixed = standard) {
+  return { src: `${raw}\n.veil { mask-image: ${standard}; -webkit-mask-image: ${prefixed}; }\n`, n: 1 };
+}
+
 /** Set the stuck face's fill percentage. */
 function withStuckFill(src, alpha) {
   let n = 0;
@@ -2433,6 +2705,81 @@ async function buildHeroInput(M) {
     }
   }
   return { globalsSrc, scrimSrc, heroSrc, heroCss, assets, manifest, sourceFile, sharp };
+}
+
+/**
+ * The role the mark box paints at rest, read out of components/ui/Mark.tsx and
+ * resolved against the nav stylesheet that overrides it. Pulled out of main()
+ * so the tooling that bisects the stylesheet (the tables in nav.module.css)
+ * drives analyseNav with exactly the inputs the gate itself uses.
+ */
+function resolveMarkRoles(M) {
+  /*
+    The role <Mark>'s TEXT form paints, read out of components/ui/Mark.tsx.
+    That component is not this territory's, and it is not the nav's stylesheet
+    either — so the colour of the one box in this bar that neither file styles
+    is read from the file that does style it, and a change there surfaces here
+    on the next run instead of being carried in a constant nobody re-checks.
+  */
+  const markRoles = [];
+  if (existsSync(MARK_TSX)) {
+    const src = readFileSync(MARK_TSX, 'utf8');
+    /* The text form is the branch above the raster return; read the whole
+       component and keep every role token it mentions on a text node, which is
+       the conservative superset.
+
+       THE CLASS MAY BE A FALLBACK CHAIN, NOT A BARE ROLE. <Mark> writes
+       `var(--mark-fg,var(--fg-muted))`: muted is only the DEFAULT, and a
+       consumer that has a reason to override it sets --mark-fg. The old
+       pattern here required a closing paren immediately after the token, so a
+       chain matched NOTHING and fell through to the hard-coded '--fg-muted'
+       below — the gate then measured a colour the bar does not paint and
+       reported a floor 26 points too high. Capture every var() token in the
+       declaration, in source order, which is fallback order. */
+    for (const m of src.matchAll(/text-\[color:([^\]]+)\]/g)) {
+      for (const v of m[1].matchAll(/var\(\s*(--[a-z0-9-]+)/g)) markRoles.push(v[1]);
+    }
+  }
+
+  /*
+    RESOLVE THE CHAIN AGAINST THE STYLESHEET THAT OVERRIDES IT.
+
+    `markRoles` is consumed in the REST pass only (the one place it is read
+    resolves every other box with state 'rest'). At rest the bar is over the
+    photograph, and nav.module.css sets --mark-fg there. So: walk the chain in
+    fallback order and stop at the first token this stylesheet actually defines
+    for that state; only if none is defined does the trailing default stand.
+
+    Deliberately narrow. It resolves ONE level, it only accepts a value that is
+    itself a known role, and anything it cannot resolve leaves the conservative
+    default in place — a gate that guesses generously about its own subject is
+    worse than one that is merely strict.
+  */
+  const navSrc = existsSync(NAV_CSS) ? readFileSync(NAV_CSS, 'utf8') : '';
+  /* EVERY rest-state block, not the first one. This selector appears several
+     times in the stylesheet — focus rings, foregrounds, the veil — and the
+     custom property may be declared in any of them. Matching only the first
+     silently resolved nothing and left the strict default standing, which
+     looks identical to "correctly strict" from the outside. */
+  const restBodies = [
+    ...navSrc
+      .replace(/\/\*[\s\S]*?\*\//g, ' ')
+      .matchAll(/\.nav\[data-nav='over'\][^{]*\{([^}]*)\}/g),
+  ].map((m) => m[1]);
+  const resolved = [];
+  for (const tok of markRoles) {
+    if (tok in M.ROLE_THRESHOLDS) { resolved.push(tok); break; }
+    let hit = null;
+    for (const body of restBodies) {
+      const set = new RegExp(`${tok}\\s*:\\s*var\\(\\s*(--[a-z0-9-]+)`).exec(body);
+      if (set && set[1] in M.ROLE_THRESHOLDS) { hit = set[1]; break; }
+    }
+    if (hit) { resolved.push(hit); break; }
+  }
+  markRoles.length = 0;
+  markRoles.push(...resolved);
+  if (markRoles.length === 0) markRoles.push('--fg-muted');
+  return markRoles;
 }
 
 async function main() {
@@ -2499,71 +2846,7 @@ async function main() {
 
   const markState = markIsLive();
 
-  /*
-    The role <Mark>'s TEXT form paints, read out of components/ui/Mark.tsx.
-    That component is not this territory's, and it is not the nav's stylesheet
-    either — so the colour of the one box in this bar that neither file styles
-    is read from the file that does style it, and a change there surfaces here
-    on the next run instead of being carried in a constant nobody re-checks.
-  */
-  const markRoles = [];
-  if (existsSync(MARK_TSX)) {
-    const src = readFileSync(MARK_TSX, 'utf8');
-    /* The text form is the branch above the raster return; read the whole
-       component and keep every role token it mentions on a text node, which is
-       the conservative superset.
-
-       THE CLASS MAY BE A FALLBACK CHAIN, NOT A BARE ROLE. <Mark> writes
-       `var(--mark-fg,var(--fg-muted))`: muted is only the DEFAULT, and a
-       consumer that has a reason to override it sets --mark-fg. The old
-       pattern here required a closing paren immediately after the token, so a
-       chain matched NOTHING and fell through to the hard-coded '--fg-muted'
-       below — the gate then measured a colour the bar does not paint and
-       reported a floor 26 points too high. Capture every var() token in the
-       declaration, in source order, which is fallback order. */
-    for (const m of src.matchAll(/text-\[color:([^\]]+)\]/g)) {
-      for (const v of m[1].matchAll(/var\(\s*(--[a-z0-9-]+)/g)) markRoles.push(v[1]);
-    }
-  }
-
-  /*
-    RESOLVE THE CHAIN AGAINST THE STYLESHEET THAT OVERRIDES IT.
-
-    `markRoles` is consumed in the REST pass only (the one place it is read
-    resolves every other box with state 'rest'). At rest the bar is over the
-    photograph, and nav.module.css sets --mark-fg there. So: walk the chain in
-    fallback order and stop at the first token this stylesheet actually defines
-    for that state; only if none is defined does the trailing default stand.
-
-    Deliberately narrow. It resolves ONE level, it only accepts a value that is
-    itself a known role, and anything it cannot resolve leaves the conservative
-    default in place — a gate that guesses generously about its own subject is
-    worse than one that is merely strict.
-  */
-  const navSrc = existsSync(NAV_CSS) ? readFileSync(NAV_CSS, 'utf8') : '';
-  /* EVERY rest-state block, not the first one. This selector appears several
-     times in the stylesheet — focus rings, foregrounds, the veil — and the
-     custom property may be declared in any of them. Matching only the first
-     silently resolved nothing and left the strict default standing, which
-     looks identical to "correctly strict" from the outside. */
-  const restBodies = [
-    ...navSrc
-      .replace(/\/\*[\s\S]*?\*\//g, ' ')
-      .matchAll(/\.nav\[data-nav='over'\][^{]*\{([^}]*)\}/g),
-  ].map((m) => m[1]);
-  const resolved = [];
-  for (const tok of markRoles) {
-    if (tok in M.ROLE_THRESHOLDS) { resolved.push(tok); break; }
-    let hit = null;
-    for (const body of restBodies) {
-      const set = new RegExp(`${tok}\\s*:\\s*var\\(\\s*(--[a-z0-9-]+)`).exec(body);
-      if (set && set[1] in M.ROLE_THRESHOLDS) { hit = set[1]; break; }
-    }
-    if (hit) { resolved.push(hit); break; }
-  }
-  markRoles.length = 0;
-  markRoles.push(...resolved);
-  if (markRoles.length === 0) markRoles.push('--fg-muted');
+  const markRoles = resolveMarkRoles(M);
 
   const mkInput = (overrides = {}) => ({
     markRoles: [...new Set(markRoles)],
@@ -2722,6 +3005,85 @@ async function main() {
         ? `FAILS BY NAME, as it must: "${oh[0].detail.slice(0, 100)}"`
         : '⚠ CONTROL DID NOT FAIL BY NAME — an orphaned halo claim was read as [bare] and nobody was told'}`);
 
+      /* 1g · two layers, one on each axis, composited */
+      const v1g = variant((s) => withRestPaint(s, TWO_FLAT_LAYERS));
+      const n1g = subs;
+      const two = analyseNav(mkInput({ nav: v1g }));
+      const twoMark = two.rows.filter((x) => x.kind === 'mark' && x.navAlpha !== null);
+      const expectTwo = 1 - (1 - 0.2) * (1 - 0.2);
+      const twoOff = twoMark.map((x) => Math.abs(x.navAlpha - expectTwo));
+      const twoOk = twoMark.length > 0 && twoOff.every((d) => d < 0.0005) && two.failures.length === 0;
+      console.log('\n  1g · TWO LAYERS, ONE ON EACH AXIS — a flat 20% `to right` over a flat 20%');
+      console.log(`      to bottom. Source-over composes them to ${(expectTwo * 100).toFixed(0)}%, not 40%. ${matched(n1g)}`);
+      console.log(`      the mark measured at ${twoMark.length ? [...new Set(twoMark.map((x) => `${(x.navAlpha * 100).toFixed(1)}%`))].join(' / ') : '—'}`
+        + ` across ${twoMark.length} row(s), ${two.failures.length} failure(s) — ${twoOk
+          ? 'THE COMPOSITE, as it must be'
+          : '⚠ NOT THE COMPOSITE: one layer was dropped, or the two were added'}`);
+
+      /* 1h · the seam broken — the tail opening at an alpha the bar does not close at */
+      const v1h = variant((s) => withRestPaint(s,
+        `linear-gradient(to right, ${GROUND(36)} 0, ${GROUND(36)} 25%, ${GROUND(2)} 50%, ${GROUND(2)} 100%), `
+        + 'linear-gradient(to bottom, transparent 0, transparent 100%)',
+        `linear-gradient(to bottom, ${GROUND(10)} 0, transparent 100%)`));
+      const n1h = subs;
+      const broken = analyseNav(mkInput({ nav: v1h }));
+      const sb = broken.failures.filter((f) => /opens at a different alpha/.test(f.message));
+      console.log('\n  1h · THE SEAM BROKEN — the tail opens at a flat 10% under a bar that closes');
+      console.log(`      at 36% on the left and 2% on the right. ${matched(n1h)}`);
+      console.log(`      ${sb.length > 0
+        ? `FAILS BY NAME, as it must: "${sb[0].detail.slice(0, 110)}"`
+        : '⚠ CONTROL DID NOT FAIL BY NAME — a horizontal step at the bar\'s foot went unreported'}`);
+
+      /* 1i · a fold run through the mark's box — the printed alpha must be the thin end */
+      const v1i = variant((s) => withRestPaint(s, FOLD_ACROSS_THE_MARK));
+      const n1i = subs;
+      const folded = analyseNav(mkInput({ nav: v1i }));
+      const foldRows = [];
+      for (const g of folded.geometry) {
+        const box = g.boxes.find((b) => b.kind === 'mark');
+        const row = folded.rows.filter((x) => x.vp === g.vp && x.kind === 'mark' && x.navAlpha !== null)
+          .sort((a, b) => a.ratio - b.ratio)[0] ?? null;
+        if (!box || !row) continue;
+        const thin = 0.40 * Math.max(0, 1 - box.x1 / 200);
+        const centre = 0.40 * Math.max(0, 1 - ((box.x0 + box.x1) / 2) / 200);
+        foldRows.push({ vp: g.vp, box, row, thin, centre, ok: Math.abs(row.navAlpha - thin) < 0.005 });
+      }
+      const foldOk = foldRows.length > 0 && foldRows.every((f) => f.ok)
+        && foldRows.some((f) => Math.abs(f.thin - f.centre) > 0.01);
+      console.log('\n  1i · A FOLD RUN THROUGH THE MARK\'S BOX — 40% at x=0 to nothing at 200px, so the');
+      console.log(`      box straddles the ramp on the narrow bars. ${matched(n1i)}`);
+      for (const f of foldRows) {
+        console.log(`      ${f.vp.padEnd(9)} box x ${f.box.x0.toFixed(0)}..${f.box.x1.toFixed(0)}  measured at `
+          + `${(f.row.navAlpha * 100).toFixed(1)}%  thin end ${(f.thin * 100).toFixed(1)}%  centre `
+          + `${(f.centre * 100).toFixed(1)}%  ${f.ok ? 'thin end' : '⚠ NOT THE THIN END'}`);
+      }
+      console.log(`      ${foldOk
+        ? 'the mark is measured at the THIN end of its box wherever the fold crosses it — the worst window, as it must be'
+        : '⚠ THE MARK WAS NOT MEASURED AT ITS THIN END — a box on the fold is being credited at its centre'}`);
+
+      /* 1j · masks the gate must refuse, each by name */
+      const refused = [];
+      for (const [what, std, pre] of [
+        ['a url() mask', 'url(nothing.png)', 'url(nothing.png)'],
+        ['a two-layer mask', 'linear-gradient(to bottom, black, transparent), linear-gradient(to right, black, transparent)',
+          'linear-gradient(to bottom, black, transparent), linear-gradient(to right, black, transparent)'],
+        ['a prefixed mask that disagrees', 'linear-gradient(to bottom, black, transparent)',
+          'linear-gradient(to bottom, black 0, transparent 50%)'],
+      ]) {
+        const v = variant((s) => withTailMask(s, std, pre));
+        const nv = subs;
+        const res = analyseNav(mkInput({ nav: v }));
+        const byName = res.failures.filter((f) => /mask this gate cannot rasterise|two different masks/.test(f.message));
+        refused.push({ what, nv, byName });
+      }
+      console.log('\n  1j · MASKS THE GATE MUST REFUSE — a mask multiplies every layer under it, so');
+      console.log('      one the gate cannot read is a tail whose alpha is unknown at every pixel.');
+      for (const r of refused) {
+        console.log(`      ${r.what.padEnd(32)} ${r.byName.length > 0
+          ? `FAILS BY NAME: "${r.byName[0].message.slice(0, 70)}"`
+          : '⚠ WAS READ AS NO MASK AT ALL'}  (${matched(r.nv)})`);
+      }
+
       /* 2 · thinned to the alpha the hero's crest already paints */
       const v2 = variant((s) => withRestAlpha(s, 0.25));
       const n2 = subs;
@@ -2813,5 +3175,10 @@ if (invokedDirectly) {
 
 export {
   MONO_ADVANCE_EM, BOX_MARGIN, FALLBACK_LINE_HEIGHT, PLATE_SEAM_ADVISORY_LSTAR,
+  SEAM_TOLERANCE, SEAM_COLUMNS, NAV_CSS, BRAND,
   PAPER_SELECTOR_TOKENS, deriveNavBoxes, markSilhouette, analyseNav, loadHeroModel,
+  /* For the tooling that bisects nav.module.css: the gate's own inputs,
+     built the way main() builds them, so a table written into the stylesheet
+     was produced by this file and not by a copy of it. */
+  buildHeroInput, readNavSources, markIsLive, resolveMarkRoles,
 };

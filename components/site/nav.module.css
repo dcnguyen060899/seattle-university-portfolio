@@ -16,11 +16,13 @@
       measures the bar and publishes it on <html>)
 
   WHAT IS MEASURED (do not "tidy" these without re-measuring):
-    · the veil's 38% plateau and 30% foot — bisected against
-      scripts/check-nav-contrast.mjs with the links' collar credited and the
-      mark bare; see THE VEIL AT 38% for the floor and what holds it
-    · the tail's 112px and its five stops — a perceptual budget, not taste;
-      the stops are fractions of the foot and move with it
+    · the veil's 36% under the mark, 12% under the links, and the 240px fold
+      between them — bisected against scripts/check-nav-contrast.mjs with
+      the links' collar credited and the mark bare; see THE FOLD for the two
+      floors, the box that holds each, and the x the fold sits between
+    · the tail's 136px and the five stops of its mask — a perceptual budget,
+      not taste; the mask's stops are fractions of 1, its alpha is the bar's
+      own profile under them, and the length keeps the 112px tail's slope
     · the frosted fill's 97% — DERIVED here now, not ported; see THE FILL
     · the per-glyph collar on the links — its radii, its counts and the box
       it is NOT on; see THE COLLAR
@@ -142,21 +144,84 @@
     both rules interpolates instead.
   */
   /*
-    38% / 30%: the plateau and its foot. The plateau is bisected against
-    scripts/check-nav-contrast.mjs with the links' collar credited and the
-    mark BARE — see THE VEIL AT 38% below for the table and the floor it sits
-    four points above. The foot is the plateau at the same 0.78 the 55/43
-    pair kept, and it is the one number `.veil` must open at: the two stops
-    are the same edge seen from either side, and they move together.
+    ── THE FOLD: WHERE THE PROFILE TURNS FROM 36% TO 12% ─────────────────
+
+    Two lengths along the inline axis, declared here because the tail below
+    reads them too (custom properties inherit, and scripts/check-nav-contrast
+    .mjs resolves them the same way). Both are measured from the wrap's dead
+    space — `(100% - var(--container-wrap)) / 2`, floored at nothing, which
+    is the expression hero-scrim.module.css opens its pocket with — plus the
+    gutter, so they sit at the same place relative to the mark at every width.
+    Written as ONE top-level max() with the offsets inside both arms rather
+    than as calc(max() + …): the gate's borrowed length evaluator reads the
+    first form (the hero's) and refuses the second, and a stop it cannot read
+    is a hard failure by design.
+
+      --nav-fold-start   the mark's right edge plus 6.66px. The monogram is
+                         29.34px wide (nav.tsx renders it 26px tall at
+                         350/310), and the gate inflates its box by 4% of
+                         that; 36px clears both. MEASURED against the DOM,
+                         Chromium, production build, 2026-09-06 — the mark's
+                         right edge, then this stop:
+                             375 / 390     49.34    ->   56.00
+                             768           63.89    ->   70.56
+                             861           68.08    ->   74.75
+                             1280         169.34    ->  176.00
+                             1600         329.34    ->  336.00
+      --nav-fold-end     240px further on. The first link's LEFT edge, from
+                         the same DOM, and the room the fold leaves it:
+                             768          350.19    ->   39.6px to spare
+                             861          439.00    ->  124.3
+                             1280         756.73    ->  340.7
+                             1600         916.73    ->  340.7
+                         768 binds: its gap is 286px and the fold takes 240
+                         of it. On the phone the links wrap under the mark
+                         (Research starts at x=20 on the second row) and the
+                         fold runs to x=296 of 375 — legal at every column,
+                         because a collared link needs nothing from the
+                         veil anywhere; THE FOLD, below, has the table.
+      240px              the span, and it is a seam number rather than a
+                         layout one: a run over which 36% -> 12% stays under
+                         this repo's edge budget on both of the fields the
+                         tail is judged on, with room, and the widest the
+                         768 gap can hold with room before RESEARCH. THE
+                         FOLD has the derivation; tests/e2e/nav.spec.ts §2b
+                         holds it.
+  */
+  --nav-fold-start: max(
+    var(--spacing-gutter) + 36px,
+    (100% - var(--container-wrap)) / 2 + var(--spacing-gutter) + 36px
+  );
+  --nav-fold-end: max(
+    var(--spacing-gutter) + 276px,
+    (100% - var(--container-wrap)) / 2 + var(--spacing-gutter) + 276px
+  );
+
+  /*
+    36% under the mark, 12% under the links, the fold between them. Both
+    numbers are bisected with the links' collar credited and the mark BARE,
+    each two points above its own floor — the mark's against
+    scripts/check-nav-contrast.mjs, the links' against tests/e2e/nav.spec.ts
+    §4, which is the stricter of the two instruments for a collared run and
+    the one that binds; see THE FOLD below for the tables, the box that holds
+    each floor and the light the picture gets back. The profile is the FIRST
+    layer now and runs `to right`; the second, vertical layer is the
+    transparent placeholder the first used to be. Same layer count and stop
+    structure in both faces, so the cross-fade interpolates rather than
+    flipping — see TWO LAYERS, BOTH GRADIENTS, IN BOTH STATES above. The
+    tail opens at exactly this profile, column by column: the gate compares
+    the bar's foot with the tail's head at every x and fails the pair the
+    moment they differ.
   */
   background-image:
-    linear-gradient(to bottom, transparent 0, transparent 100%),
     linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--ground) 38%, transparent) 0,
-      color-mix(in srgb, var(--ground) 38%, transparent) 72%,
-      color-mix(in srgb, var(--ground) 30%, transparent) 100%
-    );
+      to right,
+      color-mix(in srgb, var(--ground) 36%, transparent) 0,
+      color-mix(in srgb, var(--ground) 36%, transparent) var(--nav-fold-start),
+      color-mix(in srgb, var(--ground) 12%, transparent) var(--nav-fold-end),
+      color-mix(in srgb, var(--ground) 12%, transparent) 100%
+    ),
+    linear-gradient(to bottom, transparent 0, transparent 100%);
 
   /*
     No drop shadow anywhere in this system; the hairline below is a rule.
@@ -319,6 +384,150 @@
    synthetic collar. The floor is still 34%, this file still ships 38%, and
    the paragraph's last sentence still stands: not a drop-shadow on the SVG,
    because nothing can read it yet.
+
+   ── THE FOLD (2026-09-06): THE VEIL TURNS ALONG THE INLINE AXIS ──────────
+
+   The paragraph above ends with the crest returning nothing, and the reason
+   was a MISMATCH rather than a floor. The one box that needs the veil — the
+   bare monogram, at the wrap's LEFT gutter, over the dark tree at 1280 — is
+   not where the light is. The light is the sunset, centre to right, under
+   four collared links that need nothing from the veil at all (13.7:1 or
+   better at zero plateau, above). A plateau that varies along y alone spent
+   38% across the whole crest to protect one 29px box on the dark side of it.
+
+   So the profile runs along x: 36% under the mark, a 240px fold, 12% under
+   the links — one layer, in both faces, and the tail carries the same layer
+   under a vertical mask so the two agree at every column (THE TAIL, 136px
+   UNDER A MASK). The mark's value is bisected against
+   scripts/check-nav-contrast.mjs, which now measures every box against the
+   veil AT ITS OWN x-range, samples the paint at each cell's extremes, and
+   prints the alpha each ratio was taken at (THE INLINE AXIS, there). Collar
+   credited on the links, mark bare:
+
+       THE LEFT VALUE — the mark at 1280, bare, R held at 2%
+       L        mark @1280     result
+       40%        5.318:1      pass
+       38%        5.115        pass   (the vertical plateau that shipped)
+       36%        4.922        pass   <- ships
+       35%        4.828        pass
+       34%        4.737        pass   — the floor, and it has not moved: the
+                                        mark's box sits wholly under L, so
+                                        the fold changed nothing it needed
+       33%        4.648        FAIL: --fg in the mark box at 1280x800, worst
+                                        backdrop sRGB 103,104,106
+       30%        4.393        FAIL
+
+       THE RIGHT VALUE — the links, collared, under R, L held at 36%. TWO
+       INSTRUMENTS READ IT, THEY DISAGREE, AND THE STRICTER ONE SHIPS:
+
+         node     scripts/check-nav-contrast.mjs — the halo model, the
+                  ground integrated over an observer window around each
+                  STROKE, where twelve layers of blur saturate. Need 4.725.
+         browser  tests/e2e/nav.spec.ts §4 — p05 and p95 of the rendered
+                  pixels under each run's Range rect, glyph fill made
+                  transparent, halos left painting. Need 4.5 on the pixels.
+
+       R        node, worst link          browser, FULL STACK      result
+                                          @1280     @1600
+       38%       13.861:1  CONTACT @1600     —         —          pass
+       20%       13.027                      —         —          pass
+       16%         —                       5.41      5.03         pass
+       14%         —                       5.22      4.87         pass
+       12%         —                       5.05      4.72         pass  <- ships
+       11%         —                       4.92      4.63         pass
+       10%       12.544                    4.87      4.54         pass  — the floor
+        9%         —                       4.76      4.45         FAIL @1600
+        8%         —                       4.66      4.35         FAIL @1600
+        6%         —                       4.47      4.18         FAIL at both
+        2%       12.152                    4.19      3.89         FAIL at both
+        0%       12.054                      —         —          the halo
+                                                                  model's floor
+                                                                  is NOTHING
+
+   WHY THEY DISAGREE, and why it is not a defect in either. The halo model
+   answers "what ground does the eye see beside the stroke", and beside the
+   stroke the collar is nearly opaque ink. The sampler answers "what is the
+   brightest twentieth of the rect this run is handed", and a Range rect is
+   a 14px line box around 7px caps plus the tracking after the last glyph —
+   its corners lie beyond the collar's 6px reach, and over the crest at
+   1600 those corners are sRGB 139,102,74 with no veil to speak of. The
+   sampler's floor is 10% and the halo model's is nothing; the sampler is
+   the instrument this repo trusts on a translucent bar (the 97% trap), so
+   its floor sets R. Two points above it, the file's convention: 12%.
+
+   The need is 4.725:1 (4.5 x1.05) on the mark and 4.5:1 on the pixels
+   under the links. The binding box for the LEFT value is the one it has
+   been since THE VEIL AT 38% — the monogram at 1280x800 over the brightest
+   sky any box lands on; for the RIGHT it is FULL STACK at 1600x900. What
+   changed is what the mark's floor COSTS. 36% now covers the first 176px of
+   the width at 1280 and the first 336px at 1600; 12% covers everything from
+   416px and 576px on. The right half of the viewport — the half the crest
+   is measured on — is under 12% at both widths, where it was under 38%.
+
+   THE X-POSITIONS are under THE FOLD on `.nav`: the mark's right edge and
+   the first link's left edge at every viewport the gate walks, read off the
+   DOM. Every mark box sits wholly under L at every width; at 768, the
+   tightest, the fold ends 39.6px before RESEARCH begins. On the phone the
+   links wrap under the mark and the first row's boxes straddle the fold —
+   the gate prints those as a range and takes the worst pairing anywhere in
+   it: `12.0% [12..19]` for FULL STACK at 375, 14.670:1 against 4.725, the
+   thin end of its box over the brightest pixel under it.
+
+   THE FOLD IS A SEAM NUMBER. 36% -> 12% is 20.2 L* over white and 10.4
+   over the flat sRGB 128 field, and this repo's edge budget is 1.00 L* per
+   6px (scripts/check-hero-blend.mjs; THE TAIL below sizes itself against
+   it). Rendered as CSS renders it — linear in alpha between the stops,
+   composited in sRGB — the worst 6px step of the fold, this harness:
+
+       span     flat 128    over #FFFFFF
+       120px      0.53         1.04
+       160px      0.40         0.78
+       200px      0.32         0.62
+       240px      0.27         0.52      <- ships: half the budget at the
+       280px      0.23         0.45         worse field, and the widest run
+                                            the 768 gap (286px) holds with
+                                            room before the first link
+
+   tests/e2e/nav.spec.ts §2b reads the same quantity off the rendered bar
+   over both fields, with the hero and the bar's content hidden, and holds it
+   to the budget — the horizontal twin of §2's foot.
+
+   WHAT THE FOLD BUYS. MEASURED on the production build, Chromium, dpr 1,
+   mean relative luminance of the sky rows on the right half of the viewport
+   — the vertical 38/30 veil that shipped (before), this rule (after), and
+   the owner's target, the same frame with the nav veil switched off
+   entirely and the links bare:
+
+       1280x800   rows        before      after     target    of the way
+                    0-  60    0.0927      0.1521    0.2116       50%
+                   60- 120    0.0849      0.1101    0.1314       54%
+                  120- 180    0.0725      0.0748    0.0804       29%
+                  180- 260    0.0240      0.0240    0.0240     the hero scrim alone
+       1600x900     0-  60    0.1073      0.1818    0.2485       53%
+                   60- 120    0.0909      0.1187    0.1422       54%
+                  120- 180    0.0783      0.0804    0.0860       27%
+                  180- 260    0.0230      0.0230    0.0230
+
+   "Of the way" is the share of the gap between before and the target that
+   this rule closes. The target at 1280 is the owner's own frame, reproduced
+   to four places by switching the veil off and the collar off; 1600 is the
+   same recipe. Two things hold the rest, and neither of them is the fold:
+
+     · the links' floor. 12% on the right half is 20% of the LINEAR light
+       there — compositing is in sRGB, so twelve points of ink take more
+       than twelve percent of the light: 0.1891 with the veil off and the
+       collar on, 0.1521 with this rule. Against that frame, the one the
+       veil alone withholds, the fold closes 62% of the gap.
+     · the links' collar itself. The lozenges cost 0.1891 -> 0.2116, 11% of
+       the first band's light, and they are the per-glyph treatment THE
+       COLLAR argues for rather than the veil; the profile cannot give
+       that back.
+
+   WHAT WOULD MOVE IT NEXT is the links' floor, and the table above says
+   what sets it: the corners of a 14px line box around 7px caps, beyond the
+   collar's reach. A tighter line box on `.link`, or a collar that reaches
+   the rect's corners, would let R fall toward the halo model's nothing —
+   and every two points of R are worth about 0.006 in the first band.
 */
 /*
   THE TAIL. Starts where the bar's own paint stops and carries it to nothing,
@@ -390,14 +599,49 @@
   with any of this and cannot move when it thins. That is written down here
   because it means the hero has always been measured against a LIGHTER ground
   than it got, which is the safe direction and worth knowing.
+
+  ── 136px UNDER A MASK (2026-09-06) ────────────────────────────────────────
+
+  The tail now opens at the bar's own PROFILE — 36% under the mark, 12%
+  under the links (THE FOLD) — so it is the bar's horizontal layer, verbatim, under
+  a mask that decays 1 -> 0.79 -> 0.42 -> 0.14 -> 0 at 0 / 30 / 58 / 80 /
+  100% of its height: the fractions the 30 -> 24 -> 13 -> 4 tail kept of its
+  foot. A product of an x-profile and a y-decay cannot be written as
+  gradient layers, which only add; it is a mask, as the hero's pocket is,
+  and scripts/check-nav-contrast.mjs multiplies it in the way the hero gate
+  multiplies that one. The same-edge invariant is now a function of x, and
+  the gate compares the bar's foot with the tail's head column by column.
+
+  THE LENGTH FOLLOWS THE RULE THAT SET 112: the same slope over the biggest
+  drop, at either field. The opening column is 36% where it was 30%, so by
+  that arithmetic the run is 112 x 36/30 = 134.4, and 136px is the next
+  multiple of 8. Measured the way the 112px table was — the worst 6px step
+  anywhere in the decay, over the flat 128 field and over white, rendered
+  linear-in-alpha between stops as CSS does; this harness, so compare within
+  the table and not with the ones above:
+
+      opening   tail     flat 128   over #FFFFFF
+      30%       112px      0.92        1.78       (what shipped)
+      36%       112px      1.11        2.16       steeper at both fields
+      36%       128px      0.97        1.89
+      36%       136px      0.91        1.78       <- ships: no steeper than
+      36%       144px      0.86        1.68          112 was, at either field
+
+  Only the column left of the fold pays for the longer run: under the links
+  the tail opens at 12% and decays from there — a third of the drop the 112px
+  tail feathered, over a longer run — and the sunset side of the crest gets
+  most of the 112px back. The
+  darkening now ends at y≈194 at 1280 rather than 170, all of it inside the
+  first 176px of the width, over the tree.
 */
 .veil {
   position: absolute;
   inset-block-start: 100%;
   inset-inline: 0;
   z-index: 0;
-  /* 112px, down from 160 — see 112px AND THE SAME SLOPE in THE TAIL above. */
-  block-size: 112px;
+  /* 136px, up from 112 — the same slope over a 36% opening column; see 136px
+     UNDER A MASK in THE TAIL above. */
+  block-size: 136px;
   pointer-events: none;
   /*
     THE TAIL STARTS WHERE THE BAR ENDS, AND THAT IS NOT A STYLE CHOICE.
@@ -423,12 +667,47 @@
     ONE: the plateau's closing stop and this opening stop are the same edge
     seen from either side, and they move together.
   */
-  background: linear-gradient(
+  /*
+    THE SAME PROFILE AS THE BAR, STOP FOR STOP. The bar's foot is 36% under
+    the mark and 12% under the links, so that is what this element opens at,
+    at every column. A tail written as its own vertical gradient could only
+    open at ONE alpha; this is the bar's horizontal layer, verbatim, and the
+    decay is the mask underneath.
+  */
+  background-image: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--ground) 36%, transparent) 0,
+    color-mix(in srgb, var(--ground) 36%, transparent) var(--nav-fold-start),
+    color-mix(in srgb, var(--ground) 12%, transparent) var(--nav-fold-end),
+    color-mix(in srgb, var(--ground) 12%, transparent) 100%
+  );
+  /*
+    THE DECAY IS A MASK, because a product of two axes is a mask and not a
+    layer: background layers only ever ADD alpha (hero-scrim.module.css
+    makes the same point about its pocket), and the tail has to be the
+    profile above MULTIPLIED by a decay. `mask-mode` defaults to
+    match-source, so what multiplies is this gradient's alpha — the same
+    stops the gate already reads, as the hero's pocket mask is written. The
+    first stop is opaque, which is what makes the tail open at the bar's own
+    alpha; the rest are 0.79 / 0.42 / 0.14 at 30 / 58 / 80% of the height,
+    exactly the fractions the 30 -> 24 -> 13 -> 4 tail kept of its foot.
+    Prefixed and unprefixed, byte-identical: the gate refuses a pair that
+    disagrees, because only one of them is the tail it measured.
+  */
+  -webkit-mask-image: linear-gradient(
     to bottom,
-    color-mix(in srgb, var(--ground) 30%, transparent) 0,
-    color-mix(in srgb, var(--ground) 24%, transparent) 30%,
-    color-mix(in srgb, var(--ground) 13%, transparent) 58%,
-    color-mix(in srgb, var(--ground) 4%, transparent) 80%,
+    color-mix(in srgb, var(--ground) 100%, transparent) 0,
+    color-mix(in srgb, var(--ground) 79%, transparent) 30%,
+    color-mix(in srgb, var(--ground) 42%, transparent) 58%,
+    color-mix(in srgb, var(--ground) 14%, transparent) 80%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--ground) 100%, transparent) 0,
+    color-mix(in srgb, var(--ground) 79%, transparent) 30%,
+    color-mix(in srgb, var(--ground) 42%, transparent) 58%,
+    color-mix(in srgb, var(--ground) 14%, transparent) 80%,
     transparent 100%
   );
   transition: opacity 400ms var(--ease);
@@ -882,11 +1161,18 @@
   --focus-ring: inherit;
   --fg-error: inherit;
 
-  /* Same layer count and stop structure as the rest rule, so the two
-     interpolate. See THE PLATEAU on .nav. */
+  /* Same layer count, direction and stop positions as the rest rule — the
+     fold's two stops included, through the same custom properties — so the
+     two interpolate. See THE PLATEAU on .nav. */
   background-image:
-    linear-gradient(to bottom, transparent 0, transparent 100%),
-    linear-gradient(to bottom, transparent 0, transparent 72%, transparent 100%);
+    linear-gradient(
+      to right,
+      transparent 0,
+      transparent var(--nav-fold-start),
+      transparent var(--nav-fold-end),
+      transparent 100%
+    ),
+    linear-gradient(to bottom, transparent 0, transparent 100%);
   backdrop-filter: blur(16px) saturate(1.4);
   /* A 1px hairline separating ground from ground. NOT a drop shadow. */
   box-shadow: 0 1px 0 var(--edge);
