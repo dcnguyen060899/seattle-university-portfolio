@@ -161,6 +161,85 @@
 
 /*
   ═══════════════════════════════════════════════════════════════════════════
+  THE TWO COLUMNS
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Identity left, evidence right. LAYOUT ONLY — not one colour, size or face is
+  named here; the type is exactly what it was in one column, which is the whole
+  constraint this change was made under.
+
+  THE BREAKPOINT IS 900px, NOT THE PAGE'S 861px ART-DIRECTION SWITCH. They are
+  different questions. 861 is where the photograph swaps from landscape to
+  portrait crop; this is where an evidence column stops having room to set
+  `195 neurons · 1,325 passes · 30,147 raw files` without wrapping mid-figure.
+  Tying them together would mean one of the two lands wrong.
+
+  THE RIGHT COLUMN IS CAPPED AT 420px rather than given a fraction. The three
+  readouts are compound mono strings; a fractional column keeps growing with
+  the viewport and at 1600 it would set them at a measure long enough that the
+  eye loses which figure belongs to which label. 420px holds the longest of
+  them — the barn-owl readout — on two lines at every width above the
+  breakpoint.
+
+  BELOW THE BREAKPOINT this collapses to the single column the band shipped
+  with, in source order: identity, actions, then the three evidence blocks.
+  That is the same reading order as the desktop layout, which is what keeps
+  the tab order and the screen-reader order honest without a single
+  `order:` declaration.
+*/
+.split {
+  display: grid;
+  gap: clamp(36px, 5vw, 52px);
+  align-items: start;
+}
+
+/*
+  SOURCE ORDER IS identity -> evidence -> actions, which is the phone's reading
+  order and the only order the DOM has. Desktop re-places the three by AREA, so
+  the actions sit under the lede without `order:` and without the tab order
+  disagreeing with the visual one.
+*/
+@media (min-width: 900px) {
+  .split {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+    grid-template-areas:
+      'identity evidence'
+      'actions  evidence';
+    grid-template-rows: auto 1fr;
+    column-gap: clamp(48px, 6vw, 88px);
+    row-gap: clamp(28px, 4vw, 40px);
+  }
+
+  .split > *:nth-child(1) { grid-area: identity; }
+  .split > .evidence { grid-area: evidence; }
+  .split > .actions { grid-area: actions; }
+}
+
+/*
+  The three evidence blocks. <Threshold> carries its own top margin
+  (`mt-[clamp(28px,4vw,44px)]`) and the readouts do not, so the gap here is
+  what makes the three sit on one rhythm; the first block's own margin is
+  cancelled so the column starts level with the eyebrow opposite it.
+*/
+.evidence {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(26px, 3.5vw, 38px);
+}
+
+.evidence > div:first-child > [data-numeric] {
+  margin-block-start: 14px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 32px;
+}
+
+/*
+  ═══════════════════════════════════════════════════════════════════════════
   THE TYPE OVER THE PHOTOGRAPH
   ═══════════════════════════════════════════════════════════════════════════
 
@@ -281,6 +360,40 @@
 
 .inner :global(.font-mono) {
   font-weight: 500;
+}
+
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  THE LIMITS RULE IS A STUB, NOT A SPAN
+  ═══════════════════════════════════════════════════════════════════════════
+
+  <Limit> paints `border-t-2` across its whole inline size. Everywhere else on
+  the page that is right — it sits on paper and separates two blocks of prose.
+  Over the photograph it is a long horizontal hairline laid across a picture,
+  and at 1280 it lands squarely through the lettering of the SEATTLE UNIVERSITY
+  sign, which reads as a printing error rather than as a divider.
+
+  A LONGER RULE CANNOT BE MADE SAFE. The sign is at a fixed place in the
+  photograph and the layout is fluid, so any full-measure line collides with
+  SOMETHING at some viewport; moving the block only moves the collision. A stub
+  cannot cross anything, which is why the owner's reference render uses one.
+
+  Two class names deep so it beats the utility's single class without
+  !important. The rule is not removed, it is shortened: same role, same
+  weight, same 14px gap to the label.
+*/
+.inner .limits {
+  border-block-start: 0;
+  padding-block-start: 0;
+}
+
+.inner .limits::before {
+  content: '';
+  display: block;
+  inline-size: 64px;
+  block-size: 2px;
+  margin-block-end: 14px;
+  background: var(--fg-accent);
 }
 
 /*

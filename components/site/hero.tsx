@@ -646,158 +646,214 @@ export function Hero() {
 
       <div className={`wrap ${styles.inner}`}>
         {/*
-          THE CITY IS DELIBERATELY NOT HERE. This line used to read
-          "Seattle, Washington · M.S. Data Science, Seattle University", which
-          put SEATTLE twice in one line and a third time in the nav directly
-          above it — three of the same word stacked vertically in the first
-          two lines a reader sees. "Seattle University" already places him, so
-          the city was the repetition that bought nothing.
+          ── TWO COLUMNS, AND WHAT THE SPLIT IS FOR ─────────────────────────
 
-          The location signal is NOT lost: lib/seo.ts publishes homeLocation
-          with addressLocality "Seattle" / addressRegion "WA" in the Person
-          schema, which is what a search engine and an ATS actually read.
+          The band used to run as one column: identity, then the threshold,
+          then the two readouts, then the caveats, then the actions. Everything
+          a recruiter came for sat BELOW the sentence explaining who he is, in
+          the order it happened to be written.
+
+          It is now identity on the left and EVIDENCE on the right, three
+          blocks each opening with the kind of thing it is — research,
+          recognition, research infrastructure. Two consequences, and the
+          second is the one that matters:
+
+            · the figures rise. On one column the readouts sat at the bottom of
+              the band; beside the lede they are level with it, so the first
+              screen carries the claim and its evidence at the same time
+              instead of asking the reader to scroll for the second.
+            · the blocks say WHAT THEY ARE before they say what they measure.
+              "P@1 0.585" is a number until something calls it research; the
+              eyebrow is the difference between a figure a reader has to
+              interpret and one they can file.
+
+          The CATEGORY EYEBROWS ARE THE ONLY NEW WORDS. Every figure, label,
+          note and caveat below is the string it already was, from the accessor
+          it already used — this is a reorganisation, not a rewrite, and the
+          numeric licensing gate (C8) would fail the build if it were not.
         */}
-        <Eyebrow>M.S. Data Science · Seattle University</Eyebrow>
+        <div className={styles.split}>
+          {/* ── LEFT: who, in his own words ──────────────────────────────── */}
+          <div>
+            {/*
+              THE CITY IS DELIBERATELY NOT HERE. This line used to read
+              "Seattle, Washington · M.S. Data Science, Seattle University",
+              which put SEATTLE twice in one line and a third time in the nav
+              directly above it. "Seattle University" already places him.
 
-        {/*
-          THE NAME IS MIST BLUE, THE LEDE IS NOT — and that split is the whole
-          idea rather than a decoration.
+              The location signal is NOT lost: lib/seo.ts publishes
+              homeLocation with addressLocality "Seattle" / addressRegion "WA"
+              in the Person schema, which is what a search engine and an ATS
+              actually read.
+            */}
+            <Eyebrow>M.S. Data Science · Seattle University</Eyebrow>
 
-          WHY COOL AND NOT WARM. This went through a warm cream first, matching
-          the lockup, and the cream was the weaker answer for a reason worth
-          writing down: the photograph's lights are amber, so a warm name sits
-          INSIDE the picture's own hue and has only luminance left to separate
-          with. Mist blue sits across it. The name reads as a distinct object,
-          and the sunset reads warmer by comparison — the contrast flatters the
-          photograph instead of competing with it.
+            {/*
+              THE NAME IS MIST BLUE, THE LEDE IS NOT — and that split is the
+              whole idea rather than a decoration.
 
-          The lede stays near-white. Only the NAME is coloured, so the hue
-          marks the one word that is a name while everything that has to be
-          READ keeps the neutral ink. That is the hierarchy; the hue is how it
-          is expressed.
+              WHY COOL AND NOT WARM. This went through a warm cream first,
+              matching the lockup, and the cream was the weaker answer: the
+              photograph's lights are amber, so a warm name sits INSIDE the
+              picture's own hue and has only luminance left to separate with.
+              Mist blue sits across it. The name reads as a distinct object,
+              and the sunset reads warmer by comparison.
 
-          A ROLE, NOT THE HEX. --fg-brand is mist on ink and plain --fg on
-          paper and crimson, where the same blue would be 1.48:1 and would be
-          unreadable. So this line is safe on any ground a future band puts it
-          on, and check-ground-tokens.mjs still holds.
+              A ROLE, NOT THE HEX. --fg-brand is mist on ink and plain --fg on
+              paper and crimson, where the same blue would be 1.48:1 and
+              unreadable. IT IS DARKER THAN THE CREAM WAS (luminance 0.628
+              against 0.690), so it has LESS headroom against the band's
+              brightest sky; rule 5b's collar in hero-scrim.module.css is what
+              carries it.
+            */}
+            {/*
+              THE WEIGHT IS SET HERE BECAUSE THE SCALE HAD IT BACKWARDS.
+              --text-h1--font-weight is 200 and the lede below sets font-[300],
+              so the name was the THINNEST ink in the block while being the
+              largest — big enough to be the heading, light enough to read as
+              background, and at a glance weight wins. That is the whole reason
+              it looked crammed in with the sentence under it rather than
+              leading it. 400 puts it a full step above the lede instead of one
+              below, which is the relationship every reference render of this
+              page has and this one did not.
 
-          IT IS DARKER THAN THE CREAM WAS (luminance 0.628 against 0.690), so
-          it has LESS headroom against the band's brightest sky, not more. The
-          collar in hero-scrim.module.css rule 5b is what carries it; see the
-          measured numbers there.
-        */}
-        <h1 className="mt-[20px] max-w-[14ch] text-[color:var(--fg-brand)]">Duy Nguyen</h1>
+              SCOPED TO THE HERO, not to the scale. `h1, h2 { font-weight: 200 }`
+              in app/globals.css is right for the band headings further down the
+              page, which sit on paper at a smaller step and would go heavy and
+              cheap at 400. This is the one h1 set at 64px over a photograph.
+            */}
+            <h1 className="mt-[20px] max-w-[14ch] font-[400] text-[color:var(--fg-brand)]">
+              Duy Nguyen
+            </h1>
 
-        {/*
-          THE MEASURE IS 32ch, NOT 26ch, AND IT IS A COPY DECISION (browser-
-          measured at 1280x800, 2026-09-03). Not one word of this sentence
-          changed; only the column it sets in. At 26ch (684px) `text-balance`
-          resolved it into FOUR display lines of 655/572/582/570px inside an
-          1088px wrap — a 176px slab with a third of its own column empty. At
-          32ch (842px) the same balancer resolves it into THREE lines of
-          813/784/782px: 132px, still evenly balanced, still short of the
-          1088px wrap. That is 44px off the band and, more importantly, every
-          measured figure below it rises by 44px — the threshold to y=494, the
-          floor to 587, both readouts to 706 — which is 44px more headroom on
-          the above-the-fold guarantee this hero already had to fight for.
-          It binds only where the wrap exceeds 842px; below that the max-width
-          is not the constraint and the setting is byte-for-byte what it was.
-        */}
-        <Reveal index={1}>
-          <p className="mt-[26px] max-w-[32ch] font-display text-h2 font-[300] text-balance">
-            I design experiments for machine-learning systems where being wrong has a
-            cost — and I build the infrastructure they run on.
-          </p>
-        </Reveal>
+            {/*
+              THE MEASURE IS 32ch AND IT IS A COPY DECISION (browser-measured
+              at 1280x800, 2026-09-03). At 26ch the balancer resolved this into
+              FOUR display lines inside an 1088px wrap — a 176px slab with a
+              third of its column empty. At 32ch it resolves into THREE.
 
-        {/*
-          FIGURE 1 — the threshold. The only <Threshold> in the hero, and one of
-          two on the whole page: past three the device stops meaning “threshold”
-          and starts meaning “line”.
-        */}
-        <Threshold
-          index={3}
-          clearedValue={fineTuned}
-          clearedLabel={`Mammo-CLIP, fine-tuned — the only arm of ${cells} to clear it`}
-          value={`P@1 ${floor}`}
-          label="held-out majority-class retrieval floor"
-          cleared={`${frozen} frozen → ${fineTuned} fine-tuned, the decoder frozen throughout`}
-        />
+              IT NOW BINDS DIFFERENTLY. The left column is narrower than the
+              old full wrap, so the column — not this max-width — is usually
+              the constraint. The value is kept because it still governs the
+              one-column layout below the breakpoint, where the wrap is the
+              measure again.
+            */}
+            <Reveal index={1}>
+              <p className="mt-[30px] max-w-[32ch] font-display text-h2 font-[300] text-balance">
+                I design experiments for machine-learning systems where being wrong has a
+                cost — and I build the infrastructure they run on.
+              </p>
+            </Reveal>
 
-        {/*
-          FIGURES 2 and 3 — the award and the barn-owl database, in one line each.
+          </div>
 
-          THE NOTES ARE `pageShort`, NOT `pageText`, AND THAT IS THE ACCESSOR
-          DOING WHAT IT SAYS. evidence.tsx documents pageShort as "a licensed
-          short form — chip and READOUT length"; these two were the only
-          readouts on the page reaching for pageText instead, and they got the
-          corpus's full third-person sentences: two 40px, two-line paragraphs
-          under a device whose whole shape is figure / label / one line.
-          Measured at 1280x800 the pair sat at y=802 — two pixels BELOW the
-          fold — so nothing above the fold changes, and the band loses 20px
-          desktop, 39px at 375 where they stack.
+          {/* ── RIGHT: the evidence, filed ───────────────────────────────── */}
+          <div className={styles.evidence}>
+            <div>
+              <Eyebrow>Research</Eyebrow>
+              {/*
+                FIGURE 1 — the threshold. The only <Threshold> in the hero, and
+                one of two on the whole page: past three the device stops
+                meaning "threshold" and starts meaning "line".
+              */}
+              <Threshold
+                index={3}
+                clearedValue={fineTuned}
+                clearedLabel={`Mammo-CLIP, fine-tuned — the only arm of ${cells} to clear it`}
+                value={`P@1 ${floor}`}
+                label="held-out majority-class retrieval floor"
+                cleared={`${frozen} frozen → ${fineTuned} fine-tuned, the decoder frozen throughout`}
+              />
+            </div>
 
-          Nothing left the page. clm:cause-blind-judging is still attached to
-          clm:cause-win here, which its own corpus note requires ("Keep it
-          attached to clm:cause-win in copy"), and its full sentence is already
-          rendered verbatim in award-band.tsx, where blind judging is the
-          band's argument rather than a footnote to a figure.
-          clm:fischer-selfserve — the outcome claim for rol:fischer-rde — is
-          still here in its short form.
-        */}
-        <div className="mt-[clamp(36px,5vw,56px)] grid gap-[28px] sm:grid-cols-2">
-          <Readout
-            value={pageShort('clm:cause-win')}
-            label="Student Data Scrollytelling Contest"
-            note={pageShort('clm:cause-blind-judging')}
-          />
-          <Readout
-            value={`${neurons} neurons · ${passes} passes · ${rawFiles} raw files`}
-            label="one queryable database for the barn-owl lab"
-            note={pageShort('clm:fischer-selfserve')}
-          />
+            {/*
+              FIGURES 2 and 3 — the award and the barn-owl database.
+
+              THE NOTES ARE `pageShort`, NOT `pageText`, AND THAT IS THE
+              ACCESSOR DOING WHAT IT SAYS. evidence.tsx documents pageShort as
+              "a licensed short form — chip and READOUT length"; the corpus's
+              full third-person sentences are two-line paragraphs under a
+              device whose whole shape is figure / label / one line.
+
+              Nothing left the page. clm:cause-blind-judging is still attached
+              to clm:cause-win here, which its own corpus note requires ("Keep
+              it attached to clm:cause-win in copy"), and clm:fischer-selfserve
+              — the outcome claim for rol:fischer-rde — is still in short form.
+            */}
+            <div>
+              <Eyebrow>Recognition</Eyebrow>
+              <Readout
+                className="mt-[14px]"
+                value={pageShort('clm:cause-win')}
+                label="Student Data Scrollytelling Contest"
+                note={pageShort('clm:cause-blind-judging')}
+              />
+            </div>
+
+            <div>
+              <Eyebrow>Research infrastructure</Eyebrow>
+              <Readout
+                className="mt-[14px]"
+                value={`${neurons} neurons · ${passes} passes · ${rawFiles} raw files`}
+                label="one queryable database for the barn-owl lab"
+                note={pageShort('clm:fischer-selfserve')}
+              />
+            </div>
+          </div>
+
+          {/*
+            ── THE ACTIONS ARE A THIRD GRID CHILD, NOT A CHILD OF THE LEFT
+               COLUMN, AND THAT IS A LEGIBILITY FIX RATHER THAN A LAYOUT ONE.
+
+            They belong under the lede on desktop, which is where the reference
+            render puts them and where a reader who has decided can act without
+            passing every caveat first. Nesting them in the identity column got
+            that — and, below the 900px split, pushed the whole evidence stack
+            down by the height of three buttons.
+
+            THAT MOVE BROKE A GLYPH. At 375 the "0.585" figure landed on a
+            brighter patch of the photograph and measured 2.78:1 against its
+            3:1 obligation, caught at the INK PIXELS by
+            tests/e2e/hero-contrast.spec.ts — a real failure, not a sampling
+            artefact, because that test differences the rendered frame against
+            the same frame with the fill removed and so already credits the
+            collar.
+
+            As its own grid child placed by AREA, the actions sit under the
+            lede on desktop and after the evidence in source order, so the
+            phone gets the stacking it had before and the figure lands back on
+            the ground it was solved against. No `order:` declaration is
+            involved, so the DOM order, the tab order and the screen-reader
+            order are the one order this comment describes.
+          */}
+          <div className={styles.actions}>
+            <Btn href="#fit">Ask about a role</Btn>
+            <Btn href="/docs/Resume.pdf" variant="ghost">
+              Résumé (PDF)
+            </Btn>
+            <EvidenceLink id="art:github" label="GitHub" />
+          </div>
         </div>
 
         {/*
           THE PAGE'S THESIS USED TO SIT HERE — "Every figure on this page is
           licensed by a record that names its source…" — and it now opens the
-          research band instead (components/site/research-band.tsx, directly
-          under "One habit runs through all of it").
-
-          WHY IT LEFT, browser-measured at 1280x800 on 2026-09-03. It started
-          at y=890. The fold is 800. It was ninety pixels below the fold of the
-          viewport it was written for, so it did no hero work at all — it was
-          costing 127px of band on desktop and 139px at 375 to say something no
-          first-paint reader ever saw. And it was costing it in the worst place
-          on the page: at the time this was written the hero's photograph was
-          capped at 106svh (848px at 1280x800) while the band ran to 1306px, so
-          every pixel of copy past the cap was copy over bare --ground rather
-          than over the picture. The band's bottom 458px — 35% of it — had no
-          photograph behind it, which is the "dark blur around the text" the
-          owner had then reported four times, and prose below the fold was the
-          cheapest 127 of those pixels to give back. (The cap has since moved
-          and THE PIN in hero.module.css closed the coverage gap outright —
-          measured 0.0px uncovered at every viewport and scroll position — so
-          this paragraph records why the copy moved, not a live defect.)
-
-          WHAT THE REMOVAL BUYS BESIDES HEIGHT. The sentence sat BETWEEN the
-          three figures and the caveats that qualify them. The brief's rule is
-          that the caveats sit *with* the figures; deleting the paragraph that
-          separated them is that rule enforced, not weakened. <Limit> now
-          follows the readouts directly.
-
-          WHY THE RESEARCH BAND IS ITS HOME AND NOT A COMPROMISE. It is a claim
-          about how the whole page is sourced, and the research band is where a
-          reader first meets the evidence discipline it describes: two <Limit>
-          blocks, five quoted caveats under the Yang entry alone, immediately
-          below it. Stated in the hero it is a promise; stated there it is a
-          caption for the demonstration underneath.
+          research band instead. It started at y=890 against a fold of 800: it
+          was ninety pixels below the fold of the viewport it was written for,
+          so it did no hero work at all, and it sat BETWEEN the three figures
+          and the caveats that qualify them. The brief's rule is that the
+          caveats sit *with* the figures; deleting the paragraph that separated
+          them is that rule enforced, not weakened.
         */}
 
         {/*
           The mandatory caveats of everything above. C10 fails the build if a
           claim is rendered without them, which is what makes this block
           structural rather than polite.
+
+          IT SPANS BOTH COLUMNS, at the foot of the band, because it qualifies
+          figures in one column and a claim in the other. Putting it under the
+          evidence column alone would have implied it qualified only that.
         */}
         <Limit
           ids={['clm:yang-label-caveat', 'clm:fischer-live-caveat']}
@@ -822,14 +878,6 @@ export function Hero() {
             </li>
           )}
         </Limit>
-
-        <div className="mt-[clamp(36px,5vw,52px)] flex flex-wrap items-center gap-x-8 gap-y-4">
-          <Btn href="#fit">Ask about a role</Btn>
-          <Btn href="/docs/Resume.pdf" variant="ghost">
-            Résumé (PDF)
-          </Btn>
-          <EvidenceLink id="art:github" label="GitHub" />
-        </div>
       </div>
     </Band>
   );

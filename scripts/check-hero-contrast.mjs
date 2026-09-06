@@ -288,13 +288,39 @@ const EXTENT_MARGIN = 0.02;
  * breakpoints are step changes and averaging across one would invent a box
  * that no viewport renders.
  */
+/*
+  RE-MEASURED 2026-09-06, when the band went to two columns. Chromium, the
+  same rectangles tests/e2e/hero-contrast.spec.ts walks.
+
+    width   band height          measured glyph box
+    375     1527  (unchanged)    unchanged — still one column, same order
+    390     1466  (unchanged)    unchanged
+    768     1164 -> 1318         x  4.5% .. 74.3%   y 20.2% .. 93.9%
+    861     1181 -> 1371         x  4.5% .. 73.6%   y 20.1% .. 93.4%
+    1280    1162 -> 1018         x 10.9% .. 85.5%   y 12.6% .. 87.1%
+    1600    1186 -> 1042         x 18.8% .. 78.4%   y 13.4% .. 86.2%
+
+  THE BAND MOVED IN BOTH DIRECTIONS, which is the layout working. Above the
+  900px split it is SHORTER — 144px at 1280 — because the evidence sets beside
+  the lede instead of under it. Below the split it is TALLER, because the three
+  category eyebrows are three new lines in a column that was already stacked.
+
+  THE BOXES ARE NOT NARROWED TO MATCH. Every x/y here is the WIDER of the old
+  declaration and the new measurement, per this file's own rule — "inflated in
+  the safe direction only, never narrower". The glyph box genuinely shrank on
+  the right at every desktop width (85.5% against 88.6% at 1280) because the
+  quoted limits now set at --container-prose on the left instead of spanning
+  the wrap, but declaring that would hand the build gate a smaller field to
+  check for no gain. Only bandH is corrected to the measurement, because that
+  is the number the drift assertion is about.
+*/
 export const TEXT_EXTENT = [
   { w: 375, bandH: 1527, x0: 0.053, x1: 0.946, y0: 0.144, y1: 0.958 },
   { w: 390, bandH: 1466, x0: 0.051, x1: 0.944, y0: 0.153, y1: 0.956 },
-  { w: 768, bandH: 1164, x0: 0.045, x1: 0.954, y0: 0.215, y1: 0.941 },
-  { w: 861, bandH: 1181, x0: 0.045, x1: 0.951, y0: 0.216, y1: 0.936 },
-  { w: 1280, bandH: 1162, x0: 0.109, x1: 0.886, y0: 0.098, y1: 0.903 },
-  { w: 1600, bandH: 1186, x0: 0.187, x1: 0.809, y0: 0.104, y1: 0.896 },
+  { w: 768, bandH: 1318, x0: 0.045, x1: 0.954, y0: 0.202, y1: 0.941 },
+  { w: 861, bandH: 1371, x0: 0.045, x1: 0.951, y0: 0.201, y1: 0.936 },
+  { w: 1280, bandH: 1018, x0: 0.109, x1: 0.886, y0: 0.098, y1: 0.903 },
+  { w: 1600, bandH: 1042, x0: 0.187, x1: 0.809, y0: 0.104, y1: 0.896 },
 ];
 
 /** The declared box for a viewport width, inflated by EXTENT_MARGIN. */

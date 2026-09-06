@@ -1407,7 +1407,18 @@
     it guessing 106. The same restatement-with-a-reason as the 68rem in the
     media query below. Change one, change both.
   */
-  --frame-foot: min(100%, 132svh);
+  /* 134svh, NOT 132 — RE-DERIVED 2026-09-06 when the band went to two columns.
+     The cap describes THE BAND, and the band changed: at 768x1024 it now measures
+     1362.1px, which is 133.02svh, so a 132svh frame left a 10.4px strip of bare
+     ground at its foot. Measured need per viewport: 1600 118.15, 1280 129.91,
+     768 133.02, 861 141.62, 390 184.83, 375 199.71. 134 covers every viewport
+     the coverage gate actually walks (375 excepted — see below) with ~1svh of
+     margin, and costs 1.5% more upscale than 132, which is inside the
+     quantisation the trade table above already prices.
+     375 AND 390 ARE NOT FIXED BY THIS and are not pretending to be: they need
+     200svh and 185svh, they were failing before this change, and closing a
+     550px hole is a crop decision, not a cap tweak. */
+  --frame-foot: min(100%, 134svh);
 }
 
 @media (min-width: 861px) {
@@ -1450,7 +1461,7 @@
   position: absolute;
   inset-block-start: 0;
   inset-inline: 0;
-  block-size: min(100%, 132svh);
+  block-size: min(100%, 134svh);
   z-index: -2;
   overflow: clip;
   pointer-events: none;
