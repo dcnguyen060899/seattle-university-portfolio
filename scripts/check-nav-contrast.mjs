@@ -1281,6 +1281,10 @@ function analyseNav(input) {
       }
       if (!res.treatment) continue;
       const reach = M.treatmentReachPx(res.treatment);
+      /* Carried on the treatment so every box row can print what it was
+         credited with — a collar the report cannot show is a collar the next
+         reader deletes. */
+      res.treatment.reachPx = reach;
       if (reach > M.HALO_REACH_EM_MAX * res.treatment.fontPx) {
         fail(rule.file, 'a nav treatment reaches further than an em beyond its ink',
           `at ${vp.name}: ${reach.toFixed(1)}px on ${res.treatment.fontPx.toFixed(1)}px type`,
@@ -1477,6 +1481,26 @@ function analyseNav(input) {
           }
         }
 
+        /*
+          THE MARK WEARS NO TEXT COLLAR, AND THIS IS WHERE THAT IS ENFORCED.
+
+          Treatments are keyed by ROLE, because the hero's contract attributes
+          a text-shadow to the role it protects and this gate cannot see the
+          DOM. The monogram in the mark box paints --fg too — it is an inline
+          SVG filled with `currentColor` inside `.home` — so crediting by role
+          alone would hand it the links' collar. But a text-shadow is thrown
+          from GLYPH geometry and an SVG fill has none: Chromium paints nothing
+          behind the monogram, whatever `.home` declares. Crediting it would be
+          precisely the over-crediting this file exists to prevent, and the
+          mark is the box that binds once the links are collared, so the error
+          would land on the one number that sets the veil.
+
+          The honest treatment for a graphical object is the box-shadow collar
+          check-hero-contrast.mjs models for the Threshold's rule and the focus
+          ring (--collar-role). This gate does not model that yet; until it
+          does, the mark is measured BARE and the veil holds what the mark
+          needs.
+        */
         const fgs = [...roleNames].map((role) => {
           const def = restGround.roles.get(role);
           return {
@@ -1484,7 +1508,7 @@ function analyseNav(input) {
             rgb: def?.rgb ?? [255, 255, 255],
             need: def?.need ?? 4.5,
             rule: (def?.need ?? 4.5) === 3 ? 'WCAG 1.4.11 non-text' : 'WCAG 1.4.3 text',
-            t: restT.get(role) ?? null,
+            t: box.kind === 'mark' ? null : (restT.get(role) ?? null),
           };
         });
 
@@ -1542,6 +1566,13 @@ function analyseNav(input) {
             raster: fg.raster === true,
             share: fg.share ?? null,
             treated: fg.t !== null,
+            halo: fg.t === null ? null : {
+              layers: fg.t.shadows.length,
+              stroke: fg.t.stroke !== null,
+              reachPx: fg.t.reachPx ?? null,
+              fontPx: fg.t.fontPx,
+              selector: fg.t.selector,
+            },
             need: fg.need * headroom,
             plain: fg.need,
             ratio: worst.ratio,
@@ -1830,14 +1861,24 @@ function printReport(M, r, { headroom }) {
 
     console.log('\n     THE GROUND UNDER EACH BOX — the composited sRGB window a glyph there');
     console.log('     can land on, and the worst role over it.');
-    console.log('     viewport  box                ground     role          ratio    need');
+    console.log('     A [halo: …] tag names the per-glyph treatment credited in that row —');
+    console.log('     layers, and how far it reaches in em of the type it is thrown from');
+    console.log(`     (over ${M.HALO_REACH_EM_MAX.toFixed(2)}em it is a SHEET and fails above). [bare] is the`);
+    console.log('     role\'s own colour on the composited ground; the mark is always bare,');
+    console.log('     because a text-shadow is thrown from glyph geometry and an SVG has none.');
+    console.log('     viewport  box                ground     role          ratio    need   credit');
     const perBox = new Map();
     for (const x of list) if (!perBox.has(`${x.vp}|${x.box}`)) perBox.set(`${x.vp}|${x.box}`, x);
     for (const x of perBox.values()) {
       const flag = x.ratio >= x.need ? ' ' : '!';
+      const credit = x.halo
+        ? `[halo: ${x.halo.layers} layer${x.halo.layers === 1 ? '' : 's'}`
+          + `${x.halo.stroke ? ' + stroke' : ''}`
+          + `${x.halo.reachPx !== null ? `, reach ${(x.halo.reachPx / x.halo.fontPx).toFixed(2)}em` : ''}]`
+        : '[bare]';
       console.log(`   ${flag} ${x.vp.padEnd(9)} ${x.box.padEnd(18)} `
         + `${String(byte(x.win.lo)).padStart(3)}..${String(byte(x.win.hi)).padStart(3)}   `
-        + `${x.role.padEnd(13)} ${x.ratio.toFixed(3).padStart(7)}:1 ${x.need.toFixed(2).padStart(5)}`);
+        + `${x.role.padEnd(13)} ${x.ratio.toFixed(3).padStart(7)}:1 ${x.need.toFixed(2).padStart(5)}  ${credit}`);
     }
 
     console.log('\n     WORST PER ROLE, across every box, viewport and shipped rung.');

@@ -16,12 +16,14 @@
       measures the bar and publishes it on <html>)
 
   WHAT IS MEASURED (do not "tidy" these without re-measuring):
-    · the veil's 82% plateau — bisected against scripts/check-nav-contrast.mjs
-      with the collar credited; see THE VEIL for the floor and what holds it
-    · the tail's 160px and its five stops — a perceptual budget, not taste
+    · the veil's 38% plateau and 30% foot — bisected against
+      scripts/check-nav-contrast.mjs with the links' collar credited and the
+      mark bare; see THE VEIL AT 38% for the floor and what holds it
+    · the tail's 112px and its five stops — a perceptual budget, not taste;
+      the stops are fractions of the foot and move with it
     · the frosted fill's 97% — DERIVED here now, not ported; see THE FILL
-    · the ABSENCE of a per-glyph collar — measured, three arms, see the note
-      where it would have gone
+    · the per-glyph collar on the links — its radii, its counts and the box
+      it is NOT on; see THE COLLAR
 
   WHAT IS STILL A PLACEHOLDER:
     · every duration, the blur radius, the gap and padding values
@@ -137,13 +139,21 @@
     every time the bar sticks. Same layer count and same stop structure in
     both rules interpolates instead.
   */
+  /*
+    38% / 30%: the plateau and its foot. The plateau is bisected against
+    scripts/check-nav-contrast.mjs with the links' collar credited and the
+    mark BARE — see THE VEIL AT 38% below for the table and the floor it sits
+    four points above. The foot is the plateau at the same 0.78 the 55/43
+    pair kept, and it is the one number `.veil` must open at: the two stops
+    are the same edge seen from either side, and they move together.
+  */
   background-image:
     linear-gradient(to bottom, transparent 0, transparent 100%),
     linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--ground) 55%, transparent) 0,
-      color-mix(in srgb, var(--ground) 55%, transparent) 72%,
-      color-mix(in srgb, var(--ground) 43%, transparent) 100%
+      color-mix(in srgb, var(--ground) 38%, transparent) 0,
+      color-mix(in srgb, var(--ground) 38%, transparent) 72%,
+      color-mix(in srgb, var(--ground) 30%, transparent) 100%
     );
 
   /*
@@ -240,6 +250,68 @@
    WHAT SIX POINTS OF VEIL BUY: the photograph keeps 18% of its light in the
    nav strip rather than 12% — half again as much sky — and the strip stops
    reading as a filled bar with a picture behind it.
+
+   ── THE VEIL AT 38%, AND THE ONE BOX THAT HOLDS IT THERE (2026-09-06) ────
+
+   Everything above this line was measured with the links BARE. They are
+   collared now (THE COLLAR, below the ink face), and a collared 10.5px link
+   reads 13.7:1 or better in every box at every viewport with NO veil at all
+   — so the links dropped out of the solve entirely, the way the hero's
+   Threshold rule did when its collar was credited. What is left is the
+   mark: an SVG fill, which no text-shadow reaches, measured bare on purpose.
+
+   Bisected against scripts/check-nav-contrast.mjs, the collar credited on
+   the links and the mark bare, foot at 0.78 of the plateau throughout:
+
+       plateau   mark @1280 (bare)   worst link (collared)   result
+         55%        7.169:1             14.585:1               pass  (what shipped)
+         45%        5.867                14.168                pass
+         40%        5.318                13.950                pass
+         38%        5.115                13.861                pass  <- ships
+         36%        4.922                13.771                pass
+         35%        4.828                13.726                pass
+         34%        4.737                13.681                pass  — the floor
+         33%        4.648                13.635                FAIL: --fg in the mark box at 1280
+         32%        4.561                13.589                FAIL
+
+   The need is 4.725:1 (4.5 x1.05 headroom, the gate's own). The floor is
+   34% and it is held by ONE box at ONE viewport: the monogram at 1280x800,
+   where the wrap's left gutter puts it over the brightest sky any box
+   lands on (composited window sRGB 14..80 at 55%; the worst backdrop is
+   sRGB 79,80,82). 38% is FOUR POINTS above the floor — twice the two-point
+   convention the rest of this file keeps, because the floor is a single
+   pixel-window in a single box and the monogram is the one element in the
+   bar with no treatment of its own to fall back on. At 38% the mark clears
+   the 4.725 bar by x1.08, which is x1.14 over the plain 4.5.
+
+   WHAT SEVENTEEN POINTS OF VEIL BUY. MEASURED on the production build,
+   Chromium, dpr 1, mean relative luminance of the sky rows on the right
+   half of the viewport, the veil as it shipped (55/43, 160px) against this
+   rule (38/30, 112px):
+
+       1280x800   rows        before      after     light kept
+                    0-  60    0.0713      0.0927     x1.30
+                   60- 120    0.0637      0.0849     x1.33
+                  120- 180    0.0563      0.0725     x1.29
+                  180- 260    0.0234      0.0240     the hero scrim alone
+       1600x900     0-  60    0.0778      0.1073     x1.38
+                   60- 120    0.0679      0.0909     x1.34
+                  120- 180    0.0612      0.0783     x1.28
+                  180- 260    0.0225      0.0230
+
+   With no nav veil at all the first band reads 0.2103 at 1280, so this bar
+   still takes 56% of the crest's light where it took 66% — a third of the
+   loss returned, not all of it. What still takes it is the mark, and only
+   the mark; the paragraph below says what to do about that.
+
+   THE NEXT FIFTEEN POINTS ARE IN THE MARK. The honest instrument for a
+   graphical object is the box-shadow collar check-hero-contrast.mjs models
+   with --collar-role (hero-scrim rule 7); the nav gate does not read that
+   contract yet. Teach it the BOX model, collar the monogram, and re-run this
+   bisect — the plateau will move first, and it will move to wherever the
+   links' hover underline or the focus ring binds next. Do not reach for a
+   drop-shadow on the SVG: the gate cannot read it, and an uncredited
+   darkening is exactly what this file keeps finding it shipped.
 */
 /*
   THE TAIL. Starts where the bar's own paint stops and carries it to nothing,
@@ -280,13 +352,45 @@
   --spacing-band + --hero-headroom — 128px at 1280, 242px at 375 — and this
   tail ends at 220px and 265px. The overlap is the hero's own aperture, which
   is text-free by construction.
+
+  ── 112px AND THE SAME SLOPE (2026-09-06) ──────────────────────────────────
+
+  The 160px above was sized to feather a 43% foot. The foot is 30% now (THE
+  VEIL AT 38%), and a smaller edge needs less run to hide: the perceptual
+  budget is a SLOPE, L* per 6px, and a tail that keeps the same slope over a
+  smaller drop is shorter. Measured the way the table above was — the five
+  stops rescaled to the new foot, over the flat 128 field and over white —
+  the worst 6px step anywhere in the tail:
+
+      foot   tail     flat 128   over #FFFFFF   total (128)
+      43%    160px      0.61        1.06          11.4 L*     (what shipped)
+      30%    160px      0.41        0.70           7.5 L*     longer than it needs
+      30%    112px      0.56        0.96           7.5 L*     <- ships
+      30%     96px      0.65        1.12           7.5 L*     steeper than shipped
+
+  112px is the length at which the new tail is no steeper than the old one at
+  either field, so nothing the eye could resolve in the 160px tail becomes
+  resolvable here, and 48px of sky comes back. (The row above uses this
+  file's own harness, not check-hero-blend.mjs's; the two agree on the flat
+  128 criterion and differ on the constant, which is why the shipped tail is
+  quoted at 1.74 in the earlier table and 0.61 here. Compare within a table,
+  not across them.)
+
+  The bar is 58px, so the darkening now ends at y≈170 at 1280 rather than
+  218. The hero eyebrow at y 128-149 sits under the tail's last fifth, where
+  this gradient is at or under 4% — and scripts/check-hero-contrast.mjs does
+  not read this file at all, so the hero's own ratios were never credited
+  with any of this and cannot move when it thins. That is written down here
+  because it means the hero has always been measured against a LIGHTER ground
+  than it got, which is the safe direction and worth knowing.
 */
 .veil {
   position: absolute;
   inset-block-start: 100%;
   inset-inline: 0;
   z-index: 0;
-  block-size: 160px;
+  /* 112px, down from 160 — see 112px AND THE SAME SLOPE in THE TAIL above. */
+  block-size: 112px;
   pointer-events: none;
   /*
     THE TAIL STARTS WHERE THE BAR ENDS, AND THAT IS NOT A STYLE CHOICE.
@@ -299,22 +403,25 @@
     cannot do that starting from a different value.
 
     THE VALUE TO MATCH IS THE BAR'S LAST STOP, NOT ITS FIRST. The bar is not
-    flat: it holds the plateau to 72% of its height and then eases to 43% at
-    its foot, so 43% is the alpha in contact with this element. Opening here at
-    the plateau's 55% was a 12-point step to DARKER across a zero-width
-    boundary - subtler than the 70% it replaced, and still a line, which a
-    reader sees as the sky changing brightness at a horizontal edge.
+    flat: it holds the plateau to 72% of its height and then eases to 30% at
+    its foot, so 30% is the alpha in contact with this element. When the foot
+    was 43% and this opened at the plateau's 55%, that was a 12-point step to
+    DARKER across a zero-width boundary — subtler than the 70% it replaced,
+    and still a line, which a reader sees as the sky changing brightness at a
+    horizontal edge. This repo has been bitten by that seam twice.
 
-    The decay curve below is the same shape, rescaled to begin at 43%. TWO
-    NUMBERS ARE COUPLED, NOT ONE: the plateau's closing stop and this opening
-    stop are the same edge seen from either side, and they move together.
+    The decay curve below is the same shape, rescaled to begin at 30% — the
+    stops are 0.79 / 0.42 / 0.14 of the foot at 30 / 58 / 80% of the height,
+    exactly as the 43 -> 34 -> 18 -> 6 tail was. TWO NUMBERS ARE COUPLED, NOT
+    ONE: the plateau's closing stop and this opening stop are the same edge
+    seen from either side, and they move together.
   */
   background: linear-gradient(
     to bottom,
-    color-mix(in srgb, var(--ground) 43%, transparent) 0,
-    color-mix(in srgb, var(--ground) 34%, transparent) 30%,
-    color-mix(in srgb, var(--ground) 18%, transparent) 58%,
-    color-mix(in srgb, var(--ground) 6%, transparent) 80%,
+    color-mix(in srgb, var(--ground) 30%, transparent) 0,
+    color-mix(in srgb, var(--ground) 24%, transparent) 30%,
+    color-mix(in srgb, var(--ground) 13%, transparent) 58%,
+    color-mix(in srgb, var(--ground) 4%, transparent) 80%,
     transparent 100%
   );
   transition: opacity 400ms var(--ease);
@@ -397,44 +504,114 @@
 }
 
 /*
-  ── THE COLLAR THAT IS NOT HERE, AND THE MEASUREMENT THAT KEPT IT OUT ────
+  ── THE COLLAR, AND WHY IT IS HERE NOW WHEN IT WAS KEPT OUT BEFORE ───────
 
-  hero-scrim.module.css's per-glyph collar was ported into this file first,
-  unchanged — the same three radii (1.47 / 3.36 / 6.09px), the same three
-  counts (12 / 12 / 8), which are 0.14 / 0.32 / 0.58 of --text-micro, the step
-  this whole bar is set at. It is the obvious move: a veil is a SHEET sized by
-  the brightest pixel under any glyph, a collar is proportional to the INK, and
-  the nav strip is 5% ink and 95% air. It should have been the best trade on
-  this page. IT SHIPPED NOTHING, AND BOTH HALVES OF WHY ARE WORTH KEEPING.
+  THE HISTORY FIRST, because the earlier measurement was correct about what it
+  measured. hero-scrim.module.css's per-glyph collar was ported into this file
+  once before (1.47 / 3.36 / 6.09px, 12 / 12 / 8 layers) and bisected against
+  scripts/check-nav-contrast.mjs in three arms — no collar, one radius, the
+  hero's three. The three arms found THE SAME FLOOR, 80%, because the floor
+  was held by the MARK box, which then painted --fg-muted out of
+  components/ui/Mark.tsx, and a text-shadow on `.inner` cannot move a number
+  set by another component's colour. So the collar was removed as buying
+  nothing, and the note that stood here ended: "If the mark ever resolves --fg
+  here, re-run the bisect before reaching for a collar again — the plateau
+  moves first, and it moves further."
 
-  IT BOUGHT NOTHING MEASURABLE. Bisecting the plateau against
-  scripts/check-nav-contrast.mjs, three arms, same file otherwise:
+  BOTH OF THOSE THINGS HAVE HAPPENED. The mark is the DN monogram at --fg (see
+  THE MARK JOINS THEM above), the plateau moved to 55%, and the veil was
+  still the wrong instrument for the thing it was protecting. MEASURED on the
+  production build at 1280x800, sky rows on the right half, nav veil on
+  against off:
 
-      plateau      no collar    12 x 1.47px    12/12/8 (the hero's)
-      82%            pass          pass            pass
-      80%            pass          pass            pass          <- the floor
-      78%            FAIL          FAIL            FAIL
-      76%            FAIL          FAIL            FAIL
+      rows    0- 60     0.0712 vs 0.2103     the veil removed 66% of the light
+      rows   60-120     0.0639 vs 0.1326     52%
+      rows  120-180     0.0570 vs 0.0819     30%
+      rows  180-260     0.0236 vs 0.0242     nothing — the hero scrim alone
 
-  Identical. The floor is not held by the links at all — it is held by the
-  MARK box, and the mark's role is read out of components/ui/Mark.tsx, which
-  paints --fg-muted. A collar on this stylesheet's own `.inner` cannot move a
-  number set by another component's utility class.
+  Bar 58px + tail 160px = 218 CSS px over the CREST, the brightest sky in the
+  photograph, to protect four 10.5px labels that together cover about 5% of
+  that strip. That is the sheet-versus-ink argument hero-scrim.module.css
+  makes for the hero, at the one place on the page where the picture is
+  brightest and the ink is smallest. The owner read it as "a dark transparent
+  bar blocking the sunset", and at browser zoom-out — where the same 218 CSS
+  px becomes a sliver and the sky returns — he could see exactly what it cost.
 
-  AND IT COST THE ONE THING THIS ROUND IS FOR. Rendered and inspected at
-  1280x800: at 10.5px with 0.16em tracking the halos of adjacent glyphs MERGE,
-  so each label sat in a dark rounded slab — four small boxes on the
-  photograph, which is the object the owner has spent seven rounds removing,
-  reintroduced at a quarter of the size. check-hero-contrast.mjs names this
-  exact failure mode in its own words: "that is a SHEET drawn a slower way — at
-  that radius the halos of adjacent glyphs merge". The hero's collar works
-  because its type is large and sparse; a tracked cap row at the smallest step
-  in the system is the case it does not transfer to.
+  WHAT THIS RULE CREDITS. --fg on the four section links, over the photograph,
+  through scripts/check-nav-contrast.mjs's imported halo model — the same
+  resolver, the same 0.85 SHADOW_CREDIT, the same 20/40 observer integral that
+  credits the hero's collar, and nothing added locally. Resolved at 10.5px
+  mono 500 (STEM_EM mono:500 = 0.11201em, a 1.18px stem, measured the day the
+  table was): with this collar --fg reads 9.8:1 over a #FFFFFF backdrop and
+  12.1:1 over sRGB 180, the brightest sky under any link, where the same role
+  BARE reads 1.84:1 there. The links stop needing the veil at all; what the
+  veil still holds is stated under THE VEIL.
 
-  So the veil carries this bar alone, and the picture is better for it. If the
-  mark ever resolves --fg here, re-run the bisect before reaching for a collar
-  again — the plateau moves first, and it moves further.
+  WHAT IT CANNOT CREDIT. The mark. The monogram is an inline SVG filled with
+  `currentColor` inside `.home`, and a text-shadow is thrown from GLYPH
+  geometry — Chromium paints nothing behind an SVG fill, whatever the
+  ancestor declares. So this rule is on `.link` and NOT on `.home`, and the
+  nav gate measures the mark box BARE on purpose (it filters the credit by box
+  kind, because treatments are attributed by role and the mark paints --fg
+  too). The mark is what holds the plateau now, and the honest instrument for
+  it is the box-shadow collar check-hero-contrast.mjs already models for
+  graphical objects (--collar-role, hero-scrim rule 7) — which this gate does
+  not read yet. Not a drop-shadow: the gate cannot see one, and an uncredited
+  darkening is the thing this repo keeps finding out it shipped.
+
+  THE RADII ARE 0.14 / 0.32 / 0.58 OF --text-micro — 1.47 / 3.36 / 6.09px on
+  10.5px — the hero's own fractions of its smallest em, with the OUTER band at
+  the hero's original 6.09px rather than the 8.2px it widened to. The hero
+  widened because its browser gate found pixels 0.6–0.7em out under 3:1 on
+  13px type; on 10.5px type 8.2px reaches 0.98em, two hundredths under the
+  sheet limit, and it credits LESS (9.3:1 over white against 9.8:1), because
+  the same twelve layers spread thinner. Measured reach through the gate's
+  own treatmentReachPx: 8.0px = 0.76em, against HALO_REACH_EM_MAX 1.00em.
+  That is the margin the sheet test has here, and --text-micro is the step
+  that moves it — check `node scripts/check-nav-contrast.mjs` before touching
+  the size.
+
+  THE COUNTS ARE 12 / 12 / 12, repetition rather than alpha, for the reason
+  hero-scrim rule 1 gives: n layers of one blur compose to 1-(1-a)^n, which
+  saturates the collar next to the stroke while the tail stays as short as a
+  single layer's. Fewer, heavier layers reach further for the same depth,
+  which is the direction that becomes a sheet.
+
+  ON HOVER IT STAYS. `.link:hover` at rest adds an underline and declares no
+  colour (see HOVER IS AN UNDERLINE), so the shadow declared here is what
+  paints under the hovered glyphs too; the gate resolves the rest face's roles
+  for `.link` without its `:hover` rule and finds --fg alone, which is the
+  role this collar names. No second declaration, no second attribution.
+
+  THE VISIBLE COST IS REAL AND IT WAS LOOKED AT AGAIN. At 10.5px with 0.16em
+  tracking adjacent halos merge, so each label sits in a soft dark lozenge a
+  few pixels wider than its ink. That is the trade: four lozenges the size of
+  the words, against 218px of darkened sky the full width of the page. The
+  earlier note called the lozenges "four small boxes"; they are the same
+  object hero-scrim rule 1 describes its own 11px mono wearing, and the hero
+  has shipped it since. This rule exists so THE VEIL can thin, and the numbers
+  it thinned to are recorded there.
+
+  THE CONTRACT is check-hero-contrast.mjs's, verbatim: --halo-role names the
+  role, --halo-type the size, weight and face the stem is looked up at; blur
+  radii are literal px because the gate classifies shadow tokens by first
+  character and would read a calc() as a colour. app/globals.css carries the
+  CONTRAST-METHOD disclosure the gate requires before it credits any of this.
 */
+.nav[data-nav='over'] .link {
+  --halo-role: --fg;
+  --halo-type: var(--text-micro) 500 mono;
+  text-shadow:
+    0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground),
+    0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground),
+    0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground), 0 0 1.47px var(--ground),
+    0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground),
+    0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground),
+    0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground), 0 0 3.36px var(--ground),
+    0 0 6.09px var(--ground), 0 0 6.09px var(--ground), 0 0 6.09px var(--ground), 0 0 6.09px var(--ground),
+    0 0 6.09px var(--ground), 0 0 6.09px var(--ground), 0 0 6.09px var(--ground), 0 0 6.09px var(--ground),
+    0 0 6.09px var(--ground), 0 0 6.09px var(--ground), 0 0 6.09px var(--ground), 0 0 6.09px var(--ground);
+}
 
 /*
   THE OUTLINE'S VERSION OF THE COLLAR, and unlike the hero's it does not have
