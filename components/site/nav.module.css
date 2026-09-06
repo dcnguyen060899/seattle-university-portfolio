@@ -24,6 +24,8 @@
     · the frosted fill's 97% — DERIVED here now, not ported; see THE FILL
     · the per-glyph collar on the links — its radii, its counts and the box
       it is NOT on; see THE COLLAR
+    · the box collar the MARK does not wear — credited by the gate, refused
+      by the eye, with the numbers; see THE COLLAR THE MARK DOES NOT WEAR
 
   WHAT IS STILL A PLACEHOLDER:
     · every duration, the blur radius, the gap and padding values
@@ -304,14 +306,19 @@
    loss returned, not all of it. What still takes it is the mark, and only
    the mark; the paragraph below says what to do about that.
 
-   THE NEXT FIFTEEN POINTS ARE IN THE MARK. The honest instrument for a
-   graphical object is the box-shadow collar check-hero-contrast.mjs models
-   with --collar-role (hero-scrim rule 7); the nav gate does not read that
-   contract yet. Teach it the BOX model, collar the monogram, and re-run this
-   bisect — the plateau will move first, and it will move to wherever the
-   links' hover underline or the focus ring binds next. Do not reach for a
-   drop-shadow on the SVG: the gate cannot read it, and an uncredited
-   darkening is exactly what this file keeps finding it shipped.
+   THE NEXT FIFTEEN POINTS WERE IN THE MARK, AND THEY WERE MEASURED AND
+   REFUSED (2026-09-06, later). The paragraph that stood here said: teach
+   the nav gate the box model, collar the monogram, re-run this bisect, and
+   the plateau will move first. All of that was done and all of it held —
+   collared, the mark clears at ZERO veil and the plateau had nowhere left
+   to stop. Then the collar was looked at. A box-shadow is clipped at the
+   border box, the clip is a rectangle, and around a monogram it is a frame
+   with a lighter window in it: a plate. The bisect table, the render
+   measurements and the reason no radii fix it are under THE COLLAR THE
+   MARK DOES NOT WEAR below; the gate keeps the model and proves it on a
+   synthetic collar. The floor is still 34%, this file still ships 38%, and
+   the paragraph's last sentence still stands: not a drop-shadow on the SVG,
+   because nothing can read it yet.
 */
 /*
   THE TAIL. Starts where the bar's own paint stops and carries it to nothing,
@@ -553,11 +560,12 @@
   ancestor declares. So this rule is on `.link` and NOT on `.home`, and the
   nav gate measures the mark box BARE on purpose (it filters the credit by box
   kind, because treatments are attributed by role and the mark paints --fg
-  too). The mark is what holds the plateau now, and the honest instrument for
-  it is the box-shadow collar check-hero-contrast.mjs already models for
-  graphical objects (--collar-role, hero-scrim rule 7) — which this gate does
-  not read yet. Not a drop-shadow: the gate cannot see one, and an uncredited
-  darkening is the thing this repo keeps finding out it shipped.
+  too). The mark is what holds the plateau now. The box-shadow collar
+  check-hero-contrast.mjs models for graphical objects (--collar-role,
+  hero-scrim rule 7) was taught to this gate and tried on the monogram; it
+  credits the mark to zero veil and paints a rectangle — see THE COLLAR THE
+  MARK DOES NOT WEAR. Not a drop-shadow either: the gate cannot see one, and
+  an uncredited darkening is the thing this repo keeps finding out it shipped.
 
   THE RADII ARE 0.14 / 0.32 / 0.58 OF --text-micro — 1.47 / 3.36 / 6.09px on
   10.5px — the hero's own fractions of its smallest em, with the OUTER band at
@@ -612,6 +620,95 @@
     0 0 6.09px var(--ground), 0 0 6.09px var(--ground), 0 0 6.09px var(--ground), 0 0 6.09px var(--ground),
     0 0 6.09px var(--ground), 0 0 6.09px var(--ground), 0 0 6.09px var(--ground), 0 0 6.09px var(--ground);
 }
+
+/*
+  ── THE COLLAR THE MARK DOES NOT WEAR (2026-09-06) ───────────────────────
+
+  THE INSTRUMENT EXISTS NOW. scripts/check-nav-contrast.mjs reads a
+  box-shadow collar on the monogram's box through check-hero-contrast.mjs's
+  own box model — borrowed, not copied: spread as an opaque dilation before
+  the blur, the outward ray clipped at the border box, the same 20/40
+  observer integral — and credits it to the MARK BOX ONLY, keyed to the
+  box nav.tsx renders (26 x 29.34px; the <svg> and its `.home` parent share
+  one rect) and capped at this bar's own measured ink gap, 14.0px. Its
+  `--prove` synthesises the collar on every run, so the path stays proved
+  without this file painting it.
+
+  WHAT IT CREDITED, MEASURED. The hero's rule-7 radii with the spread held
+  to 2px — `0 0 1.47px 1px, 0 0 3.36px 1.5px, 0 0 6.09px 2px`, all
+  var(--ground) — on `.markSlot` over this face, `--collar-box: 26px 26px
+  0px 2px`. Reach 6.0px against the 14.0px cap. Bisected with the collar
+  credited, foot at 0.78 of the plateau, tail 112px:
+
+      plateau   mark @1280 (collared)   mark @1600    worst link    result
+        38%          8.019:1               11.090       13.861       pass
+        30%          7.226                 10.467       13.497       pass
+        24%          6.684                  9.998       13.217       pass
+        20%          6.347                  9.704       13.027       pass
+        10%          5.586                  8.997       12.544       pass
+         0%          4.928                  8.336       12.054       pass  (x1.094)
+
+  The bare mark reads 5.115 at 38% and needs 4.725. Collared it clears at
+  ZERO veil, x1.094 over the plain 4.5 — it dropped out of the solve
+  exactly as the hero's Threshold rule did when its collar was credited,
+  and nothing left in the gate held the plateau above nothing. That is the
+  prediction THE VEIL AT 38% made, and the numbers kept it.
+
+  AND IT IS A PLATE. The reason is the model's own defining rule, the one
+  hero-scrim rule 7 calls the thing that makes a box-shadow unlike a
+  text-shadow: T(x) = 0 inside the border box. The clip is a RECTANGLE.
+  Around a 2px rule or a focus ring the rectangle is the object, so the
+  collar is a pad around the thing it protects. Around a monogram of
+  hairline serifs it is a frame the mark does not have — a soft dark
+  rounded square with a lighter window in it and the letters inside the
+  window. MEASURED off the render, Chromium, dsf 2, the collar and the
+  shipped 38% veil injected over the production build, a row through the
+  middle of the box's left edge:
+
+      1600x900 (sky)     bare      L* 23.4 at the edge, 25.0 twelve px out
+                         collared  L*  7.2 at the edge — full ink — 22.1 at
+                                   6px, 25.0 at 12px; the counters INSIDE
+                                   the box stay at L* 23-25
+      1280x800 (tree)    collared  L*  6.3 at the edge, 22.2 one px inside
+      375x812            collared  L*  6.7 at 4px out, 31.2 at 3px out —
+                                   a dark square with the mark in it
+
+  A 16 L* edge, against the 10 L* this repo's plate-seam advisory calls a
+  rectangle (scripts/check-nav-contrast.mjs, PLATE_SEAM_ADVISORY_LSTAR),
+  drawn at the one place on the page where the picture is brightest. It is
+  the object the owner has removed seven times, with a hole in it, and the
+  gate's control 1c now prints the step so the next stack is judged by the
+  same number.
+
+  A GENTLER STACK CANNOT FIX IT, and this is worth writing down so nobody
+  spends a round on radii. The step is at x = 0 and it belongs to the clip,
+  not to the blur. At zero spread a single layer is Phi(0) = 50% ink at the
+  border box; three layers are 87%; any spread makes it 100%. Blur widens
+  the OUTER falloff and cannot soften the inner edge, which is a hard
+  rectangle by specification (CSS Backgrounds 3 §6.2). A negative spread
+  pulls the shadow inside the clip, where it paints nothing. Fewer, fainter
+  layers lower the step and the credit together, and at the point where
+  the step is under 1 L* the credit is too.
+
+  WHAT THE HONEST INSTRUMENT WOULD BE. A shadow thrown from the STROKES.
+  `filter: drop-shadow()` on the <svg> is, geometrically, the text halo —
+  a Gaussian of the ink mask, no rectangle anywhere — and the halo model
+  would describe it. Two things stop the gate reading it, and both are
+  measurements rather than code: drop-shadow's radius is a standard
+  deviation, not a text-shadow blur radius, so SHADOW_SIGMA_PER_BLUR's
+  measured 0.45 does not apply and the constant would have to be set the
+  way that one was, by rendered cases; and the monogram's cut has no
+  measured stem in STEM_EM. Until both exist the rule stands — no
+  uncredited darkening — and the note at the foot of THE VEIL AT 38% says
+  the same: not a drop-shadow, because nothing can read it yet.
+
+  SO THE MARK STAYS BARE, AND THE VEIL STAYS WHERE THE BARE MARK NEEDS IT:
+  the floor is 34%, held by the monogram over the brightest sky at 1280,
+  and 38% ships four points above it. The crest returns nothing this round.
+  What the plate would have bought is on record — rows 0-60 at 1280 read
+  0.0927 with the veil as shipped and 0.1891 with no veil at all — and it
+  is the light a rectangle costs.
+*/
 
 /*
   THE OUTLINE'S VERSION OF THE COLLAR, and unlike the hero's it does not have
@@ -683,7 +780,9 @@
    `.home`, which declares `color: var(--fg)` and is the box
    scripts/check-nav-contrast.mjs already measures — so the mark paints a role
    the gate holds it to on both faces, and this class stays pure layout. The
-   class name is also that gate's hook (`resolveClass(rules, 'markSlot', …)`);
+   class name is also that gate's hook (`resolveClass(rules, 'markSlot', …)`),
+   and it is the box a --collar-role would sit on if the mark ever wore one
+   (the gate reads the class off nav.tsx's <BrandMonogram className>);
    renaming it silently drops the one graphical object in this bar out of the
    only script that checks it. */
 .markSlot {

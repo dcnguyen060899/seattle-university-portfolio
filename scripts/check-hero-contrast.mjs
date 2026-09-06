@@ -1673,9 +1673,21 @@ function resolveCollar(rule, ctx) {
     bad('--collar-role is not a custom-property name', role);
     return { problems };
   }
-  if (!COLLAR_ROLES.has(role)) {
+  /*
+    THE NAMESPACE IS THE CALLER'S, THE MODEL IS NOT. `COLLAR_ROLES` is the
+    HERO band's list — the two non-text objects that band contains — and the
+    disjointness argument above is about that band. scripts/check-nav-contrast
+    .mjs borrows this resolver for a different surface whose one graphical
+    object, the monogram, paints --fg through `.home`; it passes the roles its
+    mark box paints as `ctx.collarRoles`, and keeps halo and collar disjoint by
+    BOX KIND instead, because in that bar the same role is text in one box and
+    an SVG fill in another. Nothing about the shadow arithmetic moves with the
+    override; only which names may claim it.
+  */
+  const allowed = ctx.collarRoles ?? COLLAR_ROLES;
+  if (!allowed.has(role)) {
     bad('--collar-role names a role that is not a collarable non-text object',
-      `${role}; this gate collars ${[...COLLAR_ROLES].join(', ')} — a TEXT role wears the `
+      `${role}; this gate collars ${[...allowed].join(', ')} — a TEXT role wears the `
       + 'per-glyph halo instead, and crediting one role with both would merge two treatments '
       + 'that are painted in different places');
     return { problems };

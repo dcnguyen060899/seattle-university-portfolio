@@ -257,6 +257,10 @@ const HERO_GATE = join('scripts', 'check-hero-contrast.mjs');
 const BORROWED = [
   'greyOf', 'contrastToLuminance',
   'localGroundLuminance', 'resolveTreatment', 'collectTreatmentRules',
+  /* The BOX model, for the one thing in this bar that is not text. Borrowed,
+     not copied, for the reason the header gives: one halo model, one box
+     model, and this file adds neither. */
+  'collectCollarRules', 'resolveCollar',
   'treatmentReachPx', 'assertNeutrality',
   'lengthPx', 'stopColour', 'parseGradient', 'buildField', 'splitTop',
   'walkRules', 'readTypeScale', 'mediaMatches',
@@ -327,6 +331,38 @@ const FALLBACK_LINE_HEIGHT = 1.4;
  * same direction as check-hero-contrast.mjs's EXTENT_MARGIN.
  */
 const BOX_MARGIN = 0.04;
+
+/**
+ * THE SHEET TEST FOR THE MARK'S COLLAR, in px — this bar's own number, by the
+ * hero gate's own rule.
+ *
+ * check-hero-contrast.mjs caps a box collar's reach at the MEASURED tightest
+ * ink-to-ink gap in its band (COLLAR_REACH_PX_MAX, 11.0px), because a
+ * darkening that reaches the next piece of ink has stopped being a collar
+ * around one object and become a field over both. That constant is a fact
+ * about the hero's spacing and cannot be reused here; the same measurement
+ * has to be taken on this bar.
+ *
+ * MEASURED, Chromium, production build, 2026-09-06: the monogram's border box
+ * (29.34 x 26px, the <svg> and its `.home` parent share it) against every text
+ * client rect in the first 400px of the page:
+ *
+ *     375x812  /  390x844     14.00px   the wrapped RESEARCH label's line box,
+ *                                       directly below the mark        <- binds
+ *     768 / 861               235.6 / 244.9px   the hero eyebrow
+ *     1280x800 / 1600x900      86.8 /  98.8px   the hero eyebrow
+ *
+ * 14.0px is the line box's edge, not the glyph's; the cap of a 10.5px mono
+ * label sits ~3.7px inside its line box, so the true ink gap is larger and
+ * declaring the line box is the conservative direction. The narrow bar
+ * binds, and it binds on the row gap `.inner` declares below 640px (6px) plus
+ * the padding the line box carries — a future tightening of that gap moves
+ * this limit before it moves anything else.
+ *
+ * The plate question is stricter than this cap and is not a number: see THE
+ * COLLAR ON THE MARK in nav.module.css, and the 4x crop it was judged on.
+ */
+const NAV_COLLAR_REACH_PX_MAX = 14.0;
 
 /**
  * Share of the mark's silhouette a colour must hold to be a DEFINING colour.
@@ -1131,6 +1167,12 @@ const MONOGRAM_ASPECT = 350 / 310;
 function readBrandCluster(tsx) {
   const monoH = Number(/<BrandMonogram[^>]*\bheight=\{(\d+)\}/.exec(tsx)?.[1] ?? 0);
   if (monoH > 0) {
+    /* The classes that sit ON the mark's border box — the <svg> itself and
+       the link around it, which Chromium blockifies as a flex item so the two
+       share one rect. A box collar is credited to the mark only from a rule
+       that names one of these; a --collar-role on any other selector in this
+       bar has no box it could be painted around. */
+    const svgClass = /<BrandMonogram[^>]*className=\{styles\.([A-Za-z0-9_]+)\}/.exec(tsx)?.[1] ?? null;
     return {
       wordmark: '',
       separator: '',
@@ -1138,6 +1180,7 @@ function readBrandCluster(tsx) {
       markHeightPx: monoH,
       markWidthPx: monoH * MONOGRAM_ASPECT,
       markClass: 'home',
+      markBoxClasses: ['home', ...(svgClass ? [svgClass] : [])],
       hasSeparator: false,
     };
   }
@@ -1148,6 +1191,7 @@ function readBrandCluster(tsx) {
     markHeightPx: Number(/<Mark[^>]*height=\{(\d+)\}/.exec(tsx)?.[1] ?? 28),
     markWidthPx: null,
     markClass: 'markSlot',
+    markBoxClasses: ['markSlot'],
     hasSeparator: true,
   };
 }
@@ -1211,6 +1255,64 @@ function analyseNav(input) {
       + `"${M.CONTRAST_DISCLOSURE}"`,
       'a ratio derived with a halo in it is not the plain WCAG 1.4.3 quantity. Disclose the '
       + 'method or drop the treatment — the rule check-hero-contrast.mjs already applies');
+  }
+
+  /*
+    AN ORPHANED CLAIM IS A HARD FAILURE, BY NAME, FOR BOTH MODELS.
+
+    `collectTreatmentRules` keeps only rules that PAINT — a text-shadow or a
+    stroke — so a block that declares `--halo-role` and no text-shadow is
+    simply not collected, and the role it names is measured [bare]. That is
+    the safe direction for the ratio and the wrong one for the reader: the
+    stylesheet says a collar is there, the report says it is not, and nobody
+    is told the two disagree. The break-tester found exactly this — a
+    --halo-role left behind by a deleted text-shadow reading as [bare] with
+    no word said. The hero gate's S1 rule for the box model is the precedent
+    ("a credit claimed for paint that is not there"); it is applied to the
+    halo here, and the box model's own S1 / S3 problems land in the same
+    failure list a few lines down.
+  */
+  for (const r of shape.rules) {
+    const claims = r.decls.has('--halo-role') || r.decls.has('--halo-type');
+    if (!claims) continue;
+    const shadow = r.decls.get('text-shadow');
+    const paints = (shadow !== undefined && shadow.trim().toLowerCase() !== 'none')
+      || r.decls.has('-webkit-text-stroke') || r.decls.has('-webkit-text-stroke-width')
+      || r.decls.has('text-stroke') || r.decls.has('text-stroke-width');
+    if (paints) continue;
+    fail(r.file,
+      'a per-glyph treatment this gate cannot attribute: a --halo-role with nothing painted under it',
+      `${r.selector} declares ${r.decls.has('--halo-role') ? `--halo-role: ${r.decls.get('--halo-role')}` : '--halo-type'}`
+      + ` and ${shadow === undefined ? 'no text-shadow' : 'text-shadow: none'} in the same block`,
+      'the claim and the paint travel together or not at all, so deleting one deletes the other '
+      + 'in the same edit. Put the text-shadow back, or remove the --halo-role / --halo-type '
+      + 'declarations — a role this gate reports as [bare] while the stylesheet says otherwise is '
+      + 'the disagreement this file exists to surface, not to hide');
+  }
+
+  /* ── the box collar, through the hero gate's own collector ───────────────
+     The same S1 (same-block) and S3 (override scan) rules the hero applies,
+     run over this bar's stylesheets. A --collar-role with no box-shadow, or
+     a later same-selector rule that sets it to none or weaker, is a hard
+     failure by name here as it is there. Unattributed box-shadows — the
+     paper face's hairline, the focus ring's pad — are simply not credited,
+     which is the safe direction. */
+  const collar = M.collectCollarRules(
+    nav.css.map(({ file, src }) => ({ file, src, requireHeroScope: false })),
+  );
+  for (const p of collar.problems) {
+    fail(NAV_CSS, 'a box collar on the nav this gate cannot attribute', p,
+      'the contract is check-hero-contrast.mjs\'s, verbatim — see its "THE COLLAR" section: '
+      + '--collar-role, --collar-box and a live box-shadow in the SAME block, and no later rule '
+      + 'on the same selector taking the shadow away');
+  }
+  if (collar.rules.length && !disclosed) {
+    fail(M.GLOBALS,
+      'a box collar on the nav is credited on a page that has not disclosed the method',
+      `${collar.rules.length} collared rule(s) in the nav, and app/globals.css does not carry `
+      + `"${M.CONTRAST_DISCLOSURE}"`,
+      'a ratio derived with a collar in it is not the plain WCAG quantity. Disclose the method '
+      + 'or drop the collar');
   }
 
   /* ── the layout model, read from what shipped ────────────────────────── */
@@ -1300,6 +1402,88 @@ function analyseNav(input) {
           + 'wonderful and the word stops being a word');
       }
       restT.set(res.treatment.role, res.treatment);
+    }
+
+    /*
+      THE MARK'S COLLAR, resolved at this viewport through the hero gate's
+      box model — spread as an opaque dilation before the blur, the outward
+      ray clipped at the border box, the same observer integral. Credited to
+      the MARK BOX ONLY, and keyed to it three ways:
+
+        · the roles it may name are the roles the mark box paints (the
+          resolver's namespace override), so a --collar-role naming a link
+          role is refused by name;
+        · the rule's selector must sit on the mark's own border box — `.home`
+          or the class nav.tsx puts on the <svg> — so a collar declared on
+          some other element cannot be credited to this one;
+        · --collar-box's first two lengths are FLOORS the real box must
+          exceed (the hero's convention), and the real box is read out of
+          nav.tsx: 26px tall, 26 x 350/310 wide. A declaration larger than
+          the object it claims is refused.
+
+      What the outward ray credits is the ground BESIDE the mark's outer
+      edges. It says nothing about the counters inside the border box, which
+      an outer box-shadow cannot reach; those are held at 1.4.11's 3:1 by
+      tests/e2e/nav.spec.ts §5, which reads p05 inside the <svg>'s own rect
+      off real pixels. nav.module.css (THE COLLAR ON THE MARK) says so too.
+    */
+    const restCollar = new Map();
+    const markRoleSet = new Set(input.markRoles);
+    for (const rule of collar.rules) {
+      if (treatmentFace(rule) !== 'rest') continue;
+      if (rule.media && !M.mediaMatches(rule.media, vp, unknownMedia)) continue;
+      const onMarkBox = (brand0.markBoxClasses ?? [brand0.markClass])
+        .some((cls) => new RegExp(`\\.${cls}(?![\\w-])`).test(rule.selector));
+      if (!onMarkBox) {
+        fail(rule.file, 'a box collar on the nav is declared on something that is not the mark\'s box',
+          `${rule.selector} declares --collar-role, and the only graphical object in this bar sits on `
+          + `.${(brand0.markBoxClasses ?? [brand0.markClass]).join(' / .')}`,
+          'the monogram is the one box a box-shadow can collar here; a collar on any other '
+          + 'element is a darkening no box in this gate is measured with');
+        continue;
+      }
+      const res = M.resolveCollar(rule, {
+        vars: new Map([...rootVars, ...rule.decls]),
+        ground: restGround.ground,
+        vw: vp.w, vh: vp.h, boxW: vp.w, boxH: vp.h, axis: vp.w,
+        collarRoles: markRoleSet,
+      });
+      for (const p of res.problems) {
+        fail(rule.file, 'a box collar on the nav could not be resolved',
+          `at ${vp.name}: ${p}`,
+          'the contract is check-hero-contrast.mjs\'s, verbatim — see its "THE COLLAR" section');
+      }
+      if (!res.treatment) continue;
+      const t = res.treatment;
+      const realW = brand0.markWidthPx ?? brand0.markHeightPx;
+      const realH = brand0.markHeightPx;
+      if (t.boxThicknessPx > Math.min(realW, realH) + 1e-6 || t.boxExtentPx > Math.min(realW, realH) + 1e-6) {
+        fail(rule.file, 'the mark\'s --collar-box claims a bigger box than the mark has',
+          `at ${vp.name}: --collar-box declares ${t.boxThicknessPx.toFixed(2)} x ${t.boxExtentPx.toFixed(2)}px `
+          + `as floors, and nav.tsx renders the monogram at ${realW.toFixed(2)} x ${realH.toFixed(2)}px; the `
+          + `smaller side, ${Math.min(realW, realH).toFixed(2)}px, is the most either floor may claim`,
+          'the first two lengths are FLOORS the real border box must exceed on BOTH axes, because '
+          + 'the 1-D model is applied from whichever edge the reader is beside. Declare the smaller '
+          + 'side or less');
+      }
+      const reach = M.treatmentReachPx(t);
+      t.reachPx = reach;
+      if (reach > NAV_COLLAR_REACH_PX_MAX) {
+        fail(rule.file, `the mark's collar is a sheet in disguise at ${vp.name}`,
+          `its darkening is still above 1 L* over a #FFFFFF source pixel ${reach.toFixed(1)}px from `
+          + `the box, and the tightest measured gap from the monogram to neighbouring ink is `
+          + `${NAV_COLLAR_REACH_PX_MAX}px (the wrapped first link at 375)`,
+          `keep the visible reach under ${NAV_COLLAR_REACH_PX_MAX}px — tighten the blur radii or `
+          + 'cut the spread. And the plate question is stricter than this cap: a box-shadow pads a '
+          + 'RECTANGLE behind the mark, and over sky a soft dark square is the object the owner '
+          + 'has spent seven rounds removing. See THE COLLAR ON THE MARK in nav.module.css');
+      }
+      const prev = restCollar.get(t.role);
+      /* Two rules collaring one role: keep the WEAKER, the hero's own merge. */
+      if (prev === undefined
+        || M.localGroundLuminance(t, [255, 255, 255]) > M.localGroundLuminance(prev, [255, 255, 255])) {
+        restCollar.set(t.role, t);
+      }
     }
 
     /*
@@ -1482,24 +1666,27 @@ function analyseNav(input) {
         }
 
         /*
-          THE MARK WEARS NO TEXT COLLAR, AND THIS IS WHERE THAT IS ENFORCED.
+          THE MARK WEARS NO TEXT COLLAR, AND THIS IS WHERE THAT IS ENFORCED —
+          AND THE ONLY COLLAR IT MAY WEAR IS THE BOX ONE.
 
           Treatments are keyed by ROLE, because the hero's contract attributes
           a text-shadow to the role it protects and this gate cannot see the
           DOM. The monogram in the mark box paints --fg too — it is an inline
           SVG filled with `currentColor` inside `.home` — so crediting by role
-          alone would hand it the links' collar. But a text-shadow is thrown
+          alone would hand it the links' halo. But a text-shadow is thrown
           from GLYPH geometry and an SVG fill has none: Chromium paints nothing
           behind the monogram, whatever `.home` declares. Crediting it would be
           precisely the over-crediting this file exists to prevent, and the
           mark is the box that binds once the links are collared, so the error
           would land on the one number that sets the veil.
 
-          The honest treatment for a graphical object is the box-shadow collar
-          check-hero-contrast.mjs models for the Threshold's rule and the focus
-          ring (--collar-role). This gate does not model that yet; until it
-          does, the mark is measured BARE and the veil holds what the mark
-          needs.
+          So the two models are kept disjoint by BOX KIND rather than by role
+          namespace (which is how the hero keeps them apart): a text box takes
+          the halo resolved for its role and never the collar; the mark box
+          takes the collar resolved for its role — the box-shadow the hero
+          gate models for the Threshold's rule and the focus ring — and never
+          the halo. With no --collar-role on the mark's box it is measured
+          BARE and the veil holds what the mark needs.
         */
         const fgs = [...roleNames].map((role) => {
           const def = restGround.roles.get(role);
@@ -1508,7 +1695,7 @@ function analyseNav(input) {
             rgb: def?.rgb ?? [255, 255, 255],
             need: def?.need ?? 4.5,
             rule: (def?.need ?? 4.5) === 3 ? 'WCAG 1.4.11 non-text' : 'WCAG 1.4.3 text',
-            t: box.kind === 'mark' ? null : (restT.get(role) ?? null),
+            t: box.kind === 'mark' ? (restCollar.get(role) ?? null) : (restT.get(role) ?? null),
           };
         });
 
@@ -1566,11 +1753,20 @@ function analyseNav(input) {
             raster: fg.raster === true,
             share: fg.share ?? null,
             treated: fg.t !== null,
-            halo: fg.t === null ? null : {
+            halo: fg.t === null || fg.t.kind === 'collar' ? null : {
               layers: fg.t.shadows.length,
               stroke: fg.t.stroke !== null,
               reachPx: fg.t.reachPx ?? null,
               fontPx: fg.t.fontPx,
+              selector: fg.t.selector,
+            },
+            collar: fg.t === null || fg.t.kind !== 'collar' ? null : {
+              layers: fg.t.layers.length,
+              spreadPx: Math.max(...fg.t.layers.map((l) => l.spreadPx)),
+              reachPx: fg.t.reachPx ?? null,
+              /* The collar's alpha AT the border box, per ray — the size of
+                 the step the clip draws. See the 1c control. */
+              edgeAlphas: (fg.t.rays ?? []).map((r) => r.edgeAlpha),
               selector: fg.t.selector,
             },
             need: fg.need * headroom,
@@ -1863,9 +2059,12 @@ function printReport(M, r, { headroom }) {
     console.log('     can land on, and the worst role over it.');
     console.log('     A [halo: …] tag names the per-glyph treatment credited in that row —');
     console.log('     layers, and how far it reaches in em of the type it is thrown from');
-    console.log(`     (over ${M.HALO_REACH_EM_MAX.toFixed(2)}em it is a SHEET and fails above). [bare] is the`);
-    console.log('     role\'s own colour on the composited ground; the mark is always bare,');
-    console.log('     because a text-shadow is thrown from glyph geometry and an SVG has none.');
+    console.log(`     (over ${M.HALO_REACH_EM_MAX.toFixed(2)}em it is a SHEET and fails above). A [collar: …]`);
+    console.log('     tag is the BOX-SHADOW collar credited to the mark — the monogram is an SVG');
+    console.log('     fill, which no text-shadow reaches, so it wears the box model the hero');
+    console.log(`     credits its rule and ring with; its reach is in px against this bar's own`);
+    console.log(`     measured ink gap (${NAV_COLLAR_REACH_PX_MAX.toFixed(1)}px). [bare] is the role's own colour on`);
+    console.log('     the composited ground, with nothing credited.');
     console.log('     viewport  box                ground     role          ratio    need   credit');
     const perBox = new Map();
     for (const x of list) if (!perBox.has(`${x.vp}|${x.box}`)) perBox.set(`${x.vp}|${x.box}`, x);
@@ -1875,7 +2074,11 @@ function printReport(M, r, { headroom }) {
         ? `[halo: ${x.halo.layers} layer${x.halo.layers === 1 ? '' : 's'}`
           + `${x.halo.stroke ? ' + stroke' : ''}`
           + `${x.halo.reachPx !== null ? `, reach ${(x.halo.reachPx / x.halo.fontPx).toFixed(2)}em` : ''}]`
-        : '[bare]';
+        : x.collar
+          ? `[collar: ${x.collar.layers} layer${x.collar.layers === 1 ? '' : 's'}, spread `
+            + `${x.collar.spreadPx.toFixed(1)}px`
+            + `${x.collar.reachPx !== null ? `, reach ${x.collar.reachPx.toFixed(1)}px` : ''}]`
+          : '[bare]';
       console.log(`   ${flag} ${x.vp.padEnd(9)} ${x.box.padEnd(18)} `
         + `${String(byte(x.win.lo)).padStart(3)}..${String(byte(x.win.hi)).padStart(3)}   `
         + `${x.role.padEnd(13)} ${x.ratio.toFixed(3).padStart(7)}:1 ${x.need.toFixed(2).padStart(5)}  ${credit}`);
@@ -1898,7 +2101,9 @@ function printReport(M, r, { headroom }) {
       console.log(`              rule applied: ${bind.rule}`);
       console.log(`              worst backdrop there: sRGB ${bind.at ? bind.at.backdrop.join(',') : '—'}`
         + `  (rung ${bind.rung}, hero scrim alpha ${bind.at ? bind.at.alpha.toFixed(4) : '—'})`);
-      console.log(`              treatment credited: ${bind.treated ? 'yes' : 'no — this is the role\'s own colour'}`);
+      console.log(`              treatment credited: ${bind.treated
+        ? (bind.collar ? 'yes — the box collar on the mark' : 'yes — the per-glyph halo')
+        : 'no — this is the role\'s own colour'}`);
     }
 
     if (r.restNeedAlpha !== null && r.restNeedBy) {
@@ -2031,6 +2236,18 @@ function printFailures(failures) {
                         "put the nav on the photograph" with nobody doing the
                         work, and it is exactly the state this round started
                         from.
+     1b                 the links' halo taken away with the veil left in
+                        place — which of the two the links stand on.
+     1c                 a box collar SYNTHESISED on the mark. The shipped
+                        nav declares none (a box-shadow's clip is a
+                        rectangle on the photograph — nav.module.css says
+                        so with the measurements); this proves the box
+                        model credits the mark box, only the mark box, and
+                        prints the frame's step as a number.
+     1d/1e/1f           a --collar-role / --halo-role left behind with its
+                        paint deleted, and a collar declared on a text box.
+                        Each must fail BY NAME; a claim read silently as
+                        [bare] is the defect the break-tester found.
      2 VEIL THINNED     the veil's plateau dropped to the 25% the hero's crest
                         already paints — the alpha components/ui/Mark.tsx
                         measured the lockup against at 1.04:1. Reproduces that
@@ -2107,6 +2324,56 @@ function stripTreatments(src) {
     .replace(/text-shadow\s*:\s*(?:(?!;|\}).)*;/gs, () => { n += 1; return 'text-shadow: none;'; })
     .replace(/-webkit-text-stroke[a-z-]*\s*:\s*(?:(?!;|\}).)*;/gs, () => { n += 1; return ''; });
   return { src: out, n };
+}
+
+/**
+ * Delete the box-shadow from every block that CLAIMS a collar, leaving the
+ * claim behind. The hero gate's S1 control: a --collar-role with no paint
+ * under it must fail BY NAME, never read as [bare].
+ */
+function orphanCollars(raw) {
+  let n = 0;
+  /* Comments off first: the prose beside these rules names the claim tokens. */
+  const src = raw.replace(/\/\*[\s\S]*?\*\//g, ' ');
+  const out = src.replace(
+    /(--collar-role\s*:[^;]*;)((?:(?!\}).)*?)box-shadow\s*:\s*(?:(?!;|\}).)*;/gs,
+    (_, claim, between) => { n += 1; return `${claim}${between}`; },
+  );
+  return { src: out, n };
+}
+
+/** The same, for the halo: --halo-role kept, text-shadow deleted. */
+function orphanHalos(raw) {
+  let n = 0;
+  const src = raw.replace(/\/\*[\s\S]*?\*\//g, ' ');
+  const out = src.replace(
+    /(--halo-role\s*:[^;]*;)((?:(?!\}).)*?)text-shadow\s*:\s*(?:(?!;|\}).)*;/gs,
+    (_, claim, between) => { n += 1; return `${claim}${between}`; },
+  );
+  return { src: out, n };
+}
+
+/**
+ * A SYNTHETIC box collar on the mark, appended to the shipped stylesheet.
+ *
+ * The shipped nav declares none — nav.module.css (THE COLLAR THE MARK DOES
+ * NOT WEAR) records why: the box model credits it handsomely and the eye
+ * refuses it, because an outer box-shadow is clipped at the border box and
+ * that clip is a rectangle drawn on the photograph. So the box path in this
+ * gate is proved the way the hero gate proves its own — on paint that is
+ * synthesised for the control and never ships. The stack is the hero's rule
+ * 7 radii with the spread held to 2px, the one that was measured.
+ */
+const SYNTHETIC_COLLAR = `
+.nav[data-nav='over'] .markSlot {
+  --collar-role: --fg;
+  --collar-box: 26px 26px 0px 2px;
+  box-shadow: 0 0 1.47px 1px var(--ground), 0 0 3.36px 1.5px var(--ground), 0 0 6.09px 2px var(--ground);
+}
+`;
+function withSyntheticCollar(raw, selector = null) {
+  const block = selector === null ? SYNTHETIC_COLLAR : SYNTHETIC_COLLAR.replace('.markSlot', selector);
+  return { src: `${raw}\n${block}`, n: 1 };
 }
 
 /** Set the stuck face's fill percentage. */
@@ -2378,6 +2645,82 @@ async function main() {
         ? 'the collar is LOAD-BEARING, and the shipped ratios say so'
         : 'the collar is NOT load-bearing: every role clears without it. A treatment that '
           + 'changes no verdict is a claim the page should not be making.'}`);
+
+      /* 1c · a SYNTHETIC box collar on the mark, credited through the box model */
+      const markBare = [...result.rows].filter((x) => x.kind === 'mark').sort((a, b) => a.ratio - b.ratio)[0] ?? null;
+      const v1c = variant((s) => withSyntheticCollar(s));
+      const n1c = subs;
+      const collared = analyseNav(mkInput({ nav: v1c }));
+      const cw = [...collared.rows].filter((x) => x.kind === 'mark').sort((a, b) => a.ratio - b.ratio)[0] ?? null;
+      const cf = collared.failures.length;
+      console.log('\n  1c · A BOX COLLAR ON THE MARK, SYNTHESISED — the shipped nav declares none');
+      console.log('      (nav.module.css, THE COLLAR THE MARK DOES NOT WEAR). This proves the box');
+      console.log(`      model credits the mark box, and only the mark box. ${matched(n1c)}`);
+      if (markBare && cw) {
+        console.log(`      mark at ${markBare.vp}: ${markBare.ratio.toFixed(3)}:1 bare -> ${cw.ratio.toFixed(3)}:1 `
+          + `${cw.collar ? `[collar: ${cw.collar.layers} layers, spread ${cw.collar.spreadPx.toFixed(1)}px, reach `
+            + `${cw.collar.reachPx.toFixed(1)}px / ${NAV_COLLAR_REACH_PX_MAX}px]` : '[NOT CREDITED]'}`);
+        const linkCollared = collared.rows.filter((x) => x.kind !== 'mark' && x.collar).length;
+        console.log(`      text rows carrying the collar: ${linkCollared} — ${linkCollared === 0
+          ? 'kept off the links by box kind, as it must be'
+          : '⚠ THE COLLAR LEAKED ONTO TEXT ROWS'}`);
+        /*
+          THE FRAME, AS A NUMBER. An outer box-shadow is clipped at its border
+          box, so at the box's edge the collar steps from nothing to its edge
+          alpha in zero width. That step, in L* over the darkest and lightest
+          ground the mark box composites, is the same quantity this file's
+          plate-seam advisory quotes for a light plate — the rectangle, as a
+          number. Reported, never gated, for the reason given at
+          PLATE_SEAM_ADVISORY_LSTAR.
+        */
+        const mg = collared.markGround.find((g) => g.vp === cw.vp) ?? null;
+        const edgeA = cw.collar ? Math.max(0, ...(cw.collar.edgeAlphas ?? [])) : 0;
+        if (mg && cw.collar) {
+          const ink = result.grounds.get(result.restGroundName)?.ground ?? [20, 22, 26];
+          const step = (y) => {
+            const g = M.greyOf(y);
+            const over = M.composite(ink, edgeA, g);
+            return Math.abs(toLstar(M.luminance(over)) - toLstar(y));
+          };
+          console.log(`      the frame: ${(edgeA * 100).toFixed(0)}% ink at the border box, a step of `
+            + `${step(mg.win.lo).toFixed(1)}..${step(mg.win.hi).toFixed(1)} L* against the ground in that box `
+            + `(advisory ${PLATE_SEAM_ADVISORY_LSTAR} L*) — the plate, as a number`);
+        }
+      }
+      console.log(`      ${cf === 0 ? 'the synthetic collar resolves cleanly' : `⚠ ${cf} failure(s) resolving a well-formed collar`}`);
+
+      /* 1d · the claim left behind with no paint — must fail BY NAME */
+      const v1d = variant((s) => orphanCollars(withSyntheticCollar(s).src));
+      const n1d = subs;
+      const orphanC = analyseNav(mkInput({ nav: v1d }));
+      const oc = orphanC.failures.filter((f) => /cannot attribute/.test(f.message) && /collar/.test(f.message));
+      console.log('\n  1d · --collar-role ORPHANED — the synthetic collar\'s box-shadow deleted, the');
+      console.log(`      claim kept. ${matched(n1d)}`);
+      console.log(`      ${oc.length > 0
+        ? `FAILS BY NAME, as it must: "${oc[0].detail.slice(0, 100)}"`
+        : '⚠ CONTROL DID NOT FAIL BY NAME — an orphaned collar claim was read as [bare] and nobody was told'}`);
+
+      /* 1f · a collar on something that is not the mark's box — must fail BY NAME */
+      const v1f = variant((s) => withSyntheticCollar(s, '.link'));
+      const n1f = subs;
+      const wrongBox = analyseNav(mkInput({ nav: v1f }));
+      const wb = wrongBox.failures.filter((f) => /not the mark's box/.test(f.message));
+      console.log('\n  1f · A COLLAR ON `.link` — a box-shadow claiming --fg on a text box.');
+      console.log(`      ${matched(n1f)}`);
+      console.log(`      ${wb.length > 0
+        ? `FAILS BY NAME, as it must: "${wb[0].detail.slice(0, 100)}"`
+        : '⚠ CONTROL DID NOT FAIL BY NAME — a collar on a text box was accepted'}`);
+
+      /* 1e · the same for the halo */
+      const v1e = variant(orphanHalos);
+      const n1e = subs;
+      const orphanH = analyseNav(mkInput({ nav: v1e }));
+      const oh = orphanH.failures.filter((f) => /cannot attribute/.test(f.message) && /halo-role/.test(f.message));
+      console.log('\n  1e · --halo-role ORPHANED — the text-shadow deleted, the claim kept.');
+      console.log(`      ${matched(n1e)}`);
+      console.log(`      ${oh.length > 0
+        ? `FAILS BY NAME, as it must: "${oh[0].detail.slice(0, 100)}"`
+        : '⚠ CONTROL DID NOT FAIL BY NAME — an orphaned halo claim was read as [bare] and nobody was told'}`);
 
       /* 2 · thinned to the alpha the hero's crest already paints */
       const v2 = variant((s) => withRestAlpha(s, 0.25));
