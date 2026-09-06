@@ -1877,6 +1877,54 @@
   );
 }
 
+/* ── THE INTRO VEIL ─────────────────────────────────────────────────────
+   While the reveal plays, this element is drawn at opacity 0.434, which
+   scales the whole shaped veil so its floor reads 53% x 0.434 = 23% — the
+   gate's own minimum for the band, derived above. At "done" it transitions
+   back to 1 over --intro-focus, the same 1100ms in which the photograph
+   resolves from soft to sharp, so the picture sharpens and settles under
+   its veil as one motion.
+
+   WHY OPACITY AND NOT THE FLOOR. The first version of this registered
+   --scrim-floor-min with @property and transitioned it 23% -> 53%. It
+   worked in value and was unwatchable in frames: every step re-resolved
+   six color-mix() gradient stops and repainted the scrim on the main
+   thread — 47 of ~78 frames delivered, 19 over 33ms, worst 51ms, against
+   90/90 clean. Opacity is composited; nothing repaints. Measured after the
+   change: see the commit.
+
+   WHY IT IS SAFE. During "pending" and "playing" nothing this veil protects
+   is on screen — the hero copy and the nav are hidden until "done", and the
+   only ink over the picture is the intro's mark, which sits on the overlay's
+   own veil (intro.module.css: 50% behind the mark, 12% at the edge) and is
+   measured there. And the gates never see this: they read .scrim's resting
+   declarations, which this block does not touch — it adds a state-scoped
+   opacity, and that state does not exist when the gates measure. Composite
+   on the open sky during the reveal is 1 - (1 - 0.23)(1 - 0.12) = 32%.
+
+   WHY IT IS WANTED. The owner looked at the original photograph at 23% and
+   at 53% and asked for both — the glow behind the blurred reveal, the darker
+   picture under the page.
+
+   :global because html[data-intro] is stamped by the gate script in
+   lib/intro.ts, outside any module's scope. */
+.scrim {
+  transition: opacity var(--intro-focus, 1100ms) var(--ease-brand);
+}
+
+:global(html[data-intro='pending']) .scrim,
+:global(html[data-intro='playing']) .scrim {
+  opacity: 0.434;
+}
+
+/* NO prefers-reduced-motion RULE, ON PURPOSE. Under `reduce` the gate script
+   in lib/intro.ts refuses to start the intro at all, so html[data-intro] is
+   never stamped, this element never leaves opacity 1, and the transition
+   above has nothing to run on. A rule here would be inert — and
+   scripts/check-hero-contrast.mjs hard-fails any @media on .scrim it cannot
+   place by viewport, which is the right call: a veil rule it cannot locate is
+   a veil it might be crediting where it never paints. */
+
 /*
   ── THE POCKET ────────────────────────────────────────────────────────────
 

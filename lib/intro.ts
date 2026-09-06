@@ -364,14 +364,14 @@ export const INTRO_GATE_SCRIPT =
   // Durations published to CSS from the same constants JS uses, so the
   // stylesheet and the timers cannot drift apart.
   `h.style.setProperty("--intro-reveal","${INTRO_REVEAL_MS}ms");` +
-  `h.style.setProperty("--intro-dissolve","${INTRO_DISSOLVE_MS}ms");` +
+  `h.style.setProperty("--intro-dissolve","${INTRO_DISSOLVE_MS}ms");h.style.setProperty("--intro-focus","${INTRO_FOCUS_MS}ms");` +
   'setTimeout(function(){' +
   // No-op the moment the component has taken over (pending → playing).
   'if(h.getAttribute("data-intro")!=="pending")return;' +
   'h.removeAttribute("data-intro");' +
   'h.style.removeProperty("--focus");' +
   'h.style.removeProperty("--intro-reveal");' +
-  'h.style.removeProperty("--intro-dissolve")' +
+  'h.style.removeProperty("--intro-dissolve");h.style.removeProperty("--intro-focus")' +
   `},${INTRO_FAILSAFE_MS})` +
   '}catch(e){}})()';
 
