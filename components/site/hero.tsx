@@ -727,19 +727,40 @@ export function Hero() {
             </h1>
 
             {/*
-              THE MEASURE IS 32ch AND IT IS A COPY DECISION (browser-measured
-              at 1280x800, 2026-09-03). At 26ch the balancer resolved this into
-              FOUR display lines inside an 1088px wrap — a 176px slab with a
-              third of its column empty. At 32ch it resolves into THREE.
+              THE LEDE IS 20→28px, NOT --text-h2, AND THE REASON IS THE RATIO.
 
-              IT NOW BINDS DIFFERENTLY. The left column is narrower than the
-              old full wrap, so the column — not this max-width — is usually
-              the constraint. The value is kept because it still governs the
-              one-column layout below the breakpoint, where the wrap is the
-              measure again.
+              Measured on the production build before this change, 2026-09-06:
+              at 1280 the sentence set at --text-h2 was 40px — 0.63 of the 64px
+              name — and wrapped to SIX lines, 264px tall, inside a 503px
+              column. At 375 it was 26px against a 36px name: 0.72. A sentence
+              that is two-thirds the size of the heading above it is not
+              subordinate to it; the two compete, the eye has nowhere to land,
+              and six two-word lines read as chopped rather than as a sentence.
+              The owner's reference render sets the same sentence at roughly
+              0.4 of the name and lets it run three lines. That is what "flow"
+              means here: fewer, longer lines under a heading that is clearly
+              the heading.
+
+              THE SCALE HAS NO STEP WHERE THIS NEEDS TO SIT. --text-h3 tops out
+              at 20px and --text-h2 starts at 26px; between them there is
+              nothing, and the hero's lede — one sentence, over a photograph,
+              beside a 64px name — is the only thing on the page that wants
+              one. So this is a bespoke measure, scoped to this element, and
+              written down: clamp(1.125rem, 2.2vw, 1.75rem) is 18px at 375
+              (0.50 of the name) and 28px at 1280 (0.44). Line-height 1.3
+              rather than h2's 1.1, because this is now a read sentence rather
+              than a display fragment.
+
+              NO GATE DEPENDS ON THE OLD SIZE. Every collar rule in
+              hero-scrim.module.css keys its stem model to --text-data,
+              --text-fine, --text-stat or --text-h1 — never to --text-h2 — and
+              the base collar deliberately models the THINNEST type in the
+              band, so a 28px display sentence sits on the safe side of it.
+              max-w-[32ch] is kept: below the split, where the wrap is the
+              measure again, it is still what stops the line running long.
             */}
             <Reveal index={1}>
-              <p className="mt-[30px] max-w-[32ch] font-display text-h2 font-[300] text-balance">
+              <p className="mt-[30px] max-w-[32ch] font-display text-[length:clamp(1.125rem,2.2vw,1.75rem)] leading-[1.3] tracking-[-0.01em] font-[300] text-balance">
                 I design experiments for machine-learning systems where being wrong has a
                 cost — and I build the infrastructure they run on.
               </p>
