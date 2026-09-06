@@ -1527,72 +1527,113 @@
   /* The guarantee. A literal, so the gate can read it; a clamp FLOOR, so a
      measured alpha from the manifest can only ever go darker. See the header.
 
-     53%. This USED to be 86% — the generator's manifest number, the alpha at
-     which a veil ALONE clears 4.5:1 over the worst pixel of the worst rung.
-     It is 53% now because the veil is no longer the only darkening in the
-     stack: THE COLLAR at the foot of this file pays for the text's own local
-     ground, so the veil only has to answer for what a collar cannot reach.
-     The COMPOSITE under the text is 54.16% — this plus the wash below, and
-     nothing else, because the mask split takes the field off the column.
+     23%. This was 86% when the veil was the only darkening in the stack, and
+     53% once THE COLLAR at the foot of this file began paying for the text's
+     own local ground. It is 23% now for a different reason again, and the
+     distinction matters because it says what is left to give:
 
-     WHAT NOW HOLDS THIS NUMBER, and it is not the text. Every treated role
-     clears with room at 53% (--fg 12.72:1, --fg-muted 5.55:1 against 4.5,
-     --fg-accent-display 5.09:1 against 3). The binding pair is the Threshold's
-     2px rule and the focus ring: both --fg at a 3:1 non-text obligation, which
-     needs alpha >= 0.5116 bare, and neither can wear a text-shadow because
-     neither is a glyph. See rule 7 at the foot of this file — they are given
-     the same darkening as a box-shadow, and no gate in this repo can yet read
-     it. The day one can, this literal goes to the low thirties. */
-  --scrim-floor-min: 53%;
+       86% -> 53%   the TEXT stopped needing the veil (the per-glyph collar)
+       53% -> 23%   the NON-TEXT stopped needing it (the box-shadow collar)
+
+     WHAT USED TO HOLD THIS NUMBER was never the text. It was the Threshold's
+     2px rule and the focus ring — both --fg at a 3:1 non-text obligation,
+     needing alpha >= 0.5116 BARE, neither able to wear a text-shadow because
+     neither is a glyph. Rule 7 gave them a box-shadow collar anyway and no
+     gate in this repo could read it, so it bought the page legibility and
+     bought the veil nothing.
+
+     scripts/check-hero-contrast.mjs reads it now. Measured through that gate,
+     with the ring's spreads widened to reach their own outline (see rule 7 —
+     that correction is a precondition, not a polish item):
+
+         --rule         alpha >= 0.5116 bare  ->  0.0489 collared
+         --focus-ring   alpha >= 0.5116 bare  ->  0.0000 collared
+
+     Both drop out of the solve, and WHAT HOLDS THIS LITERAL NOW IS THE TEXT
+     after all: --fg-muted at alpha >= 0.2253, the checker's own
+     `minAlphaTreated` over a #FFFFFF source pixel with the 1.05 headroom
+     already inside it, and the single binding role across the whole table.
+
+     WHY 23% AND NOT 22.53%. The composite under the text is this literal plus
+     the wash, 1 - (1 - 0.23)(1 - 0.23 x 0.0465) = 23.82%, so the margin over
+     --fg-muted's requirement is 0.0129 in alpha. A 22% literal would composite
+     to 22.80% and clear by 0.0027 — and a guarantee resting on a fourth
+     decimal place is exactly the failure THE WASH below was written to end.
+     23% costs under 1% of the sky's brightness against a landing exactly on
+     the requirement, which is not a difference anyone can see, and it is the
+     same decision the wash made one round earlier.
+
+     AND NOT 20%, WHICH THE ARITHMETIC WOULD ALLOW ONLY IF THE ARITHMETIC WERE
+     THE WHOLE QUESTION: the mono --fg-muted labels visibly dissolve into the
+     photograph down there. That is a judgement about the picture, it was made
+     by looking, and it is recorded here because no gate in this repo makes it. */
+  --scrim-floor-min: 23%;
   /*
-    ── THE WASH — 4% OF VEIL THAT TURNS A ROUNDING ERROR INTO A MARGIN ───
+    ── THE WASH — THE RUNG THAT TURNS A ROUNDING ERROR INTO A MARGIN ─────
     The one layer that is never masked, so the one layer whose alpha is added
     to every pixel of the band no matter which side of the mask it is on.
 
-    IT EXISTS BECAUSE THE POCKET ALONE CLEARS BY FIVE TEN-THOUSANDTHS.
-    --fg-muted needs alpha >= 0.85946 over a #FFFFFF source pixel. The
-    generator's manifest relays 0.86, rounded to two places, and
-    scripts/check-hero-contrast.mjs refuses a --scrim-floor-min above what the
-    manifest was measured at — so once the mask split takes the field off the
-    column, the pocket is 0.8600 alone and the whole guarantee rests on a
-    fourth decimal place. The wash is the margin:
+    IT EXISTS BECAUSE THE POCKET ONCE CLEARED BY FIVE TEN-THOUSANDTHS. At the
+    86% floor --fg-muted needed alpha >= 0.85946 and the manifest relayed 0.86
+    rounded to two places, so once the mask split took the field off the column
+    the whole guarantee rested on a fourth decimal place. This layer was the
+    margin, and it is still stated as the same FRACTION of --scrim-alpha it
+    always was, so it opened as the floor came down:
 
-        1 - (1 - w)(1 - 0.86) >= 0.85946   ->   any w >= 0
-        1 - (1 - 0.04)(1 - 0.86)  =  0.8656   ->  0.0061 of real margin
+        0.0465 x 86%  =  4.00%      (the floor it was sized at)
+        0.0465 x 53%  =  2.46%
+        0.0465 x 23%  =  1.07%      (today)
 
-    4% buys that and it buys a property
-    nothing else here has: THE COLUMN'S EFFECTIVE ALPHA IS 0.8656 EXACTLY, at
-    every viewport and every row, because it no longer depends on where the
-    field's ramp happens to be. A floor that is a constant is a floor you can
-    reason about; the 0.8957 this file used to paint was a different number at
-    every y and none of them were the one it published.
+    AT 23% IT IS NO LONGER WHERE THE MARGIN COMES FROM, and saying so is the
+    point of keeping the arithmetic here. --fg-muted needs 0.2253 collared; the
+    floor alone delivers 0.23 and the wash takes the column to
+
+        1 - (1 - 0.23)(1 - 0.23 x 0.0465)  =  0.23824
+
+    so 0.0129 of the 0.0129 margin is the floor's and the wash contributes the
+    last 0.0082 of it. The floor is doing the work now. What the wash still
+    buys is the property nothing else here has: THE COLUMN'S EFFECTIVE ALPHA IS
+    0.23824 EXACTLY, at every viewport and every row, because it does not
+    depend on where the field's ramp happens to be. A floor that is a constant
+    is a floor you can reason about; the 0.8957 this file used to paint was a
+    different number at every y and none of them were the one it published.
 
     Everything else in this rule is stated as a rung of --scrim-alpha for the
     same reason it always was: override --scrim-alpha and the whole veil
-    thins together. 0.0465 x 86% = 4.00%.
+    thins together.
   */
   --scrim-wash-min: calc(var(--scrim-alpha) * 0.0465);
   /*
     The aperture, at the crest, ON EACH MASKED LAYER — not the composite.
-    The COMPOSITE crest is 25%, which is the least veil that keeps every
-    photographic pixel at or below sRGB 200 once the mask seam's dip is spent
-    (see THE MASK SEAM), so the 242 of --fg stays the brightest thing in the
-    band. The wash supplies 4% of that, so each pseudo supplies
+    The 0.2544 was sized at the 86% floor, where the wash supplied 4% and
 
         1 - (1 - 0.04)(1 - c) = 0.25   ->   c = 0.21875
 
-    and 0.2544 x 53% = 13.48% (it was 21.875% when this floor was 86% — the
-    crest opens with the floor, which is the whole point). A rung rather than
-    a literal because the
-    pocket's ladder starts here: every rung has to be a multiple of the same
-    alpha or the two layers stop meeting at the mask's edge.
+    gave a COMPOSITE crest of 25% — the least veil that kept every photographic
+    pixel at or below sRGB 200 once the mask seam's dip was spent (see THE MASK
+    SEAM), so the 242 of --fg stayed the brightest thing in the band.
+
+    IT IS A RATIO, NOT THAT COMPOSITE, AND THE RATIO IS WHAT IS HELD:
+
+        0.2544 x 86%  =  21.88%      0.2544 x 53%  =  13.48%
+        0.2544 x 23%  =   5.85%      composite with the wash: 6.85%
+
+    The crest opens with the floor, which is the whole point — a literal ladder
+    would have left the ramp at full strength under a thinned floor and made
+    both of the gate's controls vacuous. The sRGB-200 bound that sized it is
+    not violated by opening: it was a CEILING on the picture's brightness under
+    the crest, and check C re-measures the composited pixels at whatever alpha
+    this resolves to rather than trusting the derivation. A rung rather than a
+    literal also because the pocket's ladder starts here: every rung has to be
+    a multiple of the same alpha or the two layers stop meeting at the mask's
+    edge.
   */
   --scrim-crest-min: calc(var(--scrim-alpha) * 0.2544);
   /* The aperture, where it meets the ground. The ratio is held, not the
-     composite: 0.3634 x 53% = 19.26%, where it was 0.3634 x 86% = 31.25% for
-     a composite of 34%. Every stop in this file is a fraction of
-     --scrim-alpha exactly so that thinning the floor opens all of them
-     together instead of leaving the ramp at full strength under a thin
+     composite: 0.3634 x 23% = 8.36%, where it was 0.3634 x 53% = 19.26% and
+     0.3634 x 86% = 31.25% for a composite of 34%. Every stop in this file is a
+     fraction of --scrim-alpha exactly so that thinning the floor opens all of
+     them together instead of leaving the ramp at full strength under a thin
      floor. */
   --scrim-sill-min: calc(var(--scrim-alpha) * 0.3634);
 
@@ -1617,13 +1658,40 @@
     unsafe in exactly the direction that matters: a future manifest measuring
     0.99 needs 0.96 here, and 0.99 - k would hand it 0.66.
 
-    --scrim-collar-open is 0.25 — a collar credited at alpha 0.75, against
-    the 0.79 scripts/check-hero-contrast.mjs's own observer model supports
-    for this stack. Conservative on purpose: this is the number that decides
-    how dark the page renders, and the FLOOR below is what guarantees it.
-    With B = 0.86 the middle term is 44%, so the floor is what ships.
+    --scrim-collar-open is 0.19 — a collar credited at equivalent alpha 0.81.
+
+    THAT NUMBER IS NOW MEASURED RATHER THAN ESTIMATED, and it is the one
+    substantive change to this line. It used to be 0.25 (a credit of 0.75)
+    against "the 0.79 the observer model supports", which was an estimate of a
+    scalar. scripts/check-hero-contrast.mjs prints both ends of the ratio
+    directly, for the role that binds at both ends:
+
+        --fg-muted  BARE     alpha >= 0.8595   (minAlpha, 4.5:1 x1.05, #FFFFFF)
+        --fg-muted  COLLARED alpha >= 0.2253   (minAlphaTreated, same terms)
+        open = (1 - 0.8595) / (1 - 0.2253) = 0.18142
+
+    0.19 is that measurement rounded AWAY from the credit — a shallower collar
+    than the gate says is there, so the veil this relay computes is deeper than
+    the gate says is needed. Still conservative, but now conservative about a
+    number rather than instead of one.
+
+    THIS IS THE TEXT COLLAR'S CREDIT AND ONLY THE TEXT COLLAR'S. Rule 7's
+    box-shadow collar on the bar and the ring is credited nowhere in this
+    relay: those two roles were holding the FLOOR literal, not this
+    transmittance, and what the box collar bought was the floor coming down
+    from 53% to 23%. Two treatments, two roles, two mechanisms, one credit
+    each. The moment that stops being true this file is double-counting, and
+    the symptom would be a manifest number and a painted veil that no single
+    comment can derive from each other.
+
+    With B = 0.853 the middle term is 22.63%, just under the 23% floor, so THE
+    FLOOR IS WHAT SHIPS — deliberately, so the guarantee is a literal the gate
+    reads rather than the quotient of two floats. The middle term is a tracker:
+    a future manifest measuring 0.90 gives 1 - 0.10/0.19 = 47.4% and correctly
+    deepens the veil, which is the property the header calls THE FLOOR IS A
+    FLOOR, NOT A DEFAULT.
   */
-  --scrim-collar-open: 0.25;
+  --scrim-collar-open: 0.19;
   --scrim-alpha: clamp(
     var(--scrim-floor-min),
     calc(100% - (100% - var(--scrim-base, 1) * 100%) / var(--scrim-collar-open)),
@@ -2541,25 +2609,113 @@
 
 /* ── 7 · THE TWO THINGS IN THIS BAND THAT ARE NOT TEXT ───────────────────
      The Threshold's 2px rule and the focus ring are painted from geometry a
-     text-shadow cannot be thrown from, so they cannot wear the collar and
-     they are what now hold --scrim-floor-min at 53%: both are --fg at a 3:1
-     obligation, which needs alpha >= 0.5116 bare.
+     text-shadow cannot be thrown from, so they cannot wear the per-glyph
+     collar above. Both are --fg at a 3:1 obligation, which needs alpha
+     >= 0.5116 BARE — and that pair is what used to hold --scrim-floor-min at
+     53%, because nothing in this repo could read the darkening they were
+     already being given.
 
-     They get the outline's version of the collar anyway. A box-shadow at the
-     same three radii puts flat --ground under the bar and around the ring,
-     which is the same mechanism and the same result — it is simply a
-     darkening no gate in this repo can yet read, so it buys the page
-     legibility and buys the veil nothing. The moment
-     scripts/check-hero-contrast.mjs can model a bar the way it models a
-     stroke, this is what takes the floor from 53% to the low thirties. */
+     ── THAT IS NO LONGER TRUE, AND THIS IS WHAT CHANGED ─────────────────
+     scripts/check-hero-contrast.mjs now models a box-shadow the way it has
+     always modelled a text-shadow: spread as an opaque DILATION of the source
+     rectangle applied before the blur, the same measured 0.45-per-blur sigma,
+     the same 20/40 observer integral, and one new rule with no text
+     counterpart — an outer box-shadow is CLIPPED at its own border box, so
+     T(x) = 0 for x inside it. That clip is why a ring cannot be credited as
+     if it were a solid pad, and it is why the ring below had to change.
+
+     THE PREDICTION IN THE OLD VERSION OF THIS COMMENT WAS WRONG IN BOTH
+     DIRECTIONS, and it is worth recording how. It said this change would take
+     the floor "from 53% to the low thirties". Measured through the gate that
+     now exists:
+
+       · IT WAS PESSIMISTIC ABOUT THE BAR. The Threshold's rule clears 3:1
+         x1.05 against the brightest source pixel there can be at ZERO veil.
+         It does not merely relax the floor; it drops out of the solve.
+       · IT WAS SILENT ABOUT THE RING, WHICH WAS THE REAL CONSTRAINT. The
+         ring's spreads used to be 1.47/2/3px, copied from the bar. But
+         app/globals.css sets `outline: 2px solid var(--focus-ring);
+         outline-offset: 2px`, so the ring's INK sits 2px to 4px outward from
+         the border box — outboard of everything those spreads painted. The
+         collar was under the gap, not under the ring. Widened to 4/4.5/5px it
+         reaches its own outline and it too drops out of the solve.
+         components/site/nav.module.css derives exactly this correction and
+         ships 5px for exactly this reason; the hero had not.
+
+     SO WHAT HOLDS THE FLOOR NOW IS THE TEXT. With the bar and the ring both
+     at 0.0000, --fg-muted's 0.2253 is the single binding role across the whole
+     table, and the floor lands where the TEXT puts it rather than in the low
+     thirties. That number is the checker's own `minAlphaTreated` over a
+     #FFFFFF source pixel with the 1.05 headroom already inside it.
+
+     THE CREDIT IS NOT TAKEN TWICE. This rule buys the two non-text roles their
+     own local ground; it does NOT feed --scrim-collar-open, which is the TEXT
+     collar's credit and is derived from --fg-muted alone. See THE RELAY.
+
+     ── THE CONTRACT, AND IT IS STRICTER THAN THE HALO'S ─────────────────
+     A collar is credited only from a rule that declares --collar-role AND a
+     box-shadow in the SAME block, so deleting the paint deletes the credit in
+     the same edit. --collar-box is four lengths — box-thickness, box-extent,
+     ink-offset, ink-thickness — because a bar has no em and no cut, so there
+     is no font metric to look one up from. The first two are FLOORS the real
+     border box must exceed and the last two are CEILINGS it must stay under;
+     tests/e2e/hero-contrast.spec.ts verifies all four in Chromium, along with
+     the one thing this file cannot assert about itself — that the selector
+     matches an element at all. An `inset` layer, a later rule overriding the
+     shadow to `none` or weaker, and a --collar-role with no box-shadow are
+     each a hard build failure.
+
+     THE NUMBERS BELOW ARE MEASURED, Chromium, production build, all six
+     reference viewports, 2026-09-05:
+       .threshold-rule   offsetHeight 2px exactly; offsetWidth 335px (375) to
+                         784px (861). 40px is declared as the extent because it
+                         is already past the point where the along-axis factor
+                         computes to 1.0000, and declaring it low is the
+                         conservative direction for the credit while the
+                         browser check holds the real bar above it.
+       :focus-visible    the band's transparent-background focusables measure
+                         143.7x45.4px (the ghost Btn) and 48.8x15.4px (the
+                         inline link). 12px is declared on both axes: under the
+                         smallest real one with 3.4px to spare, and still large
+                         enough that both Gaussian factors are 1.0000. */
 .ground :global(.threshold-rule) {
+  --collar-role: --rule;
+  /* box-thickness  box-extent  ink-offset  ink-thickness */
+  --collar-box: 2px 40px 0px 2px;
   box-shadow:
     0 0 1.47px 1.47px var(--ground), 0 0 3.36px 2px var(--ground),
     0 0 6.09px 3px var(--ground);
 }
 
-.ground :focus-visible {
+/* THE SPREADS ARE WIDENED AND THAT IS LOAD-BEARING, NOT COSMETIC — see above.
+   It is also a visible change to the focus indicator: the dark pad around a
+   focused control in this band is a little larger than it was. That is the
+   price of the ring being legible against a lit window, and nav already pays
+   it.
+
+   SCOPED TO ELEMENTS THAT SIT DIRECTLY ON THE PHOTOGRAPH. The collar's inward
+   ray models the 2px gap between the border box and the outline, and then bare
+   ground inboard of that — which is only the photograph if the element's own
+   background is transparent. The solid Btn's is not; its inner surface is the
+   pill, so crediting it here would be describing the wrong surface. Keyed to
+   the same utility rule 6 uses, so the two follow the same fill. */
+.ground :focus-visible:not([class~="bg-[var(--fg)]"]) {
+  --collar-role: --focus-ring;
+  --collar-box: 12px 12px 2px 2px;
   box-shadow:
-    0 0 1.47px 1.47px var(--ground), 0 0 3.36px 2px var(--ground),
-    0 0 6.09px 3px var(--ground);
+    0 0 1.47px 4px var(--ground), 0 0 3.36px 4.5px var(--ground),
+    0 0 6.09px 5px var(--ground);
+}
+
+/* PAINTED, NOT CREDITED. The solid Btn's ring is outboard of its own pill, so
+   it sits on the photograph on its OUTER side and needs the same pad as any
+   other — but its inner side is the pill, which is a flat-token question that
+   scripts/check-ground-tokens.mjs owns and this photographic gate does not.
+   Same paint, no --collar-role, no claim. An unattributed box-shadow is
+   credited at zero, which is the safe direction; a --collar-role with no
+   box-shadow is the hard failure. */
+.ground :focus-visible[class~="bg-[var(--fg)]"] {
+  box-shadow:
+    0 0 1.47px 4px var(--ground), 0 0 3.36px 4.5px var(--ground),
+    0 0 6.09px 5px var(--ground);
 }

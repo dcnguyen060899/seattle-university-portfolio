@@ -872,6 +872,33 @@ function inkForegrounds() {
 }
 
 const INK_FOREGROUNDS = inkForegrounds()
+
+/**
+ * THE WEAKEST INK FOREGROUND, SOLVED RATHER THAN ASSUMED.
+ *
+ * This existed as `INK_FOREGROUNDS.at(-1)` in four places, on the assumption
+ * that the catalogue above is ordered weakest-last. IT IS NOT, AND IT SHIPPED
+ * A FALSE CLAIM FOR IT. `--fg-brand` (11.76:1) was appended after
+ * `--fg-accent` (5.68:1), and once `.ground`'s remap retires `--fg-accent` the
+ * last entry is `--fg-brand` — the STRONGEST of the three that survive, not
+ * the weakest. So the manifest published
+ *
+ *     bindingForeground: "--fg-brand"
+ *     claim: "... the weakest ink foreground the hero actually paints
+ *             (--fg-brand #C2D2DE, 11.76:1 on flat ink)"
+ *
+ * while `scrimFor()` — which takes the MAX demanded alpha and is right —
+ * recorded `--fg-muted` (7.15:1) as binding in both orientations. The
+ * published alpha was correct all along; the sentence explaining it named the
+ * wrong role, and `maxGradedPatchLuma` computed its tone ceiling against that
+ * wrong, stronger role, making the printed grade ceiling looser than the grade
+ * was actually solved against.
+ *
+ * Ordering is not a fact about an array literal, so this asks the question the
+ * solve asks: which foreground has the LEAST contrast against the ink ground,
+ * and therefore demands the most veil.
+ */
+const WEAKEST_INK = INK_FOREGROUNDS.reduce((a, b) => (b.flatRatio < a.flatRatio ? b : a))
 const SCRIM_COLOR = '#14161A'
 const SCRIM_TARGET_RATIO = 4.5
 /**
@@ -1351,7 +1378,7 @@ async function applyGrade(frame, brightness) {
  * — the real solve below works on the patch's actual colour.
  */
 function maxGradedPatchLuma(alpha) {
-  const limit = maxBackgroundLuma(INK_FOREGROUNDS.at(-1).hex, SCRIM_SOLVE_RATIO)
+  const limit = maxBackgroundLuma(WEAKEST_INK.hex, SCRIM_SOLVE_RATIO)
   let lo = 0
   let hi = 255
   for (let i = 0; i < 40; i += 1) {
@@ -3114,15 +3141,68 @@ const manifest = {
     exit: Math.min(1, Math.round((heroAlpha + SCRIM_EXIT_DELTA) * 1000) / 1000),
     scrimColor: SCRIM_COLOR,
     targetRatio: SCRIM_TARGET_RATIO,
-    bindingForeground: INK_FOREGROUNDS.at(-1).token,
+    bindingForeground: WEAKEST_INK.token,
+    /*
+      ── THE CLAIM HAS TO DESCRIBE THE NUMBER BESIDE IT ────────────────────
+
+      Two things were wrong with the previous wording and only one of them was
+      the arithmetic. It named `--fg-brand` as "the weakest ink foreground",
+      which it is not (see WEAKEST_INK) — and it described this alpha as though
+      a veil alone were what the browser paints, which stopped being true when
+      the hero began painting collars under its own ink.
+
+      THE NUMBER ITSELF IS UNCHANGED AND STILL EXACTLY TRUE. It is a statement
+      about the PHOTOGRAPH'S BYTES: the alpha at which a flat veil, on its own,
+      with nothing else credited, holds the worst glyph-sized patch of every
+      decoded rung at the target ratio. Nothing about that becomes false when
+      the page paints a collar; the number simply stops being the LAST word on
+      how dark the veil has to be, which is what the relay in
+      components/site/hero-scrim.module.css exists to express.
+
+      SO THE SOLVE IS NOT TAUGHT TO CREDIT A COLLAR, DELIBERATELY, and the
+      reason is worth stating where the claim is:
+
+        · The collar this round added is a box-shadow on the Threshold's rule
+          and the focus ring. NEITHER IS AN INK FOREGROUND THIS FILE SOLVES
+          FOR — the catalogue is --fg, --fg-muted and --fg-brand, all text.
+          Crediting a bar's box-shadow toward the veil that body copy needs
+          would be crediting paint that is not there.
+        · The collar that IS painted under this file's roles — the per-glyph
+          text-shadow — is already credited, once, in the relay's
+          `--scrim-collar-open`. Crediting it here as well would discount the
+          same darkening twice, in two files, with each file's comment
+          truthfully describing its own half and neither describing the total.
+        · This file works in IMAGE space (crop pixels, a glyph box of
+          frameWidth/GLYPH_BOX_DIVISOR). The collar model works in LAYOUT
+          space and needs a viewport, a type scale, measured font metrics and
+          a CSS length evaluator to resolve a clamp() at a width. Porting it
+          is not possible; only re-implementing it is, and a second
+          implementation obliged to agree with the first to the last digit is
+          precisely the two-files-two-numbers drift SCRIM_ENGINEERING_MARGIN's
+          comment says check E exists to catch — and did catch, at 0.914 vs
+          0.930.
+
+      What the claim owes the reader, then, is not a different number. It is
+      the sentence saying this number is a NAKED upper bound and naming the one
+      place the discount is taken.
+    */
     claim:
       `Minimum opacity of a solid ${SCRIM_COLOR} scrim at which every glyph-sized patch of the photograph ` +
       `still clears ${SCRIM_TARGET_RATIO}:1 against the weakest ink foreground the hero actually paints ` +
-      `(${INK_FOREGROUNDS.at(-1).token} ${INK_FOREGROUNDS.at(-1).hex}, ` +
-      `${INK_FOREGROUNDS.at(-1).flatRatio}:1 on flat ink). Measured by DECODING EVERY EMITTED RUNG and ` +
+      `(${WEAKEST_INK.token} ${WEAKEST_INK.hex}, ` +
+      `${WEAKEST_INK.flatRatio}:1 on flat ink). Measured by DECODING EVERY EMITTED RUNG and ` +
       'taking the worst, so it is a claim about the bytes a browser downloads rather than about the raw ' +
       'frame that went into the encoder; per orientation, `orientations[k].scrim.preEncode.drift` records ' +
-      'how far the codec moved it. Not a per-pixel guarantee — see the generator header.',
+      'how far the codec moved it. Not a per-pixel guarantee — see the generator header. ' +
+      'THIS IS A NAKED NUMBER AND THE PAGE DOES NOT PAINT IT: it credits NOTHING but the veil, and ' +
+      'the hero also paints a per-glyph text-shadow collar under its copy and a box-shadow collar ' +
+      'around the two objects in that band that are not text (the Threshold rule and the focus ring). ' +
+      'components/site/hero-scrim.module.css relays this alpha through --scrim-collar-open, which is ' +
+      'where the text collar is credited exactly once, and clamps the result up to --scrim-floor-min; ' +
+      'scripts/check-hero-contrast.mjs is what measures every role against the LOCAL COMPOSITED GROUND ' +
+      'the browser actually renders, collars included, and fails the build if the painted veil is ' +
+      'thinner than any role needs. Read this number as the upper bound a veil alone would have to be, ' +
+      'not as the opacity the hero ships.',
   },
   /*
     ── WHAT THE BROWSER THROWS AWAY, RECORDED ──────────────────────────────
@@ -3240,7 +3320,7 @@ console.log('  ─────────────────────�
       `${TARGET_SCRIM_ALPHA}`,
   )
   console.log(
-    `    the backdrop lands at or under L=${ceiling.limit.toFixed(6)} — where ${INK_FOREGROUNDS.at(-1).token} still clears ` +
+    `    the backdrop lands at or under L=${ceiling.limit.toFixed(6)} — where ${WEAKEST_INK.token} still clears ` +
       `${SCRIM_TARGET_RATIO}:1 x${SCRIM_ENGINEERING_MARGIN}.`,
   )
   console.log('')

@@ -1867,3 +1867,419 @@ test.describe('the ink-pixel gate: the negative control', () => {
     ).toBeGreaterThan(0)
   })
 })
+
+/* ════════════════════════════════════════════════════════════════════════════
+   THE COLLAR, IN THE BROWSER — R1/R2
+
+   scripts/check-hero-contrast.mjs credits a box-shadow collar to the two
+   objects in this band that are not text: the Threshold's 2px rule and the
+   focus ring. That credit is what let --scrim-floor-min come down from 53% to
+   23%, so it is load-bearing on the picture the visitor actually sees.
+
+   AND IT IS THE FIRST THING THAT GATE CREDITS WHICH IT CANNOT VERIFY FROM THE
+   TEXT IT READS. A halo is attributed to a ROLE and a role's colour is in the
+   palette, so the node gate can check it end to end. A collar is attributed to
+   a SELECTOR, and a selector is a claim about the DOM. A selector that matches
+   nothing is worse than no collar at all: it is a credit taken against paint
+   that reaches no pixel, and the build would stay green while the veil got
+   thinner on the strength of it.
+
+   So everything below is the half the node gate cannot do:
+
+     a. EXISTENCE       the selector matches at least one element
+     b. THE CASCADE'S   getComputedStyle().boxShadow still carries every
+        ANSWER          credited layer at >= the credited blur and spread, in
+                        the credited colour. This is what survives a deletion,
+                        an override, a media query, and a Tailwind utility
+                        landing on the same element — none of which the node
+                        gate can see, because it reads a file and the browser
+                        resolves a cascade.
+     c. GEOMETRY        the real border box is at least as big as the declared
+                        floors, and the real ink sits no further out and no
+                        thicker than the declared ceilings. Both directions are
+                        stated because they are conservative in OPPOSITE
+                        directions: a bigger box throws more shadow, so
+                        declaring it small is safe; ink further out or thicker
+                        is worse covered, so declaring it large is safe.
+     d. TRANSPARENCY    the ring's inward ray models bare photograph inboard of
+                        the outline. That is only true if the element's own
+                        background is transparent, so it is asserted rather
+                        than assumed.
+     e. PIXELS          the ground the browser paints beside the ink is NO
+                        LIGHTER than the ground the model claims.
+
+   Read through `--emit-collar` rather than by importing the gate: the same
+   one-interface discipline `--emit-extent` and `--emit-type` already use.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+interface CollarLayer {
+  offsetPx: number
+  blurPx: number
+  spreadPx: number
+  rgb: [number, number, number]
+  alpha: number
+  source: string
+}
+interface CollarEntry {
+  selector: string
+  file: string
+  role: string
+  viewport: string
+  ray: string
+  layers: CollarLayer[]
+  boxThicknessPx: number
+  boxExtentPx: number
+  inkOffsetPx: number
+  inkThicknessPx: number
+  localGroundLuminanceOverWhite: number
+}
+
+const COLLARS: {
+  boxShadowCredit: number
+  collarReachPxMax: number
+  collarRoles: string[]
+  collars: CollarEntry[]
+} = JSON.parse(
+  execFileSync('node', ['scripts/check-hero-contrast.mjs', '--emit-collar'], {
+    encoding: 'utf8',
+    cwd: process.cwd(),
+    maxBuffer: 64 * 1024 * 1024,
+  }),
+)
+
+/**
+ * A CSS-module source selector -> a selector the DOM can answer.
+ *
+ * `.ground` is the hashed module class on the hero band, and the band carries
+ * `id="top"`, which is stable, global and already relied on by the skip link.
+ * `:global(...)` is a CSS-modules construct that means "do not hash this", so
+ * unwrapping it yields exactly the class the browser sees.
+ */
+function domSelector(moduleSelector: string): string {
+  return moduleSelector
+    .replace(/:global\(([^)]*)\)/g, '$1')
+    .replace(/(^|\s)\.ground(?=[\s:.[])/g, '$1#top')
+    .trim()
+}
+
+/** Chromium serialises each box-shadow layer as `rgb(...) ox oy blur spread`. */
+function parseComputedShadow(value: string): {
+  rgb: [number, number, number]
+  lengths: number[]
+}[] {
+  if (!value || value === 'none') return []
+  const layers: string[] = []
+  let depth = 0
+  let buf = ''
+  for (const ch of value) {
+    if (ch === '(') depth += 1
+    if (ch === ')') depth -= 1
+    if (ch === ',' && depth === 0) {
+      layers.push(buf)
+      buf = ''
+      continue
+    }
+    buf += ch
+  }
+  if (buf.trim()) layers.push(buf)
+  return layers.map((l) => {
+    const colour = /rgba?\(([^)]*)\)/.exec(l)
+    const nums = ((colour && colour[1]) || '0,0,0').split(/[,/]/).map((n) => parseFloat(n) || 0)
+    const lengths = (l.replace(/rgba?\([^)]*\)/, '').match(/-?[\d.]+px/g) ?? []).map((n) =>
+      parseFloat(n),
+    )
+    return { rgb: [nums[0] ?? 0, nums[1] ?? 0, nums[2] ?? 0] as [number, number, number], lengths }
+  })
+}
+
+const VP_OF = (name: string): { width: number; height: number } => {
+  const parts = name.split('x').map((n) => parseInt(n, 10))
+  return { width: parts[0] ?? 1280, height: parts[1] ?? 800 }
+}
+
+test.describe('the hero collar is painted where the build gate credits it', () => {
+  /* One viewport's worth of entries is enough per role: the node gate emits the
+     same collar at every viewport (none of these lengths is viewport-relative),
+     and running all six would be six page loads to re-prove one fact. The
+     entries are grouped so a future viewport-dependent collar still gets one
+     test per distinct geometry. */
+  const byRoleAndViewport = new Map<string, CollarEntry>()
+  for (const c of COLLARS.collars) {
+    const key = `${c.role}@${c.viewport}`
+    if (!byRoleAndViewport.has(key)) byRoleAndViewport.set(key, c)
+  }
+  const seenRole = new Set<string>()
+  const cases: CollarEntry[] = []
+  for (const c of byRoleAndViewport.values()) {
+    if (seenRole.has(c.role)) continue
+    seenRole.add(c.role)
+    cases.push(c)
+  }
+
+  test('the node gate credited at least one collar, or this file is testing nothing', () => {
+    expect(
+      COLLARS.collars.length,
+      'scripts/check-hero-contrast.mjs --emit-collar returned no collars at all. Either the ' +
+        '--collar-role declarations have been removed from components/site/hero-scrim.module.css ' +
+        '(in which case --scrim-floor-min must go back up — the 23% literal is only legal ' +
+        'because the bar and the ring are collared) or the emit flag has broken. A green run ' +
+        'from this describe block with zero cases is the failure this assertion exists to stop.',
+    ).toBeGreaterThan(0)
+    expect(cases.map((c) => c.role).sort()).toEqual(['--focus-ring', '--rule'])
+  })
+
+  for (const entry of cases) {
+    test(`${entry.role} — the collar the gate credits is the collar Chromium paints`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(VP_OF(entry.viewport))
+      await page.goto('/')
+      await page.waitForLoadState('networkidle')
+
+      const selector = domSelector(entry.selector)
+      const isRing = entry.role === '--focus-ring'
+
+      if (isRing) {
+        /*
+          `:focus-visible` MATCHES ONLY ON KEYBOARD FOCUS. Chromium does not
+          match it for an element focused programmatically, so `.focus()` would
+          read no box-shadow and this test would either fail confusingly or —
+          written permissively — pass while verifying nothing. Tab until focus
+          lands inside the hero band on an element the credited selector
+          matches, and assert that it did.
+        */
+        await page.keyboard.press('Tab')
+        let landed = false
+        for (let i = 0; i < 40; i += 1) {
+          landed = await page.evaluate((sel) => {
+            const el = document.activeElement
+            if (!el || el === document.body) return false
+            const band = document.querySelector('#top')
+            return !!band && band.contains(el) && el.matches(sel) && el.matches(':focus-visible')
+          }, selector)
+          if (landed) break
+          await page.keyboard.press('Tab')
+        }
+        expect(
+          landed,
+          `Tabbing 40 times never put keyboard focus on an element inside #top matching ` +
+            `"${selector}". The node gate credits ${entry.role} a collar on that selector and ` +
+            'the veil is thinner because of it. Either the hero has no keyboard-reachable ' +
+            'control on the photograph any more, or the selector has stopped matching one.',
+        ).toBe(true)
+      }
+
+      const probe = await page.evaluate(
+        ({ sel, ring }) => {
+          const band = document.querySelector('#top')
+          const els = ring
+            ? [document.activeElement as HTMLElement]
+            : Array.from(document.querySelectorAll<HTMLElement>(sel)).filter(
+                (el) => !!band && band.contains(el),
+              )
+          return {
+            count: els.length,
+            items: els.map((el) => {
+              const cs = getComputedStyle(el)
+              return {
+                boxShadow: cs.boxShadow,
+                backgroundColor: cs.backgroundColor,
+                outlineOffset: parseFloat(cs.outlineOffset) || 0,
+                outlineWidth: parseFloat(cs.outlineWidth) || 0,
+                /* offsetWidth/offsetHeight, NOT getBoundingClientRect().
+                   `.threshold-rule` starts at `transform: scaleX(0)` and only
+                   animates to scaleX(1) when it scrolls into view, so its
+                   client rect is 0 wide before then and a length check that
+                   read it would pass on a zero — green that means nothing.
+                   The offset* pair is the untransformed border box. */
+                borderW: el.offsetWidth,
+                borderH: el.offsetHeight,
+              }
+            }),
+          }
+        },
+        { sel: selector, ring: isRing },
+      )
+
+      /* a · EXISTENCE */
+      expect(
+        probe.count,
+        `"${selector}" (credited in ${entry.file} as ${entry.selector}) matched NO element ` +
+          'inside the hero band. A collar credited to a selector that matches nothing is a ' +
+          'credit against paint that reaches no pixel.',
+      ).toBeGreaterThan(0)
+
+      for (const item of probe.items) {
+        const painted = parseComputedShadow(item.boxShadow)
+
+        /* b · THE CASCADE'S ANSWER, layer for layer */
+        for (const credited of entry.layers) {
+          const match = painted.find((p) => {
+            const blur = p.lengths[2] ?? 0
+            const spread = p.lengths[3] ?? 0
+            return (
+              blur >= credited.blurPx - 1e-6 &&
+              spread >= credited.spreadPx - 1e-6 &&
+              Math.abs((p.rgb[0] ?? 0) - credited.rgb[0]) <= 1 &&
+              Math.abs((p.rgb[1] ?? 0) - credited.rgb[1]) <= 1 &&
+              Math.abs((p.rgb[2] ?? 0) - credited.rgb[2]) <= 1
+            )
+          })
+          expect(
+            match,
+            `${entry.role}: the build gate credits a box-shadow layer "${credited.source}" ` +
+              `(blur ${credited.blurPx}px, spread ${credited.spreadPx}px, rgb(${credited.rgb}))\n` +
+              `but getComputedStyle().boxShadow is "${item.boxShadow}".\n\n` +
+              'The gate reads the stylesheet; this reads what the CASCADE resolved. A later ' +
+              'rule, a media query, or a utility class on the same element can take the collar ' +
+              'away without touching the line the gate parsed — and the veil is 23% because ' +
+              'that collar is there. Restore the shadow, or raise --scrim-floor-min back to ' +
+              'what the bare role needs (0.5116 for both non-text roles).',
+          ).toBeTruthy()
+        }
+
+        /* c · GEOMETRY — floors up, ceilings down */
+        const cross = Math.min(item.borderW, item.borderH)
+        expect(
+          cross,
+          `${entry.role}: --collar-box declares a box thickness of ${entry.boxThicknessPx}px as a ` +
+            `FLOOR, but the real border box is ${item.borderW}x${item.borderH}px. A smaller box ` +
+            'throws a smaller shadow than the model integrated.',
+        ).toBeGreaterThanOrEqual(entry.boxThicknessPx - 1e-6)
+
+        const along = isRing ? cross : Math.max(item.borderW, item.borderH)
+        expect(
+          along,
+          `${entry.role}: --collar-box declares a box extent of ${entry.boxExtentPx}px as a FLOOR, ` +
+            `but the real border box is ${item.borderW}x${item.borderH}px. The along-axis factor ` +
+            'in the model is 1.0 only because the element is long; a short one cannot deliver it.',
+        ).toBeGreaterThanOrEqual(entry.boxExtentPx - 1e-6)
+
+        expect(
+          item.outlineOffset,
+          `${entry.role}: --collar-box declares an ink offset of ${entry.inkOffsetPx}px as a ` +
+            `CEILING, but outline-offset computes to ${item.outlineOffset}px. Ink further out ` +
+            'than declared sits further into the shadow\'s tail than the model sampled.',
+        ).toBeLessThanOrEqual(entry.inkOffsetPx + 1e-6)
+
+        if (isRing) {
+          expect(
+            item.outlineWidth,
+            `${entry.role}: --collar-box declares an ink thickness of ${entry.inkThicknessPx}px ` +
+              `as a CEILING, but outline-width computes to ${item.outlineWidth}px.`,
+          ).toBeLessThanOrEqual(entry.inkThicknessPx + 1e-6)
+
+          /* d · TRANSPARENCY — the inward ray models bare photograph */
+          expect(
+            item.backgroundColor,
+            `${entry.role}: the collar's INWARD ray models the 2px gap inside the outline and ` +
+              'then bare photograph, which is only the right surface if this element has no ' +
+              `background of its own. It computes to "${item.backgroundColor}". Scope the ` +
+              'collar rule away from filled controls (rule 7 in hero-scrim.module.css already ' +
+              'does this for the solid Btn) or the model is describing a surface that is not there.',
+          ).toMatch(/^rgba\(0, 0, 0, 0\)$|^transparent$/)
+        } else {
+          /* For the bar the ink IS the border box, so the declared ink
+             thickness must be the measured cross-axis size exactly. */
+          expect(entry.inkOffsetPx).toBe(0)
+          expect(
+            entry.inkThicknessPx,
+            `${entry.role}: the bar's ink fills its own border box, so --collar-box's ink ` +
+              `thickness must equal the measured cross-axis size (${cross}px).`,
+          ).toBeCloseTo(cross, 5)
+        }
+      }
+    })
+  }
+
+  test('--rule — the ground beside the bar is no lighter than the model claims', async ({
+    page,
+  }) => {
+    const entry = cases.find((c) => c.role === '--rule')
+    expect(entry, 'no --rule collar was emitted').toBeTruthy()
+    const e = entry as CollarEntry
+
+    await page.setViewportSize(VP_OF(e.viewport))
+    await page.goto('/')
+    await page.waitForLoadState('networkidle')
+
+    /* THE REVEAL TRAP AGAIN. The bar animates in from scaleX(0); a screenshot
+       taken before it has drawn would sample photograph with no bar in it and
+       compare it against a model of a bar. Wait for the class the animation
+       adds, and for the transition to finish. */
+    const bar = page.locator('#top .threshold-rule').first()
+    await bar.scrollIntoViewIfNeeded()
+    await expect(bar).toHaveClass(/\bin\b/, { timeout: 10_000 })
+    await page.waitForTimeout(1400)
+
+    const box = await bar.boundingBox()
+    expect(box, 'the Threshold rule has no box').toBeTruthy()
+    const b = box as { x: number; y: number; width: number; height: number }
+
+    const shot = await page.screenshot({
+      clip: {
+        x: Math.max(0, Math.round(b.x + b.width * 0.35)),
+        y: Math.max(0, Math.round(b.y - 12)),
+        width: 40,
+        height: Math.round(b.height) + 24,
+      },
+    })
+
+    /*
+      The same observer integral the model uses, on real pixels: half-Gaussian
+      weights at sigma 1.565 CSS px, walking outward from the ink's edge.
+      Compared one-directionally — the model is allowed to be PESSIMISTIC (it
+      integrates over a #FFFFFF source pixel, and no real pixel is that bright)
+      but it must never claim a DARKER ground than the browser paints.
+    */
+    const observed = await page.evaluate(async (dataUrl) => {
+      const img = new Image()
+      await new Promise((res, rej) => {
+        img.onload = res
+        img.onerror = rej
+        img.src = dataUrl
+      })
+      const c = document.createElement('canvas')
+      c.width = img.width
+      c.height = img.height
+      const ctx = c.getContext('2d')!
+      ctx.drawImage(img, 0, 0)
+      const px = ctx.getImageData(0, 0, c.width, c.height).data
+      const lin = (v: number) => {
+        const s = v / 255
+        return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
+      }
+      const lumAt = (x: number, y: number) => {
+        const o = (y * c.width + x) * 4
+        return 0.2126 * lin(px[o] ?? 0) + 0.7152 * lin(px[o + 1] ?? 0) + 0.0722 * lin(px[o + 2] ?? 0)
+      }
+      const SIGMA = 1.565
+      /* the bar's ink sits 12px down in the clip; walk upward from its top edge */
+      const inkTop = 12
+      let num = 0
+      let den = 0
+      for (let d = 0.5; d < 6 * SIGMA; d += 1) {
+        const y = Math.round(inkTop - 1 - d)
+        if (y < 0) break
+        const w = Math.exp((-d * d) / (2 * SIGMA * SIGMA))
+        let row = 0
+        for (let x = 0; x < c.width; x += 1) row += lumAt(x, y)
+        num += w * (row / c.width)
+        den += w
+      }
+      return den > 0 ? num / den : null
+    }, `data:image/png;base64,${shot.toString('base64')}`)
+
+    expect(observed, 'could not sample the ground beside the bar').not.toBeNull()
+    expect(
+      observed as number,
+      `The ground Chromium paints beside the Threshold rule integrates to ` +
+        `${(observed as number).toFixed(4)} in relative luminance, but the build gate's model ` +
+        `claims ${e.localGroundLuminanceOverWhite.toFixed(4)} over the brightest source pixel ` +
+        'there can be.\n\nThe model is allowed to be pessimistic — it integrates over #FFFFFF ' +
+        'and the real photograph is darker — but it must never claim a DARKER ground than the ' +
+        'browser paints, because that is the direction that credits a collar with legibility ' +
+        'the reader does not get.',
+    ).toBeLessThanOrEqual(e.localGroundLuminanceOverWhite + 1e-6)
+  })
+})

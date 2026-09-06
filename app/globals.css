@@ -81,14 +81,29 @@
       scripts/check-ground-tokens.mjs re-derives.
 
       THE HERO IS NOT A FLAT GROUND. Its copy sits on a photograph, so there
-      is no single background colour to divide by, and the hero's own copy
-      also paints a per-glyph collar (a stack of zero-offset text-shadows in
-      components/site/hero-scrim.module.css) that darkens the picture only
-      where a stroke actually touches it. The ratios the hero gate publishes
-      are therefore measured against the LOCAL COMPOSITED GROUND — the
-      photograph, the veil over it, and the text's own collar, averaged over
-      the observer's point-spread function beside each stroke (sigma 1.565
-      CSS px, derived from WCAG's own 20/40 acuity target).
+      is no single background colour to divide by, and the hero paints TWO
+      kinds of local darkening under its own ink, both in
+      components/site/hero-scrim.module.css:
+
+        · a PER-GLYPH COLLAR on the text — a stack of zero-offset
+          text-shadows, which darkens the picture only where a stroke
+          actually touches it;
+        · a BOX COLLAR on the two things in that band that are NOT text —
+          the Threshold's 2px rule and the focus ring, which are graphical
+          objects under 1.4.11 and cannot be given a text-shadow because
+          neither is a glyph. They get a box-shadow with SPREAD instead: a
+          pad of flat ground outside their own border box, clipped at that
+          box, which is the same mechanism applied to the geometry they do
+          have.
+
+      The ratios the hero gate publishes are therefore measured against the
+      LOCAL COMPOSITED GROUND — the photograph, the veil over it, and
+      whichever of those two collars the object actually wears, averaged over
+      the observer's point-spread function beside the ink (sigma 1.565 CSS px,
+      derived from WCAG's own 20/40 acuity target). For the ring that average
+      is taken on the WORSE of its two sides, inward and outward, because a
+      ring's ink sits at `outline-offset` from the box its collar is thrown
+      from and the two sides are not equally covered.
 
       BOTH HALVES OF THAT SENTENCE ARE PUBLISHED, because only one of them
       flatters the page:

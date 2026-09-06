@@ -743,6 +743,81 @@ const COUNTER_EM = {
 const HALO_REACH_EM_MAX = 1.0;
 
 /**
+ * The fraction of a BOX-SHADOW collar's modelled alpha this gate credits.
+ *
+ * SEPARATE FROM `SHADOW_CREDIT`, AND DELIBERATELY NOT THE SAME NUMBER REUSED.
+ * The two physical reasons `SHADOW_CREDIT` is 0.85 are (a) the glyph's own
+ * rasterisation softens the edge the shadow is thrown from and (b) a 1-D bar
+ * model loses mass off the cap and the baseline. NEITHER APPLIES HERE: a
+ * box-shadow is thrown from an axis-aligned border box with a hard edge, and
+ * `boxExtentPx` below models the along-axis loss EXACTLY rather than
+ * approximately. The arithmetic therefore says this constant should be 1.0.
+ *
+ * IT SHIPS AT 0.85 ANYWAY, and the reason is the honest one: "the arithmetic
+ * says so" is not this file's standard for a constant. `SHADOW_CREDIT`'s 0.85
+ * was set by 28 rendered Chromium cases (see the harness above). NO SUCH CASE
+ * EXISTS FOR A BOX-SHADOW — the render-and-compare harness has never been
+ * pointed at one. Until it is, the box branch is an uncalibrated model, and an
+ * uncalibrated model is credited at the calibrated one's discount.
+ *
+ * WHAT MAKES THAT CHEAP RATHER THAN CAUTIOUS: it changes nothing that ships.
+ * Measured through this gate, the bar clears its obligation at ZERO veil at
+ * either value, and the ring's requirement moves by less than the width of the
+ * floor's own rounding. The shipped answer is identical at 0.85 and at 1.0, so
+ * the conservative choice costs no light. Raising it is not a way to make a
+ * failing collar pass — it is a change that must be preceded by extending the
+ * render-and-compare harness to the box case, and this comment is the place
+ * that says so.
+ */
+const BOX_SHADOW_CREDIT = 0.85;
+
+/**
+ * THE SHEET TEST FOR A COLLAR, in px rather than em.
+ *
+ * `HALO_REACH_EM_MAX` cannot apply here: a 2px rule and a focus ring have no
+ * em: they are not set in a font. The quantity that makes a collar LOCAL is
+ * the same one either way, though — a darkening that reaches the next piece of
+ * ink has stopped being a collar around this object and become a continuous
+ * field over both.
+ *
+ * SO THIS IS THE MEASURED TIGHTEST INK-TO-INK GAP IN THE BAND, not a round
+ * number chosen to clear the shipped geometry. Chromium, production build,
+ * `.threshold-rule` and every transparent-background focusable in `#top`
+ * against every text rectangle in the band (`Range.getClientRects()`), at all
+ * six reference viewports, 2026-09-05:
+ *
+ *     .threshold-rule -> nearest ink    11.0px   at ALL SIX viewports  <- binds
+ *     ghost Btn       -> nearest ink    32.0px   (32.4 at 375)
+ *     inline link     -> nearest ink    52.0px   (32.4 at 390)
+ *
+ * The bar binds and it binds identically everywhere, because the space under
+ * the Threshold's rule is a single spacing token rather than a computed gap.
+ * A collar reaching further than 11.0px from the bar is touching the label
+ * beneath it, and what is painted between them is a field.
+ *
+ * Measured reaches of everything this file credits today are printed in the G
+ * section of the report; at the time of writing the bar reaches 9.0px and the
+ * ring 7.0px, so the margin is 2.0px and it is the bar that holds it. A future
+ * edit that tightens the band's vertical rhythm shrinks this limit BEFORE it
+ * shrinks anything else — re-measure with the harness above before changing a
+ * spacing step around the Threshold.
+ */
+const COLLAR_REACH_PX_MAX = 11.0;
+
+/**
+ * The roles a `--collar-role` may name.
+ *
+ * A box-shadow collar is painted around a NON-TEXT object, and the only two
+ * this band has are the Threshold's rule and the focus ring. Restricting the
+ * namespace is not tidiness: it is what makes the disjointness check below
+ * enforceable. A role that could be claimed by both a text halo and a box
+ * collar would be merged by the "two rules treating one role -> keep the
+ * WEAKER" rule into a single treatment, and the survivor would be credited at
+ * a place the other one does not paint — wrong in both directions.
+ */
+const COLLAR_ROLES = new Set(['--rule', '--focus-ring']);
+
+/**
  * The wording app/globals.css must carry once any per-glyph treatment is
  * credited by this gate.
  *
@@ -786,6 +861,58 @@ function shadowAlphaAt(x, layer, stemPx, capPx) {
   return SHADOW_CREDIT * layer.alpha * horiz * vert;
 }
 
+/**
+ * One BOX-SHADOW layer's alpha at distance `x` outside the BORDER BOX's edge.
+ *
+ * The box counterpart of `shadowAlphaAt`, and deliberately the same three
+ * factors in the same order, because it is the same convolution applied to a
+ * different source rectangle. Two things make a box-shadow not a text-shadow:
+ *
+ * SPREAD IS AN OPAQUE DILATION OF THE SOURCE, APPLIED BEFORE THE BLUR (CSS
+ * Backgrounds 3 §6.2). So along the cross axis the shadow is thrown from a bar
+ * of width `W = boxThicknessPx + 2S` whose near edge sits S OUTSIDE the border
+ * box, and the whole profile is the text case with `stemPx -> W` and the
+ * origin translated by S. That is why spread cannot be inflated into alpha it
+ * does not deliver: it widens the opaque core, but the Gaussian tail beyond
+ * the core still decays at `SHADOW_SIGMA_PER_BLUR`, exactly as before.
+ *
+ * AN OUTER BOX-SHADOW IS CLIPPED AWAY INSIDE ITS OWN BORDER BOX. Hence the
+ * unconditional zero for x < 0, and it is the one structural way this model is
+ * unlike the text model: a glyph's halo surrounds its ink, while a box's
+ * collar stops dead at the box's edge. It is what terminates the focus ring's
+ * inward ray two pixels in and leaves everything inboard of that as bare
+ * photograph — and therefore what stops a ring being credited as if it were a
+ * solid pad.
+ *
+ * `boxExtentPx` is `capPx`'s counterpart and exists for the same reason: a
+ * 6.09px blur on a 4px-long bar cannot deliver the alpha a 1-D model claims.
+ * Both objects in this band run far past 10 sigma so the factor computes to
+ * 1.0000 — it is computed anyway, because the thing that makes it 1 is the
+ * element's real length, and R2c in tests/e2e/hero-contrast.spec.ts is what
+ * verifies that length rather than trusting the declaration.
+ */
+function boxShadowAlphaAt(x, layer, boxThicknessPx, boxExtentPx) {
+  /* Clipped to outside the border box. Unconditional, before anything else. */
+  if (x < 0) return 0;
+  const S = layer.spreadPx;
+  const sigma = SHADOW_SIGMA_PER_BLUR * layer.blurPx;
+  /* Signed distance outside the DILATED edge. The shadow's own offset is added
+     to the distance, which is the worst direction it can be displaced in. */
+  const d = x + layer.offsetPx - S;
+  if (!(sigma > 0)) {
+    /* No blur is no Gaussian: the layer is an exactly-known opaque rectangle
+       dilated by S, so there is no model uncertainty to discount and nothing
+       to integrate. Inside the dilation it covers fully; outside it, nothing.
+       This is the "T(x) = 1 out to the spread" statement, and the CDF form
+       below is its blurred generalisation — d well inside the dilated bar
+       drives the bracket to 1.0 continuously, so the two agree at the seam. */
+    return d < 0 ? layer.alpha : 0;
+  }
+  const cross = normalCdf((boxThicknessPx + 2 * S + d) / sigma) - normalCdf(d / sigma);
+  const along = 2 * normalCdf((boxExtentPx + 2 * S) / 2 / sigma) - 1;
+  return BOX_SHADOW_CREDIT * layer.alpha * cross * along;
+}
+
 /** A paint-order stroke's alpha at `x` outside the glyph's own edge. */
 function strokeAlphaAt(x, stroke) {
   const outside = Math.max(0, stroke.widthPx / 2 - STROKE_RASTER_LOSS_PX);
@@ -815,6 +942,61 @@ function treatmentSampler(t) {
       over(t.shadows[i].rgb, shadowAlphaAt(x, t.shadows[i], t.stemPx, t.capPx));
     }
     if (t.stroke) over(t.stroke.rgb, strokeAlphaAt(x, t.stroke));
+    return { rgb, a };
+  };
+}
+
+/**
+ * A collar's composite colour and alpha at `dist` outward from ONE EDGE of the
+ * ink band, along one of the two rays.
+ *
+ * THE INK IS NOT THE BOX THE SHADOW IS THROWN FROM. That is new here, and it
+ * is the whole reason this needs its own sampler rather than a wider
+ * `treatmentSampler`. A glyph's halo is thrown from the glyph, so "distance
+ * from the ink" and "distance from the source" are one number. A focus ring is
+ * INK AT `outline-offset` FROM A BOX THE SHADOW IS THROWN FROM, so the reader
+ * looking outward from the ring's outer edge and the reader looking inward
+ * from its inner edge are standing at two different places in the same
+ * shadow's profile, and one of them is worse off.
+ *
+ * With x measured outward from the border-box edge and the ink band occupying
+ * x in [inkOffsetPx, inkOffsetPx + inkThicknessPx]:
+ *
+ *     outward   x = inkOffsetPx + inkThicknessPx + dist
+ *     inward    x = inkOffsetPx - dist        (only when inkOffsetPx > 0)
+ *
+ * Layer compositing is identical to `treatmentSampler` — LAST-listed layer
+ * first, source-over — so the first-listed layer ends on top, which is what
+ * CSS Backgrounds 3 says about box-shadow just as CSS Text Decoration 4 says
+ * it about text-shadow.
+ *
+ * A NOTE ON THE BAR, because the mapping is exact for the ring and slightly
+ * pessimistic for the bar. `.threshold-rule`'s ink IS its own border box
+ * (`height: 2px; background: var(--fg-accent)`, no border), so its ink edge
+ * and its border-box edge coincide and the honest outward mapping would be
+ * x = dist. This function uses x = 0 + 2 + dist instead, placing every sample
+ * 2px further out in the shadow's profile than the geometry requires. That is
+ * the conservative direction — the profile decreases in x, so the bar is
+ * credited with strictly less than it paints — and it keeps ONE mapping for
+ * both objects rather than a special case that would have to be right.
+ */
+function collarSampler(t, ray) {
+  const xOf = ray === 'inward'
+    ? (dist) => t.inkOffsetPx - dist
+    : (dist) => t.inkOffsetPx + t.inkThicknessPx + dist;
+  return (dist) => {
+    const x = xOf(dist);
+    let rgb = [0, 0, 0];
+    let a = 0;
+    const over = (s, sa) => {
+      const outA = sa + a * (1 - sa);
+      if (outA === 0) { rgb = [0, 0, 0]; a = 0; return; }
+      rgb = [0, 1, 2].map((c) => (s[c] * sa + rgb[c] * a * (1 - sa)) / outA);
+      a = outA;
+    };
+    for (let i = t.layers.length - 1; i >= 0; i -= 1) {
+      over(t.layers[i].rgb, boxShadowAlphaAt(x, t.layers[i], t.boxThicknessPx, t.boxExtentPx));
+    }
     return { rgb, a };
   };
 }
@@ -1155,6 +1337,323 @@ function resolveTreatment(rule, ctx, typeScale) {
   };
   t.sampler = treatmentSampler(t);
   return { problems: [], treatment: t };
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   THE COLLAR — THE SAME ARGUMENT FOR THE TWO THINGS IN THIS BAND THAT ARE NOT
+   TEXT
+
+   The Threshold's 2px rule and the focus ring are graphical objects under WCAG
+   1.4.11, they owe 3:1, and they cannot wear the per-glyph treatment above: a
+   text-shadow is thrown from glyph geometry and neither of them has any. Both
+   are given a box-shadow collar instead — a pad of flat --ground outside their
+   own border box — and until this section existed no gate in this repo could
+   read it, so it bought the page legibility and bought the veil nothing. Rule
+   7 of components/site/hero-scrim.module.css says so in its own words.
+
+   THE CONTRACT, and it is the halo's contract with the font metrics replaced
+   by painted geometry, because a bar has no cut and no size:
+
+       .ground :global(.threshold-rule) {
+         --collar-role: --rule;
+         --collar-box: 2px 40px 0px 2px;   thickness extent ink-offset ink-thickness
+         box-shadow: 0 0 1.47px 1.47px var(--ground), ... ;
+       }
+
+   WHAT IS GONE FROM THE TEXT VERSION, BY NAME, so a reader does not think it
+   was forgotten:
+
+     · face / weight / fontPx / STEM_EM / COUNTER_EM. There is no cut here, so
+       there is no measured stem to look up. `boxThicknessPx` replaces the stem
+       and it is the BORDER BOX's cross-axis size rather than the visible ink's,
+       because the border box is what a box-shadow is thrown from. For the <hr>
+       the two coincide at 2px. For `:focus-visible` they do not — the shadow is
+       thrown from the control's ~45px block-size while the ink is a 2px outline
+       sitting 2px off it — and using the ink's 2px there would understate the
+       shadow by a lot.
+     · THE COUNTER-CLOSURE HARD FAILURE. A rim grows inward and can close a
+       bowl. An outer box-shadow is clipped to outside its own border box and
+       cannot touch its own ink at any spread, so there is no counterpart and
+       nothing to check.
+     · THE `paint-order: stroke fill` HARD FAILURE. Same reason: there is no
+       order in which a box-shadow paints over the thing it is collaring.
+     · STROKE_RASTER_LOSS_PX. A box-shadow's edge is not rasterised from a
+       glyph outline; it is an axis-aligned rectangle with a hard edge.
+
+   WHAT IS NEW, with no text analogue: `inkOffsetPx` (border-box edge to the
+   ink band's near edge — 0 for the hr, `outline-offset` for the ring) and
+   `inkThicknessPx` (the ink band's own cross-axis size, 2px for both). They
+   are what make the two rays in `collarSampler` necessary.
+
+   ── WHY box-shadow IS COLLECTED DIFFERENTLY FROM text-shadow ─────────────
+   A text-shadow inside this band is ALWAYS a per-glyph treatment; there is no
+   other reason to paint one, which is why an unattributed one is a hard
+   failure. `box-shadow` is a general-purpose property — the nav paints a 1px
+   hairline with one — so an unattributed box-shadow is simply NOT CREDITED,
+   which is the safe direction. The asymmetry runs the other way for the claim:
+   a `--collar-role` with NO box-shadow in the same block is a hard failure,
+   because that is a credit claimed for paint that is not there.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * Every rule in the hero's stylesheets that CLAIMS a box-shadow collar, plus
+ * the same window flattened in source order so the override scan can run.
+ *
+ * S1 (SAME-BLOCK) and S3 (OVERRIDE SCAN) are enforced here because both are
+ * facts about the rule list rather than about one rule.
+ */
+function collectCollarRules(sources) {
+  const all = [];
+  for (const { file, src, requireHeroScope } of sources) {
+    const code = src.replace(/\/\*[\s\S]*?\*\//g, ' ');
+    for (const rule of walkRules(code)) {
+      if (rule.selector.startsWith('@')) continue;
+      if (requireHeroScope
+        && !/\.ground\b/.test(rule.selector)
+        && !/\[data-ground="ink"\]/.test(rule.selector)) continue;
+      const decls = new Map();
+      for (const d of rule.body.matchAll(/(?:^|;)\s*(-?[-a-z0-9]+)\s*:\s*([^;]+)/gi)) {
+        decls.set(d[1].trim().toLowerCase(), d[2].trim());
+      }
+      all.push({ file, selector: rule.selector, media: rule.media, decls });
+    }
+  }
+
+  const out = [];
+  const problems = [];
+  for (let i = 0; i < all.length; i += 1) {
+    const rule = all[i];
+    const role = rule.decls.get('--collar-role');
+    if (role === undefined) continue;
+    const shadow = rule.decls.get('box-shadow');
+    const paints = shadow !== undefined && shadow.trim().toLowerCase() !== 'none';
+    /* S1 · SAME-BLOCK. The claim and the paint travel together or not at all,
+       so deleting the box-shadow deletes the credit in the same edit. */
+    if (!paints) {
+      problems.push(`${rule.file} ${rule.selector}: a collar this gate cannot attribute — `
+        + `--collar-role is ${role.trim()} but the same block declares `
+        + `${shadow === undefined ? 'no box-shadow' : 'box-shadow: none'}`);
+      continue;
+    }
+    /*
+      S3 · THE OVERRIDE SCAN. A credit is worth what the LAST rule to touch the
+      property says it is worth. Rule 6 of hero-scrim.module.css sets
+      `text-shadow: none` on the solid Btn, so this file already contains a live
+      example of a later rule taking a treatment away — and the text side has no
+      such check today. Textual selector equality is deliberately the test: it
+      is the case a human eye reads as "the same rule again", it is the shape an
+      override actually takes in a module stylesheet, and anything cleverer
+      would be a specificity engine this gate has no business containing. The
+      browser gate (R2b) is what catches an override written any other way,
+      because it reads getComputedStyle rather than the file.
+    */
+    for (let j = i + 1; j < all.length; j += 1) {
+      const later = all[j];
+      if (later.selector !== rule.selector) continue;
+      const s = later.decls.get('box-shadow');
+      if (s === undefined) continue;
+      if (s.trim().toLowerCase() === 'none') {
+        problems.push(`${later.file} ${later.selector}: a later rule sets box-shadow: none, `
+          + `which takes away the collar ${rule.file} credits to ${role.trim()}`);
+        continue;
+      }
+      const a = parseCollarLayers(shadow);
+      const b = parseCollarLayers(s);
+      if (b.problems.length) continue;
+      if (b.layers.length < a.layers.length
+        || b.layers.some((l, k) => a.layers[k] !== undefined
+          && (l.blur < a.layers[k].blur || l.spread < a.layers[k].spread))) {
+        problems.push(`${later.file} ${later.selector}: a later rule overrides the collar to a `
+          + `strictly weaker profile (${s.trim().slice(0, 80)}), so ${role.trim()} would be `
+          + 'credited with a shadow the cascade does not paint');
+      }
+    }
+    out.push({ ...rule, index: i });
+  }
+  return { rules: out, problems };
+}
+
+/**
+ * A `box-shadow` value -> its layers as raw numbers, for the override scan and
+ * for `resolveCollar`. Lengths stay as source text here; only `resolveCollar`
+ * has the viewport context needed to turn them into px.
+ */
+function parseCollarLayers(src) {
+  const layers = [];
+  const problems = [];
+  for (const layerSrc of splitTop(src)) {
+    const toks = [];
+    let depth = 0;
+    let buf = '';
+    for (const ch of layerSrc.trim()) {
+      if (ch === '(') depth += 1;
+      if (ch === ')') depth -= 1;
+      if (/\s/.test(ch) && depth === 0) { if (buf) toks.push(buf); buf = ''; continue; }
+      buf += ch;
+    }
+    if (buf) toks.push(buf);
+    /* S2 · AN INSET LAYER IS A HARD FAILURE. It paints inside the padding box
+       and cannot darken the ground BESIDE the ink, so a model that credited one
+       would be crediting paint that is not there. */
+    if (toks.some((t) => t.toLowerCase() === 'inset')) {
+      problems.push(`an inset layer (${layerSrc.trim()}) — an inset shadow paints inside the `
+        + 'padding box and darkens nothing outside it');
+      continue;
+    }
+    const lengths = toks.filter((t) => /^-?[0-9.]/.test(t));
+    const colours = toks.filter((t) => !/^-?[0-9.]/.test(t));
+    if (lengths.length < 2 || lengths.length > 4 || colours.length !== 1) {
+      problems.push(`box-shadow layer this gate cannot read: ${layerSrc.trim()}`);
+      continue;
+    }
+    layers.push({
+      lengths,
+      colour: colours[0],
+      /* Numeric shadows of the same, for the override comparison only. A
+         non-literal length compares as 0, i.e. as the weakest thing it could
+         be, which is the conservative direction for a scan looking for
+         WEAKENING. */
+      blur: parseFloat(lengths[2] ?? '0') || 0,
+      spread: parseFloat(lengths[3] ?? '0') || 0,
+      source: layerSrc.trim(),
+    });
+  }
+  return { layers, problems };
+}
+
+/**
+ * One collected collar rule -> a collar resolved at one viewport, or a named
+ * failure. Same signature and same posture as `resolveTreatment`.
+ *
+ * TWO RAYS, AND THE WEAKER ONE GOVERNS. Outward and inward are evaluated
+ * separately through the existing `observerQuadrature`, and the credited ray is
+ * the one whose `localGroundLuminance` over a #FFFFFF source pixel comes out
+ * LIGHTEST — the side a reader would struggle on. That mirrors the "two rules
+ * treating one role -> keep the WEAKER" merge already used above, and it
+ * reports neither the average nor the better side.
+ *
+ * The inward ray EXISTS ONLY WHEN `inkOffsetPx > 0`. For the <hr> the ink sits
+ * on the border-box edge, the two edges of the bar are symmetric, and one ray
+ * is the whole answer — adding a phantom inward ray there would sample x < 0,
+ * return bare ground, and silently destroy the credit.
+ */
+function resolveCollar(rule, ctx) {
+  const problems = [];
+  const bad = (what, saw) => { problems.push(`${what}: ${saw}`); };
+
+  const role = (rule.decls.get('--collar-role') ?? '').trim();
+  const boxDecl = rule.decls.get('--collar-box');
+  if (!boxDecl) {
+    bad('a collar this gate cannot attribute',
+      `${rule.selector} declares --collar-role but no --collar-box`);
+    return { problems };
+  }
+  if (!/^--[a-z0-9-]+$/i.test(role)) {
+    bad('--collar-role is not a custom-property name', role);
+    return { problems };
+  }
+  if (!COLLAR_ROLES.has(role)) {
+    bad('--collar-role names a role that is not a collarable non-text object',
+      `${role}; this gate collars ${[...COLLAR_ROLES].join(', ')} — a TEXT role wears the `
+      + 'per-glyph halo instead, and crediting one role with both would merge two treatments '
+      + 'that are painted in different places');
+    return { problems };
+  }
+
+  /* FOUR top-level tokens, parsed from the FRONT — unlike --halo-type, which is
+     parsed from the end because its size may be a clamp() full of spaces. All
+     four of these are lengths and none is a trailing keyword, so there is no
+     ambiguity to resolve from the other direction. Each goes through the same
+     evaluator the gradients use, so a var() or calc() resolves at THIS
+     viewport. */
+  const boxToks = splitTop(boxDecl.trim(), ' ').filter((s) => s !== '');
+  if (boxToks.length !== 4) {
+    bad('--collar-box must be four lengths: <box-thickness> <box-extent> <ink-offset> <ink-thickness>',
+      `${boxDecl.trim()} — ${boxToks.length} token(s)`);
+    return { problems };
+  }
+  let boxPx;
+  try {
+    boxPx = boxToks.map((tk) => lengthPx(tk, { ...ctx, axis: ctx.boxW }));
+  } catch (err) {
+    bad('--collar-box holds a length this gate cannot evaluate',
+      `${boxDecl.trim()} — ${err && err.message ? err.message : String(err)}`);
+    return { problems };
+  }
+  const [boxThicknessPx, boxExtentPx, inkOffsetPx, inkThicknessPx] = boxPx;
+  if (!(boxThicknessPx > 0) || !(boxExtentPx > 0) || !(inkThicknessPx > 0) || !(inkOffsetPx >= 0)) {
+    bad('--collar-box resolved to a non-positive geometry',
+      `${boxDecl.trim()} -> ${boxPx.map((n) => n.toFixed(2)).join(' ')}`);
+    return { problems };
+  }
+
+  const parsed = parseCollarLayers(rule.decls.get('box-shadow'));
+  for (const p of parsed.problems) bad('box-shadow', p);
+  if (problems.length) return { problems };
+
+  const colourCtx = { vars: ctx.vars, ground: ctx.ground };
+  const layers = [];
+  for (const l of parsed.layers) {
+    let px;
+    try {
+      px = l.lengths.map((s) => lengthPx(s, { ...ctx, axis: ctx.boxW }));
+    } catch (err) {
+      bad('box-shadow length this gate cannot evaluate',
+        `${l.source} — ${err && err.message ? err.message : String(err)}`);
+      continue;
+    }
+    let colour;
+    try {
+      /* Composited, not assumed. A collar in some colour other than --ground is
+         not rejected here for the same reason the text path does not reject
+         one: `localGroundLuminance` composites the actual colour over the
+         actual backdrop, so a paler collar correctly makes the local ground
+         LIGHTER and the role demand MORE veil. The model is right in both
+         directions and needs no restriction to stay right. */
+      colour = stopColour(l.colour, colourCtx);
+    } catch (err) {
+      bad('box-shadow colour this gate cannot evaluate',
+        `${l.colour} — ${err && err.message ? err.message : String(err)}`);
+      continue;
+    }
+    layers.push({
+      rgb: colour.rgb,
+      alpha: colour.a,
+      offsetPx: Math.hypot(px[0], px[1]),
+      blurPx: px[2] ?? 0,
+      spreadPx: px[3] ?? 0,
+      source: l.source,
+    });
+  }
+  if (problems.length) return { problems };
+  if (layers.length === 0) return { problems: [] };
+
+  const base = {
+    kind: 'collar',
+    role,
+    selector: rule.selector,
+    file: rule.file,
+    layers,
+    boxThicknessPx,
+    boxExtentPx,
+    inkOffsetPx,
+    inkThicknessPx,
+  };
+  /* One `t` per ray, of exactly the shape everything downstream already takes:
+     `localGroundLuminance`, `observerQuadrature`, `minAlphaTreated`,
+     `treatmentReachPx`, the check-C grid and `assertNeutrality` are all generic
+     over `t.sampler` and none of them changes. */
+  const rays = [{ ...base, ray: 'outward' }];
+  if (inkOffsetPx > 0) rays.push({ ...base, ray: 'inward' });
+  for (const r of rays) r.sampler = collarSampler(r, r.ray);
+  const worst = rays.reduce((a, b) => (
+    localGroundLuminance(b, WHITE_SRC) > localGroundLuminance(a, WHITE_SRC) ? b : a));
+  worst.rays = rays.map((r) => ({
+    ray: r.ray,
+    groundY: localGroundLuminance(r, WHITE_SRC),
+    edgeAlpha: r.sampler(0).a,
+  }));
+  return { problems: [], treatment: worst };
 }
 
 /**
@@ -2503,15 +3002,35 @@ function analyse({ globalsSrc, scrimSrc, heroSrc, heroCss, assets, manifest, sou
     ground: it is the site-wide sheet and a text-shadow on some other band is
     not this gate's business.
   */
-  const treatmentRules = collectTreatmentRules([
+  /*
+    DEDUPED BY FILE, and that is not tidiness. `heroCss` is built from
+    hero.tsx's own `*.module.css` imports, and hero.tsx imports the scrim — so
+    hero-scrim.module.css arrives here TWICE, once as `scrimSrc` and once
+    inside `heroCss`. For the halo that was harmless: two identical rules for
+    one role merge to themselves under "keep the WEAKER". For the collar it is
+    not, in two ways. The override scan (S3) would compare a rule against its
+    own duplicate, and `--prove`'s controls mutate `scrimSrc` while the second
+    copy travels through unmutated — which is exactly how the REMOVED control
+    was found still carrying the collar it was supposed to have deleted.
+
+    The first entry wins, so `scrimSrc` (the one the controls mutate) is the
+    copy that is read.
+  */
+  const treatmentSources = [];
+  for (const s of [
     { file: SCRIM, src: scrimSrc, requireHeroScope: false },
     ...(heroCss ?? []).map((c) => ({ file: c.file, src: c.src, requireHeroScope: false })),
     { file: GLOBALS, src: globalsSrc, requireHeroScope: true },
-  ]);
+  ]) {
+    if (!treatmentSources.some((x) => x.file === s.file)) treatmentSources.push(s);
+  }
+  const treatmentRules = collectTreatmentRules(treatmentSources);
+  const collar = collectCollarRules(treatmentSources);
   /** viewport name -> (role -> treatment). */
   const treatments = new Map();
-  const treatmentProblems = [];
+  const treatmentProblems = [...collar.problems];
   const treatmentIndex = [];
+  const collarIndex = [];
   for (const vp of VIEWPORTS) {
     const byRole = new Map();
     const spacingBand = spacingBandAt(vp) ?? 0;
@@ -2520,19 +3039,52 @@ function analyse({ globalsSrc, scrimSrc, heroSrc, heroCss, assets, manifest, sou
       ground: ground ?? [20, 22, 26],
       vw: vp.w, vh: vp.h, boxW: vp.w, boxH: vp.bandH, axis: vp.w, spacingBand,
     };
-    for (const rule of treatmentRules) {
-      if (!mediaMatches(rule.media, vp, unknownMedia)) continue;
-      const { problems, treatment } = resolveTreatment(rule, ctx, typeScale);
-      for (const pr of problems) treatmentProblems.push(`${rule.file} ${rule.selector} @ ${vp.name}: ${pr}`);
-      if (!treatment) continue;
-      /* Two rules treating one role at one viewport: keep the WEAKER, because
-         the gate cannot see which element a given glyph belongs to and a role
-         is only as legible as its least-treated instance. */
+    /* Two rules treating one role at one viewport: keep the WEAKER, because
+       the gate cannot see which element a given glyph belongs to and a role
+       is only as legible as its least-treated instance. */
+    const keepWeaker = (treatment) => {
       const prev = byRole.get(treatment.role);
       if (prev === undefined
         || localGroundLuminance(treatment, WHITE_SRC) > localGroundLuminance(prev, WHITE_SRC)) {
         byRole.set(treatment.role, treatment);
       }
+    };
+    for (const rule of treatmentRules) {
+      if (!mediaMatches(rule.media, vp, unknownMedia)) continue;
+      const { problems, treatment } = resolveTreatment(rule, ctx, typeScale);
+      for (const pr of problems) treatmentProblems.push(`${rule.file} ${rule.selector} @ ${vp.name}: ${pr}`);
+      if (!treatment) continue;
+      keepWeaker(treatment);
+    }
+    /*
+      ── THE COLLAR, THROUGH THE SAME DOOR ──────────────────────────────────
+      Resolved into the SAME per-role map, because from here down a role has
+      one treatment and nothing downstream needs to know which kind it is.
+
+      ROLE DISJOINTNESS, and it has real teeth. A role that carried both a
+      text halo and a box collar would be merged by `keepWeaker` into ONE
+      treatment, and whichever survived would then be credited everywhere the
+      role is painted — including everywhere the other one is what is actually
+      on the page. That is wrong in both directions at once, since neither
+      treatment is painted where the other one is. Disjoint namespaces are what
+      make this a one-line check instead of a judgement.
+    */
+    for (const rule of collar.rules) {
+      if (!mediaMatches(rule.media, vp, unknownMedia)) continue;
+      const { problems, treatment } = resolveCollar(rule, ctx);
+      for (const pr of problems) treatmentProblems.push(`${rule.file} ${rule.selector} @ ${vp.name}: ${pr}`);
+      if (!treatment) continue;
+      const clash = byRole.get(treatment.role);
+      if (clash !== undefined && clash.kind !== 'collar') {
+        treatmentProblems.push(`${rule.file} ${rule.selector} @ ${vp.name}: ${treatment.role} carries `
+          + `both a --halo-role (${clash.selector}) and a --collar-role. A role gets one kind of `
+          + 'treatment: a text halo is painted around glyphs and a box collar around a border box, '
+          + 'and crediting one role with both would let the weaker-of-the-two merge hand every '
+          + 'instance of the role a treatment that is not painted on it');
+        continue;
+      }
+      keepWeaker(treatment);
+      collarIndex.push({ vp: vp.name, role: treatment.role, t: treatment });
     }
     treatments.set(vp.name, byRole);
     for (const [role, t] of byRole) treatmentIndex.push({ vp: vp.name, role, t });
@@ -2637,6 +3189,32 @@ function analyse({ globalsSrc, scrimSrc, heroSrc, heroCss, assets, manifest, sou
       number would be a true statement about a shape that is no longer a
       character.
     */
+    /*
+      A COLLAR TAKES THE SAME TEST AGAINST A DIFFERENT LIMIT. `treatmentReachPx`
+      is used completely unmodified — it asks "how far out is this still
+      distinguishable from no treatment at all over a #FFFFFF source pixel",
+      which is the same question for a bar as for a glyph. Only the threshold
+      changes, because a bar has no em: `COLLAR_REACH_PX_MAX` is the measured
+      tightest ink-to-ink gap in the band. A spread-340 pad is rejected here by
+      name, exactly as HALO_REACH_EM_MAX rejects a 200px blur.
+    */
+    if (t.kind === 'collar') {
+      const reach = treatmentReachPx(t);
+      reaches.push({ vp, role, reach, fontPx: null, em: null, selector: t.selector });
+      if (reach > COLLAR_REACH_PX_MAX) {
+        fail(t.file, `the ${role} collar is a sheet in disguise at ${vp}`,
+          `its darkening is still above 1 L* over a #FFFFFF source pixel ${reach.toFixed(1)}px `
+          + `from the ink, and the tightest measured gap between this band's ink and its `
+          + `neighbouring ink is ${COLLAR_REACH_PX_MAX}px. At that radius the collar has reached `
+          + 'the next piece of ink and what is painted between them is a continuous field, not a '
+          + 'pad around one object.',
+          `keep the visible reach under ${COLLAR_REACH_PX_MAX}px — tighten the blur radii, or cut `
+          + 'the spread. Spread buys an opaque core without lengthening the tail, so it is the '
+          + 'cheaper of the two here. If a full-column veil is genuinely wanted, put it in the '
+          + 'scrim where checks A, B and C already govern it, and say so');
+      }
+      continue;
+    }
     if (t.stroke && t.stroke.widthPx >= t.counterPx) {
       fail(t.file, `the ${role} rim closes the letterform's counters at ${vp}`,
         `-webkit-text-stroke is ${t.stroke.widthPx.toFixed(2)}px and this cut's narrowest ` +
@@ -2737,7 +3315,12 @@ function analyse({ globalsSrc, scrimSrc, heroSrc, heroCss, assets, manifest, sou
           `${role} over the field at its worst point — ${bindingFloor.name}, ` +
           `(${Math.round(bindingFloor.x)}, ${Math.round(bindingFloor.y)}) in the band box — ` +
           `against a #FFFFFF source pixel is ${actual.toFixed(3)}:1` +
-          `${t ? ` WITH its own halo credited (${t.selector}, stem ${t.stemPx.toFixed(2)}px)` : ' (no per-glyph treatment declared for this role)'}; ` +
+          `${t
+            ? (t.kind === 'collar'
+              ? ` WITH its own collar credited (${t.selector}, ${t.ray} ray, box `
+                + `${t.boxThicknessPx.toFixed(0)}x${t.boxExtentPx.toFixed(0)}px)`
+              : ` WITH its own halo credited (${t.selector}, stem ${t.stemPx.toFixed(2)}px)`)
+            : ' (no per-glyph treatment declared for this role)'}; ` +
           `${need}:1 x${HEADROOM} headroom needs alpha >= ${required.toFixed(4)}`,
           `deepen the veil where the text is (alpha >= ${(Math.ceil(required * 1000) / 10).toFixed(1)}% ` +
           'at every point inside the text extent), STRENGTHEN THE PER-GLYPH TREATMENT on this ' +
@@ -3414,7 +3997,7 @@ function analyse({ globalsSrc, scrimSrc, heroSrc, heroCss, assets, manifest, sou
     failures, notes, report, cells, derived, floors, fields, geometry,
     ground, guaranteedAlpha, bindingFloor, elementOpacity, sawExternalRelay,
     spacingBandMin, spacingBandMax, focal, roles, fieldError,
-    treatmentIndex, reaches, anyTreatment, perViewport,
+    treatmentIndex, reaches, anyTreatment, perViewport, collarIndex,
     haloLoadBearing: halolLoadBearing,
   };
 }
@@ -3598,6 +4181,18 @@ function printReport(r, { quiet = false } = {}) {
         if (luminance(composite(r.ground ?? [20, 22, 26], mid, [255, 255, 255])) > gY) lo = mid;
         else hi = mid;
       }
+      if (t.kind === 'collar') {
+        /* A collar has no cut, no size and no rim, so those columns are struck
+           through rather than filled with a plausible-looking number. What it
+           has instead is the box it is thrown from and which of its two rays
+           is the one being credited. */
+        console.log(`     ${vp.padEnd(10)} ${role.padEnd(14)} collar/${t.ray.padEnd(7)} ` +
+          `box ${t.boxThicknessPx.toFixed(0)}x${t.boxExtentPx.toFixed(0)}px  ` +
+          `ink +${t.inkOffsetPx.toFixed(0)}/${t.inkThicknessPx.toFixed(0)}px  ` +
+          `T(edge) ${t.sampler(0).a.toFixed(3)}  ground ${pct(hi).padStart(6)}  ` +
+          `reach ${reach.reach.toFixed(1)}px / ${COLLAR_REACH_PX_MAX}px`);
+        continue;
+      }
       console.log(`     ${vp.padEnd(10)} ${role.padEnd(14)} ${t.face}/${t.weight} ` +
         `${t.fontPx.toFixed(1)}px  stem ${t.stemPx.toFixed(2)}px  ` +
         `T(edge) ${t.sampler(0).a.toFixed(3)}  ground ${pct(hi).padStart(6)}  ` +
@@ -3773,6 +4368,23 @@ function unsealScrim(scrimSrc) {
 const PROVE_HALO_FLOOR = '82%';
 const PROVE_HALO_ROLES = ['--fg-muted', '--fg-pressed'];
 
+/*
+  The collar controls' floor, chosen the same way 82% was and for the same
+  reason: a control that fails for the wrong reason proves nothing.
+
+  Measured through this gate, the usable window is (0.2253, 0.5116) in
+  composite alpha — above --fg-muted's collared requirement so the TEXT cannot
+  be what fails, and below --rule's and --focus-ring's BARE requirement so the
+  two non-text roles fail without their collar and pass with it:
+
+      literal   --fg-muted (collared)   --rule / --focus-ring (bare)
+        23%       0.2253  ok  <- shipped    0.5116  FAIL
+        30%       0.2253  ok               0.5116  FAIL
+        40%       0.2253  ok               0.5116  FAIL   <- the control
+        52%       0.2253  ok               0.5116  ok
+*/
+const PROVE_COLLAR_FLOOR = '40%';
+
 /**
  * A stylesheet with every per-glyph treatment REMOVED.
  *
@@ -3789,9 +4401,19 @@ const PROVE_HALO_ROLES = ['--fg-muted', '--fg-pressed'];
  * masks and geometry in the same file are untouched, because the controls are
  * about the halo and the veil has its own two controls above.
  */
+/*
+  `box-shadow`, `--collar-role` and `--collar-box` are in this list for exactly
+  the reason the five above it are, and the reason is the story in the paragraph
+  above: the first time a real treatment landed in the shipped stylesheet the
+  controls silently inherited it and stopped discriminating. The collar is the
+  second time a real treatment has landed. Leaving it out of this regex would
+  reproduce that failure precisely — REMOVED, SHEET and FAT would all inherit
+  the shipped bar-and-ring collar and all three would pass while proving
+  nothing.
+*/
 function stripTreatments(src) {
   return src.replace(
-    /(?:^|;|\{)\s*(?:-webkit-)?(?:text-shadow|text-stroke|text-stroke-width|text-stroke-color|paint-order|--halo-role|--halo-type)\s*:[^;}]*;/gi,
+    /(?:^|;|\{)\s*(?:-webkit-)?(?:text-shadow|text-stroke|text-stroke-width|text-stroke-color|paint-order|box-shadow|--halo-role|--halo-type|--collar-role|--collar-box)\s*:[^;}]*;/gi,
     (m) => (m.trimStart().startsWith('{') ? '{' : ';'),
   );
 }
@@ -3830,6 +4452,33 @@ function withDisclosure(globalsSrc) {
   return globalsSrc.includes(CONTRAST_DISCLOSURE)
     ? globalsSrc
     : `/* ${CONTRAST_DISCLOSURE} */\n${globalsSrc}`;
+}
+
+/**
+ * app/globals.css with the method disclosure REMOVED — the UNDISCLOSED control.
+ *
+ * THIS FUNCTION IS THE FIX FOR A CONTROL THAT HAD SILENTLY STOPPED
+ * CONTROLLING, which is the failure mode this whole section is written against
+ * and the second time it has happened here. The UNDISCLOSED run used to be
+ * built by simply NOT calling `withDisclosure`, on the assumption that the
+ * marker would then be absent. It is not absent: the marker lives in a COMMENT
+ * in the shipped app/globals.css, `stripTreatments` removes declarations and
+ * not comments, so the "undisclosed" page arrived at the gate still carrying
+ * the disclosure and passed for that reason rather than because the gate was
+ * failing to notice an undisclosed halo. `--prove` reported PROOF FAILED, and
+ * correctly — the control could not fail.
+ *
+ * Removing the marker is therefore an explicit operation, and it asserts that
+ * it actually removed something, because a control that cannot be shown to
+ * have modified its input is the same defect one layer further out.
+ */
+function withoutDisclosure(globalsSrc) {
+  const out = globalsSrc.split(CONTRAST_DISCLOSURE).join('CONTRAST-METHOD: (removed by --prove)');
+  if (out === globalsSrc && globalsSrc.includes(CONTRAST_DISCLOSURE)) {
+    throw new Error('check-hero-contrast --prove: the UNDISCLOSED control could not remove the '
+      + 'disclosure marker from app/globals.css, so it would have tested nothing.');
+  }
+  return out;
 }
 
 function thinScrim(scrimSrc) {
@@ -3963,6 +4612,54 @@ async function main() {
   const input = { globalsSrc, scrimSrc, heroSrc, heroCss, assets, manifest, sourceFile, sharp };
   const result = analyse(input);
 
+  /*
+    `--emit-collar` prints every collar this gate CREDITED, as JSON, so
+    tests/e2e/hero-contrast.spec.ts can hold Chromium to it.
+
+    IT IS THE MOST IMPORTANT OF THE THREE EMIT FLAGS, because a collar is the
+    first thing this gate credits that it cannot verify from the text it reads.
+    A halo is attributed to a role and the role's colour is in the palette; a
+    collar is attributed to a SELECTOR, and a selector that matches nothing in
+    the DOM is worse than no collar at all — it is a credit taken against paint
+    that reaches no pixel. The node gate reads text and text can lie about the
+    DOM. So the browser gate asserts the element exists, that it is reachable by
+    keyboard where the selector says `:focus-visible`, that its background is
+    transparent where the inward ray assumes photograph, and that
+    `getComputedStyle().boxShadow` — the CASCADE's answer, not the file's —
+    still carries every credited layer at or above the credited blur and spread.
+
+    Same boundary discipline as `--emit-extent` and `--emit-type`: a flag, not
+    an import, so the two gates cannot drift into two copies of one table.
+  */
+  if (argv.includes('--emit-collar')) {
+    process.stdout.write(JSON.stringify({
+      boxShadowCredit: BOX_SHADOW_CREDIT,
+      collarReachPxMax: COLLAR_REACH_PX_MAX,
+      collarRoles: [...COLLAR_ROLES],
+      collars: (result.collarIndex ?? []).map((c) => ({
+        selector: c.t.selector,
+        file: c.t.file,
+        role: c.role,
+        viewport: c.vp,
+        ray: c.t.ray,
+        layers: c.t.layers.map((l) => ({
+          offsetPx: l.offsetPx,
+          blurPx: l.blurPx,
+          spreadPx: l.spreadPx,
+          rgb: l.rgb,
+          alpha: l.alpha,
+          source: l.source,
+        })),
+        boxThicknessPx: c.t.boxThicknessPx,
+        boxExtentPx: c.t.boxExtentPx,
+        inkOffsetPx: c.t.inkOffsetPx,
+        inkThicknessPx: c.t.inkThicknessPx,
+        localGroundLuminanceOverWhite: localGroundLuminance(c.t, WHITE_SRC),
+      })),
+    }, null, 2));
+    return;
+  }
+
   if (manifestError) {
     result.failures.unshift({
       where: manifestPath,
@@ -4041,7 +4738,7 @@ async function main() {
     const haloInput = (variant, { disclose = true } = {}) => ({
       ...input,
       assets: proofAssets,
-      globalsSrc: disclose ? withDisclosure(bareGlobals) : bareGlobals,
+      globalsSrc: disclose ? withDisclosure(bareGlobals) : withoutDisclosure(bareGlobals),
       scrimSrc: withScrimFloor(bareScrim, PROVE_HALO_FLOOR),
       heroCss: withSyntheticHalo(bareHeroCss, variant),
     });
@@ -4116,10 +4813,123 @@ async function main() {
     console.log(`    FAT    detected: "${fatHits[0].message}"`);
     console.log(`    UNDISCLOSED: "${disclosureHits[0].message}"`);
 
+    /*
+      ── THE COLLAR CONTROLS ──────────────────────────────────────────────
+
+      The box-shadow collar is a code path with the same problem the halo had
+      before the six runs above existed: it can only be shown to work by
+      showing it FAILS when the paint is gone. And it needs its own controls
+      rather than a seventh halo variant, because the halo controls run at an
+      82% floor where the two non-text roles pass with or without a collar —
+      a floor that cannot distinguish them proves nothing about them.
+
+      SO THE FLOOR IS 40%, AND IT IS PICKED THE SAME WAY 82% WAS. Measured
+      through this gate: --fg-muted needs 0.2253 collared, so at 40% the TEXT
+      still passes and cannot be the thing that fails; --rule and --focus-ring
+      need 0.5116 BARE, so at 40% they fail outright without their collar and
+      pass with it (0.0489 and 0.0000). The window is therefore (0.2253,
+      0.5116) in composite alpha and 40% sits near the middle of it, which
+      means a control that fails does so for the collar's reason and no other.
+
+        POSITIVE      thin veil + the shipped collar   must PASS
+        REMOVED       collar declarations stripped     must FAIL on --rule
+        UNATTRIBUTED  --collar-role kept, box-shadow   must FAIL BY NAME (S1)
+                      deleted
+        INSET         an `inset` layer added           must FAIL BY NAME (S2)
+        SHEET         spreads blown out to 340px       must FAIL BY NAME on
+                                                       the reach test
+    */
+    console.log('\n  ── COLLAR CONTROLS ────────────────────────────────────────────────');
+    console.log('  A synthetic page: the veil thinned to 40%, which alone fails the two');
+    console.log('  non-text roles (0.5116 bare) while leaving the text passing. Five runs.\n');
+
+    /* The mutation is applied to EVERY hero stylesheet, not just to `scrimSrc`.
+       hero.tsx imports the scrim, so `heroCss` carries a second copy of the
+       same file; a control that mutated only one of them would be testing a
+       page that still had the collar in it. `analyse` dedupes by file so the
+       mutated `scrimSrc` is the copy that is read, and mutating both is the
+       belt to that braces. */
+    const collarInput = (mutate) => ({
+      ...input,
+      assets: proofAssets,
+      scrimSrc: withScrimFloor(mutate(scrimSrc), PROVE_COLLAR_FLOOR),
+      heroCss: heroCss.map((c) => ({ ...c, src: withScrimFloor(mutate(c.src), PROVE_COLLAR_FLOOR) })),
+    });
+    const cPositive = analyse(collarInput((s) => s));
+    const cRemoved = analyse(collarInput(stripTreatments));
+    const cUnattributed = analyse(collarInput((s) => s.replace(
+      /(--collar-role\s*:[^;]*;)([\s\S]*?)box-shadow\s*:[^;]*;/g, '$1$2')));
+    const cInset = analyse(collarInput((s) => s.replace(
+      /(--collar-role\s*:[^;]*;[\s\S]*?box-shadow\s*:\s*)/g, '$1inset ')));
+    const cSheet = analyse(collarInput((s) => s.replace(
+      /(--collar-role\s*:[^;]*;[\s\S]*?box-shadow\s*:)([^;]*);/g,
+      (_, head, layers) => `${head}${layers.replace(/(\d[\d.]*)px(\s+var\(--ground\))/g, '340px$2')};`)));
+
+    const collarScore = (res) => {
+      const rows = ['--rule', '--focus-ring']
+        .map((role) => {
+          const d = res.derived.find((x) => x.role === role);
+          return `${role} ${d ? `${d.actual.toFixed(2)}:1${d.treated ? ` [${d.t.selector}]` : ' bare'}` : 'n/a'}`;
+        }).join('  ');
+      /* The field floor is printed because it is the thing that has to be the
+         same across all five runs for the comparison to mean anything: these
+         controls vary the COLLAR, and a variant that also moved the veil would
+         be answering a different question. */
+      return `field ${res.guaranteedAlpha === null ? 'n/a' : pct(res.guaranteedAlpha)}  ${rows}, `
+        + `${res.failures.length} failure(s)`;
+    };
+    console.log(`    POSITIVE      ${collarScore(cPositive)}`);
+    console.log(`    REMOVED       ${collarScore(cRemoved)}`);
+    console.log(`    UNATTRIBUTED  ${collarScore(cUnattributed)}`);
+    console.log(`    INSET         ${collarScore(cInset)}`);
+    console.log(`    SHEET         ${collarScore(cSheet)}`);
+
+    const cProblems = [];
+    const hits = (res, re) => res.failures.filter((f) => re.test(`${f.message} ${f.detail}`));
+    if (cPositive.failures.length !== 0) {
+      cProblems.push(`COLLAR POSITIVE control FAILED (${cPositive.failures.length}): `
+        + `"${cPositive.failures[0].message}". At ${PROVE_COLLAR_FLOOR} the collar is supposed to `
+        + 'carry both non-text roles on its own; if it cannot, the credit this round takes is '
+        + 'not the credit this gate measures.');
+    }
+    if (hits(cRemoved, /--rule|--focus-ring/).length === 0) {
+      cProblems.push('COLLAR REMOVED control PASSED: the same thinned veil with NO box-shadow at '
+        + 'all was accepted. The gate is crediting something other than the collar, or the collar '
+        + 'is not load-bearing in the positive control — either way the positive result means '
+        + 'nothing. This is the exact failure stripTreatments was extended to prevent.');
+    }
+    if (hits(cUnattributed, /cannot attribute/).length === 0) {
+      cProblems.push('COLLAR UNATTRIBUTED control PASSED: a --collar-role left behind with no '
+        + 'box-shadow in the same block was not reported. That is a credit claimed for paint '
+        + 'that is not there, and it is the shape a half-finished deletion leaves.');
+    }
+    if (hits(cInset, /inset/).length === 0) {
+      cProblems.push('COLLAR INSET control PASSED: an inset layer was credited. An inset shadow '
+        + 'paints inside the padding box and darkens nothing beside the ink, so crediting one is '
+        + 'crediting paint that reaches no pixel the reader is looking at.');
+    }
+    if (hits(cSheet, /sheet in disguise/).length === 0) {
+      cProblems.push('COLLAR SHEET control was not DETECTED: a 340px spread — a pad covering the '
+        + 'whole column — was not reported as a sheet. The owner is rejecting sheets explicitly, '
+        + 'and spread is the cheapest way to draw one.');
+    }
+    if (cProblems.length) {
+      console.error('\n  PROOF FAILED — the collar measurement does not discriminate:\n');
+      for (const pr of cProblems) console.error(`    ${pr}\n`);
+      process.exit(1);
+    }
+    console.log(`\n    REMOVED binds: "${hits(cRemoved, /--rule|--focus-ring/)[0].message}"`);
+    console.log(`    UNATTRIBUTED:  "${hits(cUnattributed, /cannot attribute/)[0].detail.slice(0, 96)}"`);
+    console.log(`    INSET:         "${hits(cInset, /inset/)[0].detail.slice(0, 96)}"`);
+    console.log(`    SHEET:         "${hits(cSheet, /sheet in disguise/)[0].message}"`);
+
     console.log('\n  PROOF OK — the gate discriminates on depth, on geometry, and on the');
     console.log('  per-glyph treatment: it passes a halo that works, fails one that is absent');
     console.log('  or too weak, names one that is a sheet and one that has eaten the letterform,');
     console.log('  and refuses to credit any of them on a page that has not disclosed the method.');
+    console.log('  It does the same for the collar: it passes the shipped bar and ring, fails');
+    console.log('  them when the box-shadow is gone, names a claim with no paint under it, names');
+    console.log('  an inset layer, and names a spread wide enough to be a sheet.');
     console.log('  The shipped scrim result stands above.');
   }
 

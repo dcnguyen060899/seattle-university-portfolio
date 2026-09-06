@@ -36,8 +36,8 @@
     "exit": 0.913,
     "scrimColor": "#14161A",
     "targetRatio": 4.5,
-    "bindingForeground": "--fg-brand",
-    "claim": "Minimum opacity of a solid #14161A scrim at which every glyph-sized patch of the photograph still clears 4.5:1 against the weakest ink foreground the hero actually paints (--fg-brand #C2D2DE, 11.76:1 on flat ink). Measured by DECODING EVERY EMITTED RUNG and taking the worst, so it is a claim about the bytes a browser downloads rather than about the raw frame that went into the encoder; per orientation, `orientations[k].scrim.preEncode.drift` records how far the codec moved it. Not a per-pixel guarantee — see the generator header."
+    "bindingForeground": "--fg-muted",
+    "claim": "Minimum opacity of a solid #14161A scrim at which every glyph-sized patch of the photograph still clears 4.5:1 against the weakest ink foreground the hero actually paints (--fg-muted #A3A2A8, 7.15:1 on flat ink). Measured by DECODING EVERY EMITTED RUNG and taking the worst, so it is a claim about the bytes a browser downloads rather than about the raw frame that went into the encoder; per orientation, `orientations[k].scrim.preEncode.drift` records how far the codec moved it. Not a per-pixel guarantee — see the generator header. THIS IS A NAKED NUMBER AND THE PAGE DOES NOT PAINT IT: it credits NOTHING but the veil, and the hero also paints a per-glyph text-shadow collar under its copy and a box-shadow collar around the two objects in that band that are not text (the Threshold rule and the focus ring). components/site/hero-scrim.module.css relays this alpha through --scrim-collar-open, which is where the text collar is credited exactly once, and clamps the result up to --scrim-floor-min; scripts/check-hero-contrast.mjs is what measures every role against the LOCAL COMPOSITED GROUND the browser actually renders, collars included, and fails the build if the painted veil is thinner than any role needs. Read this number as the upper bound a veil alone would have to be, not as the opacity the hero ships."
   },
   "coverage": [
     {
