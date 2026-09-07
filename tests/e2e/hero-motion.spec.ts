@@ -22,6 +22,20 @@ import {
  * and the two things it must never do: mount where it is refused, and become
  * the page's largest contentful paint.
  *
+ * ── THE CONTRACT CHANGED ON 2026-09-07: IT STARTS ON ITS OWN ──────────────
+ *
+ * The layer used to wait for the first scroll, pointerdown or keydown, because
+ * Chrome finalises LCP there. It no longer does: a paint that covers the WHOLE
+ * viewport is not an LCP candidate at all, the installed clip is registered to
+ * the whole still and therefore covers it, and the controller checks that
+ * coverage at runtime before it starts itself (lib/hero-motion.ts's header
+ * carries the measurements). So the tests below assert the new rule in three
+ * pieces: nothing mounts before the intro has left and the page has settled;
+ * it DOES mount with no input whatever; and no <video> is ever recorded as a
+ * largest-contentful-paint candidate on that no-input path. The first input
+ * survives as an accelerator, and as the only way in for a clip whose box
+ * cannot cover the viewport.
+ *
  * ── TWO HALVES, GATED DIFFERENTLY ─────────────────────────────────────────
  *
  * §1 NEVER MOUNTS is UNCONDITIONAL. It needs no clip: a config is injected
@@ -61,6 +75,7 @@ const MOTION_OVERRIDE_KEY = 'duyng.motion.override'
 const MOTION_CROSS_S = 2.0
 const MOTION_FADE_IN_MS = 3000
 const MOTION_SETTLE_MS = 1500
+const MOTION_LCP_QUIET_MS = 1200
 
 const INTRO_FORCE_KEY = 'duyng.intro.force'
 const INTRO_SEEN_KEY = 'duyng.intro.seen'
@@ -321,6 +336,7 @@ test.describe('hero motion: the contract this spec mirrors', () => {
       `MOTION_CROSS_S = ${MOTION_CROSS_S.toFixed(1)}`,
       `MOTION_FADE_IN_MS = ${MOTION_FADE_IN_MS}`,
       `MOTION_SETTLE_MS = ${MOTION_SETTLE_MS}`,
+      `MOTION_LCP_QUIET_MS = ${MOTION_LCP_QUIET_MS}`,
       'navigator.webdriver',
     ]
     const missing = wanted.filter((w) => !src.includes(w))
@@ -425,7 +441,7 @@ test.describe('hero motion: never mounts', () => {
     })
   }
 
-  test('does not mount before the first input at 1280x800 (LCP is final only after it)', async ({
+  test('does not mount before the page has settled, with no input at all', async ({
     browser,
   }, testInfo) => {
     testInfo.setTimeout(60_000)
@@ -436,14 +452,16 @@ test.describe('hero motion: never mounts', () => {
       const requests = await serve(page, null)
       await page.goto('/', { waitUntil: 'load' })
       await introGone(page)
-      /* Well past settle + idle, with NO scroll, pointer or key. */
-      await settle(MOTION_SETTLE_MS + 4500)
+      /* The auto-start still owes MOTION_SETTLE_MS, an idle callback, the sharp
+         <img>'s decode and MOTION_LCP_QUIET_MS of quiet. Half a settle in, with
+         no scroll, pointer or key, none of that can have happened yet. */
+      await settle(Math.round(MOTION_SETTLE_MS / 2))
       expect(
         await videoCount(page),
-        'The layer mounted before any scroll, pointerdown or keydown. Chrome finalises LCP at the first ' +
-          'of those, and a clip that paints 90%+ of the viewport before then becomes the LCP element.',
+        'The layer mounted before MOTION_SETTLE_MS had elapsed. The settle covers the intro\'s own ' +
+          '--focus tail: a clip that loads through it decodes while the photograph is still resolving.',
       ).toBe(0)
-      expect(requests, 'a clip was requested before the first input').toEqual([])
+      expect(requests, 'a clip was requested before the settle had elapsed').toEqual([])
     } finally {
       await context.close()
     }
@@ -456,7 +474,11 @@ test.describe('hero motion: never mounts', () => {
 
 const clip = armed ? loadClip() : null
 
-/** Boots a 1280x800 page with the clip armed, past the gate, up to the layer's first frame. */
+/**
+ * Boots a 1280x800 page with the clip armed and leaves it to start ITSELF —
+ * no scroll, no pointer, no key. `input: true` presses one instead, which is
+ * the accelerator path; nothing here waits for input any more.
+ */
 async function mountLayer(
   browser: Browser,
   opts: ArmOptions & { input?: boolean } = {},
@@ -468,9 +490,20 @@ async function mountLayer(
   const requests = clip.served ? await serve(page, clip.bytes) : []
   await page.goto('/', { waitUntil: 'load' })
   await introGone(page)
-  await settle(MOTION_SETTLE_MS + 500)
-  if (opts.input !== false) await firstInput(page)
+  if (opts.input === true) {
+    await settle(MOTION_SETTLE_MS + 500)
+    await firstInput(page)
+  }
   return { context, page, requests }
+}
+
+/** Every request the page makes for a clip, whether it is served from memory or from disk. */
+function watchClipRequests(page: Page): string[] {
+  const seen: string[] = []
+  page.on('request', (request) => {
+    if (request.url().includes(HERO_MOTION_URL_PREFIX)) seen.push(request.url())
+  })
+  return seen
 }
 
 async function waitForFirstFrame(page: Page): Promise<void> {
@@ -481,7 +514,7 @@ test.describe('hero motion: the mount path', () => {
   test.skip(!photoLanded, NOT_LANDED_MESSAGE)
   test.skip(!armed || clip === null, MOTION_NOT_LANDED_MESSAGE)
 
-  test('mounts only after data-intro is gone and after the first input; two muted, looping, inline copies', async ({
+  test('mounts only after data-intro is gone, then on its own; two muted, looping, inline copies', async ({
     browser,
   }, testInfo) => {
     testInfo.setTimeout(120_000)
@@ -501,11 +534,11 @@ test.describe('hero motion: the mount path', () => {
       }
       await introGone(page)
 
-      /* Past settle + idle but before any input: still nothing. */
-      await settle(MOTION_SETTLE_MS + 1500)
-      expect(await videoCount(page), 'the layer mounted before the first input').toBe(0)
+      /* Half a settle in, nothing yet — and then it starts itself, with no
+         scroll, pointerdown or keydown anywhere in this test. */
+      await settle(Math.round(MOTION_SETTLE_MS / 2))
+      expect(await videoCount(page), 'the layer mounted before MOTION_SETTLE_MS had elapsed').toBe(0)
 
-      await firstInput(page)
       await page.waitForSelector(ROOT_SELECTOR, { state: 'attached', timeout: 20_000 })
       await waitForFirstFrame(page)
 
@@ -841,7 +874,134 @@ test.describe('hero motion: the mount path', () => {
     }
   })
 
-  test('the still hero, never the clip, is the largest contentful paint', async ({ browser }, testInfo) => {
+  test('starts on its own — no scroll, no pointerdown, no keydown — and fetches the clip once', async ({
+    browser,
+  }, testInfo) => {
+    testInfo.setTimeout(120_000)
+    if (clip === null) return
+    const context = await browser.newContext({ viewport: { width: 1280, height: 800 } })
+    const page = await context.newPage()
+    try {
+      await arm(page, clip.config, { force: true })
+      const seen = watchClipRequests(page)
+      if (clip.served) await serve(page, clip.bytes)
+      await page.goto('/', { waitUntil: 'load' })
+      await introGone(page)
+
+      /* Nothing is touched from here on: no keyboard, no mouse, no wheel. */
+      await waitForFirstFrame(page)
+      const state = await page.evaluate((selector) => {
+        const root = document.querySelector(selector)
+        const video = root === null ? null : root.querySelector('video')
+        return {
+          on: root !== null && root.hasAttribute('data-on'),
+          paused: video === null ? true : video.paused,
+        }
+      }, ROOT_SELECTOR)
+
+      expect(
+        state.on,
+        'The layer never reached its first frame without an input. Since 2026-09-07 it must start ' +
+          'itself: the reader should never have to know to scroll to make the picture move.',
+      ).toBe(true)
+      expect(state.paused, 'the auto-started copy is not playing').toBe(false)
+      expect(
+        seen.length,
+        `The clip was requested ${seen.length} times in one page life:\n  ${seen.join('\n  ')}\n` +
+          'Exactly one fetch is the contract — the standby copy loads only once the active one can ' +
+          'play through, so the second element takes the cache rather than the network.',
+      ).toBe(1)
+    } finally {
+      await context.close()
+    }
+  })
+
+  test('a hero that does not cover the viewport does not auto-start; the first input still starts it', async ({
+    browser,
+  }, testInfo) => {
+    testInfo.setTimeout(120_000)
+    if (clip === null) return
+    const context = await browser.newContext({ viewport: { width: 1280, height: 800 } })
+    const page = await context.newPage()
+    try {
+      await arm(page, clip.config, { force: true })
+      const seen = watchClipRequests(page)
+      if (clip.served) await serve(page, clip.bytes)
+      await page.goto('/', { waitUntil: 'load' })
+      /* THE GEOMETRY IS FORCED, on purpose and with a stylesheet rather than a
+         scroll, because a scroll is also the accelerator and would prove
+         nothing. The controller's auto-start reads the sharp <img>'s own box:
+         shrink it and the clip can no longer promise to cover the viewport, so
+         the layer must refuse to start itself and wait for an input, exactly as
+         it did before 2026-09-07. The live shapes this stands for are a clip
+         registered to a sub-rectangle of the still and a page restored
+         mid-scroll. */
+      await page.addStyleTag({ content: '#top img { height: 60vh !important; }' })
+      await introGone(page)
+      await settle(MOTION_SETTLE_MS + MOTION_LCP_QUIET_MS + 4000)
+
+      const box = await page.evaluate(() => {
+        const img = document.querySelectorAll('#top img')[1]
+        return img === undefined ? null : { bottom: img.getBoundingClientRect().bottom, vh: window.innerHeight }
+      })
+      expect(box, 'the hero has no sharp <img> to shrink, so this test is not testing anything').not.toBeNull()
+      expect(
+        box === null ? 0 : box.bottom,
+        'the forced stylesheet did not actually stop the picture covering the viewport',
+      ).toBeLessThan(box === null ? 0 : box.vh)
+
+      expect(
+        await videoCount(page),
+        'The layer auto-started over a hero that does not cover the viewport. There the <video> is a ' +
+          'largest-contentful-paint candidate again — one uncovered pixel is enough — so the auto-start ' +
+          'must refuse and the first input must be the only way in.',
+      ).toBe(0)
+      expect(seen, 'a clip was fetched on a page that must not auto-start').toEqual([])
+
+      await firstInput(page)
+      await page.waitForSelector(ROOT_SELECTOR, { state: 'attached', timeout: 20_000 })
+      expect(
+        await videoCount(page),
+        'the first input no longer starts the layer — it is the accelerator AND the fallback',
+      ).toBe(2)
+    } finally {
+      await context.close()
+    }
+  })
+
+  test('reduced motion flipped at RUNTIME unmounts the layer, and flipping back re-gates it', async ({
+    browser,
+  }, testInfo) => {
+    testInfo.setTimeout(120_000)
+    if (clip === null) return
+    const { context, page } = await mountLayer(browser)
+    try {
+      await waitForFirstFrame(page)
+      expect(await videoCount(page), 'the layer never started, so there is nothing to unmount').toBe(2)
+
+      /* The refusal is not only a load-time one: MOTION_MEDIA carries
+         (prefers-reduced-motion: no-preference) and the controller listens for
+         `change`. A reader who turns the preference on mid-visit must get the
+         still back, with both decoders released. */
+      await page.emulateMedia({ reducedMotion: 'reduce' })
+      await expect
+        .poll(async () => videoCount(page), { timeout: 10_000 })
+        .toBe(0)
+
+      /* And back: the gate re-runs from the top — settle, idle, decode, the LCP
+         quiet window and the coverage test — with no input anywhere. */
+      await page.emulateMedia({ reducedMotion: 'no-preference' })
+      await expect
+        .poll(async () => videoCount(page), { timeout: 30_000 })
+        .toBe(2)
+    } finally {
+      await context.close()
+    }
+  })
+
+  test('auto-started with no input, the clip is never the largest contentful paint', async ({
+    browser,
+  }, testInfo) => {
     testInfo.setTimeout(120_000)
     if (clip === null) return
     const context = await browser.newContext({ viewport: { width: 1280, height: 800 } })
@@ -851,11 +1011,36 @@ test.describe('hero motion: the mount path', () => {
       if (clip.served) await serve(page, clip.bytes)
       await page.goto('/', { waitUntil: 'load' })
       await introGone(page)
-      await settle(MOTION_SETTLE_MS + 500)
-      /* The one wheel-scroll that finalises LCP — the layer may mount only after it. */
-      await page.mouse.wheel(0, 2)
+      /* No input at all: LCP is still LIVE while the clip mounts, plays and
+         fades in. That is the whole point of the test. */
       await waitForFirstFrame(page)
       await settle(MOTION_FADE_IN_MS + 500)
+
+      /* The structural reason there is no candidate: the clip paints over every
+         pixel of the viewport, and Chrome does not make a full-viewport paint an
+         LCP candidate. One pixel of anything else is enough to break it. */
+      const cover = await page.evaluate((selector) => {
+        const video = document.querySelector(`${selector} video`)
+        if (video === null) return null
+        const box = video.getBoundingClientRect()
+        return {
+          left: box.left,
+          top: box.top,
+          right: box.right,
+          bottom: box.bottom,
+          vw: window.innerWidth,
+          vh: window.innerHeight,
+        }
+      }, ROOT_SELECTOR)
+      expect(cover, 'the clip is not on the page at all').not.toBeNull()
+      if (cover) {
+        expect(
+          cover.left <= 0 && cover.top <= 0 && cover.right >= cover.vw && cover.bottom >= cover.vh,
+          `The clip's painted rect (${cover.left}, ${cover.top}) → (${cover.right}, ${cover.bottom}) does ` +
+            `not cover the ${cover.vw}x${cover.vh} viewport. That coverage is the ONLY reason the layer ` +
+            'may start before the first input; without it the <video> is an LCP candidate.',
+        ).toBe(true)
+      }
 
       const entries = await page.evaluate(
         () =>
@@ -884,15 +1069,60 @@ test.describe('hero motion: the mount path', () => {
           }),
       )
       test.skip(entries.length === 0, 'no largest-contentful-paint entry was observable in this browser')
+
+      /* THE CONTROL, so a silent observer cannot pass this test. Nothing here
+         has scrolled, clicked or typed, so LCP must still be LIVE — and the way
+         to prove it is to give it something to record: a 900x600 <img>, six
+         times the lede's area, injected after the clip has faded all the way
+         in. If THAT is not recorded, the metric was already final and the
+         absence of a <video> entry above proves nothing. */
+      const control = await page.evaluate(
+        () =>
+          new Promise<{ recorded: boolean; at: number }>((resolve) => {
+            const img = document.createElement('img')
+            img.id = 'lcp-control'
+            img.src = '/brand/hero/hero-p-640.avif'
+            img.style.cssText =
+              'position:fixed;left:0;top:0;width:900px;height:600px;object-fit:cover;z-index:9999'
+            let recorded = false
+            let at = 0
+            const observer = new PerformanceObserver((list) => {
+              for (const entry of list.getEntries() as Array<PerformanceEntry & { element?: Element | null }>) {
+                if (entry.element?.id === 'lcp-control') {
+                  recorded = true
+                  at = entry.startTime
+                }
+              }
+            })
+            observer.observe({ type: 'largest-contentful-paint' })
+            document.body.appendChild(img)
+            setTimeout(() => {
+              observer.disconnect()
+              img.remove()
+              resolve({ recorded, at })
+            }, 3_000)
+          }),
+      )
+      expect(
+        control.recorded,
+        'The control element was not recorded, so largest-contentful-paint was already final and this ' +
+          'test cannot see what it claims to. Nothing in it scrolls, clicks or types, so if this fires ' +
+          'the page is finalising LCP some other way and the assertion below is vacuous.',
+      ).toBe(true)
+
       await testInfo.attach('hero-motion-lcp.txt', {
-        body: entries.map((e) => `${e.startTime.toFixed(0)}ms <${e.tag}> ${e.size}px² inHero=${e.inHero}`).join('\n'),
+        body:
+          entries.map((e) => `${e.startTime.toFixed(0)}ms <${e.tag}> ${e.size}px² inHero=${e.inHero}`).join('\n') +
+          `\ncontrol <img> recorded at ${control.at.toFixed(0)}ms — the observer was still live`,
         contentType: 'text/plain',
       })
       const videos = entries.filter((e) => e.tag === 'VIDEO')
       expect(
         videos,
-        'A <video> was recorded as a largest-contentful-paint candidate. The layer must mount only after the ' +
-          "first input, when Chrome has stopped updating LCP; a clip that paints before then is the page's LCP.",
+        'A <video> was recorded as a largest-contentful-paint candidate on the no-input path. The clip is ' +
+          'allowed to start by itself ONLY because a paint that covers the whole viewport is not a ' +
+          'candidate; if this fires, either that geometry has changed or Chrome has stopped excluding ' +
+          'full-viewport paints, and the first-input rule has to come back.',
       ).toEqual([])
       const last = entries[entries.length - 1]
       expect(last?.inHero, 'the final LCP element is not inside the hero').toBe(true)

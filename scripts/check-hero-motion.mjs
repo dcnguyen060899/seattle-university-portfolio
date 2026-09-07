@@ -123,7 +123,9 @@ const BUDGETS = {
      15 s 1112-wide take; the third fits the calm 1080p-class take shipped at
      the still's own widest rung, 1536x1024 (5.51 MiB at CRF 24, GOP 96, with
      the sharpen the still's Retina rung already carries). It is fetched on
-     desktop only, after the first input, off the LCP path. */
+     desktop only, after the page has settled, and off the LCP path — the clip
+     covers the whole viewport, which Chrome does not count as a
+     largest-contentful-paint candidate (lib/hero-motion.ts's header). */
   mp4Bytes: 6 * 1024 * 1024,
   webmBytes: 3 * 1024 * 1024,
   totalPerOrientationBytes: 9 * 1024 * 1024,
@@ -199,8 +201,37 @@ const T = {
      the owner read as "a really strong wind"; real clouds at this framing are
      ~0.2%/s. The calm take measures 0.45%/s (a crossing every ~2.5 min). 0.8
      admits the calm take with margin and refuses the windy one three times
-     over. Lag 1 s, median over the loop; the sign is reported, not judged. */
+     over. Lag 1 s.
+
+     ⚠ JUDGED ON THE WORST WINDOW, NOT ON THE WHOLE-CLIP MEDIAN, since
+     2026-09-07. A median over every row-pair of the clip only means anything
+     for a clip whose sky does ONE thing. The round-four night cycle was two
+     takes joined — one drifting left at 2.4%/s, one with no coherent motion
+     at all — and the pooled median landed either side of this limit depending
+     on nothing but which frames the sampling stride happened to hit: measured
+     on that material at four adjacent strides (3, 4, 5, 6 frames) the pooled
+     verdict read PASS, FAIL, PASS, FAIL, while each half judged alone was
+     stable at −2.2..−2.4%/s (refuse) and 0.0%/s (admit). A gate whose answer
+     is a coin flip is not a gate. On a single-take clip the window statistic
+     costs nothing: the installed calm clip reads −0.37%/s in all four of its
+     quarters. */
   skyDriftPctPerS: 0.8,
+  /* the window each drift median is taken over, and its hop. 4 s because the
+     estimator's lag is 1 s and a median over fewer than ~4 independent lags
+     is noise rather than a speed; the hop is half the window so a junction
+     between two takes cannot fall between two windows and escape both. */
+  skyWindowS: 4.0,
+  skyWindowHopS: 2.0,
+  /* THE REVERSAL RULE's dead band, in units of the estimator's own quantum.
+     The owner's ask is explicit that clouds must never change direction, so
+     windows that disagree on sign are refused — but a textureless night sky
+     "reverses" at random, and judging noise would refuse good clips. One
+     quantum is one half-res pixel per lag second = 2 full px/s = 0.13% of a
+     1536-wide frame; a window under TWO of them has not measurably moved and
+     is excluded from the sign test. Derived from VW at runtime, never typed,
+     so a narrower clip gets the wider dead band it deserves. The installed
+     clip's 0.37%/s sits at ~3 quanta — comfortably inside "moving". */
+  skyStillQuanta: 2,
   /* the gate's own margin: 1.05 on (ground luminance + 0.05). Read, not typed. */
   legibilityHeadroom: null,
 }
@@ -981,14 +1012,52 @@ function skyDriftOf(frames, lagFrames, stepFrames) {
   const rows = SKY_ROWS.map((f) => Math.min(LH - 1, Math.round(f * LH)))
   const maxS = Math.max(8, Math.round(0.055 * LW))
   const shifts = []
+  const stamped = [] /* the same shifts, each keeping the time it was measured at */
   for (let i = 0; i + lagFrames < frames.length; i += stepFrames) {
     if (!frames[i] || !frames[i + lagFrames]) continue
-    for (const r of rows) shifts.push(slitShift(skySlit(frames[i], r, x0, x1), skySlit(frames[i + lagFrames], r, x0, x1), maxS))
+    for (const r of rows) {
+      const sh = slitShift(skySlit(frames[i], r, x0, x1), skySlit(frames[i + lagFrames], r, x0, x1), maxS)
+      shifts.push(sh)
+      stamped.push({ t: i / FPS, sh })
+    }
   }
+  const medOf = (a) => (a.length ? [...a].sort((p, q) => p - q)[Math.floor(a.length / 2)] : 0)
+  const toPct = (halfPx) => (100 * ((2 * halfPx * FPS) / lagFrames)) / VW
   const sorted = [...shifts].sort((a, b) => a - b)
-  const med = sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0
+  const med = medOf(shifts)
   const pxPerS = (2 * med * FPS) / lagFrames /* full-res px/s */
-  return { rows, x: [x0, x1], lagFrames, pairs: shifts.length, medianShiftHalfPx: med, pxPerS, pctPerS: (100 * pxPerS) / VW, min: sorted[0] ?? 0, max: sorted[sorted.length - 1] ?? 0 }
+  /* THE JUDGED STATISTIC — the same median, per overlapping window (see
+     T.skyDriftPctPerS). A clip cut from two takes has two skies, and only a
+     per-window read can refuse the fast one or notice that they disagree. */
+  const durS = frames.length / FPS
+  const windows = []
+  for (let t0 = 0; t0 < durS; t0 += T.skyWindowHopS) {
+    const t1 = Math.min(t0 + T.skyWindowS, durS)
+    const sub = stamped.filter((p) => p.t >= t0 && p.t < t1).map((p) => p.sh)
+    /* two pairs per row is the fewest a median may be taken over here */
+    if (sub.length >= 2 * rows.length) windows.push({ t0, t1, pairs: sub.length, medianShiftHalfPx: medOf(sub), pctPerS: toPct(medOf(sub)) })
+    if (t1 >= durS) break
+  }
+  /* a clip too short to window is judged exactly as it was before: one window,
+     the whole clip. Recorded as such rather than silently unjudged. */
+  if (!windows.length) windows.push({ t0: 0, t1: durS, pairs: shifts.length, medianShiftHalfPx: med, pctPerS: toPct(med), wholeClipFallback: true })
+  return { rows, x: [x0, x1], lagFrames, pairs: shifts.length, medianShiftHalfPx: med, pxPerS, pctPerS: (100 * pxPerS) / VW, min: sorted[0] ?? 0, max: sorted[sorted.length - 1] ?? 0, windows, ...skySummarise(windows) }
+}
+
+/* THE SKY VERDICT, as two functions the checks below AND --prove both call —
+   the same discipline the seam and handoff verdicts are held to. summarise()
+   turns per-window medians into the two facts that decide it; verdict() is the
+   decision. Split so --prove can drive the decision with window sets whose
+   right answer is known, which a real clip can never supply. */
+function skySummarise(windows) {
+  const stillPctPerS = (T.skyStillQuanta * 200) / VW
+  const moving = windows.filter((w) => Math.abs(w.pctPerS) >= stillPctPerS)
+  const worstWindow = windows.reduce((a, b) => (Math.abs(b.pctPerS) > Math.abs(a.pctPerS) ? b : a), windows[0])
+  const signs = new Set(moving.map((w) => (w.pctPerS > 0 ? 1 : -1)))
+  return { stillPctPerS, movingWindows: moving.length, worstWindow, reverses: signs.size > 1 }
+}
+function skyVerdict(s) {
+  return Math.abs(s.worstWindow.pctPerS) <= T.skyDriftPctPerS && !s.reverses
 }
 const sky = skyDriftOf(lumas, Math.max(1, Math.round(FPS)), Math.max(1, Math.round(FPS / 2)))
 
@@ -1202,6 +1271,26 @@ if (PROVE) {
     proofs.push({ k: 'sky: a 7 half-px shift is recovered', ok: got === 7, got: `${got} half-px` })
   }
   {
+    /* THE WINDOW RULE, driven by window sets whose right answer is known. The
+       whole-clip median it replaced would admit the third of these — a cycle
+       whose halves run at equal speed in OPPOSITE directions medians to zero —
+       and would decide the second by which frames the stride happened to hit. */
+    const W = (...v) => v.map((p, i) => ({ t0: 2 * i, t1: 2 * i + T.skyWindowS, pairs: 40, medianShiftHalfPx: 0, pctPerS: p }))
+    const q = (200 / VW) * T.skyStillQuanta
+    const cases = [
+      ['a calm sky, one direction, every window', W(-0.37, -0.37, -0.37, -0.37), true],
+      ['one fast window among calm ones', W(-0.37, -2.4, -0.37, -0.37), false],
+      ['two halves, equal and OPPOSITE (medians to zero)', W(-0.5, -0.5, 0.5, 0.5), false],
+      ['the round-four cycle: left half, then a still half', W(-3.05, -1.85, -2.22, -0.92, 0, 0, 0, 0), false],
+      ['a still sky whose sign is noise under the dead band', W(q * 0.9, -q * 0.9, q * 0.5, -q * 0.5), true],
+      ['every window exactly at the limit', W(-T.skyDriftPctPerS, -T.skyDriftPctPerS), true],
+    ]
+    for (const [name, ws, want] of cases) {
+      const got = skyVerdict({ ...skySummarise(ws), windows: ws })
+      proofs.push({ k: `sky: ${name}`, ok: got === want, got: `${got ? 'passes' : 'refused'} (wanted ${want ? 'passes' : 'refused'})` })
+    }
+  }
+  {
     /* the same-picture cap: the still 20 px off must fail it (sideways, so a full-height clip can be proved too) */
     const dx = 20
     let acc = 0
@@ -1261,11 +1350,16 @@ const checks = [
     limit: `frame mean ≤ ${T.motionMean}, p95 ≤ ${T.motionP95}; text mean ≤ ${T.motionTextMean}, p95 ≤ ${T.motionTextP95}`,
   },
 ]
+const dirOf = (v) => (v < 0 ? 'right-to-left' : v > 0 ? 'left-to-right' : 'still')
 checks.push({
   k: 'SKY DRIFT',
-  pass: Math.abs(sky.pctPerS) <= T.skyDriftPctPerS,
-  value: `the clouds translate ${Math.abs(sky.pxPerS).toFixed(1)} px/s ${sky.pxPerS < 0 ? 'right-to-left' : sky.pxPerS > 0 ? 'left-to-right' : ''} = ${Math.abs(sky.pctPerS).toFixed(2)}% of the width per second (median of ${sky.pairs} row-pairs, ${SKY_ROWS.length} rows at 4–12% of the height, lag ${sky.lagFrames} frames; shifts ${sky.min}..${sky.max} half-px)`,
-  limit: `≤ ${T.skyDriftPctPerS}% of the width per second (a crossing no faster than every ${Math.round(100 / T.skyDriftPctPerS)} s)`,
+  pass: skyVerdict(sky),
+  value:
+    `worst ${T.skyWindowS}s window ${Math.abs(sky.worstWindow.pctPerS).toFixed(2)}%/s ${dirOf(sky.worstWindow.pctPerS)} at t${sky.worstWindow.t0.toFixed(1)}–${sky.worstWindow.t1.toFixed(1)}` +
+    ` (${sky.windows.length} window${sky.windows.length === 1 ? '' : 's'}: ${sky.windows.map((w) => w.pctPerS.toFixed(2)).join(', ')})` +
+    `; ${sky.reverses ? `REVERSES — ${sky.movingWindows} moving windows do not agree on a direction` : sky.movingWindows ? `one direction throughout (${sky.movingWindows} moving, ${sky.windows.length - sky.movingWindows} still)` : 'no window moves measurably'}` +
+    `; whole clip ${Math.abs(sky.pctPerS).toFixed(2)}%/s ${dirOf(sky.pctPerS)} = ${Math.abs(sky.pxPerS).toFixed(1)} px/s (median of ${sky.pairs} row-pairs, ${SKY_ROWS.length} rows at 4–12% of the height, lag ${sky.lagFrames} frames; shifts ${sky.min}..${sky.max} half-px, reported)`,
+  limit: `every ${T.skyWindowS}s window ≤ ${T.skyDriftPctPerS}%/s (a crossing no faster than every ${Math.round(100 / T.skyDriftPctPerS)} s) AND no reversal between windows over ${sky.stillPctPerS.toFixed(2)}%/s`,
 })
 /* LEGIBILITY is a verdict only where the layer can mount. The layer's media
    query is (min-width: <minWidthPx>px) and (pointer: fine): below that width
@@ -1283,6 +1377,41 @@ for (const vp of VIEWPORTS) {
     limit: `worst ≤ ${r.allow.worst.toFixed(3)} · p95 ≤ ${r.allow.p95.toFixed(3)} · mean ≤ ${r.allow.mean.toFixed(3)} at field floor ${(r.floorAlpha * 100).toFixed(1)}%`,
   })
 }
+/* ── THE RECORD OF THE JUDGEMENT, against the judgement ──────────────────
+   The manifest's sha256 anchors the BYTES, and `--install` is the only writer,
+   so the clip cannot drift. What could drift silently until 2026-09-07 is the
+   RECORD of why it passed: change a threshold in T, and manifest.json goes on
+   quoting the limit that no longer exists — which is what happened when SKY
+   DRIFT stopped being a whole-clip median. A record that outlives the rule it
+   records is exactly the defect this repo refuses everywhere else, so the
+   no-argument run (the one `npm run verify` makes) now re-derives the block and
+   compares it. Only on the installed clip: a candidate on the command line has
+   no record to be stale. */
+if (INSTALL === false && arg('--clip', null) === null && installed && installed.present === true) {
+  const rec = installed.harness ?? null
+  const drift = []
+  if (rec === null) drift.push('the manifest records no harness block at all')
+  else {
+    const want = checks.map((c) => `${c.k} | ${c.limit}`).join('\n')
+    const got = (rec.checks ?? []).map((c) => `${c.check} | ${c.limit}`).join('\n')
+    if (want !== got) drift.push('the recorded checks and limits are not the ones this gate now applies')
+    if (rec.verdict !== (checks.some((c) => !c.pass) ? 'FAIL' : 'PASS')) drift.push(`the recorded verdict is ${rec.verdict}`)
+    if (JSON.stringify(rec.thresholds ?? null) !== JSON.stringify(T)) drift.push('the recorded thresholds are not this gate\'s thresholds')
+    if (rec.crossfadeS !== CROSSFADE_S) drift.push(`the record was reached at a ${rec.crossfadeS}s crossfade and the layer now dissolves for ${CROSSFADE_S}s`)
+    if (rec.fadeS !== FADE_S) drift.push(`the record was reached at a ${rec.fadeS}s fade-in and the layer now fades for ${FADE_S}s`)
+  }
+  if (drift.length) {
+    log('')
+    for (const d of drift) log(`  RECORD DRIFT — ${d}`)
+    stop(
+      `public/brand/hero/motion/manifest.json records a judgement this gate no longer makes (${drift.length} difference(s) above). ` +
+        'The bytes are fine — the record is stale. Re-run `node scripts/check-hero-motion.mjs --install --clip <the master>` to rewrite it, ' +
+        'or revert the threshold change.',
+      1,
+    )
+  }
+}
+
 const failed = checks.filter((c) => !c.pass)
 
 log('')

@@ -28,8 +28,9 @@
  * (HERO_MOTION_PREVIEW, below; components/site/hero.tsx refuses a preview on
  * the deploy host). Nothing in the gate below is relaxed by any value of it:
  * the layer still refuses phones, coarse pointers, reduced motion, Save-Data,
- * plain automation and anything before the first input, and hero.tsx still
- * hands it nothing unless the corpus record may render. The first two Runway
+ * plain automation and anything before the intro has left, the page has
+ * settled and the LCP watch has gone quiet, and hero.tsx still hands it
+ * nothing unless the corpus record may render. The first two Runway
  * candidates failed the harness; the third — Seedance 2, from the still padded
  * to the model's 4:3 so its crop fell on padding — passed it and is installed.
  * Read scripts/check-hero-motion.mjs's header before touching this.
@@ -41,20 +42,62 @@
  * (it was false on every build until 2026-09-06, and an `off` build still is),
  * and the feature must stay testable under either.
  *
- * ── LCP: THE STRICT VARIANT, CHOSEN ON PURPOSE ──────────────────────────────
+ * ── LCP: WHY IT STARTS ON ITS OWN, AND THE MEASUREMENT THAT ALLOWS IT ───────
  *
- * Chrome ≥116 counts a <video>'s first painted frame as a largest-contentful-
- * paint candidate, records an element the moment its opacity leaves zero, and
- * the registered clip paints 90–98% of the viewport — more than the h1. The
- * full-viewport exclusion does not apply because the clip never covers the
- * whole viewport (a still-only strip of 17–51 px sits above it at every
- * desktop aspect). The ONLY construction under which the clip can never be
- * the LCP is to mount it after LCP is final, and LCP stops being updated at
- * the first scroll, pointerdown or keydown. So the gate waits for that input
- * (MOTION_FIRST_INPUT_EVENTS). A visitor who reads for a while without
- * touching anything sees the still; the moment they scroll, the picture comes
- * alive. The IDLE variant — mount at idle without input — would report the
- * fade-in as the page's LCP for every non-scrolling session and was rejected.
+ * Chrome ≥116 counts a <video>'s first PRESENTED frame as a largest-
+ * contentful-paint candidate, and the clip paints far more of the viewport
+ * than the hero's lede, which is this page's LCP element. Until 2026-09-07 the
+ * gate therefore waited for the first scroll, pointerdown or keydown, because
+ * Chrome stops updating LCP at the first input. The owner asked for the motion
+ * to start on its own. It now does, and the reason it costs nothing is
+ * geometry, not timing — every clause below was measured on the production
+ * build (headless Chromium 151, :3100, 1440x900 dpr 2 and 1600x900, on a fast
+ * link and on 1.6 Mbit/s + 150 ms RTT, `navigator.webdriver` spoofed false):
+ *
+ *   · A PAINT THAT COVERS THE WHOLE VIEWPORT IS NOT AN LCP CANDIDATE AT ALL.
+ *     The same late mount over a box that leaves a 1 px strip of still above it
+ *     is recorded at 4068 ms and takes the metric with it; over a box that
+ *     covers every pixel of the viewport, nothing is recorded. One pixel is
+ *     the whole difference (1 px strip → candidate; 0 px → not).
+ *   · THE INSTALLED CLIP IS REGISTERED TO THE WHOLE STILL (crop 0,0,1,1), so
+ *     the `cover` arithmetic in HERO_MOTION_STYLE puts its box over every pixel
+ *     of the layer's root, which is `inset: 0` in `.bg`. Measured at fourteen
+ *     desktop window shapes from 1280x800 to 3440x1440, the clip's painted rect
+ *     covers the viewport at every one and NO <video> entry is recorded at any.
+ *     Final LCP with the layer auto-starting matches the still-only build to
+ *     within the harness's own noise. Still-only → auto-start, at 1440x900
+ *     dpr 2: first visit 3220 → 3196 ms, repeat visit 896 → 908, and on
+ *     1.6 Mbit/s 4512 → 4496 and 4452 → 4460. At 1600x900: 3200 → 3212,
+ *     888 → 900, 4492 → 4508 and 4452 → 4496. Every delta is ≤ 44 ms against a
+ *     run-to-run spread of up to 40 ms on the SAME build, the LCP element is
+ *     the hero's lede in every one of those runs, and CLS is unchanged (0 on
+ *     the fast link, 0.000013 and 0.0056 throttled — the still-only build's own
+ *     values). The clip is still fetched exactly once per page life.
+ *   · AND THE SILENCE IS AN EXCLUSION, NOT A FINISHED METRIC. In the same run,
+ *     with nothing scrolled or clicked, a 900x600 <img> injected AFTER the clip
+ *     had faded all the way in is recorded at 9044 ms — six times the lede's
+ *     area, and the observer took it. So LCP was live the whole time the clip
+ *     was mounting, playing and fading, and it simply refused the clip.
+ *     tests/e2e/hero-motion.spec.ts injects that control on every run, so this
+ *     test can never pass by talking to a finished observer.
+ *   · OPACITY 0 PROTECTS NOTHING. This header used to claim Chrome "records an
+ *     element the moment its opacity leaves zero". Measured: a clip that
+ *     presents its first frame inside an opacity-0 subtree and never fades in
+ *     at all is still recorded, at that frame's own time. The fade is a look,
+ *     not a shield.
+ *   · A POSTER IS NOT A PAINT. The route of mounting early carrying the hero's
+ *     own image as the poster, so the video's LCP paint coincides with the
+ *     still's, does not work in this engine: a <video> with `preload="none"`
+ *     and a visibly painted poster (screenshot taken) produces no LCP entry at
+ *     all, and while it is up the blurred rung replaces the sharp still.
+ *
+ * So the gate's last step is a race. EITHER the first input — kept, as an
+ * ACCELERATOR: a reader who scrolls should get the motion sooner, never later
+ * — OR the auto-start: the LCP observer quiet for MOTION_LCP_QUIET_MS AND the
+ * clip's box provably covering the viewport, measured at runtime against the
+ * sharp <img>'s own box. A future clip registered to a SUB-RECTANGLE of the
+ * still fails that check and the layer waits for the first input exactly as it
+ * did before, which is why the old rule is still here rather than deleted.
  *
  * ── WHY THE STYLESHEET IS A STRING AND NOT A CSS MODULE ─────────────────────
  *
@@ -143,8 +186,44 @@ export const MOTION_MEDIA =
 /** Effective connection types on which the clip is never fetched. */
 export const MOTION_SLOW_CONNECTIONS: readonly string[] = ['slow-2g', '2g'];
 
-/** The first of these finalises LCP (see the header); the layer mounts after it. */
+/**
+ * THE ACCELERATOR, AND THE FALLBACK. Chrome finalises LCP at the first of
+ * these, so a layer that mounts after one cannot be the LCP element whatever
+ * its geometry. That makes it two things at once: the way an impatient reader
+ * starts the motion sooner than the auto-start's quiet window would, and the
+ * only way it starts at all for a clip whose box does NOT cover the viewport
+ * (a cropped registration, or a page restored mid-scroll). It was the whole
+ * rule until 2026-09-07; see the header for what replaced it and why.
+ *
+ * ⚠ A PROGRAMMATIC scroll — a fragment jump, scroll restoration, any
+ * `scrollTo` — fires the same event a reader's scroll does, and the DOM cannot
+ * tell them apart. On this page that was measured to finalise LCP as well (the
+ * control <img> above stops being recorded after a scripted `scrollTo`), but on
+ * a synthetic page it did not, so nothing here rests on it: the coverage test
+ * is what carries the guarantee, and a page that has scrolled at all fails it.
+ * This listener has been here since the feature shipped; the auto-start neither
+ * widens nor narrows it.
+ */
 export const MOTION_FIRST_INPUT_EVENTS: readonly string[] = ['scroll', 'pointerdown', 'keydown'];
+
+/**
+ * THE AUTO-START'S QUIET WINDOW: no new largest-contentful-paint entry for
+ * this long before the clip is allowed to load.
+ *
+ * It is NOT what protects the metric — the coverage test in the controller is
+ * (see the header) — it is what keeps 5.5 MB of clip off the wire while the
+ * page is still landing big paints. The controller starts the watch when the
+ * gate starts, so the window runs CONCURRENTLY with MOTION_SETTLE_MS and costs
+ * nothing in the measured cases: the last entry lands at 3.2 s on a first
+ * visit against a settle that ends at 5.1 s.
+ *
+ * 1200 ms because the window has to be longer than the gaps INSIDE a burst of
+ * entries or it would call the middle of one "quiet": measured, the widest gap
+ * between two entries of one load was 812 ms (1.6 Mbit/s, first visit — the h1
+ * at 3700 ms, then the lede at 4512 ms). Anything under ~900 ms would fire in
+ * that hole; much more than this and the reader waits for nothing.
+ */
+export const MOTION_LCP_QUIET_MS = 1200;
 
 /* ── Timeline ──────────────────────────────────────────────────────────── */
 
@@ -177,6 +256,17 @@ export const MOTION_CROSS_S = 2.0;
  * After html[data-intro] is removed, wait this long before loading anything —
  * it covers the intro's --focus tail (INTRO_FOCUS_MS), asserted below.
  */
+/* THE HANDOFF, and why neither this number nor MOTION_FADE_IN_MS moved when the
+   layer started starting itself. Measured on the auto-start (2026-09-07, fast
+   link, first visit, 1280x800): html[data-intro] is removed at 3.65 s, the
+   intro's own --focus ramp lands the sharp photograph at 4.75 s (INTRO_FOCUS_MS
+   after that), and the clip's first frame presents at 5.2 s — 0.4 s later,
+   with the 3 s dissolve then carrying it. Shortening THIS number would put the
+   clip's fetch and decode inside the --focus ramp, which is the one thing it
+   exists to prevent; shortening the FADE would make the arrival more of an
+   event rather than less. The 0.4 s sits at the front of a linear dissolve
+   whose first perceptible change is well past it, so the resolve and the
+   waking read as one move. */
 export const MOTION_SETTLE_MS = 1500;
 
 /** requestIdleCallback's timeout, and the setTimeout stand-in where rIC is absent (Safari). */
@@ -351,6 +441,14 @@ if (MOTION_SETTLE_MS < INTRO_FOCUS_MS) {
   throw new Error(
     'lib/hero-motion.ts: MOTION_SETTLE_MS must cover INTRO_FOCUS_MS, or the clip starts loading ' +
       "while the intro's --focus ramp is still resolving the photograph.",
+  );
+}
+
+if (MOTION_LCP_QUIET_MS < 900) {
+  throw new Error(
+    'lib/hero-motion.ts: MOTION_LCP_QUIET_MS must exceed the widest measured gap between two ' +
+      'largest-contentful-paint entries of one load (812 ms, 1.6 Mbit/s, first visit), or the ' +
+      'auto-start reads the middle of a paint burst as quiet.',
   );
 }
 

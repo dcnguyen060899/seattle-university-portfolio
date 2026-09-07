@@ -1186,12 +1186,12 @@ of this section. The live site changes when main is pushed and deployed.
 | the switch | `lib/hero-motion.ts` `HERO_MOTION_ENABLED`, from `NEXT_PUBLIC_HERO_MOTION` at build | **unset → on** (since 2026-09-06; it was false until the owner approved the line), and so is `on`: the layer runs over the installed, VERIFIED clip. `off` is the one-word deploy-side kill switch — the page is then byte-for-byte the still hero — and any other value is read as `off`. `preview` runs the layer on localhost with a record still open (`HERO_MOTION_PREVIEW`), for the NEXT clip; `components/site/hero.tsx` throws if a preview is built on the deploy host (`process.env.VERCEL`). |
 | the layer | `components/site/hero-motion.tsx` | renders nothing on the server and nothing until a nine-step gate has held; then two feathered boxes, each holding a `<video>`, inside the promoted `.bg` after the sharp copy, registered pixel-for-pixel to the still |
 | the loop | same file | two stacked copies: the standby dissolves in ABOVE the active over the last second of media time (smoothstep on the incoming only), then the roles swap and the outgoing rewinds; scheduled by media time with a 4 Hz `timeupdate` backstop; `loop` stays on each element as the missed-handoff fallback |
-| the harness | `scripts/check-hero-motion.mjs` (`npm run check:motion`) | decodes a clip in Playwright's Chromium (the repo has no encoder) and refuses it on HANDOFF, SEAM, CAMERA LOCK, MOTION BUDGET or LEGIBILITY under the text at the viewports the layer can mount on (≥ the layer's own `min-width`; the smaller ones are measured and reported), using `check-hero-contrast.mjs --emit-geometry` for the still gate's own geometry rather than a retyped copy. It models what the layer DOES — a `MOTION_FADE_IN_MS` dissolve to frame 0 and a `MOTION_CROSS_S` dissolve at the loop, both read from `lib/hero-motion.ts` — and `--prove` drives its estimators AND its verdict functions through known inputs |
+| the harness | `scripts/check-hero-motion.mjs` (`npm run check:motion`) | decodes a clip in Playwright's Chromium (the repo has no encoder) and refuses it on HANDOFF, SEAM, CAMERA LOCK, MOTION BUDGET, SKY DRIFT or LEGIBILITY under the text at the viewports the layer can mount on (≥ the layer's own `min-width`; the smaller ones are measured and reported), using `check-hero-contrast.mjs --emit-geometry` for the still gate's own geometry rather than a retyped copy. It models what the layer DOES — a `MOTION_FADE_IN_MS` dissolve to frame 0 and a `MOTION_CROSS_S` dissolve at the loop, both read from `lib/hero-motion.ts` — and `--prove` drives its estimators AND its verdict functions through known inputs |
 | the installer | the same script, `--install` (`npm run gen:hero:motion -- <master.mp4>`) | the ONLY writer of `motion/`: refuses a failing clip, copies a passing one to `hero-loop-<sha8>.mp4`, writes `motion/manifest.json`. Never deletes. |
 | the gate | `scripts/verify-hero-assets.mjs` | the same state table the still has, applied to `motion/`: absent-and-declared-absent passes; drift, orphans, strays, a stale still or a missing PASS verdict fail. Never deletes. |
 | the record | `data/corpus/artifacts.json` `art:hero-motion` | **verified, 2026-09-06** — origin `ai-generated`, rights from Runway's terms, the owner's line verbatim as `captionText`, no open questions (`src:hero-motion-disclosure-2026-09-06`). `lib/corpus/hero-asset.ts` `heroMotionPolicy()` renders the clip only while the record is verified with the SAME disclosure line as the still's, and throws at build if the two ever differ; `preview` is the only way past a pending record, and only off the deploy host |
-| the master | `brand-masters/hero-motion-source.mp4` (git LFS) | Runway's byte-exact Seedance 2 output, the one copy that carries the C2PA manifest (`urn:c2pa:068c5961-7869-4e3b-a01b-5605a79bed83`). Every transcode strips it. |
-| the tests | `tests/e2e/hero-motion.spec.ts` | never-mounts is unconditional (phone, reduced motion, plain automation, the off switch, Save-Data, before first input); the mount path needs a clip and skips loudly without one — `HERO_MOTION_CLIP=/abs/path.mp4` serves a candidate from memory |
+| the master | `brand-masters/hero-motion-source.mp4` (git LFS) | the byte-exact Seedance 2 output, the one copy that carries a C2PA manifest (`urn:c2pa:64e52c50-f95a-4a30-9634-417d03f99e2d`, the round-three calm take that is installed). The manifest is **BytePlus's, not Runway's** — Seedance 2 is BytePlus's model served through Runway's API, and the file contains no Runway string at all. Every transcode strips it. |
+| the tests | `tests/e2e/hero-motion.spec.ts` | never-mounts is unconditional (phone, reduced motion, plain automation, the off switch, Save-Data, and anything before the page has settled); the mount path needs a clip and skips loudly without one — `HERO_MOTION_CLIP=/abs/path.mp4` serves a candidate from memory. Since 2026-09-07 it also asserts the auto-start: that the layer starts with NO input, that it fetches the clip exactly once, that a hero which does not cover the viewport does NOT auto-start (and that the first input still starts it), that reduced motion flipped at RUNTIME unmounts it and flipping back re-gates it, and that no `<video>` is ever a largest-contentful-paint candidate on the no-input path |
 
 ### Round one: the two candidates that failed, measured
 
@@ -1221,7 +1221,7 @@ model sees plausible sky and ground rather than a bar) its crop lands on the
 padding and the picture comes back whole, at 1112×834 with the still's rows at
 46–785. The model animates the padding along with the picture, which is why
 the transcode crops it off rather than trusting it. The master is 15.07 s, 6.68 MB,
-H.264 with an AAC track nobody hears, `moov` after `mdat`, and Runway's C2PA
+H.264 with an AAC track nobody hears, `moov` after `mdat`, and BytePlus's C2PA
 manifest; it is kept byte-exact under `brand-masters/` (git LFS).
 
 The installed file is a transcode of it, made with a static ffmpeg 7.1 build
@@ -1315,6 +1315,8 @@ halves the per-frame step), the budgets (6 MiB, 1536 wide — the still's own
 widest rung, never wider), and a new **SKY DRIFT** check — the sky band's
 horizontal speed as a percentage of the width per second, ≤ 0.8 %/s — so the
 harness can refuse the exact fault the owner saw (the old clip: 2.7 %/s).
+Round four found that check reads a whole-clip median, and made it per-window;
+the section below has the numbers.
 
 What it does not fix, honestly: the fountain's fine mist still shimmers frame
 to frame (texture coherence 0.24 s against a 0.33 s target), so the
@@ -1322,12 +1324,178 @@ whole-frame motion is 1.4× a "calm" budget rather than under it — shimmer,
 not gusting — and the model renders water softer than the still paints it.
 Two seeds and two prompts both landed there; "no mist" produced mist twice.
 
-The night pair is the idea to come back to: the dusk and night frames were the
-strongest images of the run, but the 30 s stitch had a re-render cut at the
-junction, clouds reversing direction between the halves, and night frames
-that blow the legibility gate (lamps and windows overshoot to white under the
-text). It needs both halves generated with matching cloud direction, a longer
-dusk, a highlight roll-off, and the gate's night headroom — not a re-roll.
+The night pair looked like the idea to come back to: the dusk and night frames
+were the strongest images of the run, but the 30 s stitch had a re-render cut
+at the junction, clouds reversing direction between the halves, and night
+frames that blow the legibility gate (lamps and windows overshoot to white
+under the text). The guess written here was that it needed "both halves
+generated with matching cloud direction, a longer dusk, a highlight roll-off,
+and the gate's night headroom — not a re-roll". **Round four funded exactly
+that and two of the four worked.** The roll-off and the night headroom are
+solved. Matching cloud direction is not a prompt problem and cannot be bought
+with a re-roll — read the next section before spending anything on it.
+
+### Round four: the night cycle, refused — and the gate that would have passed it
+
+The owner funded a night round and was specific about what he wanted from it:
+the background should keep moving while a recruiter reads, and
+
+> "the animation don't just loop back to the original first frame, it keep
+> moving \[…] if the cloud move to the left and leave the screen then if there
+> is new cloud coming from the right make it smoothly enter the background"
+
+**Nothing was installed. The calm 15 s take still ships.** $18.00 of credits
+bought three Seedance 2 takes at `1664:1248` — A (sunset → night, seed 21),
+B (night → sunset, seed 22) and one re-roll of B (seed 23) — and the result is
+a clear answer rather than a clip. What follows is why, because the failure is
+in the *design*, and a round five that does not change the design will buy the
+same failure again.
+
+#### The design, and the reason it cannot hold a direction
+
+A 30 s cycle out of a 15 s model means two takes. To make the cycle *close* —
+so the loop point is not a cut — take B was keyframed at **both ends**: it
+starts on A's last frame (the night) and ends on the sunset still, which is
+where A begins. That is what makes the join seamless, and it is also the whole
+problem. **B's last keyframe is a specific cloud field**, and the cheapest way
+for a diffusion model to arrive at a specific cloud field is to run the clouds
+*backwards* into it. Both seeds took that route:
+
+| take | seed | sky drift | row-pairs agreeing | against the 0.8 %/s gate |
+|---|---|---|---|---|
+| A, sunset → night | 21 | **−2.40 %/s** (leftward) | 124 of 168 left | **3.0× over** |
+| B, night → sunset | 22 | 0.00 %/s | 77 left / **82 right** — no direction at all | unmeasurable |
+| B re-roll, same verbatim prompt | 23 | **+3.33 %/s** (**rightward**) | 149 of 168 right, and 78 of 78 after t 3.8 s | **4.2× over, and backwards** |
+| *the installed calm take, for scale* | *7* | *−0.37 %/s* | *168 of 168 left* | *ships* |
+
+Read the last two rows together. The cycle A → B contains a **reversal**, which
+is the exact fault the owner named. The re-roll was spent deliberately, to
+separate "bad seed" from "bad design", and it settled it: the same prompt —
+which says verbatim "entering from the right edge and moving left the whole
+time, never moving right, never reversing" — produced clouds moving right
+*harder* the second time. Two independent seeds, one structural cause. The
+second authorised re-roll was therefore **not spent**; $12.00 of the re-roll
+budget remains, and it should go to a changed design, not a third data point on
+a settled question.
+
+(Those figures are two independent measurements that agree. The night round's
+own estimator reported A at −2.34..−2.47 %/s, B2 at +3.39 %/s and the shipping
+clip at −0.39 %/s; the table above is a separate re-measurement written from
+the method rather than the code, on frames re-extracted from the masters, with
+its sign calibrated on real pixels translated by known amounts (−20, −8, −3, 0,
++3, +8, +20 all recovered exactly).)
+
+A's sky is also simply too fast on its own — 6.5× the shipping clip, 3× the
+gate. Round three's prompt, the one that produced a calm sky, said clouds
+should "drift almost imperceptibly … so slowly the eye can barely tell". Round
+four's said "drift slowly and steadily". **The weaker wording bought a sky six
+times faster**, which is worth knowing before writing the next prompt.
+
+#### What round four got right, and should be reused verbatim
+
+The rest of the round is sound, and none of it needs to be rediscovered:
+
+- **The highlight roll-off works, and it is what makes night legible.** Night
+  frames are brighter *under the text* than the sunset they replace across the
+  whole distribution, not just in the tail — median text cell 0.408 against the
+  still's 0.311, with 45 % of cells over L 0.5 against the still's 31 % — so a
+  top-only knee could never have done it. Raw, with `cas=0.8` and the 0.985
+  gain, the night halves ran **p95 0.968/0.983 and mean 0.448/0.480** against a
+  0.397 mean limit — 13–21 % over. With a C1-continuous quadratic knee on
+  limited-range Y′ (identity below Y′ 0.60, white → 0.80), they came back to
+  **mean 0.345/0.358** — 9.8 % and 8.6 % inside the limit, at a handoff cost of
+  0.7 sRGB levels on a cap of 20. The expression, written without commas so it
+  survives the filter-graph parser:
+
+  ```
+  lutyuv=y='16+219*((val-16)/219 - 0.3125*(D+abs(D))*(D+abs(D)))'   where D = ((val-16)/219-0.6)
+  ```
+
+- **The padded-4:3 trick still holds the camera.** CAMERA LOCK 0.34 px (A) and
+  0.27 px (B) against a 0.5 px limit, on brand-new takes.
+- **Sharpness reaches parity with the shipping clip** at device scale — 0.85×
+  Sobel and 0.62× Laplacian against the still, versus the shipping clip's 0.87×
+  and 0.64× at the same instant.
+- **A 2 s baked `xfade` at the junction is the right joint.** The raw junction
+  is 6.3× the clip's median frame step and fails outright as a cut; dissolved
+  over 2 s it lands at 2.97× median, inside the repo's own SEAM rule, and it is
+  what brings a 30 s cycle in at 11.53 MiB at CRF 24.
+
+#### The gate would have passed it, and that is now fixed
+
+This is the part worth the money. The stitched 30 s cycle **passed the harness
+11 of 11**, SKY DRIFT included, at "0.65 %/s". The same material cut as a plain
+concat instead of an `xfade` **failed** the same check at 1.04 %/s. Same
+takes, same skies — a different verdict, decided by which frames the 12-frame
+sampling stride happened to land on.
+
+The cause: SKY DRIFT took a **median over every row-pair in the clip**. That is
+a fine statistic for a clip whose sky does one thing, and meaningless for a clip
+made of two takes, where the pool is bimodal — half the pairs fast, half at
+zero — and the median sits wherever the mix puts it. Driving *only* the
+sampling stride across four adjacent values on this material:
+
+| stride | take A alone | take B alone | A + B pooled, as the gate read it |
+|---|---|---|---|
+| 3 frames | −2.22 %/s FAIL | 0.00 %/s PASS | −0.74 %/s **PASS** |
+| 4 frames | −2.40 %/s FAIL | 0.00 %/s PASS | −0.83 %/s **FAIL** |
+| 5 frames | −2.31 %/s FAIL | −0.09 %/s PASS | −0.74 %/s **PASS** |
+| 6 frames | −2.22 %/s FAIL | 0.00 %/s PASS | −0.83 %/s **FAIL** |
+
+Each half judged alone is stable to ±0.09 %/s. Pooled, the verdict alternates.
+**A gate whose answer is a coin flip is not a gate**, so SKY DRIFT no longer
+asks that question. It now takes the median **per overlapping 4 s window**
+(hop 2 s, so a junction between two takes cannot fall between two windows and
+escape both) and applies two rules:
+
+- **the worst window** must be ≤ 0.8 %/s — the old limit, now unable to be
+  averaged away by a calm second half;
+- **no reversal**: windows that are actually moving must agree on a direction.
+  "Actually moving" is derived, not typed — the estimator's quantum is one
+  half-res pixel per lag second (2 px/s, 0.13 % of a 1536-wide frame) and a
+  window under **two** quanta has not measurably moved, so its sign is noise and
+  it is excluded. This rule is the owner's ask expressed as code.
+
+The whole-clip median is still reported beside them, so what the old rule saw
+stays visible. Measured after the change:
+
+| clip | old rule | new rule |
+|---|---|---|
+| the installed calm take | PASS 0.39 %/s | **PASS** — 7 windows, all −0.39 %/s, one direction throughout |
+| the round-four cycle (2 s xfade) | PASS 0.65 %/s | **FAIL** — worst window 2.86 %/s, and REVERSES (8 moving windows disagree) |
+| the same takes as a plain concat | FAIL 1.04 %/s | **FAIL** — worst window 3.13 %/s; the reversal rule stays quiet, its two +0.13 %/s windows sitting under the dead band, so the refusal is the speed alone |
+
+`--prove` drives the new verdict through six window sets whose right answer is
+known, including the one the old rule could never have caught: **two halves at
+equal speed in opposite directions median to exactly zero** and must be
+refused. All six pass, and the installed clip still passes 11 of 11.
+
+#### What a round five would have to change
+
+Not the prompt. Not the roll-off. **The keyframing.**
+
+1. **Stop pinning B at both ends.** Pinning the last frame to the sunset still
+   is what forces the model to reverse the sky, and no prompt outranks a
+   keyframe. Generate B with a **first keyframe only** and let it end wherever
+   it ends; close the cycle with the layer's existing dissolve rather than with
+   a keyframe. The layer already dissolves `MOTION_CROSS_S` = 2 s at the loop
+   and the measured cost of closing the round-four loop that way was
+   **0.1175 luma/frame = 0.22× the clip's own median step** — a seam nobody can
+   see, bought without constraining the model at all.
+2. **Or drop the return leg entirely.** The owner's ask is that clouds keep
+   arriving, not that the sky return to sunset. A one-way dusk that dissolves
+   back to its own opening is a 15 s problem, which this model demonstrably
+   solves — the shipping clip is the proof.
+3. **Use round three's wording for the sky**, verbatim: "drift almost
+   imperceptibly … so slowly the eye can barely tell". It is the only wording
+   that has ever produced a passing sky here.
+4. **Budgets, if and only if a 30 s cycle actually lands.** `maxDurationS` is
+   15.5 and `mp4Bytes` is 6 MiB; the round-four cycle measured 28.04 s and
+   11.53 MiB. Those are the numbers a raise would have to be sized against —
+   and they were not raised, because nothing landed. `maxWidth` stays 1536.
+
+Until then the calm take ships, and the honest description of the hero is a
+single 15 s loop whose sky crosses about once every four minutes.
 
 ### Two rules the first harness got wrong, and one it left unprovable
 
@@ -1358,9 +1526,43 @@ dusk, a highlight roll-off, and the gate's night headroom — not a re-roll.
   `manifest.opacityCap` (solved in Chromium, written back with `--cap`); a clip
   that needs cap 0 ships off. The layer consumes `--focus` in CSS exactly as
   `.sharp` does and never writes to `<html>`.
-- **LCP.** The layer mounts only after the first scroll, pointerdown or keydown —
-  Chrome finalises LCP there, and a clip that paints 90 %+ of the viewport
-  before it would be the LCP element. The IDLE variant was rejected on purpose.
+- **LCP — and it starts on its own, since 2026-09-07.** The rule used to be
+  "mount only after the first scroll, pointerdown or keydown", because Chrome
+  finalises LCP there. The owner asked for no click, and the replacement is
+  geometry rather than timing: **a paint that covers the whole viewport is not
+  an LCP candidate at all**, and this clip is registered to the whole still, so
+  it covers it. Measured on the production build (Chromium 151, `navigator.
+  webdriver` spoofed false), the same late mount over a box leaving a **1 px**
+  strip of still is recorded at 4068 ms and takes the metric with it; over a box
+  that covers every pixel, nothing is recorded — at any of fourteen desktop
+  window shapes from 1280×800 to 3440×1440. Final LCP with the layer
+  auto-starting matches the still-only build within the harness's own noise — at
+  1440×900 dpr 2, first visit 3220 → 3196 ms, repeat 896 → 908, and 4512 → 4496 /
+  4452 → 4460 on 1.6 Mbit/s + 150 ms RTT; every delta across both viewports is
+  ≤ 44 ms against a 40 ms run-to-run spread on the same build — CLS is unchanged,
+  and the clip is still fetched exactly once. **The silence
+  is an exclusion, not a finished metric**: in the same run a 900×600 `<img>`
+  injected after the clip had faded all the way in IS recorded, at 9044 ms — so
+  LCP was live throughout and simply refused the clip. The e2e spec injects that
+  control on every run, so the assertion can never pass by talking to a finished
+  observer. Two rules that
+  did NOT survive contact with the measurement: **opacity 0 protects nothing**
+  (a clip that presents its first frame inside an opacity-0 subtree and never
+  fades in is recorded anyway, at that frame's own time), and **a poster is not
+  a paint** (a `<video>` with `preload="none"` and a visibly painted poster
+  produces no entry at all, so "mount early carrying the hero's own image" buys
+  nothing — and the blurred rung visibly replaces the sharp still while it is
+  up). The controller checks the coverage at runtime, against the sharp
+  `<img>`'s own box, before it starts itself: a clip registered to a
+  sub-rectangle of the still, or a page that lands scrolled, fails that check
+  and waits for the first input exactly as before. The first input is kept as
+  an **accelerator** — a reader who scrolls gets the motion sooner, never later.
+  ⚠ One edge the DOM cannot see: a **programmatic** scroll (a fragment jump,
+  scroll restoration, any `scrollTo`) fires the same `scroll` event a reader's
+  does. On this page it was measured to finalise LCP as well — the control
+  `<img>` stops being recorded after a scripted `scrollTo` — but a synthetic
+  page disagreed, so nothing rests on it: a page that has scrolled at all fails
+  the coverage test, and that listener has been here since the feature shipped.
 - **Never on the phone.** `(min-width: 1280px) and (pointer: fine)`, no SSR
   markup, and the phone e2e runs under webdriver: three independent refusals.
 - **The disclosure.** A moving frame reads as footage; the still's line does
@@ -1369,12 +1571,15 @@ dusk, a highlight roll-off, and the gate's night headroom — not a re-roll.
   records, and `heroMotionPolicy()` throws at build time if the two ever carry
   different lines. The switch is on by default from that day, `off` is the
   kill, and `preview` stays a localhost affair for the next clip.
-- **Provenance.** The master carries Runway's C2PA manifest; the transcode
+- **Provenance.** The master carries BytePlus's C2PA manifest (the model's own signature, not Runway's — check the claim URN against `art:hero-motion` rather than retyping it here); the transcode
   does not, and the manifest records `c2paInMaster: false` for the shipped
   bytes. Never say the site's video "carries Content Credentials".
 - **Encoding.** The recipe above, verbatim, from the LFS master. The harness
   refuses a master over 64 MB before decoding it, and the installer refuses
-  anything over 3 MB, 15.5 s, 30 fps or 1280 px wide.
+  anything over 6 MiB, 15.5 s, 30 fps or 1536 px wide — the budgets round three
+  moved to when the clip went to the still's own widest rung (they were 3 MB and
+  1280 px for the round-two take; `BUDGETS` in `scripts/check-hero-motion.mjs`
+  is the source).
 
 ---
 

@@ -32,7 +32,14 @@
  *   7. MOTION_SETTLE_MS elapsed AND an idle callback fired — both
  *   8. the sharp <img> has decoded: the clip may never precede the picture it
  *      registers to
- *   9. the first scroll / pointerdown / keydown — LCP is final after it
+ *   9. LCP is out of the way, and there are two ways to be: EITHER the first
+ *      scroll / pointerdown / keydown (Chrome finalises LCP at it), OR — the
+ *      auto-start, since 2026-09-07 — the LCP observer quiet for
+ *      MOTION_LCP_QUIET_MS AND the clip's box covering every pixel of the
+ *      viewport, which is a paint Chrome does not make an LCP candidate at all
+ *      (measured; the argument and the numbers are in lib/hero-motion.ts's
+ *      header). Whichever comes first. No input is required; where the
+ *      geometry cannot promise coverage, one still is.
  *
  * ── WHAT IT NEVER DOES ─────────────────────────────────────────────────────
  *
@@ -41,7 +48,8 @@
  * CSS (`[data-clips]{opacity:calc(1 - var(--focus))}`) — same law, same
  * property, same element as `.sharp`. It never reads scroll position: pausing
  * comes from IntersectionObserver. It never adds a scroll listener beyond the
- * one-shot `once` wait for first input, which is not a scroll VALUE consumer.
+ * one-shot `once` wait for the first input, which is not a scroll VALUE
+ * consumer and is now an accelerator rather than a requirement.
  * It never touches the intro: `data-intro` is observed, not written. And it
  * never refers to Date.now()/performance.now(): the loop is scheduled by
  * MEDIA time, so a tab suspend leaves nothing to reconcile.
@@ -72,6 +80,7 @@ import {
   MOTION_FORCE_KEY,
   MOTION_HIDDEN_UNMOUNT_MS,
   MOTION_IDLE_TIMEOUT_MS,
+  MOTION_LCP_QUIET_MS,
   MOTION_MEDIA,
   MOTION_OFF_KEY,
   MOTION_OVERRIDE_KEY,
@@ -119,6 +128,51 @@ function findSharpImg(): HTMLImageElement | null {
   if (band === null) return null;
   const imgs = band.querySelectorAll('img');
   return imgs.length >= 2 ? (imgs[1] ?? null) : null;
+}
+
+/**
+ * WOULD THE CLIP PAINT OVER EVERY PIXEL OF THE VIEWPORT? This is the whole
+ * licence for starting without an input: Chrome does not make a paint that
+ * covers the entire viewport a largest-contentful-paint candidate, and a 1 px
+ * strip of anything else is enough to put it back in the running (both
+ * measured — lib/hero-motion.ts's header). Two conditions, both read rather
+ * than assumed:
+ *
+ *   · The clip is registered to the WHOLE still (crop 0, 0, 1, 1). Then the
+ *     `cover` arithmetic in HERO_MOTION_STYLE puts the clip's box over every
+ *     pixel of the layer's root, exactly as `object-fit: cover` does for the
+ *     still. A cropped registration leaves a still-only strip somewhere and
+ *     this returns false.
+ *   · The root's own box covers the viewport. The root is `inset: 0` in `.bg`
+ *     and so is the sharp <img>, so the img's border box IS the root's box —
+ *     measured on the element that owns it, never retyped from
+ *     hero.module.css, the same way `--m-px`/`--m-py` are. A page restored
+ *     mid-scroll fails here, which is right: there the hero is no longer the
+ *     whole viewport.
+ *
+ * Strict comparisons, no tolerance: a false negative costs this reader the
+ * auto-start and nothing else (the first input still starts the layer), while
+ * a false positive costs the page its LCP.
+ *
+ * The one gap left open, honestly: the check is made before the clip loads, so
+ * a window resize between it and the first presented frame could invalidate
+ * it. A resize is not an input, so LCP would still be live. It is a fraction
+ * of a second of exposure for a reader who is resizing rather than reading,
+ * and closing it would mean re-checking at a moment when the frame has already
+ * presented — which is too late to matter.
+ */
+function clipCoversViewport(config: HeroMotion): boolean {
+  const { x, y, w, h } = config.crop;
+  if (x > 0 || y > 0 || w < 1 || h < 1) return false;
+  const img = findSharpImg();
+  if (img === null) return false;
+  const box = img.getBoundingClientRect();
+  return (
+    box.left <= 0 &&
+    box.top <= 0 &&
+    box.right >= window.innerWidth &&
+    box.bottom >= window.innerHeight
+  );
 }
 
 /** `'50% 40%'` → `[0.5, 0.4]`; anything else → centre. */
@@ -293,6 +347,43 @@ export function HeroMotionLayer({ motion }: Props) {
         }
       });
 
+    /**
+     * The auto-start's other half: no new largest-contentful-paint entry for
+     * MOTION_LCP_QUIET_MS. Every entry RE-ARMS the timer, so this is "the page
+     * has stopped landing big paints", not a fixed delay, and `buffered: true`
+     * means the entries that landed before the observer existed re-arm it too.
+     * Started (not awaited) before the gate waits on anything timed, so the
+     * window overlaps MOTION_SETTLE_MS instead of following it. Where the entry
+     * type is unsupported it resolves on the first arm: only Chrome reports LCP
+     * at all, and the coverage test is what protects the metric anyway.
+     */
+    const whenLcpQuiet = (): Promise<void> =>
+      new Promise((resolve) => {
+        let timer: ReturnType<typeof setTimeout> | null = null;
+        let observer: PerformanceObserver | null = null;
+        const stop = (): void => {
+          if (timer !== null) clearTimeout(timer);
+          timer = null;
+          if (observer !== null) observer.disconnect();
+          observer = null;
+        };
+        const arm = (): void => {
+          if (timer !== null) clearTimeout(timer);
+          timer = setTimeout(() => {
+            stop();
+            resolve();
+          }, MOTION_LCP_QUIET_MS);
+        };
+        cleanups.push(stop);
+        try {
+          observer = new PerformanceObserver(arm);
+          observer.observe({ type: 'largest-contentful-paint', buffered: true });
+        } catch {
+          /* an engine without the entry type: there is nothing to be quiet about */
+        }
+        arm();
+      });
+
     const run = async (): Promise<void> => {
       // 1 — a config, from the manifest or (webdriver + force only) the override.
       const forced = navigator.webdriver === true && readSession(MOTION_FORCE_KEY) === '1';
@@ -326,6 +417,10 @@ export function HeroMotionLayer({ motion }: Props) {
       // 4 — the connection.
       if (connectionRefuses()) return;
 
+      // The LCP watch starts HERE, before the gate waits on anything timed, so
+      // its quiet window runs alongside the settle rather than after it.
+      const lcpQuiet = whenLcpQuiet();
+
       // 5 — loaded and visible.
       await whenLoaded();
       if (cancelled) return;
@@ -344,8 +439,15 @@ export function HeroMotionLayer({ motion }: Props) {
       const decoded = await whenSharpDecoded();
       if (cancelled || !decoded) return;
 
-      // 9 — LCP is final.
-      await whenFirstInput();
+      // 9 — LCP is out of the way: the auto-start, or the first input, whichever
+      //     arrives first. The auto-start needs the watch to be quiet AND the
+      //     clip's box to cover the viewport; a clip that cannot promise that
+      //     coverage never resolves this half, and the layer waits for an input
+      //     exactly as it did before 2026-09-07.
+      const autoStart = lcpQuiet.then((): Promise<void> | undefined =>
+        clipCoversViewport(candidate) ? undefined : new Promise<void>(() => undefined),
+      );
+      await Promise.race([whenFirstInput(), autoStart]);
       if (cancelled) return;
 
       setConfig(candidate);
