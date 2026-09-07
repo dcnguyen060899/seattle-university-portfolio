@@ -27,16 +27,20 @@ import {
  * §1 NEVER MOUNTS is UNCONDITIONAL. It needs no clip: a config is injected
  * that points at a URL routed to 404, and if the gate ever passed where it
  * must refuse — the phone, reduced motion, plain automation, the owner's off
- * switch, Save-Data — a <video> would appear and a request would go out. The
- * shipping state (no clip, flag off) is a subset of these refusals and is
- * asserted by the same tests.
+ * switch, Save-Data — a <video> would appear and a request would go out. Those
+ * are the refusals the shipping build makes for every reader it does not
+ * animate for (the switch has been on by default since 2026-09-06); the
+ * still-only page — no clip, or a build with the switch `off`, the shipping
+ * state until then — is a subset of them, refused by the same gate one line
+ * earlier.
  *
  * §2 THE MOUNT PATH needs a decodable clip and SKIPS LOUDLY without one. It
  * arms on an INSTALLED clip (public/brand/hero/motion/manifest.json
  * present:true) or on HERO_MOTION_CLIP, an absolute path the spec serves from
  * memory with Range support, so the controller is exercised against a real
- * candidate without any clip in the repository — which is the state the repo
- * is in until a clip passes scripts/check-hero-motion.mjs.
+ * candidate without any clip in the repository — the state the repo was in
+ * until the Seedance 2 transcode passed scripts/check-hero-motion.mjs and was
+ * installed (2026-09-06), and the way the next candidate is tried.
  *
  * ── HOW THE LAYER IS REACHED UNDER AUTOMATION ─────────────────────────────
  *
@@ -447,7 +451,7 @@ test.describe('hero motion: never mounts', () => {
 })
 
 /* ══════════════════════════════════════════════════════════════════════════
-   §2 — the mount path (skips loudly until a clip exists)
+   §2 — the mount path (armed on the installed clip since 2026-09-06; skips loudly without one)
    ══════════════════════════════════════════════════════════════════════════ */
 
 const clip = armed ? loadClip() : null

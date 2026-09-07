@@ -368,7 +368,10 @@ export function heroAssetPolicy(): HeroAssetPolicy {
    render only once the record is VERIFIED and carries the line the owner
    approved — and that line must be the SAME sentence the still renders, so the
    built page carries one disclosure covering both states and C15's verbatim
-   grep stays one check. */
+   grep stays one check. Since 2026-09-06 that is the record's state: the owner
+   approved the line verbatim and said "turn it on"
+   (src:hero-motion-disclosure-2026-09-06), both records carry it, and
+   `mayRender` below is true on a build of main. */
 
 /** The raw motion record. Throws when it is missing or carries no provenance block. */
 export function heroMotionProvenance(): ImageProvenance {

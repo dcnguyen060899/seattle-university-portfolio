@@ -269,14 +269,16 @@ const motion = await verifyMotion()
  *                                   layer existed; the component reads nothing.
  *   missing         none            PASS, note: commit the placeholder.
  *   missing         some            FAIL. Orphans nothing records.
- *   present:false   none            PASS. The shipping state.
+ *   present:false   none            PASS. The state the placeholder was
+ *                                   committed in; still a legal one.
  *   present:false   some            FAIL. A consumer renders the still while
  *                                   megabytes sit unreferenced in the deployment.
  *   present:true    ≠ exactly the   FAIL. Drift, in either direction.
  *                   declared file
  *   present:true    the file        Check bytes, sha256, the name's sha8, the
  *                                   budget, the still it was cut from, the
- *                                   harness verdict, the cap, the crop.
+ *                                   harness verdict, the cap, the crop. The
+ *                                   shipping state since 2026-09-06.
  */
 async function verifyMotion() {
   const disk = await motionOnDisk()

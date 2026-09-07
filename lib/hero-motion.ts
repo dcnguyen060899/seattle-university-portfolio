@@ -16,26 +16,30 @@
  * still is never touched: with the flag below off, or with no clip on disk,
  * the page is byte-for-byte the still hero.
  *
- * ── THE FLAG, AND WHY IT IS A BUILD-TIME ENVIRONMENT SWITCH ───────────────
+ * ── THE SWITCH: ON BY DEFAULT SINCE 2026-09-06, `off` IS THE KILL SWITCH ───
  *
  * `HERO_MOTION_ENABLED` is inlined at build from NEXT_PUBLIC_HERO_MOTION.
- * Unset — the default, and what every build of main is — it is false and the
- * page is byte-for-byte the still hero. `on` runs the layer over an installed,
- * VERIFIED clip. `preview` runs it on localhost with the record still open
+ * Unset — the default — it is TRUE: the owner approved the disclosure line and
+ * said "turn it on" on 2026-09-06 (src:hero-motion-disclosure-2026-09-06), the
+ * record is verified and the clip that passed the harness is installed, so a
+ * build of main animates. `off` is the one-word deploy-side kill switch: the
+ * page is then byte-for-byte the still hero. `preview` exists for the NEXT
+ * clip — it runs the layer on localhost with a record still open
  * (HERO_MOTION_PREVIEW, below; components/site/hero.tsx refuses a preview on
- * the deploy host). It is an environment switch rather than a constant so that
- * turning the animation on in production is a deploy setting the owner flips,
- * not a commit, and a preview build needs no edit to the tree. Nothing in the
- * gate below is relaxed by any value of it. The first two Runway candidates
- * (2026-09-06) failed the harness; the third — Seedance 2, from the still
- * padded to the model's 4:3 so its crop fell on padding — passed it and is
- * installed. Read scripts/check-hero-motion.mjs's header before touching this.
+ * the deploy host). Nothing in the gate below is relaxed by any value of it:
+ * the layer still refuses phones, coarse pointers, reduced motion, Save-Data,
+ * plain automation and anything before the first input, and hero.tsx still
+ * hands it nothing unless the corpus record may render. The first two Runway
+ * candidates failed the harness; the third — Seedance 2, from the still padded
+ * to the model's 4:3 so its crop fell on padding — passed it and is installed.
+ * Read scripts/check-hero-motion.mjs's header before touching this.
  *
  * Under automation the flag is bypassed ONLY by `navigator.webdriver === true`
  * plus the force key in sessionStorage — the same shape as lib/intro.ts's
  * INTRO_FORCE_KEY, and for the same reason: every existing Playwright run must
- * stay byte-identical to a page with no motion, and the feature must still be
- * testable while the constant is false.
+ * stay byte-identical to a page with no motion whatever the constant's value
+ * (it was false on every build until 2026-09-06, and an `off` build still is),
+ * and the feature must stay testable under either.
  *
  * ── LCP: THE STRICT VARIANT, CHOSEN ON PURPOSE ──────────────────────────────
  *
@@ -54,14 +58,16 @@
  *
  * ── WHY THE STYLESHEET IS A STRING AND NOT A CSS MODULE ─────────────────────
  *
- * The one hard requirement on this feature while it is off: the DOM and the
- * CSS the page ships must be BYTE-IDENTICAL to a tree without it. A CSS
+ * The one hard requirement on this feature wherever it is off — an `off`
+ * build, and every visitor the gate refuses, which is every phone: the DOM and
+ * the CSS the page ships must be BYTE-IDENTICAL to a tree without it. A CSS
  * module imported by the controller would be collected into the route's CSS
  * chunks at build time whether or not the component ever renders — Turbopack
  * collects stylesheets from the module graph, not from render output — so
  * the rules below live in this string and are emitted as a <style> element
  * INSIDE the layer's own markup, which exists only after the gate passes.
- * Nothing ships for a feature that is off. No colour is named in it
+ * Nothing ships for a feature that is off, and nothing reaches a reader it is
+ * off for. No colour is named in it
  * (scripts/check-ground-tokens.mjs would object, and rightly): the feather
  * mask reads `var(--ground)` for its opaque stop because a mask is read for
  * alpha only, exactly as hero-scrim.module.css argues for its own mask.
@@ -72,13 +78,13 @@ import { INTRO_FOCUS_MS } from './intro';
 /* ── The flag ──────────────────────────────────────────────────────────── */
 
 /**
- * THE build-time switch, from NEXT_PUBLIC_HERO_MOTION. Leave it unset until a
- * clip passes scripts/check-hero-motion.mjs AND the owner has approved the
- * disclosure line (data/corpus/artifacts.json, art:hero-motion); then set it
- * to `on` where the site is built. `preview` is for localhost only.
+ * THE build-time switch, from NEXT_PUBLIC_HERO_MOTION: unset or `on` → on;
+ * `off` → the still hero, byte-for-byte; `preview` → on, localhost only, with
+ * the corpus record allowed to be pending. Any other value is a typo and is
+ * treated as `off`, because a misspelled kill switch must still kill.
  */
 const MOTION_ENV = process.env.NEXT_PUBLIC_HERO_MOTION ?? '';
-export const HERO_MOTION_ENABLED = MOTION_ENV === 'on' || MOTION_ENV === 'preview';
+export const HERO_MOTION_ENABLED = MOTION_ENV === '' || MOTION_ENV === 'on' || MOTION_ENV === 'preview';
 /**
  * `preview`: the layer is on AND the server may hand it an installed clip whose
  * corpus record is still pending-owner — for looking at a candidate on
@@ -115,10 +121,12 @@ export const MOTION_OFF_KEY = 'duyng.motion.off';
  * sessionStorage. A JSON `HeroMotion` that stands in for the manifest, read
  * ONLY under `navigator.webdriver` AND the force key. It exists so the
  * controller can be tested against a candidate clip served from memory
- * without any clip in the repository — the repo holds no clip until one
- * passes. A real browser never reports webdriver, and sessionStorage is
- * same-origin, so this is unreachable without already running script on the
- * page. Validated through `parseHeroMotion` like the manifest.
+ * without any clip in the repository — the repo held no clip until one
+ * passed (the Seedance 2 transcode, installed 2026-09-06), and the next
+ * candidate is tried the same way. A real browser never reports webdriver,
+ * and sessionStorage is same-origin, so this is unreachable without already
+ * running script on the page. Validated through `parseHeroMotion` like the
+ * manifest.
  */
 export const MOTION_OVERRIDE_KEY = 'duyng.motion.override';
 

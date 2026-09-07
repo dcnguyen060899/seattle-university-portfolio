@@ -1165,28 +1165,31 @@ not to be regenerated, resampled or re-cropped.
 
 ---
 
-## The motion layer — `motion/`, and why it ships dark
+## The motion layer — `motion/`, and why it is on
 
 The owner asked for the photograph to become a calm, looping "living"
 background — sky drifting, leaves in a breeze, the fountain falling — with a
 static camera and motion small enough to read text over. The MACHINERY for
 that is in the tree, a clip that PASSES the harness is installed under
-`motion/`, and the animation still ships dark: `NEXT_PUBLIC_HERO_MOTION` is
-unset on every build of main and the corpus record is pending the owner's
-disclosure line. The difference between those three states is the whole point
-of this section.
+`motion/`, and since 2026-09-06 the animation is on: the owner approved the
+disclosure line verbatim and said "turn it on"
+(`src:hero-motion-disclosure-2026-09-06`), the corpus record is verified, and
+`NEXT_PUBLIC_HERO_MOTION` unset — every build of main — is `on`; `off` is the
+deploy-side kill switch. It shipped dark until that day, on purpose: the
+difference between "in the tree", "installed" and "shipping" is the whole point
+of this section. The live site changes when main is pushed and deployed.
 
 ### What is in the tree
 
 | piece | where | what it does |
 |---|---|---|
-| the switch | `lib/hero-motion.ts` `HERO_MOTION_ENABLED`, from `NEXT_PUBLIC_HERO_MOTION` at build | **unset → false**, and the page is byte-for-byte the still hero. `on` runs the layer over an installed, VERIFIED clip — a deploy setting the owner flips, not a commit. `preview` runs it on localhost with the record still open (`HERO_MOTION_PREVIEW`); `components/site/hero.tsx` throws if a preview is built on the deploy host (`process.env.VERCEL`). |
+| the switch | `lib/hero-motion.ts` `HERO_MOTION_ENABLED`, from `NEXT_PUBLIC_HERO_MOTION` at build | **unset → on** (since 2026-09-06; it was false until the owner approved the line), and so is `on`: the layer runs over the installed, VERIFIED clip. `off` is the one-word deploy-side kill switch — the page is then byte-for-byte the still hero — and any other value is read as `off`. `preview` runs the layer on localhost with a record still open (`HERO_MOTION_PREVIEW`), for the NEXT clip; `components/site/hero.tsx` throws if a preview is built on the deploy host (`process.env.VERCEL`). |
 | the layer | `components/site/hero-motion.tsx` | renders nothing on the server and nothing until a nine-step gate has held; then two feathered boxes, each holding a `<video>`, inside the promoted `.bg` after the sharp copy, registered pixel-for-pixel to the still |
 | the loop | same file | two stacked copies: the standby dissolves in ABOVE the active over the last second of media time (smoothstep on the incoming only), then the roles swap and the outgoing rewinds; scheduled by media time with a 4 Hz `timeupdate` backstop; `loop` stays on each element as the missed-handoff fallback |
 | the harness | `scripts/check-hero-motion.mjs` (`npm run check:motion`) | decodes a clip in Playwright's Chromium (the repo has no encoder) and refuses it on HANDOFF, SEAM, CAMERA LOCK, MOTION BUDGET or LEGIBILITY under the text at the viewports the layer can mount on (≥ the layer's own `min-width`; the smaller ones are measured and reported), using `check-hero-contrast.mjs --emit-geometry` for the still gate's own geometry rather than a retyped copy. It models what the layer DOES — a `MOTION_FADE_IN_MS` dissolve to frame 0 and a `MOTION_CROSS_S` dissolve at the loop, both read from `lib/hero-motion.ts` — and `--prove` drives its estimators AND its verdict functions through known inputs |
 | the installer | the same script, `--install` (`npm run gen:hero:motion -- <master.mp4>`) | the ONLY writer of `motion/`: refuses a failing clip, copies a passing one to `hero-loop-<sha8>.mp4`, writes `motion/manifest.json`. Never deletes. |
 | the gate | `scripts/verify-hero-assets.mjs` | the same state table the still has, applied to `motion/`: absent-and-declared-absent passes; drift, orphans, strays, a stale still or a missing PASS verdict fail. Never deletes. |
-| the record | `data/corpus/artifacts.json` `art:hero-motion` | **pending-owner.** `lib/corpus/hero-asset.ts` `heroMotionPolicy()` refuses to render the clip until it is verified with the SAME disclosure line as the still's — `preview` is the only way past it, and only off the deploy host |
+| the record | `data/corpus/artifacts.json` `art:hero-motion` | **verified, 2026-09-06** — origin `ai-generated`, rights from Runway's terms, the owner's line verbatim as `captionText`, no open questions (`src:hero-motion-disclosure-2026-09-06`). `lib/corpus/hero-asset.ts` `heroMotionPolicy()` renders the clip only while the record is verified with the SAME disclosure line as the still's, and throws at build if the two ever differ; `preview` is the only way past a pending record, and only off the deploy host |
 | the master | `brand-masters/hero-motion-source.mp4` (git LFS) | Runway's byte-exact Seedance 2 output, the one copy that carries the C2PA manifest (`urn:c2pa:068c5961-7869-4e3b-a01b-5605a79bed83`). Every transcode strips it. |
 | the tests | `tests/e2e/hero-motion.spec.ts` | never-mounts is unconditional (phone, reduced motion, plain automation, the off switch, Save-Data, before first input); the mount path needs a clip and skips loudly without one — `HERO_MOTION_CLIP=/abs/path.mp4` serves a candidate from memory |
 
@@ -1300,10 +1303,11 @@ gate reads the layer's `min-width` instead of assuming the still's list).
 - **Never on the phone.** `(min-width: 1280px) and (pointer: fine)`, no SSR
   markup, and the phone e2e runs under webdriver: three independent refusals.
 - **The disclosure.** A moving frame reads as footage; the still's line does
-  not cover it. The proposed sentence is in `art:hero-motion`'s openQuestions,
-  verbatim, and is the owner's to approve — `heroMotionPolicy()` throws at build
-  time if the two records ever carry different lines. Until then the switch
-  stays unset and `preview` is a localhost affair.
+  not cover it. The owner approved the sentence verbatim on 2026-09-06
+  (`src:hero-motion-disclosure-2026-09-06`); it is `captionText` on both
+  records, and `heroMotionPolicy()` throws at build time if the two ever carry
+  different lines. The switch is on by default from that day, `off` is the
+  kill, and `preview` stays a localhost affair for the next clip.
 - **Provenance.** The master carries Runway's C2PA manifest; the transcode
   does not, and the manifest records `c2paInMaster: false` for the shipped
   bytes. Never say the site's video "carries Content Credentials".

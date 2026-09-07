@@ -11,10 +11,13 @@
  *     node scripts/check-hero-motion.mjs --cap 0.85                # write a solved cap to the manifest
  *
  * With no `--clip` it reads public/brand/hero/motion/manifest.json: `present:
- * false` — the shipping state — is a no-op that exits 0, exactly as
- * scripts/verify-hero-assets.mjs treats the absent still; `present: true` runs
- * every check below against the installed clip. In `npm run verify` this is
- * therefore free until a clip exists, and a gate the moment one does.
+ * false` — the state the manifest was first committed in — is a no-op that
+ * exits 0, exactly as scripts/verify-hero-assets.mjs treats the absent still;
+ * `present: true` — where main has stood since the Seedance 2 transcode was
+ * installed, and what ships since the switch went on by default on
+ * 2026-09-06 — runs every check below against the installed clip. In
+ * `npm run verify` this was therefore free until a clip existed, and is a
+ * gate now that one does.
  *
  * ── WHAT A STILL CANNOT BE WRONG ABOUT, AND A CLIP CAN ─────────────────────
  *
@@ -22,9 +25,11 @@
  * is the same discipline applied to EVERY FRAME of a clip that would be laid
  * over it, plus the three things a still has no notion of:
  *
- *   1 HANDOFF      does the clip BEGIN where the still ends? The layer fades
- *                  the clip in over the still, so frame 0 must be the still's
- *                  pixels up to one encode generation — not a re-render of them.
+ *   1 HANDOFF      does the clip BEGIN where the still ends? The layer
+ *                  dissolves the clip in over the still, so frame 0 must be the
+ *                  SAME PICTURE (a re-render of the still passes; a displacement
+ *                  or another picture does not) and the dissolve, per frame,
+ *                  must be no larger a step than the loop's own seam.
  *   2 SEAM         does the clip END where it begins? The loop is a dissolve of
  *                  the last X seconds into the first, and a dissolve can only
  *                  hide a cut between frames whose content is already in the
@@ -256,7 +261,7 @@ if (clipPath === null && CAP_ARG !== null && !INSTALL) {
 if (clipPath === null) {
   if (!installed || installed.present !== true) {
     log('\n  check-hero-motion — no motion asset installed (public/brand/hero/motion/manifest.json says present:false).')
-    log('  The hero is the still photograph; there is nothing to check. That is the shipping state.\n')
+    log('  The hero is the still photograph; there is nothing to check. That was the shipping state until 2026-09-06; it is still a legal one.\n')
     process.exit(0)
   }
   if (typeof installed.file !== 'string' || !MOTION_FILE.test(installed.file)) {
@@ -1225,6 +1230,12 @@ if (INSTALL) {
   if (container.fastStart === false) warnings.push('moov follows mdat (not faststart): playable through Range, but the first frame waits for the whole file. Re-mux when an encoder is available.')
   if (container.handlers.includes('soun')) warnings.push('the clip carries an audio track nobody hears; strip it when an encoder is available.')
   if (!container.colr) warnings.push('no colr box: browsers may guess bt601 vs bt709 and shift luminance 2–4%. Tag bt709 when an encoder is available.')
+  else if (container.colr.primaries !== 1 || container.colr.transfer !== 1 || container.colr.matrix !== 1) {
+    warnings.push(
+      `colr box is ${container.colr.primaries}/${container.colr.transfer}/${container.colr.matrix}, not bt709 1/1/1 (2 = unspecified): the H.264 VUI may still say bt709, ` +
+        'but a container that reads differently from its bitstream is a guess left to the browser. Re-mux with the colr written when an encoder is available.',
+    )
+  }
 
   const name = `hero-loop-${clipSha.slice(0, 8)}.mp4`
   mkdirSync(MOTION_DIR, { recursive: true })
@@ -1291,7 +1302,7 @@ if (INSTALL) {
       'Written by scripts/check-hero-motion.mjs --install and by nothing else; read by components/site/hero.tsx, gated by ' +
       'scripts/verify-hero-assets.mjs and re-checked by `npm run check:motion` on every verify. opacityCap is the layer\'s ' +
       'opacity ceiling: 1 until tests/e2e/hero-motion.spec.ts solves a lower one, written back with --cap. The clip ' +
-      'renders only while NEXT_PUBLIC_HERO_MOTION is "on" at build (lib/hero-motion.ts HERO_MOTION_ENABLED) AND data/corpus/artifacts.json art:hero-motion ' +
+      'renders when NEXT_PUBLIC_HERO_MOTION is not "off" at build (lib/hero-motion.ts HERO_MOTION_ENABLED, on by default since 2026-09-06) AND data/corpus/artifacts.json art:hero-motion ' +
       'is verified. No timestamp: the commit carries the date, and a generatedAt makes every run produce different bytes.',
   }
   writeFileSync(MOTION_MANIFEST, `${JSON.stringify(manifest, null, 2)}\n`)

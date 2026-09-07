@@ -164,7 +164,9 @@
       }
     }
   },
-  "warnings": [],
+  "warnings": [
+    "colr box is 2/2/1, not bt709 1/1/1 (2 = unspecified): the H.264 VUI may still say bt709, but a container that reads differently from its bitstream is a guess left to the browser. Re-mux with the colr written when an encoder is available."
+  ],
   "budgets": {
     "mp4Bytes": 3145728,
     "webmBytes": 1572864,
@@ -177,5 +179,5 @@
     "requireNoAudio": true,
     "requireColourTags": "bt709"
   },
-  "note": "Written by scripts/check-hero-motion.mjs --install and by nothing else; read by components/site/hero.tsx, gated by scripts/verify-hero-assets.mjs and re-checked by `npm run check:motion` on every verify. opacityCap is the layer's opacity ceiling: 1 until tests/e2e/hero-motion.spec.ts solves a lower one, written back with --cap. The clip renders only while NEXT_PUBLIC_HERO_MOTION is \"on\" at build (lib/hero-motion.ts HERO_MOTION_ENABLED) AND data/corpus/artifacts.json art:hero-motion is verified. No timestamp: the commit carries the date, and a generatedAt makes every run produce different bytes."
+  "note": "Written by scripts/check-hero-motion.mjs --install and by nothing else; read by components/site/hero.tsx, gated by scripts/verify-hero-assets.mjs and re-checked by `npm run check:motion` on every verify. opacityCap is the layer's opacity ceiling: 1 until tests/e2e/hero-motion.spec.ts solves a lower one, written back with --cap. The clip renders when NEXT_PUBLIC_HERO_MOTION is not \"off\" at build (lib/hero-motion.ts HERO_MOTION_ENABLED, on by default since 2026-09-06) AND data/corpus/artifacts.json art:hero-motion is verified. No timestamp: the commit carries the date, and a generatedAt makes every run produce different bytes."
 }

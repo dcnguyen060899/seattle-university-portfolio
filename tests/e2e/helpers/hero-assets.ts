@@ -439,7 +439,8 @@ export function heroMotionHasLanded(): boolean {
 }
 
 /**
- * A candidate clip for the mount-path tests when none has been installed:
+ * A candidate clip for the mount-path tests when none has been installed —
+ * the repo's state until 2026-09-06, and the way the next candidate is tried:
  * the absolute path in HERO_MOTION_CLIP, served from memory by the spec so
  * the controller can be exercised without any clip in the repository.
  */

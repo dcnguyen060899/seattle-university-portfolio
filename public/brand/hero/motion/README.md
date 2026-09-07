@@ -23,12 +23,15 @@ The whole argument — the layer, the loop, the gates, the record — is in
 `public/brand/hero/README.md` under **The motion layer**, and the code is
 `lib/hero-motion.ts` and `components/site/hero-motion.tsx`.
 
-`manifest.json` is committed in the absent state (`present: false`) so the
+`manifest.json` was committed in the absent state (`present: false`) so the
 component can read it unconditionally and branch on one boolean, exactly like
 the still's manifest one directory up. Right now it is `present: true`:
 `hero-loop-1813504d.mp4` is a transcode of the Seedance 2 master under
 `brand-masters/` (git LFS), made with the ffmpeg recipe in the hero README
-(**Round two**), and it passed all ten checks. The clip still renders only when
-`NEXT_PUBLIC_HERO_MOTION` is set at build (`on` needs the corpus record
-verified; `preview` is localhost-only) — an installed clip and a shipped one
-are different states on purpose.
+(**Round two**), and it passed all ten checks. Since 2026-09-06 the clip
+renders on every build of main: the owner approved the disclosure line and the
+corpus record is verified, so `NEXT_PUBLIC_HERO_MOTION` unset is `on`, `off`
+is the deploy-side kill switch, and `preview` (localhost-only) exists for a
+next clip whose record is still open. An installed clip and a shipping one are
+still different states on purpose — the record, not the installer, is what
+makes the second.

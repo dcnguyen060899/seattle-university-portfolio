@@ -542,6 +542,9 @@
 
 .inner .limits li {
   line-height: 1.5;
+  /* the disclosure line grew on 2026-09-06 and left a one-word last line at 390;
+     `pretty` balances the last two lines the way app/globals.css already does for <p> */
+  text-wrap: pretty;
 }
 
 .inner .limits > p:first-child {

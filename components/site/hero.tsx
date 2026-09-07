@@ -192,11 +192,14 @@ interface HeroPhoto {
   frameBound: string | null;
   /**
    * The looping motion clip registered over the still, or null for the still
-   * hero — which is the shipping state. Resolved by `readHeroMotion`: the
-   * motion manifest, the file on disk, a passing harness verdict, and the
-   * provenance record all have to agree, and lib/hero-motion.ts's flag still
-   * gates the client. Null here means the layer's component is rendered with
-   * nothing to play; its SSR output is nothing either way.
+   * hero — the shipping state until 2026-09-06, and still what an absent clip,
+   * a failed verdict or a record that may not render resolves to. Resolved by
+   * `readHeroMotion`: the motion manifest, the file on disk, a passing harness
+   * verdict, and the provenance record all have to agree, and
+   * lib/hero-motion.ts's switch — on by default since 2026-09-06, `off` the
+   * kill — still gates the client, which is where an `off` build stops. Null
+   * here means the layer's component is rendered with nothing to play; its
+   * SSR output is nothing either way.
    */
   motion: HeroMotion | null;
 }
@@ -413,8 +416,10 @@ function readHeroPhoto(): HeroPhoto | null {
 /**
  * Resolves the motion clip, or null for the still hero. NEVER THROWS on an
  * absent or malformed manifest: every failure path here is a hero that renders
- * exactly the still it renders today, and `present: false` is the documented,
- * shipping state — silent, like the photograph's.
+ * exactly the still it rendered on every build until 2026-09-06 (and still
+ * renders on every phone), and `present: false` — the state the manifest was
+ * first committed in — is a documented, legal state, silent like the
+ * photograph's.
  *
  * WHAT HAS TO AGREE BEFORE A CLIP IS EVEN OFFERED TO THE CLIENT (the client
  * then applies lib/hero-motion.ts's flag and its own nine-step gate):
@@ -429,8 +434,10 @@ function readHeroPhoto(): HeroPhoto | null {
  *      has not been proved against them is not a clip this page plays.
  *   4. The provenance record (art:hero-motion, through lib/corpus/hero-asset.ts)
  *      may render — i.e. the owner has answered it and approved the line the
- *      moving picture owes the reader. The accessor throws on a missing or
- *      broken record, and that is a build failure on purpose.
+ *      moving picture owes the reader. He did, verbatim, on 2026-09-06
+ *      (src:hero-motion-disclosure-2026-09-06), and the record is verified.
+ *      The accessor throws on a missing or broken record, and that is a build
+ *      failure on purpose.
  *   5. The numbers the layer registers with — duration, crop, opacity cap — are
  *      a config `parseHeroMotion` trusts. The still's aspect comes from the
  *      desktop rung's own intrinsic size, never retyped.
@@ -447,7 +454,8 @@ function readHeroMotion(desktop: HeroCrop): HeroMotion | null {
   }
   if (!isRecord(parsed)) return null;
 
-  // The documented, shipping state. Silent: it is not a defect.
+  // present:false — the state the manifest was first committed in, and a
+  // documented, legal one. Silent: it is not a defect.
   if (parsed.present !== true) return null;
 
   const reject = (why: string): null => {
@@ -766,9 +774,12 @@ export function Hero() {
               on the server and nothing until its gate has passed, so the HTML
               here is byte-identical to a hero without it, and every gate that
               counts this band's <img> sees an unchanged tree. What it may
-              play is `PHOTO.motion` — null in the shipping state — and the
-              build-time flag in lib/hero-motion.ts still has to be on. The
-              whole argument is in components/site/hero-motion.tsx.
+              play is `PHOTO.motion` — the installed Seedance 2 loop on every
+              build since 2026-09-06; null with no clip, a failed verdict or
+              a record that may not render — and the build-time switch in
+              lib/hero-motion.ts still has to be on, which it is unless a
+              deploy sets it `off`. The whole argument is in
+              components/site/hero-motion.tsx.
             */}
             <HeroMotionLayer motion={PHOTO.motion} />
           </div>
