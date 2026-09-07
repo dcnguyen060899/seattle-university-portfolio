@@ -75,7 +75,7 @@
         "required": ["id", "kind", "title", "url", "access"],
         "properties": {
           "id": { "type": "string", "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$" },
-          "kind": { "enum": ["paper", "report", "repo", "website", "page", "pdf", "dataset", "award-page", "catalog-page", "post", "code", "database", "image"] },
+          "kind": { "enum": ["paper", "report", "repo", "website", "page", "pdf", "dataset", "award-page", "catalog-page", "post", "code", "database", "image", "video"], "description": "\"video\" is a published moving picture — art:hero-motion — and, like \"image\", it is a kind the site REPRODUCES rather than cites, so it carries a provenance block." },
           "title": { "type": "string", "minLength": 3 },
           "url": { "type": ["string", "null"], "description": "null when access is not 'public'." },
           "access": { "enum": ["public", "on-request", "under-review", "private"] },
@@ -124,6 +124,9 @@
               "containsThirdPartyMarks": { "type": "boolean", "description": "Does the frame render a third party's name, wordmark or banner? True is not by itself a bar to publishing decorative art, but combined with a synthetic origin it is what turns an undisclosed image into an implied endorsement — which is why it is recorded as a field rather than left to a reviewer's eye." },
               "disclosureRequired": { "type": "boolean", "description": "The record's own verdict, independent of captionRule, so the two can be checked against each other. C15 fails when this is true and captionRule is not \"disclosure\"." },
               "sourceImagesProvenance": { "type": "string", "minLength": 4, "description": "The chain of title BEHIND the image, which is a different question from the image's own origin. \"unstated\" is the honest value for a composite the owner synthesized from images he has not identified: an internal note, never surfaced (Addendum F, R-26)." },
+              "derivedFrom": { "type": ["string", "null"], "pattern": "^art:[a-z0-9]+(-[a-z0-9]+)*$", "description": "The artifact this one is a DERIVATIVE of, when it is one — art:hero-motion is generated from art:hero-photo. A pipeline fact, not an origin claim, so a pending record may carry it. C15 requires it to resolve." },
+              "generator": { "type": ["object", "null"], "additionalProperties": false, "required": ["vendor", "model", "modelVersion", "mode", "date", "promptOnFile"], "properties": { "vendor": { "type": "string", "minLength": 2 }, "model": { "type": "string", "minLength": 2 }, "modelVersion": { "type": ["string", "null"] }, "mode": { "type": "string", "minLength": 4 }, "date": { "type": "string", "format": "date" }, "promptOnFile": { "type": ["string", "null"], "pattern": "^src:[a-z0-9]+(-[a-z0-9]+)*$" } }, "description": "The tool that made a synthetic derivative. Null while the record is pending — it states an origin, which a pending record may not — and filled from the generation source once verified." },
+              "contentCredentials": { "type": ["object", "null"], "additionalProperties": false, "required": ["standard", "claim", "presentIn"], "properties": { "standard": { "type": "string", "minLength": 2 }, "claim": { "type": ["string", "null"] }, "presentIn": { "type": "string", "minLength": 4 } }, "description": "Content Credentials (C2PA) and WHERE they survive. Every transcode strips an embedded manifest, so a shipped encode carries none even when its master does; presentIn says so in words, and no surface may claim more." },
               "note": { "type": ["string", "null"] }
             }
           },

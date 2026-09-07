@@ -167,12 +167,19 @@ export const NOT_LANDED_MESSAGE =
  *   hero-proof.webp a contact sheet of the master with both crop windows drawn
  *                  on it, so the crop constants can be judged by eye against
  *                  the actual frame instead of by re-running the generator.
+ *   motion/        the ONE subdirectory: the living background's clip and its
+ *                  own manifest, written only by
+ *                  `scripts/check-hero-motion.mjs --install` and gated by
+ *                  scripts/verify-hero-assets.mjs. It is a directory, not a
+ *                  rung, and it earns its place because a looping clip is a
+ *                  different asset class with a different budget, a different
+ *                  gate and a different provenance record (art:hero-motion).
  *
  * Anything else in this directory is a stray: unreferenced bytes shipping to
  * production, or — worse — a rung the naming grammar does not recognise, which
  * the markup will silently never serve.
  */
-export const NON_RUNG_ALLOWLIST = ['README.md', 'manifest.json', 'hero-proof.webp'] as const
+export const NON_RUNG_ALLOWLIST = ['README.md', 'manifest.json', 'hero-proof.webp', 'motion'] as const
 
 /** The ladder actually on disk, grouped the way the assertions read it. */
 export interface DiskLadder {
@@ -393,3 +400,57 @@ export function detectFormat(filePath: string): string | null {
   if (buf.length >= 2 && buf[0] === 0xff && buf[1] === 0xd8) return 'jpeg'
   return null
 }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   The motion layer — the living background's clip, when one has passed
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/** Where `scripts/check-hero-motion.mjs --install` puts a passing clip and its manifest. */
+export const HERO_MOTION_DIR = path.join(HERO_DIR, 'motion')
+export const HERO_MOTION_MANIFEST_PATH = path.join(HERO_MOTION_DIR, 'manifest.json')
+/** The public URL prefix every motion request must use. */
+export const HERO_MOTION_URL_PREFIX = '/brand/hero/motion/'
+
+export interface HeroMotionManifest {
+  present: boolean
+  file?: string
+  durationS?: number
+  crop?: { x: number; y: number; w: number; h: number }
+  opacityCap?: number
+  width?: number
+  height?: number
+}
+
+/** The committed motion manifest, or null when the directory has none. */
+export function heroMotionManifest(): HeroMotionManifest | null {
+  if (!existsSync(HERO_MOTION_MANIFEST_PATH)) return null
+  try {
+    return JSON.parse(readFileSync(HERO_MOTION_MANIFEST_PATH, 'utf8')) as HeroMotionManifest
+  } catch {
+    return null
+  }
+}
+
+/** True once the manifest declares a clip that is actually on disk. */
+export function heroMotionHasLanded(): boolean {
+  const manifest = heroMotionManifest()
+  if (manifest === null || manifest.present !== true || typeof manifest.file !== 'string') return false
+  return existsSync(path.join(HERO_MOTION_DIR, manifest.file))
+}
+
+/**
+ * A candidate clip for the mount-path tests when none has been installed:
+ * the absolute path in HERO_MOTION_CLIP, served from memory by the spec so
+ * the controller can be exercised without any clip in the repository.
+ */
+export function heroMotionCandidatePath(): string | null {
+  const candidate = process.env['HERO_MOTION_CLIP']
+  return candidate && existsSync(candidate) ? candidate : null
+}
+
+export const MOTION_NOT_LANDED_MESSAGE =
+  'SKIPPED, NOT SATISFIED — no motion clip has passed. public/brand/hero/motion/manifest.json ' +
+  'says present:false and HERO_MOTION_CLIP names no readable file, so the mount path cannot be ' +
+  'exercised. The never-mounts contract IS covered unconditionally by the tests above it. To arm ' +
+  'this, run with HERO_MOTION_CLIP=/absolute/path/to/candidate.mp4, or install a passing clip with ' +
+  '`node scripts/check-hero-motion.mjs --install --clip <master.mp4>`. DO NOT READ THIS SKIP AS COVERAGE.'

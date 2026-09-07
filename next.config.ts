@@ -218,6 +218,25 @@ const nextConfig: NextConfig = {
         source: '/docs/.claude/:path*',
         headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' }],
       },
+
+      /* ── The hero motion clip: immutable, because its name is its hash ──
+       *
+       * Next serves public/ with `Cache-Control: public, max-age=0` (measured on
+       * `next start` 2026-09-06, alongside `Accept-Ranges: bytes` and 206 on a
+       * Range request, which <video> seeking needs and gets for free). A clip
+       * of a couple of megabytes revalidated on every visit is the wrong trade,
+       * and the ONLY reason `immutable` is honest here is that the installer
+       * (scripts/check-hero-motion.mjs --install) names the file
+       * hero-loop-<sha8>.mp4 from its own sha256 and scripts/verify-hero-assets
+       * fails the build when the name and the bytes disagree. The rule matches
+       * that grammar and nothing else in the directory — manifest.json is read
+       * at build time, never fetched by the page, and must stay revalidated.
+       * GitHub Pages ignores headers() entirely (max-age=600); this applies on
+       * the Vercel host and after the DNS cutover. */
+      {
+        source: '/brand/hero/motion/:file(hero-loop-[a-f0-9]{8}\\.mp4|hero-loop-[a-f0-9]{8}\\.webm)',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
     ]
   },
 }

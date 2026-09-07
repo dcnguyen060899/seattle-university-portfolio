@@ -119,8 +119,17 @@ import { join } from 'node:path';
 import type { CSSProperties, ReactNode } from 'react';
 
 import { Band, Btn, Reveal, Threshold } from '@/components/ui';
-import { heroCaption } from '@/lib/corpus/hero-asset';
+import { heroCaption, heroMotionPolicy } from '@/lib/corpus/hero-asset';
+import {
+  HERO_MOTION_PREVIEW,
+  HERO_MOTION_PREVIEW_ON_DEPLOY_HOST,
+  MOTION_FILE_NAME,
+  MOTION_PUBLIC_DIR,
+  parseHeroMotion,
+} from '@/lib/hero-motion';
+import type { HeroMotion } from '@/lib/hero-motion';
 import { EvidenceLink, Limit, figureAt, pageShort } from './evidence';
+import { HeroMotionLayer } from './hero-motion';
 import { ScrollDriver } from './scroll-driver';
 import scrim from './hero-scrim.module.css';
 import styles from './hero.module.css';
@@ -142,6 +151,8 @@ const ARCHIVE = { RAW: 0, COUNT: 2 } as const;
 
 const PUBLIC_DIR = join(process.cwd(), 'public');
 const MANIFEST_PATH = join(PUBLIC_DIR, 'brand', 'hero', 'manifest.json');
+const MOTION_DIR = join(PUBLIC_DIR, 'brand', 'hero', 'motion');
+const MOTION_MANIFEST_PATH = join(MOTION_DIR, 'manifest.json');
 const SCRIM_CSS_PATH = join(process.cwd(), 'components', 'site', 'hero-scrim.module.css');
 
 /** One art-directed crop, as the markup needs it. */
@@ -179,6 +190,15 @@ interface HeroPhoto {
    * never dropped over it — a missing bound costs coverage, not the picture.
    */
   frameBound: string | null;
+  /**
+   * The looping motion clip registered over the still, or null for the still
+   * hero — which is the shipping state. Resolved by `readHeroMotion`: the
+   * motion manifest, the file on disk, a passing harness verdict, and the
+   * provenance record all have to agree, and lib/hero-motion.ts's flag still
+   * gates the client. Null here means the layer's component is rendered with
+   * nothing to play; its SSR output is nothing either way.
+   */
+  motion: HeroMotion | null;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -387,7 +407,107 @@ function readHeroPhoto(): HeroPhoto | null {
     );
   }
 
-  return { phone, desktop, requiredAlpha: required, frameBound };
+  return { phone, desktop, requiredAlpha: required, frameBound, motion: readHeroMotion(desktop) };
+}
+
+/**
+ * Resolves the motion clip, or null for the still hero. NEVER THROWS on an
+ * absent or malformed manifest: every failure path here is a hero that renders
+ * exactly the still it renders today, and `present: false` is the documented,
+ * shipping state — silent, like the photograph's.
+ *
+ * WHAT HAS TO AGREE BEFORE A CLIP IS EVEN OFFERED TO THE CLIENT (the client
+ * then applies lib/hero-motion.ts's flag and its own nine-step gate):
+ *
+ *   1. `public/brand/hero/motion/manifest.json` says `present: true` and names
+ *      ONE file in the only grammar the layer loads, `hero-loop-<sha8>.{mp4,webm}`.
+ *   2. That file is on disk — the same existsSync discipline as the rungs, so a
+ *      manifest that drifted from the directory drops the clip instead of
+ *      emitting a <video> that 404s.
+ *   3. The manifest records a PASSING verdict from scripts/check-hero-motion.mjs.
+ *      The still's contrast numbers were solved against the still; a clip that
+ *      has not been proved against them is not a clip this page plays.
+ *   4. The provenance record (art:hero-motion, through lib/corpus/hero-asset.ts)
+ *      may render — i.e. the owner has answered it and approved the line the
+ *      moving picture owes the reader. The accessor throws on a missing or
+ *      broken record, and that is a build failure on purpose.
+ *   5. The numbers the layer registers with — duration, crop, opacity cap — are
+ *      a config `parseHeroMotion` trusts. The still's aspect comes from the
+ *      desktop rung's own intrinsic size, never retyped.
+ */
+function readHeroMotion(desktop: HeroCrop): HeroMotion | null {
+  if (!existsSync(MOTION_MANIFEST_PATH)) return null;
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(readFileSync(MOTION_MANIFEST_PATH, 'utf8'));
+  } catch (error) {
+    warn(`motion/manifest.json is not valid JSON (${String(error)}) — the hero stays still`);
+    return null;
+  }
+  if (!isRecord(parsed)) return null;
+
+  // The documented, shipping state. Silent: it is not a defect.
+  if (parsed.present !== true) return null;
+
+  const reject = (why: string): null => {
+    warn(
+      `motion clip NOT rendered — ${why}. The hero stays still, which is correct. ` +
+        'Run `npm run check:motion` then `npm run verify:hero`.',
+    );
+    return null;
+  };
+
+  const file = str(parsed.file);
+  if (file === null || !MOTION_FILE_NAME.test(file)) {
+    return reject('manifest.file is missing or is not named hero-loop-<sha8>.{mp4,webm}');
+  }
+  if (!existsSync(join(MOTION_DIR, file))) {
+    return reject(`the manifest declares ${file} but it is not on disk`);
+  }
+
+  const harness = isRecord(parsed.harness) ? parsed.harness : null;
+  if (harness === null || harness.verdict !== 'PASS') {
+    return reject('the manifest records no passing verdict from scripts/check-hero-motion.mjs');
+  }
+
+  if (desktop.width === null || desktop.height === null || !(desktop.height > 0)) {
+    return reject('the desktop rung has no intrinsic size for the clip to register against');
+  }
+
+  const policy = heroMotionPolicy();
+  if (!policy.mayRender) {
+    if (!HERO_MOTION_PREVIEW) {
+      return reject(
+        `art:hero-motion is "${policy.status}" — the moving picture may not ship until the ` +
+          'owner has resolved its provenance record and approved the disclosure line',
+      );
+    }
+    // A preview is a localhost build and nothing else: the record is still open,
+    // so the line the moving picture owes the reader is not on the page yet.
+    if (HERO_MOTION_PREVIEW_ON_DEPLOY_HOST) {
+      throw new Error(
+        'NEXT_PUBLIC_HERO_MOTION=preview on the deploy host: a preview renders an installed clip ' +
+          `while art:hero-motion is "${policy.status}", which is exactly what may not ship. ` +
+          'Unset it, or verify the record and use "on".',
+      );
+    }
+    warn(`motion PREVIEW — art:hero-motion is "${policy.status}"; the clip renders on this localhost build only`);
+  }
+
+  const motion = parseHeroMotion({
+    src: `${MOTION_PUBLIC_DIR}/${file}`,
+    type: file.endsWith('.webm') ? 'video/webm' : 'video/mp4',
+    poster: desktop.soft,
+    durationS: parsed.durationS,
+    crop: parsed.crop,
+    stillAspect: desktop.width / desktop.height,
+    opacityCap: parsed.opacityCap,
+  });
+  if (motion === null) {
+    return reject("the manifest's durationS, crop or opacityCap is not a config the layer trusts");
+  }
+  return motion;
 }
 
 /**
@@ -638,6 +758,19 @@ export function Hero() {
                 />
               </picture>
             </div>
+
+            {/*
+              MOTION — the living background, after the sharp layer so it sits
+              above it in the same promoted `.bg` (it inherits the exit scale
+              and the frame's clip). A client component that renders NOTHING
+              on the server and nothing until its gate has passed, so the HTML
+              here is byte-identical to a hero without it, and every gate that
+              counts this band's <img> sees an unchanged tree. What it may
+              play is `PHOTO.motion` — null in the shipping state — and the
+              build-time flag in lib/hero-motion.ts still has to be on. The
+              whole argument is in components/site/hero-motion.tsx.
+            */}
+            <HeroMotionLayer motion={PHOTO.motion} />
           </div>
 
           {/*

@@ -1,15 +1,15 @@
 {
   "version": 1,
   "generatedAt": "2026-09-06",
-  "corpusHash": "sha256:9d3164014040b5f2cdc33857b891292e",
+  "corpusHash": "sha256:c6c2c30fe11a125f5c86bffca79eb022",
   "counts": {
     "claims": 116,
     "metrics": 33,
     "caveats": 12,
     "narratives": 8,
-    "sources": 48,
+    "sources": 50,
     "roles": 8,
-    "artifacts": 35,
+    "artifacts": 36,
     "concepts": 51,
     "skills": 34,
     "gaps": 14,

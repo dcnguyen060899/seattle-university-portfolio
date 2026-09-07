@@ -108,6 +108,27 @@ export interface ImageProvenance {
    * Internal (Addendum F, R-26): nothing reads it onto the page.
    */
   sourceImagesProvenance: string
+  /**
+   * The artifact this one was DERIVED from, when it is a derivative of another
+   * published image — art:hero-motion is derived from art:hero-photo. Optional
+   * in the schema; the still carries none.
+   */
+  derivedFrom?: ArtifactId | null
+  /** The tool that made a synthetic derivative: recorded once the origin is resolved, null while pending. */
+  generator?: {
+    vendor: string
+    model: string
+    modelVersion: string | null
+    mode: string
+    date: string
+    promptOnFile: SourceId | null
+  } | null
+  /** Content Credentials, and WHERE they survive — the shipped bytes of a transcode carry none. */
+  contentCredentials?: {
+    standard: string
+    claim: string | null
+    presentIn: string
+  } | null
   note?: string | null
 }
 
@@ -121,31 +142,43 @@ interface ArtifactWithProvenance {
 
 export const HERO_ARTIFACT_ID = 'art:hero-photo' as const
 
+/**
+ * The MOVING version of the same frame — a separate artifact, with its own
+ * model, date and rights record, because a second AI-generated work with a
+ * different origin hidden behind the still's one line would be exactly the
+ * unstated claim this corpus exists to make unreachable.
+ */
+export const HERO_MOTION_ARTIFACT_ID = 'art:hero-motion' as const
+
 /* ── reads ─────────────────────────────────────────────────────────────────── */
 
-function heroRecord(): ArtifactWithProvenance {
+function recordFor(id: ArtifactId, what: string): ArtifactWithProvenance {
   const found = (ARTIFACTS as readonly unknown[]).find(
-    (a) => (a as ArtifactWithProvenance).id === HERO_ARTIFACT_ID
+    (a) => (a as ArtifactWithProvenance).id === id
   ) as ArtifactWithProvenance | undefined
   if (!found) {
     throw new Error(
-      `corpus: ${HERO_ARTIFACT_ID} is missing from data/corpus/artifacts.json. ` +
-        'The hero photograph may not render without a provenance record.'
+      `corpus: ${id} is missing from data/corpus/artifacts.json. ` +
+        `${what} may not render without a provenance record.`
     )
   }
   return found
 }
 
-/** The raw record. Prefer the derived helpers below — they encode the policy. */
-export function heroProvenance(): ImageProvenance {
-  const record = heroRecord()
+function provenanceFor(id: ArtifactId, what: string): ImageProvenance {
+  const record = recordFor(id, what)
   if (!record.provenance) {
     throw new Error(
-      `corpus: ${HERO_ARTIFACT_ID} carries no provenance block. An image this site ` +
+      `corpus: ${id} carries no provenance block. An image this site ` +
         'publishes must state where it came from before anything renders it.'
     )
   }
   return record.provenance
+}
+
+/** The raw record. Prefer the derived helpers below — they encode the policy. */
+export function heroProvenance(): ImageProvenance {
+  return provenanceFor(HERO_ARTIFACT_ID, 'The hero photograph')
 }
 
 /** True only when the owner has answered and the answer is recorded with a date. */
@@ -213,13 +246,17 @@ export interface HeroCaption {
  * expensive one is a licence breach on a live page.
  */
 export function heroCaption(): HeroCaption | null {
-  const provenance = heroProvenance()
+  return captionFor(heroProvenance(), HERO_ARTIFACT_ID)
+}
+
+/** The same policy, for any record that carries a provenance block. */
+function captionFor(provenance: ImageProvenance, id: ArtifactId): HeroCaption | null {
   if (provenance.status !== 'verified') return null
   if (provenance.captionRule === 'none' || provenance.captionRule === 'pending') return null
 
   if (!provenance.captionText) {
     throw new Error(
-      `corpus: ${HERO_ARTIFACT_ID} has captionRule "${provenance.captionRule}" and no captionText. ` +
+      `corpus: ${id} has captionRule "${provenance.captionRule}" and no captionText. ` +
         'The line is written by a human, in advance, in data/corpus/artifacts.json — never assembled here.'
     )
   }
@@ -309,5 +346,78 @@ export function heroAssetPolicy(): HeroAssetPolicy {
     affiliationDisclaimer: heroAffiliationDisclaimer(),
     assetBase: provenance.assetDir ? provenance.assetDir.replace(/^public/, '') : null,
     sourcePaths: Object.freeze([...provenance.sourcePaths]),
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   THE MOVING PICTURE — art:hero-motion
+   ══════════════════════════════════════════════════════════════════════════
+
+   A looping clip registered over the still is a SECOND published work: a
+   different model, a different date, a different rights record (the input to
+   the generator was the owner's composite; the output is the vendor's model's).
+   It gets its own record and its own accessor, and the video renderer takes
+   its permission ONLY through this — a blocked or pending motion record removes
+   the <video> without touching the still.
+
+   THE ONE RULE THAT IS STRICTER THAN THE STILL'S. `heroMayRender()` lets the
+   photograph paint as decoration while its record is pending, because a still
+   asserts nothing until a caption says what it is. A moving frame does: falling
+   water and moving leaves read as FOOTAGE, and the still's line ("not a
+   photograph") no longer negates what the reader now assumes. So the clip may
+   render only once the record is VERIFIED and carries the line the owner
+   approved — and that line must be the SAME sentence the still renders, so the
+   built page carries one disclosure covering both states and C15's verbatim
+   grep stays one check. */
+
+/** The raw motion record. Throws when it is missing or carries no provenance block. */
+export function heroMotionProvenance(): ImageProvenance {
+  return provenanceFor(HERO_MOTION_ARTIFACT_ID, 'The hero motion clip')
+}
+
+export interface HeroMotionPolicy {
+  status: ProvenanceStatus
+  /** True only once the record is verified and its caption is settled. */
+  mayRender: boolean
+  /** The line the page owes for the moving picture, or null. Equal to the still's when both render. */
+  caption: HeroCaption | null
+  /** Public URL prefix for the installed clip, e.g. `/brand/hero/motion`. */
+  assetBase: string | null
+  /** The artifact it was derived from — the still, by record. */
+  derivedFrom: ArtifactId | null
+  /** The questions the owner still has to answer. Empty once resolved. */
+  openQuestions: readonly string[]
+}
+
+/**
+ * Everything the motion layer's server side needs, in one call. Throws — at
+ * build time — when a verified record's caption would disagree with the
+ * still's: two disclosure lines for one background is a page contradicting
+ * itself, and the fix is in data/corpus/artifacts.json, never here.
+ */
+export function heroMotionPolicy(): HeroMotionPolicy {
+  const provenance = heroMotionProvenance()
+  const caption = captionFor(provenance, HERO_MOTION_ARTIFACT_ID)
+  const mayRender =
+    provenance.status === 'verified' && provenance.captionRule !== 'pending' && caption !== null
+
+  if (mayRender) {
+    const still = heroCaption()
+    if (still === null || still.text !== caption.text) {
+      throw new Error(
+        `corpus: ${HERO_MOTION_ARTIFACT_ID} is verified with a captionText that differs from ` +
+          `${HERO_ARTIFACT_ID}'s. The moving and the still background are one picture to the ` +
+          'reader and owe one sentence covering both; write the same line on both records.'
+      )
+    }
+  }
+
+  return {
+    status: provenance.status,
+    mayRender,
+    caption,
+    assetBase: provenance.assetDir ? provenance.assetDir.replace(/^public/, '') : null,
+    derivedFrom: provenance.derivedFrom ?? null,
+    openQuestions: Object.freeze([...provenance.openQuestions]),
   }
 }

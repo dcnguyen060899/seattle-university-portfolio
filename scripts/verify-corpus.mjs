@@ -971,6 +971,13 @@ if (BUILT) {
 const orphanReport = []
 
 const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.avif', '.gif', '.svg'])
+/**
+ * A published MOVING picture is an asset too. Without these the gate would
+ * report "no files on disk" for art:hero-motion while a clip shipped from its
+ * assetDir — green because it was looking at nothing, which is the failure
+ * mode art:personal-mark's own note names.
+ */
+const VIDEO_EXTS = new Set(['.mp4', '.webm'])
 
 /**
  * Origins that owe the reader a line, as a SET rather than an equality test.
@@ -1004,7 +1011,8 @@ function assetsOnDisk(prov) {
       }
       for (const e of entries) {
         if (!e.isFile() || e.name.startsWith('.')) continue
-        if (!IMAGE_EXTS.has(extname(e.name).toLowerCase())) continue
+        const ext = extname(e.name).toLowerCase()
+        if (!IMAGE_EXTS.has(ext) && !VIDEO_EXTS.has(ext)) continue
         found.push(`${prov.assetDir}/${e.name}`)
       }
     }
@@ -1021,6 +1029,8 @@ for (const a of data.artifacts) {
 
   refs(where, prov.sources, 'src', 'provenance.sources')
   refs(where, [prov.affiliationBasis], 'clm', 'provenance.affiliationBasis')
+  // A derivative names the artifact it was made from, and that record must exist.
+  if (prov.derivedFrom) refs(where, [prov.derivedFrom], 'art', 'provenance.derivedFrom')
   const basis = claimById.get(prov.affiliationBasis)
   if (basis && !basis.asserted) {
     fail('C15', where, `affiliationBasis ${prov.affiliationBasis} is asserted:false — the record that bounds what may be implied about the institution cannot itself be one we decline to state`)
@@ -1103,7 +1113,7 @@ for (const a of data.artifacts) {
 
   if (!onDisk.length) {
     orphanReport.push(
-      `${a.id}: no image files on disk (checked ${prov.sourcePaths.join(', ')}` +
+      `${a.id}: no image or video files on disk (checked ${prov.sourcePaths.join(', ')}` +
         (prov.assetDir ? ` and ${prov.assetDir}/` : '') +
         `). The hero falls back to its flat ground, which is the shipped state today.`
     )

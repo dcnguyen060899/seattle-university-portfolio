@@ -4730,8 +4730,20 @@ async function main() {
     }
   }
 
+  /*
+    `--emit-geometry` prints the band's partition per viewport — the photo box
+    (frameH), the first-glyph row, the field floor under the text — plus the
+    focal point, the ground and the grid, as JSON, and exits. It is how
+    scripts/check-hero-motion.mjs (the moving picture's gate) evaluates a
+    clip's frames with EXACTLY this gate's legibility statistic instead of a
+    retyped copy of it: a retyped geometry is the drift this file's own header
+    warns about, read across the boundary through a flag like --emit-extent.
+    No pixels are needed for any of it, so the rungs are not decoded.
+  */
+  const emitGeometry = argv.includes('--emit-geometry');
+
   // Decode once; both the real run and the --prove run reuse the pixels.
-  if (sharp) {
+  if (sharp && !emitGeometry) {
     for (const a of assets) {
       try {
         a.pixels = await decodeLuminance(sharp, a.path);
@@ -4743,6 +4755,36 @@ async function main() {
   }
 
   const input = { globalsSrc, scrimSrc, heroSrc, heroCss, assets, manifest, sourceFile, sharp };
+
+  if (emitGeometry) {
+    const r = analyse({ ...input, assets: [], sharp: null });
+    const floors = new Map(r.floors.map((f) => [f.name, f]));
+    process.stdout.write(JSON.stringify({
+      headroom: HEADROOM,
+      grid: GRID,
+      extentMargin: EXTENT_MARGIN,
+      rows: TEXT_EXTENT,
+      focal: r.focal,
+      ground: r.ground,
+      guaranteedAlpha: r.guaranteedAlpha,
+      breakpoint: manifest && typeof manifest.artDirectionBreakpointPx === 'number' ? manifest.artDirectionBreakpointPx : null,
+      source: manifest && manifest.source ? { width: manifest.source.width ?? null, height: manifest.source.height ?? null, sha256: manifest.source.sha256 ?? null } : null,
+      portraitCrop: manifest && manifest.orientations && manifest.orientations.p && manifest.orientations.p.crop
+        ? manifest.orientations.p.crop.pixels ?? null
+        : null,
+      viewports: r.geometry.map((g) => ({
+        name: g.vp.name,
+        w: g.vp.w,
+        h: g.vp.h,
+        bandH: g.vp.bandH,
+        frameH: g.frameH,
+        firstGlyphY: floors.get(g.vp.name)?.firstGlyphY ?? null,
+        floorAlpha: floors.get(g.vp.name)?.a ?? null,
+      })),
+    }, null, 2));
+    return;
+  }
+
   const result = analyse(input);
 
   /*
@@ -5084,4 +5126,4 @@ if (invokedDirectly) {
   await main();
 }
 
-export { analyse, luminance, contrast, composite, minAlpha, fileURLToPath };
+export { analyse, luminance, contrast, composite, minAlpha, fileURLToPath, GRID, EXTENT_MARGIN };

@@ -1165,6 +1165,154 @@ not to be regenerated, resampled or re-cropped.
 
 ---
 
+## The motion layer — `motion/`, and why it ships dark
+
+The owner asked for the photograph to become a calm, looping "living"
+background — sky drifting, leaves in a breeze, the fountain falling — with a
+static camera and motion small enough to read text over. The MACHINERY for
+that is in the tree, a clip that PASSES the harness is installed under
+`motion/`, and the animation still ships dark: `NEXT_PUBLIC_HERO_MOTION` is
+unset on every build of main and the corpus record is pending the owner's
+disclosure line. The difference between those three states is the whole point
+of this section.
+
+### What is in the tree
+
+| piece | where | what it does |
+|---|---|---|
+| the switch | `lib/hero-motion.ts` `HERO_MOTION_ENABLED`, from `NEXT_PUBLIC_HERO_MOTION` at build | **unset → false**, and the page is byte-for-byte the still hero. `on` runs the layer over an installed, VERIFIED clip — a deploy setting the owner flips, not a commit. `preview` runs it on localhost with the record still open (`HERO_MOTION_PREVIEW`); `components/site/hero.tsx` throws if a preview is built on the deploy host (`process.env.VERCEL`). |
+| the layer | `components/site/hero-motion.tsx` | renders nothing on the server and nothing until a nine-step gate has held; then two feathered boxes, each holding a `<video>`, inside the promoted `.bg` after the sharp copy, registered pixel-for-pixel to the still |
+| the loop | same file | two stacked copies: the standby dissolves in ABOVE the active over the last second of media time (smoothstep on the incoming only), then the roles swap and the outgoing rewinds; scheduled by media time with a 4 Hz `timeupdate` backstop; `loop` stays on each element as the missed-handoff fallback |
+| the harness | `scripts/check-hero-motion.mjs` (`npm run check:motion`) | decodes a clip in Playwright's Chromium (the repo has no encoder) and refuses it on HANDOFF, SEAM, CAMERA LOCK, MOTION BUDGET or LEGIBILITY under the text at the viewports the layer can mount on (≥ the layer's own `min-width`; the smaller ones are measured and reported), using `check-hero-contrast.mjs --emit-geometry` for the still gate's own geometry rather than a retyped copy. It models what the layer DOES — a `MOTION_FADE_IN_MS` dissolve to frame 0 and a `MOTION_CROSS_S` dissolve at the loop, both read from `lib/hero-motion.ts` — and `--prove` drives its estimators AND its verdict functions through known inputs |
+| the installer | the same script, `--install` (`npm run gen:hero:motion -- <master.mp4>`) | the ONLY writer of `motion/`: refuses a failing clip, copies a passing one to `hero-loop-<sha8>.mp4`, writes `motion/manifest.json`. Never deletes. |
+| the gate | `scripts/verify-hero-assets.mjs` | the same state table the still has, applied to `motion/`: absent-and-declared-absent passes; drift, orphans, strays, a stale still or a missing PASS verdict fail. Never deletes. |
+| the record | `data/corpus/artifacts.json` `art:hero-motion` | **pending-owner.** `lib/corpus/hero-asset.ts` `heroMotionPolicy()` refuses to render the clip until it is verified with the SAME disclosure line as the still's — `preview` is the only way past it, and only off the deploy host |
+| the master | `brand-masters/hero-motion-source.mp4` (git LFS) | Runway's byte-exact Seedance 2 output, the one copy that carries the C2PA manifest (`urn:c2pa:068c5961-7869-4e3b-a01b-5605a79bed83`). Every transcode strips it. |
+| the tests | `tests/e2e/hero-motion.spec.ts` | never-mounts is unconditional (phone, reduced motion, plain automation, the off switch, Save-Data, before first input); the mount path needs a clip and skips loudly without one — `HERO_MOTION_CLIP=/abs/path.mp4` serves a candidate from memory |
+
+### Round one: the two candidates that failed, measured
+
+Two Runway image-to-video clips were generated from the composite on
+2026-09-06 (`src:hero-motion-generation`). The harness refused both:
+
+| check | limit | gen4.5, 10.04 s | gen4_turbo, 5.04 s |
+|---|---|---|---|
+| HANDOFF — mean \|frame 0 − still\| | ≤ 3.0 sRGB levels (the rule of the time) | **5.91** (p99 34.7) | **6.38** (p99 31.7) |
+| SEAM — hard cut vs the clip's own p95 across 1 s | ≤ 1.5× | **2.23×** (23.5 luma levels) | **2.08×** (30.8) |
+| CAMERA LOCK — static-content drift at the edge | ≤ 0.5 px | **7.09 px** (t 9.8 s) | **32.9 px** (1.6 % push-in) |
+| MOTION BUDGET | mean ≤ 2.5, p95 ≤ 4 | 2.19 / 3.06 pass | 1.60 / 2.25 pass |
+| LEGIBILITY, 1280×800 mean cell under the text | ≤ 0.280 (still 0.252) | **0.355** at t 6.8 s | 0.206 pass |
+
+Both moved the camera, both cut at the loop, and the 10 s one lifted the whole
+frame under the lede by 41 % mid-clip. A crossfade only hides a cut; it cannot
+un-move a camera. Two more were tried and refused before decoding: Veo 3.1
+(8 s) pillarboxed the 3:2 still into 16:9 with 100 px bars; Seedance 2 at
+`1280:720` returned 1112×834 and CROPPED the picture to get there.
+
+### Round two: what passed, and the trick that made it pass
+
+Seedance 2's native frame is 4:3. Fed the 3:2 still directly it crops; fed the
+still PADDED to 4:3 (1536×1152: the picture at rows 64–1088, and above and
+below it the still's own top and bottom 64 rows mirrored and blurred, so the
+model sees plausible sky and ground rather than a bar) its crop lands on the
+padding and the picture comes back whole, at 1112×834 with the still's rows at
+46–785. The model animates the padding along with the picture, which is why
+the transcode crops it off rather than trusting it. The master is 15.07 s, 6.68 MB,
+H.264 with an AAC track nobody hears, `moov` after `mdat`, and Runway's C2PA
+manifest; it is kept byte-exact under `brand-masters/` (git LFS).
+
+The installed file is a transcode of it, made with a static ffmpeg 7.1 build
+(the `imageio-ffmpeg` wheel, in a throwaway virtualenv — the repo still has no
+encoder and needs none at build time):
+
+```sh
+ffmpeg -i brand-masters/hero-motion-source.mp4 -map_metadata -1 -map 0:v:0 -an \
+  -vf "crop=1112:740:0:46,format=yuv420p,lutyuv=y='16+(val-16)*0.985'" -r 24 \
+  -c:v libx264 -preset slow -crf 26 -profile:v high -level 4.0 -g 48 -keyint_min 24 -sc_threshold 0 \
+  -x264-params colorprim=bt709:transfer=bt709:colormatrix=bt709 \
+  -color_primaries bt709 -color_trc bt709 -colorspace bt709 -color_range tv \
+  -movflags +faststart+write_colr seedance2-padded4x3-crop-crf26-g0985.mp4
+node scripts/check-hero-motion.mjs --install --clip seedance2-padded4x3-crop-crf26-g0985.mp4
+```
+
+Every option is there for a reason the harness or the layer would otherwise
+complain about: the crop is the still's own rows (740, even, for 4:2:0); the
+luma gain is 1.5 % off, because the model renders the lit windows under the
+text HOTTER than the still (the 95th-percentile text cell at 1280×800 came in
+8.5 % above the still's in linear light while the mean came in 4 % darker),
+and 0.985 on Y′ puts that cell inside the still's own headroom with 2 % to
+spare; CRF 26 slow is the point on the ladder where SSIM against the master is
+0.977 at 2.67 MB (23 → 0.984 at 4.07 MB, 29 → 0.966 at 1.78 MB; sky banding
+was measured, not eyeballed — 172 distinct luma levels down a sky column in
+the master, 175 in the encode); bt709 is tagged in the VUI and the `colr` box
+so no browser guesses bt601; faststart so the first frame does not wait for the
+whole file; no audio, no metadata, so the C2PA manifest is gone and the file
+says so.
+
+What the harness measured on the installed clip, `hero-loop-1813504d.mp4`:
+
+| check | limit | measured |
+|---|---|---|
+| HANDOFF — same picture | mean \|frame 0 − still\| ≤ 20 sRGB levels (a re-encode of the still measures 3.5; the still 20 px off measures 22.7) | **16.42** — a re-render: same composition, registered to the pixel, fine detail redrawn |
+| HANDOFF — the fade | 14.79 luma dissolved over the layer's 3 s fade, per frame ≤ 0.5 or ≤ 1.5× the clip's own p95 step | **0.205 / frame = 0.35×** |
+| SEAM — the 1 s crossfade's peak per-frame step | ≤ 0.5 luma, or ≤ 1.5× p95 step and ≤ 4 | **0.56 = 0.95×** (p95 step 0.59, median 0.32); the ends sit 5.51 luma apart |
+| CAMERA LOCK | ≤ 0.5 px at the frame edge | **0.49 px** at t 4.3 s; net zoom 0.021 %; jitter p95 0.02 px |
+| MOTION BUDGET | frame mean ≤ 2.5, p95 ≤ 4; under text mean ≤ 2, p95 ≤ 3 | **0.53 / 0.85**; under text **0.25 / 0.48** |
+| LEGIBILITY 1280×800 | p95 cell ≤ 0.689, mean ≤ 0.230 (still 0.638 / 0.205) | **0.675 / 0.219** |
+| LEGIBILITY 1600×900 | p95 ≤ 0.683, mean ≤ 0.227 (still 0.633 / 0.202) | **0.673 / 0.217** |
+
+Below 1280 px the layer never mounts, and those four viewports are reported,
+not judged (375×812 would run 0.442 against 0.433 — which is exactly why the
+gate reads the layer's `min-width` instead of assuming the still's list).
+
+### Two rules the first harness got wrong, and one it left unprovable
+
+- **HANDOFF asked frame 0 to be a re-ENCODE of the still** (mean ≤ 3.0),
+  which nothing that moves can be: a diffusion model re-renders, it does not
+  re-encode. The layer also never cuts to frame 0 — it dissolves to it over
+  `MOTION_FADE_IN_MS`. The rule is now two: a same-picture cap (20) that
+  admits a re-render and refuses a displacement, and the dissolve judged per
+  frame by the seam's own rule. The fade went 1800 → 3000 ms for this clip:
+  a 3 s morph between two drawings of one scene reads as the picture waking.
+- **SEAM judged a hard cut the layer never performs** and divided by the
+  clip's own calm: a still-only loop with 0.09 luma of codec drift read as
+  "4.27× a visible seam", and a bit-identical loop divided by zero. The
+  crossfade the layer performs is what is judged now, with an absolute floor
+  (0.5 luma per frame) under both per-frame rules. The old span is reported.
+- **`--prove` asserted `0 ≤ 1.5 × spanP95`**, true of every clip, and printed
+  "ok" on the run that refused a still-only loop. The verdicts are functions
+  now, and the proofs call them: a 0/0 loop passes, a still-only loop passes,
+  this clip's own ends as a one-frame cut are refused, and the still 20 px off
+  fails the cap.
+
+### The rules, so they are not re-derived
+
+- **Nothing here changes by hand.** `motion/` is written only by the installer;
+  the verifier reports and never deletes; `gen-hero-photo.mjs`'s sweep is
+  regex-scoped to the still's rungs and must stay that way.
+- **The still is never touched.** The clip is a layer over it, capped at
+  `manifest.opacityCap` (solved in Chromium, written back with `--cap`); a clip
+  that needs cap 0 ships off. The layer consumes `--focus` in CSS exactly as
+  `.sharp` does and never writes to `<html>`.
+- **LCP.** The layer mounts only after the first scroll, pointerdown or keydown —
+  Chrome finalises LCP there, and a clip that paints 90 %+ of the viewport
+  before it would be the LCP element. The IDLE variant was rejected on purpose.
+- **Never on the phone.** `(min-width: 1280px) and (pointer: fine)`, no SSR
+  markup, and the phone e2e runs under webdriver: three independent refusals.
+- **The disclosure.** A moving frame reads as footage; the still's line does
+  not cover it. The proposed sentence is in `art:hero-motion`'s openQuestions,
+  verbatim, and is the owner's to approve — `heroMotionPolicy()` throws at build
+  time if the two records ever carry different lines. Until then the switch
+  stays unset and `preview` is a localhost affair.
+- **Provenance.** The master carries Runway's C2PA manifest; the transcode
+  does not, and the manifest records `c2paInMaster: false` for the shipped
+  bytes. Never say the site's video "carries Content Credentials".
+- **Encoding.** The recipe above, verbatim, from the LFS master. The harness
+  refuses a master over 64 MB before decoding it, and the installer refuses
+  anything over 3 MB, 15.5 s, 30 fps or 1280 px wide.
+
+---
+
 ## `.gitkeep`
 
 Belt and braces. This README and `manifest.json` already keep the directory

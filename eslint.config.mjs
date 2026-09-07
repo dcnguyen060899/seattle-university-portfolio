@@ -149,8 +149,13 @@ export default tseslint.config(
     // lib/agent/env.ts is the one module allowed to read process.env; the
     // corpus store is the one place figures are allowed to be literals; the
     // scripts, tests and config files legitimately poke at all of it.
+    // lib/hero-motion.ts is the second exemption, for one variable: the motion
+    // switch is NEXT_PUBLIC_HERO_MOTION, which Next.js inlines into the client
+    // bundle only when read as the literal `process.env.NEXT_PUBLIC_…`
+    // expression — and lib/agent/env.ts throws when evaluated in a browser.
     files: [
       'lib/agent/env.ts',
+      'lib/hero-motion.ts',
       'lib/corpus/**/*.ts',
       'scripts/**',
       'tests/**',

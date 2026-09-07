@@ -1,0 +1,181 @@
+{
+  "present": true,
+  "generator": "scripts/check-hero-motion.mjs --install",
+  "file": "hero-loop-1813504d.mp4",
+  "publicPath": "/brand/hero/motion/hero-loop-1813504d.mp4",
+  "bytes": 2670316,
+  "sha256": "1813504d71de65fdd2d867f1ba3b4eda754dceb7516791c548091e0c0a1a92a6",
+  "width": 1112,
+  "height": 740,
+  "durationS": 15.042,
+  "fps": 24,
+  "frames": 361,
+  "codec": "avc1",
+  "fastStart": true,
+  "hasAudio": false,
+  "colour": {
+    "primaries": 2,
+    "transfer": 2,
+    "matrix": 1
+  },
+  "c2paInMaster": false,
+  "crop": {
+    "x": 0,
+    "y": 0,
+    "w": 1,
+    "h": 0.9986504723346828
+  },
+  "stillAspect": 1.5005861664712778,
+  "madeFrom": {
+    "still": "public/brand/hero/hero-l-1280.webp",
+    "stillRungSha256": "b9088dc05bda8e8cf20995b4e52cc91c1b31c7927c1af4b36714ea114c5ba07c",
+    "stillResampledTo": {
+      "from": [
+        1280,
+        853
+      ],
+      "to": [
+        1112,
+        741
+      ],
+      "kernel": "lanczos3"
+    },
+    "stillSha256": "2dd6752d828e4028771e037c9624615c6a98671e6e2a5a62a3ab635337ed15c3",
+    "master": "seedance2-padded4x3-crop-crf26-g0985.mp4",
+    "masterSha256": "1813504d71de65fdd2d867f1ba3b4eda754dceb7516791c548091e0c0a1a92a6"
+  },
+  "opacityCap": 1,
+  "opacityCapSolvedBy": null,
+  "harness": {
+    "verdict": "PASS",
+    "crossfadeS": 1,
+    "fadeS": 3,
+    "sampleFps": 4,
+    "thresholds": {
+      "handoffSamePicture": 20,
+      "handoffReencodeRef": 3,
+      "seamPeakRatio": 1.5,
+      "seamPeakAbs": 4,
+      "stepFloor": 0.5,
+      "seamSpanRatio": 1.5,
+      "cameraEdgePx": 0.5,
+      "motionMean": 2.5,
+      "motionP95": 4,
+      "motionTextMean": 2,
+      "motionTextP95": 3,
+      "legibilityHeadroom": 1.05
+    },
+    "checks": [
+      {
+        "check": "HANDOFF",
+        "pass": true,
+        "value": "mean |frame0 − still| 16.42 lv (p99 98.7) at row 0; 14.79 luma dissolved over the layer's 3s fade (72 frames) = 0.205/frame = 0.35× clip p95 step",
+        "limit": "same picture ≤ 20 lv (a re-encode of the still measures 3.54); fade step ≤ 0.5, or ≤ 1.5× step p95 and ≤ 4"
+      },
+      {
+        "check": "SEAM",
+        "pass": true,
+        "value": "crossfade 1s peak step 0.56 = 0.95× clip p95 step (0.59, median 0.32); ends 5.51 luma apart = 1.68× the clip's p95 distance across 1s (3.29, reported)",
+        "limit": "peak ≤ 0.5 lv, or ≤ 1.5× step p95 and ≤ 4 lv"
+      },
+      {
+        "check": "CAMERA LOCK",
+        "pass": true,
+        "value": "max static-content drift 0.49 px at edge (t4.3: Δ-0.29,-0.23 px, zoom 0.021%); net zoom 0.021%; jitter p95 0.02 px",
+        "limit": "≤ 0.5 px"
+      },
+      {
+        "check": "MOTION BUDGET",
+        "pass": true,
+        "value": "frame: mean |Δ| 0.53 lv rgb, p95 0.85, max 3.23 at t2.0 · under desktop text (clip x98-1008 y128-686): mean 0.25 luma, p95 0.48 (whole frame 0.37 / 0.59)",
+        "limit": "frame mean ≤ 2.5, p95 ≤ 4; text mean ≤ 2, p95 ≤ 3"
+      },
+      {
+        "check": "LEGIBILITY 375x812 (never mounts under 1280px — reported)",
+        "pass": true,
+        "value": "worst cell 0.959 (still 0.932) · p95 0.442 @t10.0 (still 0.396) · mean 0.091 @t2.0 (still 0.084)",
+        "limit": "worst ≤ 1.000 · p95 ≤ 0.433 · mean ≤ 0.100 at field floor 54.2%"
+      },
+      {
+        "check": "LEGIBILITY 390x844 (never mounts under 1280px — reported)",
+        "pass": true,
+        "value": "worst cell 0.959 (still 0.932) · p95 0.435 @t10.3 (still 0.398) · mean 0.090 @t2.0 (still 0.085)",
+        "limit": "worst ≤ 1.000 · p95 ≤ 0.435 · mean ≤ 0.101 at field floor 54.2%"
+      },
+      {
+        "check": "LEGIBILITY 768x1024 (never mounts under 1280px — reported)",
+        "pass": true,
+        "value": "worst cell 0.992 (still 0.982) · p95 0.586 @t13.8 (still 0.507) · mean 0.140 @t2.0 (still 0.126)",
+        "limit": "worst ≤ 1.000 · p95 ≤ 0.550 · mean ≤ 0.146 at field floor 54.2%"
+      },
+      {
+        "check": "LEGIBILITY 861x1000 (never mounts under 1280px — reported)",
+        "pass": true,
+        "value": "worst cell 0.992 (still 0.982) · p95 0.610 @t0.8 (still 0.561) · mean 0.155 @t2.0 (still 0.144)",
+        "limit": "worst ≤ 1.000 · p95 ≤ 0.608 · mean ≤ 0.165 at field floor 54.2%"
+      },
+      {
+        "check": "LEGIBILITY 1280x800",
+        "pass": true,
+        "value": "worst cell 0.992 (still 0.990) · p95 0.675 @t1.0 (still 0.638) · mean 0.219 @t2.0 (still 0.205)",
+        "limit": "worst ≤ 1.000 · p95 ≤ 0.689 · mean ≤ 0.230 at field floor 54.2%"
+      },
+      {
+        "check": "LEGIBILITY 1600x900",
+        "pass": true,
+        "value": "worst cell 0.992 (still 0.982) · p95 0.673 @t0.8 (still 0.633) · mean 0.217 @t2.0 (still 0.202)",
+        "limit": "worst ≤ 1.000 · p95 ≤ 0.683 · mean ≤ 0.227 at field floor 54.2%"
+      }
+    ],
+    "handoff": {
+      "dy": 0,
+      "mean": 16.41699761812172,
+      "p99": 98.66666666666667,
+      "lumaMean": 14.791371767450904,
+      "fadeS": 3,
+      "fadeStep": 0.20543571899237367
+    },
+    "seam": {
+      "hardCutLuma": 5.511053859615011,
+      "spanRatio": 1.6761072073257453,
+      "crossfadePeak": 0.5636278479835031
+    },
+    "camera": {
+      "maxDriftEdgePx": 0.4889372039435272,
+      "jitterP95EdgePx": 0.018333619146819847,
+      "netScale": 0.00021069559050145085
+    },
+    "motion": {
+      "mean": 0.5291145597035888,
+      "p95": 0.8524896299176875,
+      "textBox": {
+        "viewport": "1280x800",
+        "clipRect": [
+          98,
+          128,
+          1008,
+          686
+        ],
+        "mean": 0.25246462816355303,
+        "p95": 0.47890031115837567,
+        "max": 1.8286817125526802,
+        "frameMeanLuma": 0.3657747855769434,
+        "frameP95Luma": 0.5923391016916196
+      }
+    }
+  },
+  "warnings": [],
+  "budgets": {
+    "mp4Bytes": 3145728,
+    "webmBytes": 1572864,
+    "totalPerOrientationBytes": 4718592,
+    "maxDurationS": 15.5,
+    "masterCeilingBytes": 67108864,
+    "maxFps": 30,
+    "maxWidth": 1280,
+    "requireFaststart": true,
+    "requireNoAudio": true,
+    "requireColourTags": "bt709"
+  },
+  "note": "Written by scripts/check-hero-motion.mjs --install and by nothing else; read by components/site/hero.tsx, gated by scripts/verify-hero-assets.mjs and re-checked by `npm run check:motion` on every verify. opacityCap is the layer's opacity ceiling: 1 until tests/e2e/hero-motion.spec.ts solves a lower one, written back with --cap. The clip renders only while NEXT_PUBLIC_HERO_MOTION is \"on\" at build (lib/hero-motion.ts HERO_MOTION_ENABLED) AND data/corpus/artifacts.json art:hero-motion is verified. No timestamp: the commit carries the date, and a generatedAt makes every run produce different bytes."
+}

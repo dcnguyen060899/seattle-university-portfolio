@@ -81,6 +81,27 @@ const OWNED = /^hero-(?:[pl]-\d+\.(?:avif|webp)|soft-[pl]\.webp|proof\.webp)$/
 const HUMAN_OWNED = new Set(['README.md', '.gitkeep', 'manifest.json', '.DS_Store'])
 
 /**
+ * THE MOTION LAYER'S DIRECTORY, and the one subdirectory this gate admits.
+ *
+ * `motion/` holds the looping clip registered over the still — written ONLY by
+ * `scripts/check-hero-motion.mjs --install`, never by gen-hero-photo, whose
+ * sweep is regex-scoped to the still's own rungs and cannot see it. Anything
+ * else under public/brand/hero/ that is a directory is still a stray. The
+ * state table below mirrors the still's: absent-and-declared-absent is a
+ * PASS, and what is not a pass is DRIFT — a declared clip that is not on disk
+ * or has different bytes, a clip on disk the manifest does not declare, a
+ * clip cut from a still other than the one in the tree, a clip the harness
+ * never passed, or a stray name. THIS GATE NEVER DELETES: it names the file
+ * and a human removes it.
+ */
+const MOTION_DIRNAME = 'motion'
+const MOTION_DIR = path.join(DEST, MOTION_DIRNAME)
+const MOTION_MANIFEST = path.join(MOTION_DIR, 'manifest.json')
+const MOTION_OWNED = /^hero-loop-[0-9a-f]{8}\.(?:mp4|webm)$/
+const MOTION_HUMAN_OWNED = new Set(['README.md', '.gitkeep', 'manifest.json', '.DS_Store'])
+const MOTION_INSTALL = 'node scripts/check-hero-motion.mjs --install --clip <master.mp4>'
+
+/**
  * Scrim alphas above this are legal but mean the photograph is nearly gone.
  * Mirrors the generator's own warning threshold so the two cannot drift apart
  * silently — if one moves, this comment is the reason to move the other.
@@ -160,10 +181,29 @@ async function onDisk() {
   }
   for (const name of entries) {
     if (HUMAN_OWNED.has(name)) continue
+    if (name === MOTION_DIRNAME) continue
     if (OWNED.test(name)) names.push(name)
     else strays.push(name)
   }
   return { names: names.sort(), strays: strays.sort(), exists: true }
+}
+
+/** The motion directory as it is right now: the clips, and everything that is neither a clip nor human-owned. */
+async function motionOnDisk() {
+  const clips = []
+  const strays = []
+  let entries
+  try {
+    entries = await readdir(MOTION_DIR)
+  } catch {
+    return { clips, strays, exists: false }
+  }
+  for (const name of entries) {
+    if (MOTION_HUMAN_OWNED.has(name)) continue
+    if (MOTION_OWNED.test(name)) clips.push(name)
+    else strays.push(name)
+  }
+  return { clips: clips.sort(), strays: strays.sort(), exists: true }
 }
 
 /* ── Run ──────────────────────────────────────────────────────────────────── */
@@ -216,6 +256,157 @@ if (!source && manifestState === 'missing') {
   )
 } else if (manifestState === 'present') {
   await verifyPresent()
+}
+
+const motion = await verifyMotion()
+
+/**
+ * The motion directory's state table — the still's, applied to one clip:
+ *
+ *   manifest        clips on disk   result
+ *   ─────────────   ─────────────   ─────────────────────────────────────────
+ *   directory gone  —               PASS, note. The shipping state before the
+ *                                   layer existed; the component reads nothing.
+ *   missing         none            PASS, note: commit the placeholder.
+ *   missing         some            FAIL. Orphans nothing records.
+ *   present:false   none            PASS. The shipping state.
+ *   present:false   some            FAIL. A consumer renders the still while
+ *                                   megabytes sit unreferenced in the deployment.
+ *   present:true    ≠ exactly the   FAIL. Drift, in either direction.
+ *                   declared file
+ *   present:true    the file        Check bytes, sha256, the name's sha8, the
+ *                                   budget, the still it was cut from, the
+ *                                   harness verdict, the cap, the crop.
+ */
+async function verifyMotion() {
+  const disk = await motionOnDisk()
+  const summary = { state: 'absent', detail: 'no motion directory', disk }
+  if (!disk.exists) {
+    note('No public/brand/hero/motion/ directory — the hero is the still photograph.')
+    return summary
+  }
+  if (disk.strays.length > 0) {
+    bad(
+      `public/brand/hero/motion/ holds ${disk.strays.length} file(s) that are neither hero-loop-<sha8>.{mp4,webm} nor ` +
+        `human-owned: ${disk.strays.join(', ')}. This gate never deletes — remove them by hand, or if one is a clip, ` +
+        `install it through \`${MOTION_INSTALL}\` so it is named by its own hash and recorded.`,
+    )
+  }
+
+  const s = await fileInfo(MOTION_MANIFEST)
+  if (!s) {
+    if (disk.clips.length > 0) {
+      bad(
+        `public/brand/hero/motion/ holds ${disk.clips.join(', ')} but no manifest.json records what they were cut from ` +
+          `or whether they passed the harness. Orphaned clips: re-install through \`${MOTION_INSTALL}\`.`,
+      )
+    } else {
+      note('No motion manifest — the hero is the still photograph. Commit the present:false placeholder so the component can read it unconditionally.')
+    }
+    return { ...summary, detail: 'no manifest' }
+  }
+
+  let m
+  try {
+    m = JSON.parse(await readFile(MOTION_MANIFEST, 'utf8'))
+  } catch (err) {
+    bad(`public/brand/hero/motion/manifest.json is not valid JSON (${err.message}). Re-run \`${MOTION_INSTALL}\`.`)
+    return { ...summary, state: 'invalid', detail: 'invalid JSON' }
+  }
+  if (typeof m.present !== 'boolean') {
+    bad('public/brand/hero/motion/manifest.json has no boolean `present` field — the one thing components/site/hero.tsx branches on.')
+    return { ...summary, state: 'invalid', detail: 'no present boolean' }
+  }
+
+  if (m.present === false) {
+    if (disk.clips.length > 0) {
+      bad(
+        `motion/manifest.json says present:false, but ${disk.clips.join(', ')} ${disk.clips.length === 1 ? 'is' : 'are'} on disk. ` +
+          `The component renders the still while ${disk.clips.length === 1 ? 'it sits' : 'they sit'} in the deployment unreferenced. ` +
+          `Remove by hand (this gate never deletes) or re-install through \`${MOTION_INSTALL}\`.`,
+      )
+    }
+    return { ...summary, state: 'absent', detail: 'present:false — the hero is the still photograph' }
+  }
+
+  /* ── present:true — exactly one declared clip, and everything about it ─ */
+  const problemsBefore = problems.length
+  const file = typeof m.file === 'string' ? m.file : null
+  if (file === null || !MOTION_OWNED.test(file)) {
+    bad(`motion/manifest.json says present:true but names no file in the hero-loop-<sha8>.{mp4,webm} grammar (got ${JSON.stringify(m.file)}).`)
+  } else {
+    const abs = path.join(MOTION_DIR, file)
+    const st = await fileInfo(abs)
+    if (!st) {
+      bad(`${file} is declared by motion/manifest.json but is not on disk. Re-run \`${MOTION_INSTALL}\`.`)
+    } else {
+      if (st.size !== m.bytes) {
+        bad(`${file} is ${st.size} bytes on disk but the manifest records ${m.bytes}. The file was replaced after installation.`)
+      }
+      const hash = createHash('sha256').update(await readFile(abs)).digest('hex')
+      if (m.sha256 !== hash) {
+        bad(`${file} hashes to ${hash} but the manifest records ${m.sha256}. Different bytes than the ones the harness passed.`)
+      }
+      if (!file.includes(hash.slice(0, 8))) {
+        bad(
+          `${file} is named for a sha256 prefix that is not its own (${hash.slice(0, 8)}). The name IS the cache key — ` +
+            `next.config.ts serves it immutable — so a name that does not track the bytes is a stale clip served forever.`,
+        )
+      }
+      const budget = file.endsWith('.webm') ? m.budgets?.webmBytes : m.budgets?.mp4Bytes
+      if (typeof budget === 'number' && st.size > budget) {
+        bad(`${file} is ${(st.size / 1024 / 1024).toFixed(2)} MB, over its ${(budget / 1024 / 1024).toFixed(2)} MB budget.`)
+      }
+    }
+    for (const other of disk.clips) {
+      if (other !== file) {
+        bad(
+          `${other} is on disk but motion/manifest.json declares ${file}. Exactly one clip may live here; ` +
+            `remove the orphan by hand (this gate never deletes).`,
+        )
+      }
+    }
+  }
+
+  /* Staleness: the clip registers to a specific still. */
+  const stillSha = m.madeFrom?.stillSha256
+  if (typeof stillSha !== 'string') {
+    bad('motion/manifest.json records no madeFrom.stillSha256, so a clip cut from a different still cannot be detected.')
+  } else if (manifestState === 'present' && manifest?.source?.sha256 && manifest.source.sha256 !== stillSha) {
+    bad(
+      `STALE. The motion clip was registered to still ${stillSha.slice(0, 12)}… but the hero manifest's source is ` +
+        `${manifest.source.sha256.slice(0, 12)}…. Every registration and legibility number describes the OLD still. ` +
+        `Re-run the harness against the new rung and re-install.`,
+    )
+  } else if (manifestState !== 'present') {
+    bad('motion/manifest.json says present:true while the still is absent — a clip has nothing to register over.')
+  }
+
+  if (m.harness?.verdict !== 'PASS') {
+    bad(`motion/manifest.json records harness verdict ${JSON.stringify(m.harness?.verdict)}; only a PASS may be installed.`)
+  }
+  if (!(typeof m.opacityCap === 'number' && m.opacityCap > 0 && m.opacityCap <= 1)) {
+    bad(`motion/manifest.json opacityCap is ${JSON.stringify(m.opacityCap)}, which is not an opacity in (0, 1].`)
+  }
+  const crop = m.crop ?? {}
+  const frac = (v) => typeof v === 'number' && v >= 0 && v <= 1
+  if (!(frac(crop.x) && frac(crop.y) && frac(crop.w) && frac(crop.h) && crop.w > 0 && crop.h > 0)) {
+    bad(`motion/manifest.json crop ${JSON.stringify(m.crop)} is not a sub-rectangle of the still in fractions.`)
+  }
+  if (!(typeof m.durationS === 'number' && m.durationS > 0)) {
+    bad(`motion/manifest.json durationS is ${JSON.stringify(m.durationS)}.`)
+  } else if (typeof m.budgets?.maxDurationS === 'number' && m.durationS > m.budgets.maxDurationS) {
+    bad(`motion clip runs ${m.durationS}s, over the ${m.budgets.maxDurationS}s budget.`)
+  }
+  if (m.fastStart === false) {
+    note('the motion clip is not faststart (moov after mdat): Range makes it playable, but the browser needs the whole file before the first frame. Re-mux when an encoder is available.')
+  }
+
+  return {
+    ...summary,
+    state: problems.length === problemsBefore ? 'present' : 'present-with-problems',
+    detail: `present:true — ${file ?? '(no file)'}${typeof m.opacityCap === 'number' ? ` at opacity cap ${m.opacityCap}` : ''}`,
+  }
 }
 
 async function verifyPresent() {
@@ -506,6 +697,7 @@ if (manifestState === 'present' && manifest?.scrim) {
       `for ${manifest.scrim.bindingForeground} at ${manifest.scrim.targetRatio}:1`,
   )
 }
+console.log(`  motion     ${motion.detail}`)
 console.log('')
 
 for (const n of notes) console.log(`  note  ${n}\n`)
