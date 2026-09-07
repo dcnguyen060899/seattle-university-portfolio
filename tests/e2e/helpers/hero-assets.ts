@@ -419,6 +419,16 @@ export interface HeroMotionManifest {
   opacityCap?: number
   width?: number
   height?: number
+  /** Absent → the layer wraps to frame 0; `false` → it plays through once. */
+  loop?: boolean
+  /**
+   * The night tail's head, in the clip's own media seconds. Absent or null →
+   * no tail (play once and hold). Present with `loop: false` → the layer loops
+   * [loopFrom, D] for ever after one pass. It is a fact about ONE file — where
+   * that clip's grade stopped ramping — which is why it lives here and not in
+   * `lib/hero-motion.ts` beside the constants.
+   */
+  loopFrom?: number | null
 }
 
 /** The committed motion manifest, or null when the directory has none. */

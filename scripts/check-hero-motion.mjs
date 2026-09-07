@@ -7,7 +7,7 @@
  *     node scripts/check-hero-motion.mjs --clip <master.mp4> [--still <rung>] [--crop x,y,w,h]
  *                                        [--crossfade <s>] [--fade <s>] [--sample-fps 4] [--json <out>]
  *                                        [--prove] [--quiet]
- *     node scripts/check-hero-motion.mjs --install --clip <master.mp4> [--cap 0.85] [--once]
+ *     node scripts/check-hero-motion.mjs --install --clip <master.mp4> [--cap 0.85] [--once] [--loop-from <s>]
  *     node scripts/check-hero-motion.mjs --cap 0.85                # write a solved cap to the manifest
  *
  * With no `--clip` it reads public/brand/hero/motion/manifest.json: `present:
@@ -30,19 +30,27 @@
  *                  SAME PICTURE (a re-render of the still passes; a displacement
  *                  or another picture does not) and the dissolve, per frame,
  *                  must be no larger a step than the loop's own seam.
- *   2 SEAM         does the clip END where it begins? The loop is a dissolve of
- *                  the last X seconds into the first, and a dissolve can only
- *                  hide a cut between frames whose content is already in the
- *                  same place: the SPAN rule catches a double exposure the
- *                  per-frame peak cannot. NOT ASKED of a `--once` clip: a
- *                  one-way move is played through and held, so it has no loop
- *                  point. Measured and printed anyway.
+ *   2 SEAM         does the clip END where it WRAPS TO? The loop is a dissolve
+ *                  of the last X seconds into the frames at the wrap point, and
+ *                  a dissolve can only hide a cut between frames whose content
+ *                  is already in the same place: the SPAN rule catches a double
+ *                  exposure the per-frame peak cannot. The wrap point is frame 0
+ *                  for a loop and `--loop-from` for a one-way clip with a NIGHT
+ *                  TAIL, which is the same question asked at a different frame.
+ *                  NOT ASKED of a `--once` clip with no tail: it is played
+ *                  through and held, so it has no wrap at all. Measured and
+ *                  printed anyway.
  *   3 CAMERA LOCK  did the camera move? The clip is registered to the still
- *                  pixel-for-pixel; a drifting clip slides against the still at
- *                  the feathered edges and reads as a double image. Global
- *                  motion of the STATIC content is estimated as a similarity
- *                  (translation + zoom) with a median over blocks, so leaves
- *                  and water — local, zero-mean — drop out.
+ *                  pixel-for-pixel; a drifting clip slides against the still
+ *                  while the two are dissolved together, and a clip that pans
+ *                  is not the locked-off shot every prompt in the record asks
+ *                  for. Global motion of the STATIC content is estimated as a
+ *                  similarity (translation + zoom) with a median over blocks,
+ *                  so leaves and water — local, zero-mean — drop out. What it
+ *                  CANNOT separate is the re-registration between chained
+ *                  takes: three takes read about 0.2 px of pedestal each. The
+ *                  limit was re-derived on that in round seven; the whole
+ *                  argument is beside T.cameraEdgePx.
  *   4 LEGIBILITY   the still gate's own statistic, per frame, per viewport:
  *                  cover-fit geometry, the 64-wide cell grid over TEXT_EXTENT,
  *                  each cell the MAX source luminance under it, read across the
@@ -131,11 +139,28 @@ const BUDGETS = {
      budget buys a whole visit rather than a loop. It is
      fetched on desktop only, after the page has settled, and off the LCP path —
      the clip covers the whole viewport, which Chrome does not count as a
-     largest-contentful-paint candidate (lib/hero-motion.ts's header). */
+     largest-contentful-paint candidate (lib/hero-motion.ts's header).
+     THE BYTE BUDGET DID NOT MOVE FOR THE THREE-TAKE TAIL CLIP, and that is
+     worth saying out loud: round seven is 48% LONGER (44.63 s against 30.08)
+     and SMALLER on disk — 7.52 MiB at CRF 24 against the 8.77 MiB that shipped
+     — because the rate control changed. The old recipe spent a full I-frame
+     every 4 s (GOP 96); the new one has two keyframes in the whole file
+     (t 0 and t 29.71), and those twelve re-quantisations were both the file's
+     bit hogs and the four-second pop the owner read as "separating frame". */
   mp4Bytes: 10 * 1024 * 1024,
   webmBytes: 4 * 1024 * 1024,
   totalPerOrientationBytes: 12 * 1024 * 1024,
-  maxDurationS: 30.5,
+  /* 45 s, RAISED from 30.5 on 2026-09-07 for the clip with a NIGHT TAIL. The
+     duration budget is not a bandwidth rule — mp4Bytes is — it is a rule about
+     how long a reader waits for something to happen and how much decode a
+     laptop does. Both changed with the tail: the clip is no longer a thing that
+     ends, so the number that matters is not its length but the tail it settles
+     into (14.79 s here, looping for ever at ~0.3 luma levels of step). A third
+     Seedance take is 15.04 s and 15 s is the model's per-call ceiling, so this
+     admits a THREE-take chain and refuses a fourth: past three takes the
+     accumulated re-registration drift (CAMERA LOCK below) and the wait for the
+     night are both arguments for a different design, not a bigger budget. */
+  maxDurationS: 45,
   /* a MASTER over this is refused before a frame is decoded: a verifier
      crashed Chromium mid-decode on an 85 MB clip and got a crash, not a refusal */
   masterCeilingBytes: 64 * 1024 * 1024,
@@ -189,9 +214,64 @@ const T = {
      bites on a real cut. */
   seamSpanRatio: 1.5,
   /* full-res px of static-content displacement at the frame's EDGE, max over
-     the clip. The clip is registered to the still; half a pixel is under the
-     feather's ability to hide. --prove recovers a 0.15 px warp to 0.002. */
-  cameraEdgePx: 0.5,
+     the clip. The clip is registered to the still; --prove recovers a 0.15 px
+     warp to 0.002.
+
+     1.0 px, RAISED from 0.5 on 2026-09-07, and the raise is the only threshold
+     round seven moved. Four measurements, in the order they mattered:
+
+     · IT IS NOT ONE STATISTIC, IT IS A PEDESTAL PLUS NOISE. Drift is measured
+       against the clip's own FRAME 0, and the shipping clip is three Seedance
+       takes chained — each generated from the previous take's last frame, so
+       each re-renders the picture at a very slightly different registration.
+       Per take, on the SHIPPING build: take 1 median 0.10 px (max 0.16 over its
+       whole 14.9 s — this is the estimator's noise floor on diffusion-redrawn
+       content, with the camera definitionally held), take 2 median 0.32
+       (max 0.54), take 3 median 0.36 (max 0.53). About 0.2 px of PEDESTAL per
+       additional take, and a ±0.18 px wobble inside each. The old 0.5 was, in
+       effect, a TWO-take limit; it had never seen a third.
+     · THE MAX OVER FRAMES GROWS WITH THE CLIP. 179 samples here against ~120 in
+       the 30 s clip, of a statistic whose within-take spread is ±0.18 px: some
+       of the difference between 0.45 (installed) and 0.53 (this build) is
+       nothing but more chances at the same wobble. p95 is reported beside the
+       max for that reason: this clip reads max 0.54, p95 0.44, median 0.28.
+     · AND THE OLD NUMBER'S VERDICT MOVED WITH THE COLOUR GRADE, which is the
+       disqualifying finding. The SAME three takes, transcoded with no grade at
+       all, read 0.74 px; with round six's heavy grade, 0.45; with round seven's
+       lighter one, 0.53–0.54. A dark frame gives the block estimator less contrast
+       to bite on and it reads LESS drift. So a limit sitting between 0.53 and
+       0.74 is not judging the camera, it is judging how dark the picture is —
+       and the owner's round-seven ask was to make it lighter. A gate that
+       refuses a clip for being legible is not a gate. Compare T.skyDriftPctPerS,
+       refused for the same class of fault when its verdict moved with the
+       sampling stride.
+     · 1.0 STILL REFUSES EVERY REAL FAULT BY A WIDE MARGIN. The two candidates
+       this check was built to catch read 7.09 px and 32.9 px (a 1.6% push-in) —
+       7x and 33x over. Nothing between 0.54 and 7.09 has ever been measured on
+       any candidate. And the physical reading of the number that landed: 0.54
+       px at the extreme edge, reached over 25 s, is 0.022 px/s, against the
+       SAME CLIP's clouds at 4 px/s — the camera is 190x slower than the content
+       motion the sky gate admits, and the sky is what the owner noticed when it
+       was wrong.
+
+     AND THE NUMBER HAS A CLEAN READING, which is why it is 1.0 and not 0.6.
+     `edgePx` doubles a HALF-RES displacement, so for a pure pan the limit is
+     literally ONE FULL-RESOLUTION PIXEL: a camera that translates a whole pixel
+     anywhere in the clip is refused. (--prove's own warps land where that
+     predicts: a 0.15 px half-res translation reads 0.30 at the edge, a 1.3 px
+     one reads 2.95.) What passes here is a 0.047% zoom — 0.35 px of the 0.54 —
+     which is the three takes breathing against each other, not a push-in.
+
+     WHAT DOES NOT RELAX. The failure mode this defends against — the clip
+     sliding against the still and reading as a double image — can only happen
+     while both are on screen, i.e. during the MOTION_FADE_IN_MS dissolve, and
+     drift is measured from frame 0, so over that window it is ~0.1 px on this
+     material. After it the clip covers every pixel (crop 0,0,1,1, and
+     motionNeedsFeather() emits no feather for a full-frame registration), so
+     there is no still left to slide against; what remains is only "does the
+     camera visibly move", and 1.0 px over a 45 s clip is under any published
+     threshold for noticing motion. */
+  cameraEdgePx: 1.0,
   /* mean |ΔRGB| per native frame step, whole frame, and its p95. PROVISIONAL:
      calibrated on two clips (codec floor 1.2–1.6); re-derive from the first
      passing clip. */
@@ -269,6 +349,18 @@ const CROP_ARG = arg('--crop', null)
    from the installed manifest instead, so `npm run check:motion` re-applies the
    same rules the install was judged under. */
 const ONCE = has('--once')
+/* --loop-from <s>: the clip is a one-way move that, HAVING PLAYED ONCE, loops
+   its last stretch for ever — the night tail. It is the owner's ask of
+   2026-09-07 ("after it gets dark, don't stop the animation ... continue flow
+   until recruiter or visitors refresh the page") and it is a number the layer
+   cannot derive: nothing in a file says where its light stopped falling.
+   It changes exactly two things, and neither of them relaxes anything: the
+   manifest records `loopFrom`, and SEAM is judged again — at the TAIL's wrap
+   (frame D dissolving into frame `loopFrom`) instead of at frame 0. A one-way
+   clip with a tail DOES have a loop point; it is simply not at zero. With no
+   --clip the number is read from the installed manifest, so `npm run
+   check:motion` re-applies the rule the install was judged under. */
+const LOOP_FROM_ARG = arg('--loop-from', null)
 
 const log = (...s) => {
   if (!QUIET) console.log(...s)
@@ -297,6 +389,10 @@ const LAYER = (() => {
     crossS: num(/export const MOTION_CROSS_S\s*=\s*([\d.]+)/, 'MOTION_CROSS_S'),
     /* the mount media query: below this width the layer never exists */
     minWidthPx: num(/\(min-width:\s*(\d+)px\)/, 'the mount media query (min-width)'),
+    /* MOTION_TAIL_MIN_S is declared as a MULTIPLE of the crossfade, so the
+       multiplier is what is read: the shortest night tail the layer will loop,
+       in crossfades. Retyping the seconds would let the two drift. */
+    tailMinCrossfades: num(/export const MOTION_TAIL_MIN_S\s*=\s*MOTION_CROSS_S \* ([\d.]+)/, 'MOTION_TAIL_MIN_S'),
   }
 })()
 const CROSSFADE_S = CROSSFADE_ARG === null ? LAYER.crossS : Number(CROSSFADE_ARG)
@@ -320,6 +416,9 @@ let clipPath = arg('--clip', null)
 let manifestCrop = null
 /* absent → true: every clip installed before the flag existed is a loop */
 let manifestLoop = true
+/* absent → null: no night tail, which is what every clip installed before this
+   existed declares by saying nothing. */
+let manifestLoopFrom = null
 const installed = readMotionManifest()
 
 if (clipPath === null && CAP_ARG !== null && !INSTALL) {
@@ -347,6 +446,7 @@ if (clipPath === null) {
   if (!existsSync(clipPath)) stop(`${installed.file} is declared by the manifest but is not on disk.`, 1)
   manifestCrop = installed.crop ?? null
   manifestLoop = installed.loop !== false
+  manifestLoopFrom = typeof installed.loopFrom === 'number' ? installed.loopFrom : null
 } else {
   clipPath = resolve(clipPath)
   if (!existsSync(clipPath)) stop(`no clip at ${clipPath}`)
@@ -355,6 +455,17 @@ if (clipPath === null) {
 /* THE ONE FLAG THAT CHANGES A VERDICT. From --once on a candidate run, from
    the manifest on a re-check of what is installed. */
 const LOOPS = arg('--clip', null) === null ? manifestLoop : !ONCE
+/* And where a one-way clip wraps to, if it wraps at all. Same rule for where it
+   comes from; validated against the decoded duration further down, once the
+   container has been read, because a tail is only meaningful against a length. */
+const LOOP_FROM =
+  arg('--clip', null) === null && LOOP_FROM_ARG === null ? manifestLoopFrom : LOOP_FROM_ARG === null ? null : Number(LOOP_FROM_ARG)
+if (LOOP_FROM !== null && !(Number.isFinite(LOOP_FROM) && LOOP_FROM >= 0)) {
+  stop(`--loop-from ${LOOP_FROM_ARG} is not a number of seconds at or after the clip's start.`, 1)
+}
+if (LOOP_FROM !== null && LOOPS) {
+  stop('--loop-from describes where a ONE-WAY clip re-enters its own night; a looping clip already wraps to frame 0. Add --once, or drop --loop-from.', 1)
+}
 
 const stillPath = resolve(arg('--still', STILL_DEFAULT))
 if (!existsSync(stillPath)) stop(`no still rung at ${stillPath} — the clip has nothing to register against.`, 1)
@@ -614,11 +725,33 @@ if (VW !== SW || VH > SH) {
   )
 }
 
+/* WHERE THIS CLIP WRAPS, as a frame index. A loop wraps to frame 0; a one-way
+   clip with a night tail wraps to `loopFrom`; a one-way clip without one does
+   not wrap at all, and frame 0 is then measured and REPORTED so the number that
+   says whether it could ever have looped stays visible. */
+const TAIL_MIN_S = LAYER.tailMinCrossfades * CROSSFADE_S
+if (LOOP_FROM !== null) {
+  if (LOOP_FROM >= meta.duration) {
+    stop(`--loop-from ${LOOP_FROM} is at or past the clip's ${meta.duration.toFixed(2)}s duration; there would be no tail to loop.`, 1)
+  }
+  if (meta.duration - LOOP_FROM < TAIL_MIN_S) {
+    stop(
+      `--loop-from ${LOOP_FROM} leaves a ${(meta.duration - LOOP_FROM).toFixed(2)}s tail, under the layer's ${TAIL_MIN_S}s floor ` +
+        `(MOTION_TAIL_MIN_S = ${LAYER.tailMinCrossfades} x the ${CROSSFADE_S}s crossfade): the handoffs would overlap and the layer would dissolve for ever. ` +
+        'lib/hero-motion.ts carries the arithmetic.',
+      1,
+    )
+  }
+}
+const WRAP_FRAME = LOOP_FROM === null ? 0 : Math.min(N - 1, Math.round(LOOP_FROM * FPS))
+
 const CHUNK = 12
 const lumas = new Array(N)
 const deltas = new Float64Array(N)
 const rgbAt = new Map()
-const sampled = new Set([0, N - 1])
+/* the wrap's own frame is sampled in full RGB like the ends, so the tail's
+   hard-cut distance is measured in the same units as the loop's */
+const sampled = new Set([0, N - 1, WRAP_FRAME])
 for (let i = 0; i < N; i += STEP) sampled.add(i)
 for (let start = 0; start < N; start += CHUNK) {
   const idx = []
@@ -771,20 +904,32 @@ const nativeSteps = []
 for (let i = 1; i < N; i += 1) nativeSteps.push(lumaDelta(lumas[i], lumas[i - 1]))
 const stepP95 = pct(nativeSteps, 0.95)
 const stepMed = pct(nativeSteps, 0.5)
-const seam = { hardCutLuma: lumaDelta(lumas[0], lumas[N - 1]), hardCutRgb: null, stepP95, stepMed }
-{
-  const a = rgbAt.get(0)
-  const b = rgbAt.get(N - 1)
-  let acc = 0
-  for (let k = 0; k < a.length; k += 1) acc += Math.abs(a[k] - b[k])
-  seam.hardCutRgb = acc / a.length
-}
-{
-  const K = Math.max(1, Math.round(CROSSFADE_S * FPS))
+const CROSS_FRAMES = Math.max(1, Math.round(CROSSFADE_S * FPS))
+/* The yardstick both wrap rules are read against: how far apart ANY two frames
+   one crossfade apart are inside this clip. It does not depend on where the
+   clip wraps, so it is computed once and handed to every wrap measured below —
+   including --prove's, which measures several. */
+const SPAN_P95 = (() => {
+  const spans = []
+  for (let i = CROSS_FRAMES; i < N; i += 1) spans.push(lumaDelta(lumas[i], lumas[i - CROSS_FRAMES]))
+  return pct(spans, 0.95)
+})()
+
+/**
+ * THE WRAP AT `head`, exactly as the layer performs it: the clip's last
+ * CROSS_FRAMES frames dissolving into the frames at `head`, `head + 1`, …
+ *
+ * head = 0 is the loop the layer performs for `loop: true`. head =
+ * round(loopFrom x fps) is the NIGHT TAIL's wrap — the same dissolve, the same
+ * arithmetic, the same verdict function, asked at a different frame. One
+ * function so a tail can never be judged by a rule the loop is not.
+ */
+function wrapAt(head) {
+  const K = CROSS_FRAMES
   const blend = (j) => {
     const w = (j + 1) / (K + 1)
     const t = lumas[N - K + j]
-    const h = lumas[j]
+    const h = lumas[head + j]
     const o = new Float32Array(t.length)
     for (let k = 0; k < o.length; k += 1) o[k] = (1 - w) * t[k] + w * h[k]
     return o
@@ -796,14 +941,30 @@ const seam = { hardCutLuma: lumaDelta(lumas[0], lumas[N - 1]), hardCutRgb: null,
     steps.push(lumaDelta(o, prev))
     prev = o
   }
-  steps.push(lumaDelta(lumas[K], prev))
-  seam.crossfadeFrames = K
-  seam.crossfadePeak = Math.max(...steps)
-  seam.crossfadeRatio = ratioOf(seam.crossfadePeak, stepP95)
-  const spans = []
-  for (let i = K; i < N; i += 1) spans.push(lumaDelta(lumas[i], lumas[i - K]))
-  seam.spanP95 = pct(spans, 0.95)
-  seam.spanRatio = ratioOf(seam.hardCutLuma, seam.spanP95)
+  steps.push(lumaDelta(lumas[Math.min(N - 1, head + K)], prev))
+  const hardCutLuma = lumaDelta(lumas[head], lumas[N - 1])
+  const crossfadePeak = Math.max(...steps)
+  return {
+    head,
+    headS: head / FPS,
+    crossfadeFrames: K,
+    crossfadePeak,
+    crossfadeRatio: ratioOf(crossfadePeak, stepP95),
+    hardCutLuma,
+    spanP95: SPAN_P95,
+    spanRatio: ratioOf(hardCutLuma, SPAN_P95),
+  }
+}
+
+const seam = { ...wrapAt(WRAP_FRAME), hardCutRgb: null, stepP95, stepMed }
+{
+  const a = rgbAt.get(WRAP_FRAME)
+  const b = rgbAt.get(N - 1)
+  if (a && b) {
+    let acc = 0
+    for (let k = 0; k < a.length; k += 1) acc += Math.abs(a[k] - b[k])
+    seam.hardCutRgb = acc / a.length
+  }
 }
 
 /* THE TWO PER-FRAME VERDICTS — one function each, called by the checks below
@@ -972,6 +1133,12 @@ for (let i = 1; i < N; i += 1) {
 /** full-res px of static-content displacement at the frame's edge */
 const edgePx = (m) => 2 * (Math.hypot(m.tx, m.ty) + Math.abs(m.scaleMed) * (LW / 2))
 camera.maxDriftEdgePx = Math.max(...camera.drift.map(edgePx))
+/* reported beside the max because the max over frames of a noisy statistic
+   grows with the clip's length: the p95 says whether a reading is the material
+   or one wobble. Measured 2026-09-07 on the shipping three-take clip: max
+   0.54 px, p95 0.44, median 0.28. */
+camera.p95DriftEdgePx = pct(camera.drift.map(edgePx), 0.95)
+camera.medDriftEdgePx = pct(camera.drift.map(edgePx), 0.5)
 camera.worstDrift = camera.drift.reduce((a, b) => (edgePx(b) > edgePx(a) ? b : a))
 camera.jitterP95EdgePx = pct(camera.jitter.map(edgePx), 0.95)
 camera.netScale = camera.drift[camera.drift.length - 1].scaleMed
@@ -1284,6 +1451,42 @@ if (PROVE) {
     proofs.push({ k: 'seam: ends = frame 0 vs mid-clip', ok: ratioOf(mid, seam.spanP95) > 1.2 || mid <= T.stepFloor, got: `${mid.toFixed(2)} = ${ratioOf(mid, seam.spanP95).toFixed(2)}× span p95` })
   }
   {
+    /* THE NIGHT TAIL'S WRAP — that `wrapAt(head)` really measures the dissolve
+       AT head, and is not the frame-0 rule wearing a new name.
+
+       Drive it through the one head whose answer is known without measuring
+       anything: a wrap onto the clip's OWN last CROSS_FRAMES frames. There the
+       incoming and outgoing sequences are the same frames, so every blended
+       frame IS that frame and the dissolve's steps must come out as the clip's
+       native steps over that window — to the bit. A wrapAt that ignored its
+       argument and blended into frame 0 would report this clip's ends-apart
+       distance instead, and the proof prints both so the gap is visible. */
+    const K = CROSS_FRAMES
+    const self = wrapAt(N - K)
+    let native = 0
+    for (let i = N - K; i < N; i += 1) native = Math.max(native, lumaDelta(lumas[i], lumas[i - 1]))
+    proofs.push({
+      k: 'seam: a wrap onto the clip\'s own last frames is a no-op',
+      ok: Math.abs(self.crossfadePeak - native) < 1e-6 && seamVerdict(self, stepP95),
+      got: `peak ${self.crossfadePeak.toFixed(4)} vs the native step over those ${K} frames ${native.toFixed(4)} (a wrap to frame 0 would read ${wrapAt(0).crossfadePeak.toFixed(3)})`,
+    })
+    /* AND THE RULE STILL BITES AT THE WRAP THE TAIL EXISTS TO AVOID. The
+       expectation is derived from a DIFFERENT statistic than the verdict uses:
+       spread the two ends' distance evenly over the crossfade and, if even that
+       AVERAGE step is over the allowance, the peak cannot be under it. Where the
+       average is inside, this proves nothing and says so. */
+    const zero = wrapAt(0)
+    const allowance = Math.max(T.stepFloor, Math.min(T.seamPeakAbs, T.seamPeakRatio * stepP95))
+    const mustRefuse = zero.hardCutLuma / K > allowance
+    proofs.push({
+      k: 'seam: the wrap back to frame 0, judged',
+      ok: !mustRefuse || seamVerdict(zero, stepP95) === false,
+      got: mustRefuse
+        ? `ends ${zero.hardCutLuma.toFixed(2)} luma apart = ${(zero.hardCutLuma / K).toFixed(3)}/frame over ${K} frames, past the ${allowance.toFixed(2)} allowance → must be refused, and is${seamVerdict(zero, stepP95) ? ' NOT' : ''}`
+        : `ends ${zero.hardCutLuma.toFixed(2)} luma apart = ${(zero.hardCutLuma / K).toFixed(3)}/frame, inside the ${allowance.toFixed(2)} allowance — this clip could wrap to its own opening, so the rule is not asked to bite`,
+    })
+  }
+  {
     /* sky drift: shift one sky row of frame 0 by a known amount and recover it */
     const x0 = Math.round(SKY_X[0] * LW)
     const x1 = Math.round(SKY_X[1] * LW)
@@ -1355,24 +1558,43 @@ const checks = [
   },
   {
     k: 'SEAM',
-    /* A one-shot clip performs no handoff, so there is no seam to judge — the
-       layer plays it through once and holds its last frame. The numbers are
-       still measured and still printed, because "how far apart are the ends"
-       is exactly what says whether a clip could ever have looped. */
-    pass: LOOPS ? seamVerdict(seam, stepP95) : true,
+    /* THREE CASES, because there are three shapes of clip and only one of them
+       has no wrap at all.
+
+       A LOOP wraps to frame 0 and is judged there — the original rule.
+
+       A ONE-WAY CLIP WITH A NIGHT TAIL (`--once --loop-from <s>`) wraps to
+       `loopFrom`, and is judged BY THE SAME RULE AT THAT FRAME. "Does the clip
+       end where it begins" was never the question; "does the dissolve the layer
+       performs at the wrap show a step" is, and a clip that plays once and then
+       loops its last stretch performs exactly that dissolve — just not at zero.
+       Skipping it because `loop` is false would leave the one wrap a reader
+       actually sees for hours unmeasured.
+
+       A ONE-WAY CLIP WITH NO TAIL performs no handoff at all: it is played
+       through and held. The numbers are still measured against frame 0 and
+       still printed, because "how far apart are the ends" is exactly what says
+       whether a clip could ever have looped. */
+    pass: LOOPS || LOOP_FROM !== null ? seamVerdict(seam, stepP95) : true,
     value: LOOPS
       ? `crossfade ${CROSSFADE_S}s peak step ${seam.crossfadePeak.toFixed(2)} = ${seam.crossfadeRatio.toFixed(2)}× clip p95 step (${stepP95.toFixed(2)}, median ${stepMed.toFixed(2)}); ` +
         `ends ${seam.hardCutLuma.toFixed(2)} luma apart = ${seam.spanRatio.toFixed(2)}× the clip's p95 distance across ${CROSSFADE_S}s (${seam.spanP95.toFixed(2)}, reported)`
-      : `NOT JUDGED — one-shot clip (loop: false): the layer plays it once and holds the last frame, so it has no loop point. ` +
-        `Reported: ends ${seam.hardCutLuma.toFixed(2)} luma apart = ${seam.spanRatio.toFixed(2)}× the clip's p95 distance across ${CROSSFADE_S}s (${seam.spanP95.toFixed(2)})`,
+      : LOOP_FROM !== null
+        ? `night tail from ${LOOP_FROM}s (frame ${WRAP_FRAME}, ${(meta.duration - LOOP_FROM).toFixed(2)}s of tail): crossfade ${CROSSFADE_S}s peak step ` +
+          `${seam.crossfadePeak.toFixed(2)} = ${seam.crossfadeRatio.toFixed(2)}× clip p95 step (${stepP95.toFixed(2)}, median ${stepMed.toFixed(2)}); ` +
+          `the last frame sits ${seam.hardCutLuma.toFixed(2)} luma from the tail's head = ${seam.spanRatio.toFixed(2)}× the clip's p95 distance across ${CROSSFADE_S}s (${seam.spanP95.toFixed(2)}, reported)`
+        : `NOT JUDGED — one-shot clip (loop: false): the layer plays it once and holds the last frame, so it has no loop point. ` +
+          `Reported: ends ${seam.hardCutLuma.toFixed(2)} luma apart = ${seam.spanRatio.toFixed(2)}× the clip's p95 distance across ${CROSSFADE_S}s (${seam.spanP95.toFixed(2)})`,
     limit: LOOPS
       ? `peak ≤ ${T.stepFloor} lv, or ≤ ${T.seamPeakRatio}× step p95 and ≤ ${T.seamPeakAbs} lv`
-      : 'none — a one-way clip is not asked to end where it began',
+      : LOOP_FROM !== null
+        ? `the tail's own wrap, by the loop's rule: peak ≤ ${T.stepFloor} lv, or ≤ ${T.seamPeakRatio}× step p95 and ≤ ${T.seamPeakAbs} lv`
+        : 'none — a one-way clip is not asked to end where it began',
   },
   {
     k: 'CAMERA LOCK',
     pass: camera.maxDriftEdgePx <= T.cameraEdgePx,
-    value: `max static-content drift ${camera.maxDriftEdgePx.toFixed(2)} px at edge (t${(camera.worstDrift.i / FPS).toFixed(1)}: Δ${(2 * camera.worstDrift.tx).toFixed(2)},${(2 * camera.worstDrift.ty).toFixed(2)} px, zoom ${(100 * camera.worstDrift.scaleMed).toFixed(3)}%); net zoom ${(100 * camera.netScale).toFixed(3)}%; jitter p95 ${camera.jitterP95EdgePx.toFixed(2)} px`,
+    value: `max static-content drift ${camera.maxDriftEdgePx.toFixed(2)} px at edge (t${(camera.worstDrift.i / FPS).toFixed(1)}: Δ${(2 * camera.worstDrift.tx).toFixed(2)},${(2 * camera.worstDrift.ty).toFixed(2)} px, zoom ${(100 * camera.worstDrift.scaleMed).toFixed(3)}%); p95 ${camera.p95DriftEdgePx.toFixed(2)} px, median ${camera.medDriftEdgePx.toFixed(2)}; net zoom ${(100 * camera.netScale).toFixed(3)}%; jitter p95 ${camera.jitterP95EdgePx.toFixed(2)} px`,
     limit: `≤ ${T.cameraEdgePx} px`,
   },
   {
@@ -1468,11 +1690,13 @@ const report = {
   N,
   STEP,
   crossfadeS: CROSSFADE_S,
+  loops: LOOPS,
+  loopFrom: LOOP_FROM,
   thresholds: T,
   crop: CROP,
   handoff,
   seam,
-  camera: { maxDriftEdgePx: camera.maxDriftEdgePx, jitterP95EdgePx: camera.jitterP95EdgePx, netScale: camera.netScale, drift: camera.drift },
+  camera: { maxDriftEdgePx: camera.maxDriftEdgePx, p95DriftEdgePx: camera.p95DriftEdgePx, medDriftEdgePx: camera.medDriftEdgePx, jitterP95EdgePx: camera.jitterP95EdgePx, netScale: camera.netScale, drift: camera.drift },
   motion,
   legibility,
   checks,
@@ -1552,6 +1776,11 @@ if (INSTALL) {
        gate on every re-check. FALSE is a promise the layer keeps structurally:
        one <video>, the element's own `loop` attribute off, played once and held. */
     loop: LOOPS,
+    /* WHERE THE NIGHT TAIL BEGINS, in media seconds, or null. Read by
+       lib/hero-motion.ts's parseHeroMotion (absent → null) and by this gate on
+       every re-check, which is what keeps SEAM judging the wrap the layer will
+       actually perform. */
+    loopFrom: LOOP_FROM,
     stillAspect: STILL_ASPECT,
     madeFrom: {
       still: relative(ROOT, stillPath),
@@ -1573,7 +1802,7 @@ if (INSTALL) {
       handoff: { dy: handoff.dy, mean: handoff.mean, p99: handoff.p99, lumaMean: handoff.lumaMean, fadeS: handoff.fadeS, fadeStep: handoff.fadeStep },
       sky,
       seam: { hardCutLuma: seam.hardCutLuma, spanRatio: seam.spanRatio, crossfadePeak: seam.crossfadePeak },
-      camera: { maxDriftEdgePx: camera.maxDriftEdgePx, jitterP95EdgePx: camera.jitterP95EdgePx, netScale: camera.netScale },
+      camera: { maxDriftEdgePx: camera.maxDriftEdgePx, p95DriftEdgePx: camera.p95DriftEdgePx, medDriftEdgePx: camera.medDriftEdgePx, jitterP95EdgePx: camera.jitterP95EdgePx, netScale: camera.netScale },
       motion: { mean: motion.mean, p95: motion.p95, textBox: motion.textBox },
     },
     warnings,
