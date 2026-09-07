@@ -246,11 +246,16 @@ export const MOTION_FADE_IN_MS = 3000;
  * never of wall-clock). Raise to 1.5 if a seam ghosts; asserted ≤ 20% of the
  * clip's duration by `parseHeroMotion`.
  */
-/* 2.0, from 1.0 (2026-09-06, with the calm Seedance 2 take): a calmer clip has a
-   smaller native step, so the seam rule it is judged against gets stricter; a
-   2 s dissolve halves the per-frame step at the loop and, at 15 s, spends 13%
-   of the loop dissolving. The harness reads this number from here. */
-export const MOTION_CROSS_S = 2.0;
+/* 1.5, from 2.0 (2026-09-07, with the breathing 30 s take). A dissolve does not
+   get better by getting longer: it blends the clip's last X seconds with its
+   first X, so a LONGER one reaches further back into material that is less like
+   the opening. On a clip whose light dims and returns, the ends match closely
+   (2.97 luma apart) while a few seconds earlier they do not, and the measured
+   peak per-frame step at the loop runs 0.23 at 1.5 s, 1.52 at 2 s and 1.75 at
+   4 s. 1.5 s is the measured minimum of that curve for this clip and spends 5%
+   of the loop dissolving. The harness reads this number from here, so a future
+   clip should be re-measured rather than assumed. */
+export const MOTION_CROSS_S = 1.5;
 
 /**
  * After html[data-intro] is removed, wait this long before loading anything —

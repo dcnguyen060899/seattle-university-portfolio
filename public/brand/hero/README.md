@@ -1517,6 +1517,85 @@ single 15 s loop whose sky crosses about once every four minutes.
   this clip's own ends as a one-frame cut are refused, and the still 20 px off
   fails the cap.
 
+### Round five: the light breathes, because the light is the only thing a reader notices
+
+Round three's clip passes every check and fails the owner's actual ask. A
+design pass measured why: its only frame-to-frame motion is the fountain
+basin, and its sky drifts about 0.12 degrees of visual angle per second, at
+or below the threshold for noticing motion you are not looking at. Round
+three had fixed the "strong wind" complaint by slowing the sky sevenfold, and
+in doing so removed the thing "notice it changing" depends on. A faster sky
+brings the wind back. **The lever is light, not speed.**
+
+Two rounds were spent learning how to move the light without moving the sky:
+
+- **Round four ($18, not installed).** A sunset-to-night cycle as two takes
+  keyframed at BOTH ends, the second returning to the still. That terminal
+  keyframe forces the model to arrive at one specific cloud field, and the
+  cheapest route there is to run the clouds **backwards**. Two seeds took it.
+  Its highlight roll-off worked and is kept for a future night round.
+- **Round five, first attempt ($12, not installed).** The same pair with the
+  second take pinned only at its start. The reversal vanished — both halves
+  drifted the same way — which proved the keyframe was the cause. But the sky
+  still ran at 2.21 %/s using round three's proven wording verbatim, which
+  falsifies the "weak wording" theory: **the time-lapse instruction sets the
+  clock.** "An evening falling in 15 seconds" and "clouds the eye can barely
+  see move" are contradictory instructions about one clock, and the clock
+  wins. Round three's calm sky came from a prompt that FROZE the light.
+
+Two facts then settle the design. A one-way clip cannot loop at all, because
+the light change IS the wrap distance: take A ended 29.85 levels from its own
+first frame, and a dissolve hides about 6. And a retime moves both clocks at
+once — it is the only lever that separates them.
+
+So: **one take, no terminal keyframe, prompted for a single breath of light
+that returns within the clip**, then retimed to half speed.
+
+```sh
+# 15 s generated at 1664:1248 from the padded 4:3 still, seed 41, no --last keyframe
+ffmpeg -i brand-masters/hero-motion-source.mp4 -map_metadata -1 -map 0:v:0 -an \
+  -vf "crop=1664:1110:0:69,scale=1536:1024:flags=lanczos,setpts=2.0*PTS,\
+       minterpolate=fps=24:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1,\
+       format=yuv420p,cas=0.8,lutyuv=y='16+(val-16)*0.985'" -r 24 \
+  -c:v libx264 -preset slow -crf 26 -profile:v high -level 4.1 -g 96 -keyint_min 24 -sc_threshold 0 \
+  -x264-params colorprim=bt709:transfer=bt709:colormatrix=bt709 \
+  -color_primaries bt709 -color_trc bt709 -colorspace bt709 -color_range tv \
+  -movflags +faststart+write_colr seedance2-breath-1536-2x-cas08-crf26.mp4
+node scripts/check-hero-motion.mjs --install --clip seedance2-breath-1536-2x-cas08-crf26.mp4
+```
+
+The retime is motion-compensated, and it was checked at 1:1 on the fountain
+before it was trusted: consecutive interpolated frames show no smearing of the
+jets, the spray or the pool. What it buys, measured against the same clip at
+full speed:
+
+| | 15 s, as generated | 30 s, retimed |
+|---|---|---|
+| sky drift, worst 4 s window | 1.04 %/s — **refused** | **0.52 %/s** |
+| motion budget, whole frame | 0.60 lv | **0.37 lv** (the calm clip: 0.44) |
+| under the text | 0.33 / 0.64 | **0.20 / 0.36** |
+
+The loop closes on nothing but the material. The light dims 4.9 luma levels
+into a rosier dusk by the middle and returns, and the last frame sits **1.93
+levels** from the first — a third of the wrap the round-three clip already hid
+invisibly — so no terminal keyframe is needed and the model was never
+constrained. The dissolve length was measured rather than chosen: the peak
+per-frame step at the loop is 0.23 at 1.5 s, 1.52 at 2 s and 1.75 at 4 s,
+because a longer dissolve blends the ends with material further from them.
+`MOTION_CROSS_S` is 1.5 s for this clip and should be re-measured for the next.
+
+Installed: `hero-loop-0840cbb0.mp4`, 1536×1024, 29.96 s, 7.04 MiB, eleven of
+eleven. Legibility is BETTER than the still it lies over at every viewport
+(1280×800 mean cell 0.343 against the still's 0.363) because a dimming sky
+takes light away from under the text, not toward it.
+
+What it still does not do: the fountain's fine mist shimmers frame to frame,
+the model paints water softer than the still does, and the excursion is a dusk
+rather than a night — a full night needs the round-four roll-off, a fix to the
+32 px edge feather (which would otherwise paint a warm sunset rim around a
+blue picture, because the feather dissolves into the still beneath), and a way
+to spend a much smaller light change per generated second.
+
 ### The rules, so they are not re-derived
 
 - **Nothing here changes by hand.** `motion/` is written only by the installer;

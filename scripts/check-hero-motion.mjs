@@ -118,18 +118,19 @@ const MOTION_FILE = /^hero-loop-[0-9a-f]{8}\.(?:mp4|webm)$/
 
 /* ── budgets — mirrored into the manifest so the verifier re-derives them ─ */
 const BUDGETS = {
-  /* 6 MiB for up to 15.5 s at 1536 wide. The first figures (2 MB, 10.5 s,
-     1280 wide) assumed a 10 s 720p loop; the second (3 MB) fitted Seedance 2's
-     15 s 1112-wide take; the third fits the calm 1080p-class take shipped at
-     the still's own widest rung, 1536x1024 (5.51 MiB at CRF 24, GOP 96, with
-     the sharpen the still's Retina rung already carries). It is fetched on
-     desktop only, after the page has settled, and off the LCP path — the clip
-     covers the whole viewport, which Chrome does not count as a
+  /* 8 MiB for up to 30.5 s at 1536 wide. The figures have moved with the
+     material: 2 MB/10.5 s assumed a 720p 10 s loop; 3 MB fitted a 1112-wide
+     15 s take; 6 MB the calm 1536-wide one; and this pair fits the breathing
+     take — 15 s of generation retimed to 30 s, so the light and the clouds
+     both slow by half (7.04 MiB at CRF 26). A longer loop is fewer loop points
+     per minute of reading, which is the one thing a reader can catch. It is
+     fetched on desktop only, after the page has settled, and off the LCP path —
+     the clip covers the whole viewport, which Chrome does not count as a
      largest-contentful-paint candidate (lib/hero-motion.ts's header). */
-  mp4Bytes: 6 * 1024 * 1024,
-  webmBytes: 3 * 1024 * 1024,
-  totalPerOrientationBytes: 9 * 1024 * 1024,
-  maxDurationS: 15.5,
+  mp4Bytes: 8 * 1024 * 1024,
+  webmBytes: 4 * 1024 * 1024,
+  totalPerOrientationBytes: 12 * 1024 * 1024,
+  maxDurationS: 30.5,
   /* a MASTER over this is refused before a frame is decoded: a verifier
      crashed Chromium mid-decode on an 85 MB clip and got a crash, not a refusal */
   masterCeilingBytes: 64 * 1024 * 1024,
