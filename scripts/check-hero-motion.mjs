@@ -98,25 +98,42 @@ const MOTION_DIR = join(HERO_DIR, 'motion')
 const MOTION_MANIFEST = join(MOTION_DIR, 'manifest.json')
 const HERO_MANIFEST = join(HERO_DIR, 'manifest.json')
 const GATE = join(ROOT, 'scripts', 'check-hero-contrast.mjs')
-const STILL_DEFAULT = join(HERO_DIR, 'hero-l-1280.webp')
+/* the still to register against: by default the WIDEST landscape rung on disk —
+   the one a Retina viewport paints, and the one a clip is sized to match
+   (never wider). A narrower clip registers against it resampled; --still
+   overrides. */
+const STILL_DEFAULT = (() => {
+  try {
+    const widths = readdirSync(HERO_DIR)
+      .map((n) => /^hero-l-(\d+)\.webp$/.exec(n))
+      .filter(Boolean)
+      .map((m) => Number(m[1]))
+    if (widths.length) return join(HERO_DIR, `hero-l-${Math.max(...widths)}.webp`)
+  } catch {
+    /* no rungs: fall through to the historical default, which then stops with a clear message */
+  }
+  return join(HERO_DIR, 'hero-l-1280.webp')
+})()
 const MOTION_FILE = /^hero-loop-[0-9a-f]{8}\.(?:mp4|webm)$/
 
 /* ── budgets — mirrored into the manifest so the verifier re-derives them ─ */
 const BUDGETS = {
-  /* 3 MB for up to 15.5 s. The first figures (2 MB, 10.5 s) assumed a 10 s
-     loop; the clip that passed is Seedance 2's 15 s one — a longer loop is
-     fewer seams per minute, the one thing a calm loop is judged on — and at
-     1112x740, libx264 CRF 26 slow, it lands at 2.69 MB. It is fetched on
+  /* 6 MiB for up to 15.5 s at 1536 wide. The first figures (2 MB, 10.5 s,
+     1280 wide) assumed a 10 s 720p loop; the second (3 MB) fitted Seedance 2's
+     15 s 1112-wide take; the third fits the calm 1080p-class take shipped at
+     the still's own widest rung, 1536x1024 (5.51 MiB at CRF 24, GOP 96, with
+     the sharpen the still's Retina rung already carries). It is fetched on
      desktop only, after the first input, off the LCP path. */
-  mp4Bytes: 3 * 1024 * 1024,
-  webmBytes: 1.5 * 1024 * 1024,
-  totalPerOrientationBytes: 4.5 * 1024 * 1024,
+  mp4Bytes: 6 * 1024 * 1024,
+  webmBytes: 3 * 1024 * 1024,
+  totalPerOrientationBytes: 9 * 1024 * 1024,
   maxDurationS: 15.5,
   /* a MASTER over this is refused before a frame is decoded: a verifier
      crashed Chromium mid-decode on an 85 MB clip and got a crash, not a refusal */
   masterCeilingBytes: 64 * 1024 * 1024,
   maxFps: 30,
-  maxWidth: 1280,
+  /* the still's widest rung is 1536; a clip may match it, never exceed it */
+  maxWidth: 1536,
   requireFaststart: true,
   requireNoAudio: true,
   requireColourTags: 'bt709',
@@ -175,6 +192,15 @@ const T = {
   /* the same, on half-res luma, inside the desktop 1280x800 text box */
   motionTextMean: 2.0,
   motionTextP95: 3.0,
+  /* SKY DRIFT — how fast the sky band translates, as a percentage of the
+     frame's width per second (scale-free). Measured 2026-09-06: the first
+     shipped clip's clouds crossed at 30 px/s of 1112 (2.7%/s, the whole sky
+     in 37 s) and that — not the water, which fell at ~real speed — is what
+     the owner read as "a really strong wind"; real clouds at this framing are
+     ~0.2%/s. The calm take measures 0.45%/s (a crossing every ~2.5 min). 0.8
+     admits the calm take with margin and refuses the windy one three times
+     over. Lag 1 s, median over the loop; the sign is reported, not judged. */
+  skyDriftPctPerS: 0.8,
   /* the gate's own margin: 1.05 on (ground luminance + 0.05). Read, not typed. */
   legibilityHeadroom: null,
 }
@@ -896,6 +922,77 @@ camera.jitterP95EdgePx = pct(camera.jitter.map(edgePx), 0.95)
 camera.netScale = camera.drift[camera.drift.length - 1].scaleMed
 
 /* ══════════════════════════════════════════════════════════════════════════
+   3b · SKY DRIFT — the sky band's horizontal speed, on the half-res lumas
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/** one row of the sky as a high-passed 1-D signal: the row minus its own wide
+    moving average, so the sunset's smooth left-to-right gradient — which is
+    static and would pin every shift to zero — drops out and only the clouds'
+    texture is matched */
+function skySlit(l, row, x0, x1) {
+  const n = x1 - x0
+  const raw = new Float32Array(n)
+  for (let x = 0; x < n; x += 1) raw[x] = l[row * LW + x0 + x]
+  const R = 20
+  const o = new Float32Array(n)
+  for (let x = 0; x < n; x += 1) {
+    let acc = 0
+    let c = 0
+    for (let k = -R; k <= R; k += 1) {
+      const xx = x + k
+      if (xx >= 0 && xx < n) {
+        acc += raw[xx]
+        c += 1
+      }
+    }
+    o[x] = raw[x] - acc / c
+  }
+  return o
+}
+/** the shift (half-res px, + = rightward) that best maps signal a onto signal b */
+function slitShift(a, b, maxS) {
+  let best = 0
+  let bestV = Infinity
+  for (let sh = -maxS; sh <= maxS; sh += 1) {
+    let v = 0
+    let c = 0
+    for (let x = maxS; x < a.length - maxS; x += 1) {
+      v += Math.abs(a[x] - b[x + sh])
+      c += 1
+    }
+    v /= c
+    if (v < bestV) {
+      bestV = v
+      best = sh
+    }
+  }
+  return best
+}
+/* The rows: 4–12% of the height, above the tallest tower (which tops out near
+   8% of this picture; the chapel at the right edge is excluded by x1). The
+   columns: 20–91% of the width. Each (row, pair of frames one second apart)
+   yields one shift; the statistic is the median of all of them, which a
+   static row or a sky with no texture cannot drag away from the clouds. */
+const SKY_ROWS = [0.04, 0.06, 0.08, 0.1, 0.12]
+const SKY_X = [0.2, 0.91]
+function skyDriftOf(frames, lagFrames, stepFrames) {
+  const x0 = Math.round(SKY_X[0] * LW)
+  const x1 = Math.round(SKY_X[1] * LW)
+  const rows = SKY_ROWS.map((f) => Math.min(LH - 1, Math.round(f * LH)))
+  const maxS = Math.max(8, Math.round(0.055 * LW))
+  const shifts = []
+  for (let i = 0; i + lagFrames < frames.length; i += stepFrames) {
+    if (!frames[i] || !frames[i + lagFrames]) continue
+    for (const r of rows) shifts.push(slitShift(skySlit(frames[i], r, x0, x1), skySlit(frames[i + lagFrames], r, x0, x1), maxS))
+  }
+  const sorted = [...shifts].sort((a, b) => a - b)
+  const med = sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0
+  const pxPerS = (2 * med * FPS) / lagFrames /* full-res px/s */
+  return { rows, x: [x0, x1], lagFrames, pairs: shifts.length, medianShiftHalfPx: med, pxPerS, pctPerS: (100 * pxPerS) / VW, min: sorted[0] ?? 0, max: sorted[sorted.length - 1] ?? 0 }
+}
+const sky = skyDriftOf(lumas, Math.max(1, Math.round(FPS)), Math.max(1, Math.round(FPS / 2)))
+
+/* ══════════════════════════════════════════════════════════════════════════
    4 · LEGIBILITY UNDER TEXT — the gate's cell statistic, per frame
    ══════════════════════════════════════════════════════════════════════════ */
 
@@ -1094,6 +1191,17 @@ if (PROVE) {
     proofs.push({ k: 'seam: ends = frame 0 vs mid-clip', ok: ratioOf(mid, seam.spanP95) > 1.2 || mid <= T.stepFloor, got: `${mid.toFixed(2)} = ${ratioOf(mid, seam.spanP95).toFixed(2)}× span p95` })
   }
   {
+    /* sky drift: shift one sky row of frame 0 by a known amount and recover it */
+    const x0 = Math.round(SKY_X[0] * LW)
+    const x1 = Math.round(SKY_X[1] * LW)
+    const row = Math.min(LH - 1, Math.round(SKY_ROWS[1] * LH))
+    const a = skySlit(lumas[0], row, x0, x1)
+    const b = new Float32Array(a.length)
+    for (let x = 0; x < a.length; x += 1) b[x] = a[Math.min(a.length - 1, Math.max(0, x - 7))]
+    const got = slitShift(a, b, Math.max(8, Math.round(0.055 * LW)))
+    proofs.push({ k: 'sky: a 7 half-px shift is recovered', ok: got === 7, got: `${got} half-px` })
+  }
+  {
     /* the same-picture cap: the still 20 px off must fail it (sideways, so a full-height clip can be proved too) */
     const dx = 20
     let acc = 0
@@ -1153,6 +1261,12 @@ const checks = [
     limit: `frame mean ≤ ${T.motionMean}, p95 ≤ ${T.motionP95}; text mean ≤ ${T.motionTextMean}, p95 ≤ ${T.motionTextP95}`,
   },
 ]
+checks.push({
+  k: 'SKY DRIFT',
+  pass: Math.abs(sky.pctPerS) <= T.skyDriftPctPerS,
+  value: `the clouds translate ${Math.abs(sky.pxPerS).toFixed(1)} px/s ${sky.pxPerS < 0 ? 'right-to-left' : sky.pxPerS > 0 ? 'left-to-right' : ''} = ${Math.abs(sky.pctPerS).toFixed(2)}% of the width per second (median of ${sky.pairs} row-pairs, ${SKY_ROWS.length} rows at 4–12% of the height, lag ${sky.lagFrames} frames; shifts ${sky.min}..${sky.max} half-px)`,
+  limit: `≤ ${T.skyDriftPctPerS}% of the width per second (a crossing no faster than every ${Math.round(100 / T.skyDriftPctPerS)} s)`,
+})
 /* LEGIBILITY is a verdict only where the layer can mount. The layer's media
    query is (min-width: <minWidthPx>px) and (pointer: fine): below that width
    there is no <video>, the hero is the still, and the still's own gate has
@@ -1292,6 +1406,7 @@ if (INSTALL) {
       thresholds: T,
       checks: checks.map((c) => ({ check: c.k, pass: c.pass, value: c.value, limit: c.limit })),
       handoff: { dy: handoff.dy, mean: handoff.mean, p99: handoff.p99, lumaMean: handoff.lumaMean, fadeS: handoff.fadeS, fadeStep: handoff.fadeStep },
+      sky,
       seam: { hardCutLuma: seam.hardCutLuma, spanRatio: seam.spanRatio, crossfadePeak: seam.crossfadePeak },
       camera: { maxDriftEdgePx: camera.maxDriftEdgePx, jitterP95EdgePx: camera.jitterP95EdgePx, netScale: camera.netScale },
       motion: { mean: motion.mean, p95: motion.p95, textBox: motion.textBox },

@@ -167,7 +167,11 @@ export const MOTION_FADE_IN_MS = 3000;
  * never of wall-clock). Raise to 1.5 if a seam ghosts; asserted ≤ 20% of the
  * clip's duration by `parseHeroMotion`.
  */
-export const MOTION_CROSS_S = 1.0;
+/* 2.0, from 1.0 (2026-09-06, with the calm Seedance 2 take): a calmer clip has a
+   smaller native step, so the seam rule it is judged against gets stricter; a
+   2 s dissolve halves the per-frame step at the loop and, at 15 s, spends 13%
+   of the loop dissolving. The harness reads this number from here. */
+export const MOTION_CROSS_S = 2.0;
 
 /**
  * After html[data-intro] is removed, wait this long before loading anything —

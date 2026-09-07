@@ -26,9 +26,10 @@ The whole argument — the layer, the loop, the gates, the record — is in
 `manifest.json` was committed in the absent state (`present: false`) so the
 component can read it unconditionally and branch on one boolean, exactly like
 the still's manifest one directory up. Right now it is `present: true`:
-`hero-loop-1813504d.mp4` is a transcode of the Seedance 2 master under
+`hero-loop-2ce826d8.mp4` is a transcode of the calm Seedance 2 master under
 `brand-masters/` (git LFS), made with the ffmpeg recipe in the hero README
-(**Round two**), and it passed all ten checks. Since 2026-09-06 the clip
+(**Round three**), 1536×1024 — the still's widest rung — and it passed all
+eleven checks, including the sky-drift check that round added. Since 2026-09-06 the clip
 renders on every build of main: the owner approved the disclosure line and the
 corpus record is verified, so `NEXT_PUBLIC_HERO_MOTION` unset is `on`, `off`
 is the deploy-side kill switch, and `preview` (localhost-only) exists for a

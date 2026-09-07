@@ -4,8 +4,8 @@
   "provenance": {
     "composer": "deterministic",
     "model": null,
-    "builtAt": "2026-09-07T00:54:58.469Z",
-    "corpusVersion": "e4db3e6757a6",
+    "builtAt": "2026-09-07T04:06:56.753Z",
+    "corpusVersion": "b638314a4273",
     "corpusSize": 116,
     "guardrailTotal": 4
   },

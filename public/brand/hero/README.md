@@ -1252,7 +1252,7 @@ so no browser guesses bt601; faststart so the first frame does not wait for the
 whole file; no audio, no metadata, so the C2PA manifest is gone and the file
 says so.
 
-What the harness measured on the installed clip, `hero-loop-1813504d.mp4`:
+What the harness measured on the round-two clip, `hero-loop-1813504d.mp4` (installed 2026-09-06 and replaced the same day by round three, below):
 
 | check | limit | measured |
 |---|---|---|
@@ -1267,6 +1267,67 @@ What the harness measured on the installed clip, `hero-loop-1813504d.mp4`:
 Below 1280 px the layer never mounts, and those four viewports are reported,
 not judged (375×812 would run 0.442 against 0.433 — which is exactly why the
 gate reads the layer's `min-width` instead of assuming the still's list).
+
+### Round three: the owner's eye, measured — wind that was the sky, softness that was the sharpen
+
+The first installed clip (round two) drew two complaints: the water "moving a
+bit too fast, like a really strong wind", and the picture "less native
+resolution in motion". Both were measured before anything was regenerated:
+
+- **The water fell at real speed** (180–216 px/s of 1112, 1.0–1.5× a real
+  fountain). What read as wind was the **sky**, drifting 30 px/s — the whole
+  sky crossing in 37 s, 5–15× real clouds — plus the plume's width pulsing
+  ±20 % at 1–2 Hz and spray texture that forgot itself in 0.16 s. The tree
+  did not move at all.
+- **The softness was mostly not the clip's fault.** On a DPR-2 display the
+  still is served from `hero-l-1536`, the one rung `gen-hero-photo.mjs`
+  SHARPENS for Retina, stretched 1.67×; the clip was 1112 px stretched 2.3×
+  and never sharpened. Log-space shares of the gap: the still's build-time
+  sharpen 42 %, the 1112 width plus the larger stretch 35 %, the model's own
+  render 22 %, the x264 transcode 1 %. A plain 2K upscale of the old master
+  bought +15 % and looked the same; matching the sharpen bought 3×.
+
+Four candidates were generated on 2026-09-06 ($20.27 of credits, all recorded
+in `src:hero-motion-generation`): two Seedance 2 takes at the model's
+1080p-class 4:3 tier (`1664:1248`) with a calm prompt and a slow-motion
+variant, a Hailuo 3 native-2K take, and a keyframed sunset→night→sunset pair.
+Two independent judges ranked them the same way. **The calm take (seed 7)
+won**: sky 5 px/s of 1112 (a crossing every ~2.5 min), plume steady to ±5 %,
+tree still, camera locked to 0.12 px, and — shipped at 1536×1024, 1:1 with the
+still's widest rung — window grids that resolve at Retina. Its one failure
+was the transcode's: a plain unsharp mask pushed lit windows under the text
+to clipping and failed LEGIBILITY; `cas=0.8` (content-adaptive sharpening)
+sharpens without that and passes 10 of 10 at 5.51 MiB.
+
+```sh
+ffmpeg -i brand-masters/hero-motion-source.mp4 -map_metadata -1 -map 0:v:0 -an \
+  -vf "crop=1664:1110:0:69,scale=1536:1024:flags=lanczos,format=yuv420p,cas=0.8,lutyuv=y='16+(val-16)*0.985'" -r 24 \
+  -c:v libx264 -preset slow -crf 24 -profile:v high -level 4.1 -g 96 -keyint_min 24 -sc_threshold 0 \
+  -x264-params colorprim=bt709:transfer=bt709:colormatrix=bt709 \
+  -color_primaries bt709 -color_trc bt709 -colorspace bt709 -color_range tv \
+  -movflags +faststart+write_colr seedance2-1080p-calm-crop1536-cas08-crf24-g96.mp4
+node scripts/check-hero-motion.mjs --install --clip seedance2-1080p-calm-crop1536-cas08-crf24-g96.mp4
+```
+
+What changed with it: `MOTION_CROSS_S` 1 → 2 s (a calmer clip has a smaller
+native step, so the seam rule it is judged by gets stricter; a 2 s dissolve
+halves the per-frame step), the budgets (6 MiB, 1536 wide — the still's own
+widest rung, never wider), and a new **SKY DRIFT** check — the sky band's
+horizontal speed as a percentage of the width per second, ≤ 0.8 %/s — so the
+harness can refuse the exact fault the owner saw (the old clip: 2.7 %/s).
+
+What it does not fix, honestly: the fountain's fine mist still shimmers frame
+to frame (texture coherence 0.24 s against a 0.33 s target), so the
+whole-frame motion is 1.4× a "calm" budget rather than under it — shimmer,
+not gusting — and the model renders water softer than the still paints it.
+Two seeds and two prompts both landed there; "no mist" produced mist twice.
+
+The night pair is the idea to come back to: the dusk and night frames were the
+strongest images of the run, but the 30 s stitch had a re-render cut at the
+junction, clouds reversing direction between the halves, and night frames
+that blow the legibility gate (lamps and windows overshoot to white under the
+text). It needs both halves generated with matching cloud direction, a longer
+dusk, a highlight roll-off, and the gate's night headroom — not a re-roll.
 
 ### Two rules the first harness got wrong, and one it left unprovable
 

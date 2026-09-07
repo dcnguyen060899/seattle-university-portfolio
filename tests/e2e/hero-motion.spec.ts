@@ -58,7 +58,7 @@ import {
 const MOTION_FORCE_KEY = 'duyng.motion.force'
 const MOTION_OFF_KEY = 'duyng.motion.off'
 const MOTION_OVERRIDE_KEY = 'duyng.motion.override'
-const MOTION_CROSS_S = 1.0
+const MOTION_CROSS_S = 2.0
 const MOTION_FADE_IN_MS = 3000
 const MOTION_SETTLE_MS = 1500
 
