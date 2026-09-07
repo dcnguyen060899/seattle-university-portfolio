@@ -1,15 +1,15 @@
 {
   "present": true,
   "generator": "scripts/check-hero-motion.mjs --install",
-  "file": "hero-loop-0840cbb0.mp4",
-  "publicPath": "/brand/hero/motion/hero-loop-0840cbb0.mp4",
-  "bytes": 7383452,
-  "sha256": "0840cbb07f62f50245fcec5caa93e31e3326821f26f27932ffdd014a99c3ed47",
+  "file": "hero-loop-fa543b81.mp4",
+  "publicPath": "/brand/hero/motion/hero-loop-fa543b81.mp4",
+  "bytes": 9192362,
+  "sha256": "fa543b816002f08321df31fc8bc9f01a2d8cb4c6b871557cd36fe22602ea7b78",
   "width": 1536,
   "height": 1024,
-  "durationS": 29.958,
+  "durationS": 30.083,
   "fps": 24,
-  "frames": 719,
+  "frames": 722,
   "codec": "avc1",
   "fastStart": true,
   "hasAudio": false,
@@ -25,14 +25,15 @@
     "w": 1,
     "h": 1
   },
+  "loop": false,
   "stillAspect": 1.5,
   "madeFrom": {
     "still": "public/brand/hero/hero-l-1536.webp",
     "stillRungSha256": "3c56d5d48a7215fcff4968c6f8346dca70b5720616d8004ee46b6deaec0ab3c4",
     "stillResampledTo": null,
     "stillSha256": "2dd6752d828e4028771e037c9624615c6a98671e6e2a5a62a3ab635337ed15c3",
-    "master": "seedance2-breath-1536-2x-cas08-crf26.mp4",
-    "masterSha256": "0840cbb07f62f50245fcec5caa93e31e3326821f26f27932ffdd014a99c3ed47"
+    "master": "seedance2-nightfall-30s-graded-crf25.mp4",
+    "masterSha256": "fa543b816002f08321df31fc8bc9f01a2d8cb4c6b871557cd36fe22602ea7b78"
   },
   "opacityCap": 1,
   "opacityCapSolvedBy": null,
@@ -63,77 +64,77 @@
       {
         "check": "HANDOFF",
         "pass": true,
-        "value": "mean |frame0 − still| 11.82 lv (p99 82.3) at row 0; 7.86 luma dissolved over the layer's 3s fade (72 frames) = 0.109/frame = 0.29× clip p95 step",
+        "value": "mean |frame0 − still| 12.32 lv (p99 82.3) at row 0; 8.44 luma dissolved over the layer's 3s fade (72 frames) = 0.117/frame = 0.26× clip p95 step",
         "limit": "same picture ≤ 20 lv (a re-encode of the still measures 5.39); fade step ≤ 0.5, or ≤ 1.5× step p95 and ≤ 4"
       },
       {
         "check": "SEAM",
         "pass": true,
-        "value": "crossfade 1.5s peak step 0.23 = 0.62× clip p95 step (0.37, median 0.19); ends 2.97 luma apart = 0.77× the clip's p95 distance across 1.5s (3.84, reported)",
-        "limit": "peak ≤ 0.5 lv, or ≤ 1.5× step p95 and ≤ 4 lv"
+        "value": "NOT JUDGED — one-shot clip (loop: false): the layer plays it once and holds the last frame, so it has no loop point. Reported: ends 30.92 luma apart = 9.13× the clip's p95 distance across 1.5s (3.39)",
+        "limit": "none — a one-way clip is not asked to end where it began"
       },
       {
         "check": "CAMERA LOCK",
         "pass": true,
-        "value": "max static-content drift 0.26 px at edge (t16.5: Δ-0.06,-0.07 px, zoom 0.022%); net zoom 0.005%; jitter p95 0.00 px",
+        "value": "max static-content drift 0.45 px at edge (t24.8: Δ-0.11,-0.13 px, zoom 0.037%); net zoom 0.019%; jitter p95 0.00 px",
         "limit": "≤ 0.5 px"
       },
       {
         "check": "MOTION BUDGET",
         "pass": true,
-        "value": "frame: mean |Δ| 0.37 lv rgb, p95 0.63, max 3.58 at t4.0 · under desktop text (clip x136-1392 y178-946): mean 0.20 luma, p95 0.36 (whole frame 0.21 / 0.37)",
+        "value": "frame: mean |Δ| 0.43 lv rgb, p95 0.77, max 3.44 at t4.0 · under desktop text (clip x136-1392 y178-946): mean 0.24 luma, p95 0.43 (whole frame 0.26 / 0.45)",
         "limit": "frame mean ≤ 2.5, p95 ≤ 4; text mean ≤ 2, p95 ≤ 3"
       },
       {
         "check": "SKY DRIFT",
         "pass": true,
-        "value": "worst 4s window 0.52%/s right-to-left at t2.0–6.0 (14 windows: -0.39, -0.52, -0.39, -0.39, -0.39, -0.52, -0.52, -0.52, -0.52, -0.52, -0.52, -0.26, -0.26, 0.00); one direction throughout (13 moving, 1 still); whole clip 0.39%/s right-to-left = 6.0 px/s (median of 290 row-pairs, 5 rows at 4–12% of the height, lag 24 frames; shifts -6..0 half-px, reported)",
+        "value": "worst 4s window 0.26%/s right-to-left at t0.0–4.0 (15 windows: -0.26, -0.26, -0.26, -0.26, -0.26, -0.26, -0.26, -0.26, -0.26, -0.26, -0.26, -0.26, -0.26, -0.26, -0.26); one direction throughout (15 moving, 0 still); whole clip 0.26%/s right-to-left = 4.0 px/s (median of 295 row-pairs, 5 rows at 4–12% of the height, lag 24 frames; shifts -2..-1 half-px, reported)",
         "limit": "every 4s window ≤ 0.8%/s (a crossing no faster than every 125 s) AND no reversal between windows over 0.26%/s"
       },
       {
         "check": "LEGIBILITY 375x812 (never mounts under 1280px — reported)",
         "pass": true,
-        "value": "worst cell 1.000 (still 0.983) · p95 0.706 @t18.5 (still 0.667) · mean 0.138 @t28.0 (still 0.152)",
+        "value": "worst cell 0.992 (still 0.983) · p95 0.759 @t27.8 (still 0.667) · mean 0.132 @t28.3 (still 0.152)",
         "limit": "worst ≤ 1.000 · p95 ≤ 0.720 · mean ≤ 0.173 at field floor 54.2%"
       },
       {
         "check": "LEGIBILITY 390x844 (never mounts under 1280px — reported)",
         "pass": true,
-        "value": "worst cell 1.000 (still 0.983) · p95 0.713 @t19.5 (still 0.660) · mean 0.140 @t28.0 (still 0.154)",
+        "value": "worst cell 0.992 (still 0.983) · p95 0.765 @t29.0 (still 0.660) · mean 0.133 @t28.8 (still 0.154)",
         "limit": "worst ≤ 1.000 · p95 ≤ 0.712 · mean ≤ 0.176 at field floor 54.2%"
       },
       {
         "check": "LEGIBILITY 768x1024 (never mounts under 1280px — reported)",
         "pass": true,
-        "value": "worst cell 1.000 (still 0.999) · p95 0.799 @t17.8 (still 0.781) · mean 0.216 @t28.0 (still 0.237)",
+        "value": "worst cell 1.000 (still 0.999) · p95 0.837 @t27.8 (still 0.781) · mean 0.220 @t28.8 (still 0.237)",
         "limit": "worst ≤ 1.000 · p95 ≤ 0.840 · mean ≤ 0.264 at field floor 54.2%"
       },
       {
         "check": "LEGIBILITY 861x1000 (never mounts under 1280px — reported)",
         "pass": true,
-        "value": "worst cell 1.000 (still 0.999) · p95 0.827 @t15.8 (still 0.818) · mean 0.241 @t28.0 (still 0.262)",
+        "value": "worst cell 1.000 (still 0.999) · p95 0.836 @t27.8 (still 0.818) · mean 0.242 @t28.8 (still 0.262)",
         "limit": "worst ≤ 1.000 · p95 ≤ 0.880 · mean ≤ 0.290 at field floor 54.2%"
       },
       {
         "check": "LEGIBILITY 1280x800",
         "pass": true,
-        "value": "worst cell 1.000 (still 0.999) · p95 0.896 @t19.5 (still 0.874) · mean 0.343 @t28.0 (still 0.363)",
+        "value": "worst cell 1.000 (still 0.999) · p95 0.901 @t28.8 (still 0.874) · mean 0.336 @t28.8 (still 0.363)",
         "limit": "worst ≤ 1.000 · p95 ≤ 0.938 · mean ≤ 0.397 at field floor 54.2%"
       },
       {
         "check": "LEGIBILITY 1600x900",
         "pass": true,
-        "value": "worst cell 1.000 (still 0.999) · p95 0.897 @t19.8 (still 0.867) · mean 0.338 @t28.0 (still 0.356)",
+        "value": "worst cell 1.000 (still 0.999) · p95 0.902 @t28.8 (still 0.867) · mean 0.335 @t28.8 (still 0.356)",
         "limit": "worst ≤ 1.000 · p95 ≤ 0.931 · mean ≤ 0.390 at field floor 54.2%"
       }
     ],
     "handoff": {
       "dy": 0,
-      "mean": 11.82333352830675,
+      "mean": 12.321755303276909,
       "p99": 82.33333333333333,
-      "lumaMean": 7.85595703125,
+      "lumaMean": 8.438397725423178,
       "fadeS": 3,
-      "fadeStep": 0.10911051432291667
+      "fadeStep": 0.11719996840865525
     },
     "sky": {
       "rows": [
@@ -148,89 +149,89 @@
         699
       ],
       "lagFrames": 24,
-      "pairs": 290,
-      "medianShiftHalfPx": -3,
-      "pxPerS": -6,
-      "pctPerS": -0.390625,
-      "min": -6,
-      "max": 0,
+      "pairs": 295,
+      "medianShiftHalfPx": -2,
+      "pxPerS": -4,
+      "pctPerS": -0.2604166666666667,
+      "min": -2,
+      "max": -1,
       "windows": [
         {
           "t0": 0,
           "t1": 4,
           "pairs": 40,
-          "medianShiftHalfPx": -3,
-          "pctPerS": -0.390625
+          "medianShiftHalfPx": -2,
+          "pctPerS": -0.2604166666666667
         },
         {
           "t0": 2,
           "t1": 6,
           "pairs": 40,
-          "medianShiftHalfPx": -4,
-          "pctPerS": -0.5208333333333334
+          "medianShiftHalfPx": -2,
+          "pctPerS": -0.2604166666666667
         },
         {
           "t0": 4,
           "t1": 8,
           "pairs": 40,
-          "medianShiftHalfPx": -3,
-          "pctPerS": -0.390625
+          "medianShiftHalfPx": -2,
+          "pctPerS": -0.2604166666666667
         },
         {
           "t0": 6,
           "t1": 10,
           "pairs": 40,
-          "medianShiftHalfPx": -3,
-          "pctPerS": -0.390625
+          "medianShiftHalfPx": -2,
+          "pctPerS": -0.2604166666666667
         },
         {
           "t0": 8,
           "t1": 12,
           "pairs": 40,
-          "medianShiftHalfPx": -3,
-          "pctPerS": -0.390625
+          "medianShiftHalfPx": -2,
+          "pctPerS": -0.2604166666666667
         },
         {
           "t0": 10,
           "t1": 14,
           "pairs": 40,
-          "medianShiftHalfPx": -4,
-          "pctPerS": -0.5208333333333334
+          "medianShiftHalfPx": -2,
+          "pctPerS": -0.2604166666666667
         },
         {
           "t0": 12,
           "t1": 16,
           "pairs": 40,
-          "medianShiftHalfPx": -4,
-          "pctPerS": -0.5208333333333334
+          "medianShiftHalfPx": -2,
+          "pctPerS": -0.2604166666666667
         },
         {
           "t0": 14,
           "t1": 18,
           "pairs": 40,
-          "medianShiftHalfPx": -4,
-          "pctPerS": -0.5208333333333334
+          "medianShiftHalfPx": -2,
+          "pctPerS": -0.2604166666666667
         },
         {
           "t0": 16,
           "t1": 20,
           "pairs": 40,
-          "medianShiftHalfPx": -4,
-          "pctPerS": -0.5208333333333334
+          "medianShiftHalfPx": -2,
+          "pctPerS": -0.2604166666666667
         },
         {
           "t0": 18,
           "t1": 22,
           "pairs": 40,
-          "medianShiftHalfPx": -4,
-          "pctPerS": -0.5208333333333334
+          "medianShiftHalfPx": -2,
+          "pctPerS": -0.2604166666666667
         },
         {
           "t0": 20,
           "t1": 24,
           "pairs": 40,
-          "medianShiftHalfPx": -4,
-          "pctPerS": -0.5208333333333334
+          "medianShiftHalfPx": -2,
+          "pctPerS": -0.2604166666666667
         },
         {
           "t0": 22,
@@ -248,36 +249,43 @@
         },
         {
           "t0": 26,
-          "t1": 29.958333333333332,
-          "pairs": 30,
-          "medianShiftHalfPx": 0,
-          "pctPerS": 0
+          "t1": 30,
+          "pairs": 35,
+          "medianShiftHalfPx": -2,
+          "pctPerS": -0.2604166666666667
+        },
+        {
+          "t0": 28,
+          "t1": 30.083333333333332,
+          "pairs": 15,
+          "medianShiftHalfPx": -2,
+          "pctPerS": -0.2604166666666667
         }
       ],
       "stillPctPerS": 0.2604166666666667,
-      "movingWindows": 13,
+      "movingWindows": 15,
       "worstWindow": {
-        "t0": 2,
-        "t1": 6,
+        "t0": 0,
+        "t1": 4,
         "pairs": 40,
-        "medianShiftHalfPx": -4,
-        "pctPerS": -0.5208333333333334
+        "medianShiftHalfPx": -2,
+        "pctPerS": -0.2604166666666667
       },
       "reverses": false
     },
     "seam": {
-      "hardCutLuma": 2.965703328450521,
-      "spanRatio": 0.7722241867278004,
-      "crossfadePeak": 0.2300950933101357
+      "hardCutLuma": 30.9159418741862,
+      "spanRatio": 9.127211857840457,
+      "crossfadePeak": 1.0078225962499043
     },
     "camera": {
-      "maxDriftEdgePx": 0.2630468247247949,
-      "jitterP95EdgePx": 0.0026060636346459435,
-      "netScale": 0.00004707268579152058
+      "maxDriftEdgePx": 0.45109870782661454,
+      "jitterP95EdgePx": 0.003965186936792098,
+      "netScale": 0.0001949991352431332
     },
     "motion": {
-      "mean": 0.3695838359146804,
-      "p95": 0.6326427459716797,
+      "mean": 0.42567876579765607,
+      "p95": 0.767984602186415,
       "textBox": {
         "viewport": "1280x800",
         "clipRect": [
@@ -286,11 +294,11 @@
           1392,
           946
         ],
-        "mean": 0.20075443812134433,
-        "p95": 0.3605651207537155,
-        "max": 1.8448115711252655,
-        "frameMeanLuma": 0.21459019482965938,
-        "frameP95Luma": 0.37151845296223956
+        "mean": 0.23761132647434713,
+        "p95": 0.42958797770700635,
+        "max": 2.0861489848726116,
+        "frameMeanLuma": 0.2616557501776592,
+        "frameP95Luma": 0.45171356201171875
       }
     }
   },
@@ -298,7 +306,7 @@
     "colr box is 2/2/1, not bt709 1/1/1 (2 = unspecified): the H.264 VUI may still say bt709, but a container that reads differently from its bitstream is a guess left to the browser. Re-mux with the colr written when an encoder is available."
   ],
   "budgets": {
-    "mp4Bytes": 8388608,
+    "mp4Bytes": 10485760,
     "webmBytes": 4194304,
     "totalPerOrientationBytes": 12582912,
     "maxDurationS": 30.5,

@@ -438,9 +438,10 @@ function readHeroPhoto(): HeroPhoto | null {
  *      (src:hero-motion-disclosure-2026-09-06), and the record is verified.
  *      The accessor throws on a missing or broken record, and that is a build
  *      failure on purpose.
- *   5. The numbers the layer registers with — duration, crop, opacity cap — are
- *      a config `parseHeroMotion` trusts. The still's aspect comes from the
- *      desktop rung's own intrinsic size, never retyped.
+ *   5. The numbers the layer registers with — duration, crop, opacity cap, and
+ *      whether the clip loops at all — are a config `parseHeroMotion` trusts.
+ *      The still's aspect comes from the desktop rung's own intrinsic size,
+ *      never retyped.
  */
 function readHeroMotion(desktop: HeroCrop): HeroMotion | null {
   if (!existsSync(MOTION_MANIFEST_PATH)) return null;
@@ -509,6 +510,11 @@ function readHeroMotion(desktop: HeroCrop): HeroMotion | null {
     poster: desktop.soft,
     durationS: parsed.durationS,
     crop: parsed.crop,
+    /* The manifest's word on whether the clip wraps. Passed through UNTOUCHED,
+       including `undefined` — `parseHeroMotion` is the one place the default
+       (true, a loop) is written, so a clip installed before the flag existed
+       and a clip that declares itself a loop cannot disagree. */
+    loop: parsed.loop,
     stillAspect: desktop.width / desktop.height,
     opacityCap: parsed.opacityCap,
   });

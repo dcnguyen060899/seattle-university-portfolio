@@ -1596,6 +1596,72 @@ rather than a night — a full night needs the round-four roll-off, a fix to the
 blue picture, because the feather dissolves into the still beneath), and a way
 to spend a much smaller light change per generated second.
 
+### Round six: the model moves things, a grade makes it night
+
+The owner recorded the shipping build and named three faults at once: the
+motion does not begin until seconds after the intro; it is "not smooth"; and
+it loops back to sunset instead of getting dark. He also asked for the campus
+trees and the crimson banner to move in a breeze, for the lights to switch on
+as night arrives rather than being lit throughout, and he supplied a reference
+— seven real Seattle timelapses cut together.
+
+**The reference settled an argument the wrong way round.** Measured with this
+repo's own estimator, its sky moves at 0.39–0.65 %/s — *slower* than the
+0.80 %/s gate — and still reaches full night in eight seconds. Real timelapse
+separates the light's clock from the sky's. Seedance 2 does not. Fitting four
+takes across rounds four to six:
+
+> the model charges about **0.59 %/s of cloud drift the instant the light is
+> asked to move at all**, plus about **0.19 %/s per 10 sky-luma levels** of
+> dimming.
+
+A full sunset-to-night is about 107 levels. So no compliant chain reaches
+night inside any sane clip length — the three-take plan this round began with
+would have needed roughly ten takes and 150 s, and its first leg failed the
+sky gate on two independent seeds using round three's proven wording verbatim.
+That killed the "weak prompt" theory for good.
+
+**So stop asking the model for darkness.** It supplies MOTION only — trees,
+banner, water, lights switching on — with the light almost frozen, which put
+the sky at **0.26 %/s, the slowest of any take in six rounds**. A time-varying
+colour grade in the transcode supplies the nightfall, and a grade drags no
+clouds at all. For the first time the foliage actually moves: against a static
+stone-sign reference of 1.43 grey levels per frame, the banner reads 8.04, the
+left tree crown 3.72, the arch ivy 3.61, the conifers 2.20.
+
+The grade darkens by a vertical ramp (full strength through the top 62 %),
+guards anything above Y′ 205 so lamps and lit windows survive, and cools the
+sky by pushing cb and pulling cr on the same ramp. An early version lifted
+highlights to hold the frame's mean and blew the windows under the text to
+clipping; the fix was to drop the lift, let night fall on the campus too, and
+keep round four's highlight knee. Against the owner's reference, measured the
+same way on single shots:
+
+| | this clip | his reference's shots |
+|---|---|---|
+| the sky falls | 3.85× | 1.84–3.63× |
+| sky falls faster than the picture | 1.72× | 1.32–1.57× |
+| warm→blue in the sky | 1.36 → 0.25 | → 0.41–0.56 |
+
+**It does not loop.** `--once` records `loop: false`; the layer plays it
+through and holds the last frame, so there is no wrap and SEAM is not judged —
+that check asks whether a clip ends where it begins, and the whole point here
+is that it does not. Legibility under the text is BETTER than the still it
+lies over at every viewport (1280×800 mean cell 0.336 against 0.363), because
+night takes light away from under the words.
+
+**And the entrance is one move now.** The clip arrives while the intro is
+still up, where the whole difference between it and the still measures 1.62
+sRGB levels — under a just-noticeable difference for a large area, and that is
+before the intro's own veil. The `--focus` ramp then resolves the reader onto
+a picture that is already moving, so the arrival is not an event of its own.
+
+What it still does not do: the two takes are joined at 15 s and the join is
+only as invisible as the second take's first frame is faithful to the first's
+last; the grade is a global operation and cannot make one window come on while
+its neighbour stays dark; and the resting state is a held frame, so a reader
+who stays five minutes sees a still night.
+
 ### The rules, so they are not re-derived
 
 - **Nothing here changes by hand.** `motion/` is written only by the installer;

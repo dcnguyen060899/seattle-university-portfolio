@@ -29,12 +29,33 @@ import {
  * viewport is not an LCP candidate at all, the installed clip is registered to
  * the whole still and therefore covers it, and the controller checks that
  * coverage at runtime before it starts itself (lib/hero-motion.ts's header
- * carries the measurements). So the tests below assert the new rule in three
- * pieces: nothing mounts before the intro has left and the page has settled;
- * it DOES mount with no input whatever; and no <video> is ever recorded as a
+ * carries the measurements). So the tests below assert the rule in three
+ * pieces: it DOES mount with no input whatever; nothing mounts early on a page
+ * with no intro running; and no <video> is ever recorded as a
  * largest-contentful-paint candidate on that no-input path. The first input
  * survives as an accelerator, and as the only way in for a clip whose box
  * cannot cover the viewport.
+ *
+ * ── AND AGAIN LATER THE SAME DAY: THE ENTRANCE, AND A CLIP THAT MAY NOT WRAP
+ *
+ * Three more contracts, each with its own test below:
+ *
+ *   THE EARLY DOOR. While the intro is actually PLAYING the layer mounts
+ *   behind it, and its fade — MOTION_FADE_BEHIND_MS, not MOTION_FADE_IN_MS —
+ *   finishes before the overlay leaves, so the intro's own `--focus` resolve
+ *   reveals a picture that is already moving. The old "nothing mounts while
+ *   html[data-intro] is set" assertion is GONE, deliberately: it was the
+ *   defect the owner reported. What replaces it is "nothing mounts early on a
+ *   page whose intro never ran", which is the late door and is still true.
+ *
+ *   PLAY ONCE AND HOLD. `loop: false` in the config — one <video>, the
+ *   element's own `loop` attribute OFF, no standby copy, and an `ended` clip
+ *   that stays ended across a tab flip rather than restarting from its first
+ *   frame.
+ *
+ *   THE FEATHER IS CONDITIONAL. The 32 px edge mask is emitted only for a crop
+ *   that is a real sub-rectangle of the still; a whole-frame registration gets
+ *   no mask at all.
  *
  * ── TWO HALVES, GATED DIFFERENTLY ─────────────────────────────────────────
  *
@@ -74,6 +95,7 @@ const MOTION_OFF_KEY = 'duyng.motion.off'
 const MOTION_OVERRIDE_KEY = 'duyng.motion.override'
 const MOTION_CROSS_S = 1.5
 const MOTION_FADE_IN_MS = 3000
+const MOTION_FADE_BEHIND_MS = 1500
 const MOTION_SETTLE_MS = 1500
 const MOTION_LCP_QUIET_MS = 1200
 
@@ -95,6 +117,8 @@ interface MotionConfig {
   poster: string
   durationS: number
   crop: { x: number; y: number; w: number; h: number }
+  /** Absent → a loop, exactly as `parseHeroMotion` defaults it. */
+  loop?: boolean
   stillAspect: number
   opacityCap: number
 }
@@ -227,6 +251,8 @@ interface ArmOptions {
   intro?: boolean
   saveData?: boolean
   refusePlay?: boolean
+  /** Arm with the force key and NO override, so the config can only be the server's. */
+  noOverride?: boolean
 }
 
 async function arm(page: Page, config: MotionConfig, opts: ArmOptions = {}): Promise<void> {
@@ -234,7 +260,8 @@ async function arm(page: Page, config: MotionConfig, opts: ArmOptions = {}): Pro
     ({ config, opts, keys }) => {
       try {
         if (opts.force !== false) sessionStorage.setItem(keys.force, '1')
-        sessionStorage.setItem(keys.override, JSON.stringify(config))
+        if (opts.noOverride) sessionStorage.removeItem(keys.override)
+        else sessionStorage.setItem(keys.override, JSON.stringify(config))
         if (opts.off) sessionStorage.setItem(keys.off, '1')
         if (opts.intro) {
           sessionStorage.removeItem(keys.introSeen)
@@ -335,8 +362,13 @@ test.describe('hero motion: the contract this spec mirrors', () => {
       `'${MOTION_OVERRIDE_KEY}'`,
       `MOTION_CROSS_S = ${MOTION_CROSS_S.toFixed(1)}`,
       `MOTION_FADE_IN_MS = ${MOTION_FADE_IN_MS}`,
+      `MOTION_FADE_BEHIND_MS = ${MOTION_FADE_BEHIND_MS}`,
       `MOTION_SETTLE_MS = ${MOTION_SETTLE_MS}`,
       `MOTION_LCP_QUIET_MS = ${MOTION_LCP_QUIET_MS}`,
+      /* the three functions the contracts below are written against */
+      'export function motionFadeMsForFocus',
+      'export function motionNeedsFeather',
+      'loop: boolean',
       'navigator.webdriver',
     ]
     const missing = wanted.filter((w) => !src.includes(w))
@@ -452,14 +484,17 @@ test.describe('hero motion: never mounts', () => {
       const requests = await serve(page, null)
       await page.goto('/', { waitUntil: 'load' })
       await introGone(page)
-      /* The auto-start still owes MOTION_SETTLE_MS, an idle callback, the sharp
-         <img>'s decode and MOTION_LCP_QUIET_MS of quiet. Half a settle in, with
-         no scroll, pointer or key, none of that can have happened yet. */
+      /* NO INTRO RUNS HERE — the intro's own gate is inert under webdriver and
+         this test does not force it — so the early door is shut and the LATE
+         one applies: MOTION_SETTLE_MS, an idle callback, the sharp <img>'s
+         decode and MOTION_LCP_QUIET_MS of quiet. Half a settle in, with no
+         scroll, pointer or key, none of that can have happened yet. */
       await settle(Math.round(MOTION_SETTLE_MS / 2))
       expect(
         await videoCount(page),
-        'The layer mounted before MOTION_SETTLE_MS had elapsed. The settle covers the intro\'s own ' +
-          '--focus tail: a clip that loads through it decodes while the photograph is still resolving.',
+        'The layer mounted before MOTION_SETTLE_MS had elapsed on a page with no intro running. The early ' +
+          'door needs html[data-intro] to reach "playing"; with no overlay there is nothing to arrive behind, ' +
+          "and the settle covers the intro's own --focus tail on every path that still uses it.",
       ).toBe(0)
       expect(requests, 'a clip was requested before the settle had elapsed').toEqual([])
     } finally {
@@ -514,7 +549,7 @@ test.describe('hero motion: the mount path', () => {
   test.skip(!photoLanded, NOT_LANDED_MESSAGE)
   test.skip(!armed || clip === null, MOTION_NOT_LANDED_MESSAGE)
 
-  test('mounts only after data-intro is gone, then on its own; two muted, looping, inline copies', async ({
+  test('mounts BEHIND the intro and is at its cap before the overlay leaves; two muted, looping, inline copies', async ({
     browser,
   }, testInfo) => {
     testInfo.setTimeout(120_000)
@@ -523,24 +558,59 @@ test.describe('hero motion: the mount path', () => {
     const page = await context.newPage()
     try {
       await arm(page, clip.config, { force: true, intro: true })
-      const requests = clip.served ? await serve(page, clip.bytes) : []
-      await page.goto('/', { waitUntil: 'load' })
+      if (clip.served) await serve(page, clip.bytes)
+      await page.goto('/', { waitUntil: 'commit' })
 
-      /* While the intro holds the document, nothing may mount or fetch. */
-      const introAttr = await page.evaluate(() => document.documentElement.getAttribute('data-intro'))
-      if (introAttr !== null) {
-        expect(await videoCount(page), 'a <video> mounted while html[data-intro] was still set').toBe(0)
-        expect(requests, 'a clip was requested while the intro was on screen').toEqual([])
-      }
-      await introGone(page)
-
-      /* Half a settle in, nothing yet — and then it starts itself, with no
-         scroll, pointerdown or keydown anywhere in this test. */
-      await settle(Math.round(MOTION_SETTLE_MS / 2))
-      expect(await videoCount(page), 'the layer mounted before MOTION_SETTLE_MS had elapsed').toBe(0)
-
+      /* THE EARLY DOOR. The overlay is up; the layer mounts under it and is
+         asked to be at its opacity cap before it leaves, so what the intro's
+         `--focus` resolve reveals is a picture that is ALREADY moving. This is
+         the assertion that replaced "nothing mounts while html[data-intro] is
+         set" — the wait that made the owner see the page arrive, and then,
+         seconds later, something start. */
       await page.waitForSelector(ROOT_SELECTOR, { state: 'attached', timeout: 20_000 })
+      const behind = await page.evaluate((selector) => ({
+        intro: document.documentElement.getAttribute('data-intro'),
+        focus: getComputedStyle(document.documentElement).getPropertyValue('--focus').trim(),
+        mounted: document.querySelector(selector) !== null,
+      }), ROOT_SELECTOR)
+      expect(
+        behind.intro,
+        'the layer mounted only after the intro had gone. The early door is meant to let it in while ' +
+          'html[data-intro] is still "playing", so the overlay hides the arrival and the reveal IS the entrance.',
+      ).not.toBeNull()
+      expect(
+        Number(behind.focus),
+        'the picture was already sharp when the layer mounted — the whole licence for arriving early is that ' +
+          'the intro is still holding it soft, where the step from still to clip measures 1.62 sRGB levels.',
+      ).toBeGreaterThan(0)
+      expect(behind.mounted, 'the motion root vanished between the wait and the read').toBe(true)
+
       await waitForFirstFrame(page)
+      const fade = await page.evaluate((selector) => {
+        const root = document.querySelector<HTMLElement>(selector)
+        return root === null ? '' : getComputedStyle(root).transitionDuration
+      }, ROOT_SELECTOR)
+      expect(
+        fade,
+        `the fade behind the intro is ${fade}, not the ${MOTION_FADE_BEHIND_MS} ms the module measured for a ` +
+          'picture held soft at INTRO_FOCUS_HOLD. motionFadeMsForFocus chose the wrong one.',
+      ).toBe(`${MOTION_FADE_BEHIND_MS / 1000}s`)
+
+      /* The fade must be OVER before the overlay is. */
+      await settle(MOTION_FADE_BEHIND_MS + 200)
+      const atReveal = await page.evaluate((selector) => {
+        const root = document.querySelector<HTMLElement>(selector)
+        return {
+          opacity: root === null ? -1 : Number(getComputedStyle(root).opacity),
+          intro: document.documentElement.getAttribute('data-intro'),
+        }
+      }, ROOT_SELECTOR)
+      expect(
+        atReveal.opacity,
+        'the layer had not reached its opacity cap one fade after its first frame',
+      ).toBeCloseTo(clip.config.opacityCap, 1)
+
+      await introGone(page)
 
       const shape = await page.evaluate((selector) => {
         const root = document.querySelector<HTMLElement>(selector)
@@ -597,12 +667,24 @@ test.describe('hero motion: the mount path', () => {
     }
   })
 
-  test('fades the whole layer in over at least 1500 ms, to its opacity cap', async ({ browser }, testInfo) => {
+  test('over a SHARP picture the fade is the long one, and it reaches the opacity cap', async ({ browser }, testInfo) => {
     testInfo.setTimeout(120_000)
     if (clip === null) return
+    /* No intro on this path: the layer arrives over a picture that is already
+       sharp and settled, where the measured step is 3.34 sRGB levels of mean
+       and 21.3 of p99 — the case MOTION_FADE_IN_MS was sized for. */
     const { context, page } = await mountLayer(browser)
     try {
       await waitForFirstFrame(page)
+      const fade = await page.evaluate((selector) => {
+        const root = document.querySelector<HTMLElement>(selector)
+        return root === null ? '' : getComputedStyle(root).transitionDuration
+      }, ROOT_SELECTOR)
+      expect(
+        fade,
+        `the fade over a sharp picture is ${fade}, not MOTION_FADE_IN_MS. The short fade is only licensed ` +
+          "behind the intro, where the intro's own hold attenuates the step by half.",
+      ).toBe(`${MOTION_FADE_IN_MS / 1000}s`)
       const sample = (): Promise<number> =>
         page.evaluate((selector) => {
           const root = document.querySelector<HTMLElement>(selector)
@@ -1126,6 +1208,211 @@ test.describe('hero motion: the mount path', () => {
       ).toEqual([])
       const last = entries[entries.length - 1]
       expect(last?.inHero, 'the final LCP element is not inside the hero').toBe(true)
+    } finally {
+      await context.close()
+    }
+  })
+
+  /* ════════════════════════════════════════════════════════════════════════
+     PLAY ONCE AND HOLD — `loop: false`
+     ════════════════════════════════════════════════════════════════════════ */
+
+  test('a one-shot clip renders ONE copy with the loop attribute off, and no standby', async ({
+    browser,
+  }, testInfo) => {
+    testInfo.setTimeout(120_000)
+    if (clip === null) return
+    const context = await browser.newContext({ viewport: { width: 1280, height: 800 } })
+    const page = await context.newPage()
+    try {
+      await arm(page, { ...clip.config, loop: false }, { force: true })
+      if (clip.served) await serve(page, clip.bytes)
+      await page.goto('/', { waitUntil: 'load' })
+      await introGone(page)
+      await waitForFirstFrame(page)
+
+      const shape = await page.evaluate((selector) => {
+        const root = document.querySelector<HTMLElement>(selector)
+        if (root === null) return null
+        const videos = Array.from(root.querySelectorAll('video'))
+        return {
+          videos: videos.length,
+          loops: videos.map((v) => v.loop),
+          roles: Array.from(root.querySelectorAll('[data-role]')).map((el) => el.getAttribute('data-role')),
+        }
+      }, ROOT_SELECTOR)
+      expect(shape, 'the motion root disappeared after its first frame').not.toBeNull()
+      if (shape === null) return
+      expect(
+        shape.videos,
+        'a one-shot clip mounted more than one <video>. There is no handoff to prepare for: the second copy ' +
+          'is a second decoder and a second buffer for nothing.',
+      ).toBe(1)
+      expect(
+        shape.loops,
+        "the element's own `loop` attribute is ON for a clip that must not wrap. That attribute is the " +
+          'missed-handoff fallback for a real loop; here it is the fault — it would carry the picture back ' +
+          'to the sunset it started from, with no event the controller could see.',
+      ).toEqual([false])
+      expect(shape.roles, 'a one-shot clip rendered a standby box').toEqual(['active'])
+    } finally {
+      await context.close()
+    }
+  })
+
+  test('a one-shot clip plays to its end and HOLDS there — a tab flip does not restart it', async ({
+    browser,
+  }, testInfo) => {
+    testInfo.setTimeout(120_000)
+    if (clip === null) return
+    const context = await browser.newContext({ viewport: { width: 1280, height: 800 } })
+    const page = await context.newPage()
+    try {
+      await arm(page, { ...clip.config, loop: false }, { force: true })
+      if (clip.served) await serve(page, clip.bytes)
+      await page.goto('/', { waitUntil: 'load' })
+      await introGone(page)
+      await waitForFirstFrame(page)
+
+      /* Seek to just before the end rather than waiting out a 30 s clip. The
+         controller schedules nothing here, so a seek is not skipping a step —
+         there are no steps. */
+      await page.evaluate((selector) => {
+        const v = document.querySelector<HTMLVideoElement>(`${selector} video`)
+        if (v !== null && Number.isFinite(v.duration)) v.currentTime = Math.max(0, v.duration - 0.4)
+      }, ROOT_SELECTOR)
+      await page.waitForFunction(
+        (selector) => document.querySelector<HTMLVideoElement>(`${selector} video`)?.ended === true,
+        ROOT_SELECTOR,
+        { timeout: 20_000 },
+      )
+
+      const held = await page.evaluate((selector) => {
+        const v = document.querySelector<HTMLVideoElement>(`${selector} video`)
+        return v === null ? null : { ended: v.ended, paused: v.paused, t: v.currentTime, d: v.duration }
+      }, ROOT_SELECTOR)
+      expect(held, 'the one-shot clip left the DOM when it ended').not.toBeNull()
+      if (held === null) return
+      expect(held.paused, 'the ended clip is not paused').toBe(true)
+      expect(
+        held.d - held.t,
+        'the ended clip is not sitting on its last frame — it wrapped, which is the whole thing this mode forbids',
+      ).toBeLessThan(0.5)
+
+      /* A tab flip. `play()` on an ENDED element seeks it to 0 and plays it
+         again, so this is the ordinary event that would silently restart the
+         descent. The visibility is overridden in-page rather than through CDP
+         because the controller listens for the EVENT and reads
+         document.visibilityState, which is exactly what this replaces. */
+      await page.evaluate(() => {
+        Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' })
+        document.dispatchEvent(new Event('visibilitychange'))
+      })
+      await settle(400)
+      await page.evaluate(() => {
+        Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' })
+        document.dispatchEvent(new Event('visibilitychange'))
+      })
+      await settle(800)
+
+      const after = await page.evaluate((selector) => {
+        const v = document.querySelector<HTMLVideoElement>(`${selector} video`)
+        return v === null ? null : { ended: v.ended, t: v.currentTime, count: document.querySelectorAll(`${selector} video`).length }
+      }, ROOT_SELECTOR)
+      expect(after, 'the layer unmounted across the tab flip').not.toBeNull()
+      if (after === null) return
+      expect(
+        after.ended,
+        'the clip restarted when the tab came back. play() on an ended element seeks it to 0 — the controller ' +
+          'has to refuse that, or a reader who changes tabs is thrown from the night back to the sunset.',
+      ).toBe(true)
+      expect(after.count, 'a second copy appeared after the tab flip').toBe(1)
+    } finally {
+      await context.close()
+    }
+  })
+
+  /* ════════════════════════════════════════════════════════════════════════
+     THE FEATHER — only for a crop that is a real sub-rectangle
+     ════════════════════════════════════════════════════════════════════════ */
+
+  test('the edge feather follows the crop: none for a whole-frame registration, 32 px for a sub-rectangle', async ({
+    browser,
+  }, testInfo) => {
+    testInfo.setTimeout(120_000)
+    if (clip === null) return
+    const whole = clip.config.crop.x === 0 && clip.config.crop.y === 0 && clip.config.crop.w === 1 && clip.config.crop.h === 1
+
+    const read = async (config: MotionConfig): Promise<{ attr: string | null; mask: string } | null> => {
+      const context = await browser.newContext({ viewport: { width: 1280, height: 800 } })
+      const page = await context.newPage()
+      try {
+        await arm(page, config, { force: true })
+        if (clip.served) await serve(page, clip.bytes)
+        await page.goto('/', { waitUntil: 'load' })
+        await introGone(page)
+        /* A CROPPED registration cannot promise to cover the viewport, so it
+           never auto-starts — that refusal is the whole reason the first-input
+           rule survived. Press one, after the late door's settle, so this test
+           measures the mask rather than re-measuring the gate. */
+        await settle(MOTION_SETTLE_MS + 500)
+        await firstInput(page)
+        await waitForFirstFrame(page)
+        return await page.evaluate((selector) => {
+          const root = document.querySelector<HTMLElement>(selector)
+          const box = root?.querySelector<HTMLElement>('[data-role="active"]') ?? null
+          if (root === null || box === null) return null
+          const style = getComputedStyle(box)
+          return { attr: root.getAttribute('data-feather'), mask: style.maskImage || style.webkitMaskImage || 'none' }
+        }, ROOT_SELECTOR)
+      } finally {
+        await context.close()
+      }
+    }
+
+    const installedRead = await read(clip.config)
+    expect(installedRead, 'the layer never reached its first frame with the installed registration').not.toBeNull()
+    if (installedRead !== null && whole) {
+      expect(
+        installedRead.attr,
+        'the whole-frame registration carries data-feather. There is no interior edge for the mask to hide: ' +
+          "two of the box's sides sit outside the container and the other two land ON the viewport's own edge, " +
+          'where the mask does not hide a seam, it makes one — a band of still around the clip. Harmless while ' +
+          'the two are the same picture; a warm sunset rim around a blue one as soon as they are not.',
+      ).toBeNull()
+      expect(installedRead.mask, 'a mask is still being applied to a whole-frame registration').toBe('none')
+    }
+
+    /* The same clip, declared as a sub-rectangle: the mask must come back. */
+    const cropped = await read({ ...clip.config, crop: { x: 0, y: 0.06, w: 1, h: 0.88 } })
+    expect(cropped, 'the layer never reached its first frame with a cropped registration').not.toBeNull()
+    if (cropped === null) return
+    expect(
+      cropped.attr,
+      'a crop that IS a sub-rectangle of the still lost its feather. That edge falls inside the picture, with ' +
+        "the same photograph on both sides of it, and the mask is what hides the model's re-render seam there.",
+    ).toBe('')
+    expect(cropped.mask, 'the sub-rectangle registration has no mask').toContain('gradient')
+  })
+
+  test('with no override at all, the config the layer mounts on is the SERVER\'s', async ({ browser }, testInfo) => {
+    testInfo.setTimeout(120_000)
+    test.skip(!installed, 'no installed clip — there is no server-side config to hand over')
+    const context = await browser.newContext({ viewport: { width: 1280, height: 800 } })
+    const page = await context.newPage()
+    try {
+      /* Force key only. sessionStorage carries no config, so anything that
+         mounts came from components/site/hero.tsx's readHeroMotion. */
+      await arm(page, phantomConfig(), { force: true, noOverride: true })
+      await page.goto('/', { waitUntil: 'load' })
+      await introGone(page)
+      await waitForFirstFrame(page)
+      const src = await page.evaluate((selector) => {
+        const source = document.querySelector<HTMLSourceElement>(`${selector} video source`)
+        return source?.getAttribute('src') ?? ''
+      }, ROOT_SELECTOR)
+      const m = heroMotionManifest()
+      expect(src, 'the layer mounted on something other than the installed clip').toBe(`${HERO_MOTION_URL_PREFIX}${String(m?.file)}`)
     } finally {
       await context.close()
     }

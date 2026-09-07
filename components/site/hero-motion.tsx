@@ -27,19 +27,36 @@
  *      a `change` to false unmounts, a change back re-runs the gate
  *   4. not Save-Data, not a 2G-class connection
  *   5. document loaded and visible
- *   6. html[data-intro] gone (MutationObserver; bounded by the intro's own
- *      dead-man switch)
- *   7. MOTION_SETTLE_MS elapsed AND an idle callback fired — both
- *   8. the sharp <img> has decoded: the clip may never precede the picture it
- *      registers to
- *   9. LCP is out of the way, and there are two ways to be: EITHER the first
- *      scroll / pointerdown / keydown (Chrome finalises LCP at it), OR — the
- *      auto-start, since 2026-09-07 — the LCP observer quiet for
+ *   6. THE DOOR — a race of two, and the whole of the entrance work:
+ *      · EARLY: html[data-intro] has reached `playing` (or `done`), so the
+ *        overlay really mounted rather than yielding; the sharp <img> is
+ *        ALREADY decoded, tested not awaited; and the clip's box covers the
+ *        viewport. Then the layer mounts BEHIND the overlay, its fade finishes
+ *        while the picture is still held soft, and the intro's own `--focus`
+ *        ramp resolves the reader onto a picture that is already moving. No
+ *        `load`, no settle, no idle callback, no quiet window: the intro
+ *        playing at all is the evidence those waits were waiting for.
+ *      · LATE: `load`, then html[data-intro] gone (MutationObserver; bounded by
+ *        the intro's own dead-man switch), then MOTION_SETTLE_MS elapsed AND an
+ *        idle callback fired — both.
+ *      A repeat visit, a slow link (where the intro yields at
+ *      INTRO_LATE_MOUNT_MS) and a reduced-motion intro all take the late door
+ *      without being asked to: the early door's precondition is simply never
+ *      met. That is why there is no bandwidth guess anywhere in this file.
+ *   7. the sharp <img> has decoded: the clip may never precede the picture it
+ *      registers to (required at the door on the early path, awaited on the
+ *      late one)
+ *   8. LCP is out of the way — the LATE door only. Two ways to be: EITHER the
+ *      first scroll / pointerdown / keydown (Chrome finalises LCP at it), OR —
+ *      the auto-start, since 2026-09-07 — the LCP observer quiet for
  *      MOTION_LCP_QUIET_MS AND the clip's box covering every pixel of the
  *      viewport, which is a paint Chrome does not make an LCP candidate at all
  *      (measured; the argument and the numbers are in lib/hero-motion.ts's
  *      header). Whichever comes first. No input is required; where the
- *      geometry cannot promise coverage, one still is.
+ *      geometry cannot promise coverage, one still is. The early door keeps the
+ *      coverage test and drops the quiet window, because a paint that lands
+ *      BEFORE the current largest one cannot take the metric — it can only
+ *      lower it.
  *
  * ── WHAT IT NEVER DOES ─────────────────────────────────────────────────────
  *
@@ -66,6 +83,23 @@
  * a setTimeout alarm PLUS a 4 Hz `timeupdate` backstop, so a throttled timer
  * delays a handoff by ≤250 ms and cannot skip it; and `loop` stays on each
  * element as the missed-handoff fallback — one hard cut beats a frozen frame.
+ *
+ * ── OR ONE <video> THAT PLAYS ONCE AND HOLDS: `config.loop === false` ───────
+ *
+ * A clip whose light goes one way — a descent into night — has no seam to
+ * dissolve, because its last frame is nowhere near its first. Everything above
+ * is therefore switched OFF by the manifest, not by a guess: one <video>, no
+ * standby, no dissolve, no alarm, no media-time bookkeeping at all, and — the
+ * one that matters — **the element's own `loop` attribute is off**. That
+ * attribute is the missed-handoff fallback for a real loop; on a one-way clip
+ * it is the fault, wrapping the picture back to sunset behind the layer's back.
+ * The clip plays through once and the element holds its last frame for the rest
+ * of the page's life.
+ *
+ * Two consequences, both deliberate. `play()` on an ENDED element seeks it to 0
+ * and plays it again, so every resume path checks `ended` first — a tab flip
+ * must not restart the descent. And the hidden-tab unmount does not apply:
+ * MOTION_HIDDEN_UNMOUNT_MS's own comment carries the argument.
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -88,6 +122,8 @@ import {
   MOTION_SETTLE_MS,
   MOTION_SLOW_CONNECTIONS,
   MOTION_STALL_MS,
+  motionFadeMsForFocus,
+  motionNeedsFeather,
   parseHeroMotion,
 } from '@/lib/hero-motion';
 import type { HeroMotion } from '@/lib/hero-motion';
@@ -175,6 +211,30 @@ function clipCoversViewport(config: HeroMotion): boolean {
   );
 }
 
+/**
+ * The hero's picture is ALREADY here — not "will be": no await, no decode()
+ * promise. The early door asks this rather than waiting on it, because the
+ * question it is really asking is "are the hero's own bytes off the wire?",
+ * and a reader whose photograph has not arrived yet must not have a clip
+ * fetched over the top of it.
+ */
+function sharpDecodedNow(): boolean {
+  const img = findSharpImg();
+  return img !== null && img.complete && img.naturalWidth > 0;
+}
+
+/**
+ * `--focus` right now, as the layer's own CSS reads it: 0 is the sharp
+ * photograph, INTRO_FOCUS_HOLD is the intro holding it soft. Read off <html>,
+ * which is where both the intro and hooks/use-scroll-driver.ts publish it, and
+ * never written here.
+ */
+function currentFocus(): number {
+  const raw = getComputedStyle(document.documentElement).getPropertyValue('--focus').trim();
+  const n = Number.parseFloat(raw);
+  return Number.isFinite(n) ? n : 0;
+}
+
 /** `'50% 40%'` → `[0.5, 0.4]`; anything else → centre. */
 function parseObjectPosition(value: string): [number, number] {
   const m = /^\s*([0-9.]+)%\s+([0-9.]+)%\s*$/.exec(value);
@@ -241,6 +301,13 @@ export function HeroMotionLayer({ motion }: Props) {
   const [config, setConfig] = useState<HeroMotion | null>(null);
   /** Bumped to re-run the gate (media query back to matching; unmounted after a long hide). */
   const [generation, setGeneration] = useState(0);
+  /**
+   * The fade-in the layer will actually perform, chosen at the moment the first
+   * frame presents from what the reader can see then (lib/hero-motion.ts's
+   * `motionFadeMsForFocus`). It starts at the long one so that a layer which
+   * never reaches that moment cannot be left holding a short dissolve.
+   */
+  const [fadeMs, setFadeMs] = useState<number>(MOTION_FADE_IN_MS);
 
   const rootRef = useRef<HTMLDivElement>(null);
   const boxARef = useRef<HTMLDivElement>(null);
@@ -315,6 +382,47 @@ export function HeroMotionLayer({ motion }: Props) {
         }, INTRO_FAILSAFE_MS + INTRO_DISSOLVE_MS + 1000);
       });
 
+    /*
+      THE EARLY DOOR'S EVIDENCE, and it is the only new condition in this gate.
+
+      The attribute ladder is pending → playing → done → removed. `pending` is
+      stamped by the inline gate script before first paint and proves nothing:
+      the dead-man removes it if the overlay never arrives. `playing` is written
+      by the overlay itself, in a layout effect, once it has mounted and taken
+      the reveal — so it is proof that hydration beat INTRO_LATE_MOUNT_MS on
+      THIS device over THIS link, which is exactly the page-is-healthy signal
+      `load`, the settle and the idle callback were each approximating. `done`
+      counts too: the dissolve has started but the picture is still soft.
+
+      If the attribute is absent (a repeat visit, reduced motion, an intro that
+      never ran) or leaves without ever reaching `playing` (slow hydration),
+      this NEVER RESOLVES, and the late door wins the race untouched. That is
+      the whole self-calibration: no connection sniffing, no timing guess.
+    */
+    const whenIntroPlaying = (): Promise<void> =>
+      new Promise((resolve) => {
+        const html = document.documentElement;
+        const playing = (): boolean => {
+          const value = html.getAttribute('data-intro');
+          return value === 'playing' || value === 'done';
+        };
+        if (playing()) {
+          resolve();
+          return;
+        }
+        if (!html.hasAttribute('data-intro')) return;
+        const observer = new MutationObserver(() => {
+          if (playing()) {
+            observer.disconnect();
+            resolve();
+          } else if (!html.hasAttribute('data-intro')) {
+            observer.disconnect();
+          }
+        });
+        observer.observe(html, { attributes: true, attributeFilter: ['data-intro'] });
+        cleanups.push(() => observer.disconnect());
+      });
+
     const whenIdle = (): Promise<void> =>
       new Promise((resolve) => {
         const ric = (window as Window & { requestIdleCallback?: typeof requestIdleCallback })
@@ -386,9 +494,15 @@ export function HeroMotionLayer({ motion }: Props) {
 
     const run = async (): Promise<void> => {
       // 1 — a config, from the manifest or (webdriver + force only) the override.
+      //     The override WINS where it exists, rather than only filling a gap:
+      //     a spec has to be able to describe a clip the installed manifest does
+      //     not — a one-shot registration, a cropped one — and the two keys it
+      //     needs are already the two the layer refuses automation without.
+      //     Malformed JSON leaves it null and the layer does not exist, which is
+      //     the still hero: failing closed, as everywhere else in this gate.
       const forced = navigator.webdriver === true && readSession(MOTION_FORCE_KEY) === '1';
       let candidate = motion;
-      if (candidate === null && forced) {
+      if (forced) {
         const raw = readSession(MOTION_OVERRIDE_KEY);
         if (raw !== null) {
           try {
@@ -421,25 +535,43 @@ export function HeroMotionLayer({ motion }: Props) {
       // its quiet window runs alongside the settle rather than after it.
       const lcpQuiet = whenLcpQuiet();
 
-      // 5 — loaded and visible.
-      await whenLoaded();
-      if (cancelled) return;
+      // 5 — visible. `load` is the LATE door's condition and lives inside it:
+      //     the early door's evidence that the page has arrived is the intro.
       await whenVisible();
       if (cancelled) return;
 
-      // 6 — the intro has left.
-      await whenIntroGone();
+      // 6 — THE DOOR. Both are started now and raced; the late one keeps
+      //     running under the early one, so a failed early check falls back to
+      //     it without restarting anything.
+      const lateDoor = (async (): Promise<void> => {
+        await whenLoaded();
+        await whenIntroGone();
+        await Promise.all([after(MOTION_SETTLE_MS), whenIdle()]);
+      })();
+      const early = await Promise.race([
+        whenIntroPlaying().then(() => true),
+        lateDoor.then(() => false),
+      ]);
       if (cancelled) return;
 
-      // 7 — settled AND idle, whichever is later.
-      await Promise.all([after(MOTION_SETTLE_MS), whenIdle()]);
-      if (cancelled) return;
+      // 7/8, the early door — both conditions are read, not awaited. The
+      //      picture must already be here, and the clip's box must cover the
+      //      viewport. Coverage is kept as the contract it always was, though
+      //      on this door it is no longer what protects the metric: a paint
+      //      that lands before the current largest one cannot replace its time.
+      if (early && sharpDecodedNow() && clipCoversViewport(candidate)) {
+        setConfig(candidate);
+        setPhase('gated');
+        return;
+      }
 
-      // 8 — the picture the clip registers to has decoded.
+      // 7 — the late door: the picture the clip registers to has decoded.
+      await lateDoor;
+      if (cancelled) return;
       const decoded = await whenSharpDecoded();
       if (cancelled || !decoded) return;
 
-      // 9 — LCP is out of the way: the auto-start, or the first input, whichever
+      // 8 — LCP is out of the way: the auto-start, or the first input, whichever
       //     arrives first. The auto-start needs the watch to be quiet AND the
       //     clip's box to cover the viewport; a clip that cannot promise that
       //     coverage never resolves this half, and the layer waits for an input
@@ -467,12 +599,18 @@ export function HeroMotionLayer({ motion }: Props) {
 
   useEffect(() => {
     if (!mounted || config === null) return;
+    /* ONE COPY OR TWO. A one-shot clip renders no standby box at all, so B is
+       null here by construction rather than by accident, and every branch below
+       that would have used it is switched off by the same flag. */
+    const oneShot = !config.loop;
     const root = rootRef.current;
     const boxA = boxARef.current;
     const boxB = boxBRef.current;
     const A = videoARef.current;
     const B = videoBRef.current;
-    if (root === null || boxA === null || boxB === null || A === null || B === null) return;
+    if (root === null || boxA === null || A === null) return;
+    if (!oneShot && (boxB === null || B === null)) return;
+    const copies = B === null ? [A] : [A, B];
 
     let alive = true;
     const cleanups: Array<() => void> = [];
@@ -499,9 +637,9 @@ export function HeroMotionLayer({ motion }: Props) {
     const X = MOTION_CROSS_S;
     let D = config.durationS;
     let active = A;
-    let standby = B;
+    let standby = B ?? A;
     let activeBox = boxA;
-    let standbyBox = boxB;
+    let standbyBox = boxB ?? boxA;
     let firstFrame = false;
     let suspended = false;
     let hidden = document.visibilityState === 'hidden';
@@ -536,13 +674,13 @@ export function HeroMotionLayer({ motion }: Props) {
       raf = 0;
     };
 
-    /** Pause both, drop both sources, free both decoders. */
+    /** Pause every copy, drop every source, free every decoder. */
     const teardown = (): void => {
       clearAlarm();
       clearStall();
       clearHidden();
       cancelRaf();
-      for (const v of [A, B]) {
+      for (const v of copies) {
         try {
           v.pause();
         } catch {
@@ -567,10 +705,10 @@ export function HeroMotionLayer({ motion }: Props) {
       setPhase('still');
     };
 
-    /* ── the loop ───────────────────────────────────────────────────────── */
+    /* ── the loop — every function in this block is inert when oneShot ──── */
     const armAlarm = (): void => {
       clearAlarm();
-      if (!alive || suspended || handoff !== null) return;
+      if (oneShot || !alive || suspended || handoff !== null) return;
       const rate = active.playbackRate > 0 ? active.playbackRate : 1;
       const ms = ((D - X - active.currentTime) / rate) * 1000 - 120;
       alarm = setTimeout(() => {
@@ -628,7 +766,7 @@ export function HeroMotionLayer({ motion }: Props) {
     };
 
     const startHandoff = (): void => {
-      if (!alive || handoff !== null || suspended) return;
+      if (oneShot || !alive || handoff !== null || suspended) return;
       clearAlarm();
       // Late wake (timer throttling): still finish the fade before the outgoing wraps.
       const span = Math.max(0.3, Math.min(X, D - active.currentTime));
@@ -654,7 +792,7 @@ export function HeroMotionLayer({ motion }: Props) {
     };
 
     const check = (): void => {
-      if (!alive || suspended || handoff !== null || !firstFrame) return;
+      if (oneShot || !alive || suspended || handoff !== null || !firstFrame) return;
       if (active.currentTime >= D - X) startHandoff();
       else if (alarm === null) armAlarm();
     };
@@ -664,11 +802,17 @@ export function HeroMotionLayer({ motion }: Props) {
       suspended = true;
       clearAlarm();
       cancelRaf();
-      A.pause();
-      B.pause();
+      for (const v of copies) v.pause();
     };
 
+    /*
+      ⚠ `play()` on an ENDED element seeks it to 0 and plays it again. On a
+      one-shot clip that is the descent starting over from the sunset, fired by
+      something as ordinary as a tab flip, so `ended` is refused here — the one
+      place every resume path goes through.
+    */
     const play = (v: HTMLVideoElement): void => {
+      if (v.ended) return;
       if (v.readyState >= 2) {
         v.play().catch(() => undefined);
       } else {
@@ -694,6 +838,14 @@ export function HeroMotionLayer({ motion }: Props) {
       if (hidden) {
         pauseAll();
         clearHidden();
+        /*
+          A LOOP may be dropped and re-gated after a minute hidden, because it
+          would come back on the frame it left. A ONE-SHOT clip may not: re-
+          gating restarts it, and there is no resume either, since a remount
+          fades up from the still and the still is where the light BEGAN. So it
+          holds, paused, on one decoder. See MOTION_HIDDEN_UNMOUNT_MS.
+        */
+        if (oneShot) return;
         hiddenTimer = setTimeout(() => {
           hiddenTimer = null;
           if (!alive) return;
@@ -728,11 +880,11 @@ export function HeroMotionLayer({ motion }: Props) {
     }
 
     /* ── loading — the active first, the standby only once it is safe ───── */
-    for (const v of [A, B]) {
+    for (const v of copies) {
       v.muted = true;
       v.defaultMuted = true;
       listen(v, 'error', toStill);
-      listen(v, 'timeupdate', check);
+      if (!oneShot) listen(v, 'timeupdate', check);
     }
     listen(A, 'stalled', () => {
       if (firstFrame || stall !== null) return;
@@ -747,11 +899,15 @@ export function HeroMotionLayer({ motion }: Props) {
     });
     // The two fetches of one URL serialise into a cache hit rather than a
     // doubled download: the standby loads only once the active can play through.
-    listen(A, 'canplaythrough', () => {
-      if (!alive) return;
-      B.preload = 'auto';
-      B.load();
-    }, { once: true });
+    // A one-shot clip has no standby, so it is one fetch by construction.
+    if (B !== null) {
+      const standbyCopy = B;
+      listen(A, 'canplaythrough', () => {
+        if (!alive) return;
+        standbyCopy.preload = 'auto';
+        standbyCopy.load();
+      }, { once: true });
+    }
     listen(A, 'canplay', () => {
       if (!alive) return;
       A.play()
@@ -761,6 +917,17 @@ export function HeroMotionLayer({ motion }: Props) {
           firstFrame = true;
           clearStall();
           setPos();
+          /*
+            THE FADE IS CHOSEN HERE, at the only instant that can answer the
+            question: what can the reader see right now? Behind the intro the
+            picture is held soft and the step is 1.62 sRGB levels; over a sharp
+            one it is 3.34 with a p99 of 21. Written to the element as well as
+            to state so the duration is on the node before the attribute that
+            starts the transition, whichever order React commits them in.
+          */
+          const ms = motionFadeMsForFocus(currentFocus());
+          root.style.setProperty('--motion-fade', `${ms}ms`);
+          setFadeMs(ms);
           setPhase('playing');
           armAlarm();
         })
@@ -785,15 +952,22 @@ export function HeroMotionLayer({ motion }: Props) {
     '--m-cw': config.crop.w.toFixed(5),
     '--m-ch': config.crop.h.toFixed(5),
     '--m-cap': config.opacityCap.toFixed(3),
-    '--motion-fade': `${MOTION_FADE_IN_MS}ms`,
+    '--motion-fade': `${fadeMs}ms`,
   } as CSSProperties;
 
+  /*
+    `loop` is the ELEMENT's attribute and it is the missed-handoff fallback for
+    a real loop — one hard cut beats a frozen frame. On a one-shot clip it is
+    the exact fault being designed out: it would wrap the picture back to the
+    sunset it started from, behind the controller's back, with no event the
+    controller could even see. So it follows the manifest.
+  */
   const video = (ref: typeof videoARef) => (
     <video
       ref={ref}
       muted
       playsInline
-      loop
+      loop={config.loop}
       preload="none"
       poster={config.poster === '' ? undefined : config.poster}
       disablePictureInPicture
@@ -805,15 +979,26 @@ export function HeroMotionLayer({ motion }: Props) {
   );
 
   return (
-    <div ref={rootRef} data-hero-motion="" data-on={phase === 'playing' ? '' : undefined} style={style}>
+    <div
+      ref={rootRef}
+      data-hero-motion=""
+      data-on={phase === 'playing' ? '' : undefined}
+      /* The edge feather is emitted only for a crop that is a real sub-
+         rectangle of the still; see motionNeedsFeather for what it does to a
+         whole-frame registration. */
+      data-feather={motionNeedsFeather(config.crop) ? '' : undefined}
+      style={style}
+    >
       <style>{HERO_MOTION_STYLE}</style>
       <div data-clips="">
         <div ref={boxARef} data-role="active">
           {video(videoARef)}
         </div>
-        <div ref={boxBRef} data-role="standby">
-          {video(videoBRef)}
-        </div>
+        {config.loop ? (
+          <div ref={boxBRef} data-role="standby">
+            {video(videoBRef)}
+          </div>
+        ) : null}
       </div>
     </div>
   );

@@ -471,7 +471,8 @@
       "affiliationStatement": "Duy Nguyen is an enrolled M.S. Data Science student at Seattle University. The university's marks appear on this site to identify that affiliation and nothing more; Seattle University does not sponsor, endorse or review it.",
       "assetDir": "public/brand/hero/motion",
       "sourcePaths": [
-        "brand-masters/hero-motion-source.mp4"
+        "brand-masters/hero-motion-source-1.mp4",
+        "brand-masters/hero-motion-source-2.mp4"
       ],
       "sources": [
         "src:hero-photo-origin",
@@ -480,7 +481,7 @@
         "src:hero-motion-disclosure-2026-09-06"
       ],
       "verifiedOn": "2026-09-06",
-      "verificationPath": "The owner's approval, 2026-09-06, verbatim in src:hero-motion-disclosure-2026-09-06: \"approve that disclosure line verbatim, verify the record, and turn it on\" — given after he had watched the installed clip in preview on localhost. The generation facts are verbatim in src:hero-motion-generation (5) (the installed breathing take) alongside (1)-(4), every one of which was refused or replaced.mp4 | grep urn:c2pa`; the harness verdict on the installed transcode is reproducible with `npm run check:motion` and recorded in public/brand/hero/motion/manifest.json. Runway's terms were read on 2026-09-06 (src:runway-terms-2026-05-11) and are a document its publisher can change.",
+      "verificationPath": "The owner's approval, 2026-09-06, verbatim in src:hero-motion-disclosure-2026-09-06: \"approve that disclosure line verbatim, verify the record, and turn it on\" — given after he had watched the installed clip in preview on localhost. The generation facts are verbatim in src:hero-motion-generation (6) (the installed two-take nightfall) alongside (1)-(5), every one of which was refused or replaced.mp4 | grep urn:c2pa`; the harness verdict on the installed transcode is reproducible with `npm run check:motion` and recorded in public/brand/hero/motion/manifest.json. Runway's terms were read on 2026-09-06 (src:runway-terms-2026-05-11) and are a document its publisher can change.",
       "openQuestions": [],
       "containsThirdPartyMarks": true,
       "disclosureRequired": true,
@@ -490,14 +491,14 @@
         "vendor": "Runway",
         "model": "seedance2",
         "modelVersion": "dreamina-seedance-2-0, as the master's own C2PA manifest names it (softwareAgent BytePlus_ModelArk 1.0.0)",
-        "mode": "image-to-video through the Runway API, 15 s at the model's 1080p-class 4:3 tier (1664:1248) from art:hero-photo padded to 4:3 so its crop fell on the padding, then retimed to 30 s in the transcode; the breathing take of 2026-09-07 (src:hero-motion-generation (5)) replaced the calm take (4), which had replaced (3) the day before",
+        "mode": "image-to-video through the Runway API, two 15 s takes at the model's 1080p-class 4:3 tier (1664:1248) from art:hero-photo padded to 4:3, the second starting on the first's own last frame, each with a first keyframe only; the sunset-to-night transition is NOT the model's — it is a time-varying colour grade applied in the transcode, because asking the model for darkness costs cloud drift (src:hero-motion-generation (6))",
         "date": "2026-09-06",
         "promptOnFile": "src:hero-motion-generation"
       },
       "contentCredentials": {
         "standard": "C2PA Content Credentials in the MASTER, made and signed by the MODEL PROVIDER, not by Runway (read from the file's uuid box on 2026-09-06): c2pa.actions.v2, c2pa.created 2026-09-07 for the installed breathing take (earlier takes carry their own dates), softwareAgent \"BytePlus_ModelArk\" 1.0.0, model_name \"dreamina-seedance-2-0\", claim_generator_info c2pa-rs 0.78.4, digitalSourceType trainedAlgorithmicMedia, c2pa.hash.bmff.v3 bound to the master's bytes; signature certificate \"Byteplus Pte. Ltd.\" (GlobalSign GCC R45 SMIME CA 2025). The file carries no Runway string at all.",
-        "claim": "urn:c2pa:b3192b22-0827-4c85-95a5-6664409055bb",
-        "presentIn": "the master only: brand-masters/hero-motion-source.mp4 (git LFS; the breathing take, sha256 76015f0b…). The shipped transcode, public/brand/hero/motion/hero-loop-0840cbb0.mp4, carries none — every transcode strips it, and manifest.json records c2paInMaster:false for it. Never say the site's video carries Content Credentials."
+        "claim": "urn:c2pa:fae928ee-7b69-45f5-af12-48498d0d1d95 (take 1) and urn:c2pa:7f6a1cfb-dbc1-44c1-bd68-bf33b0371188 (take 2)",
+        "presentIn": "the two masters only: brand-masters/hero-motion-source-1.mp4 and -2.mp4 (git LFS). The shipped transcode, public/brand/hero/motion/hero-loop-fa543b81.mp4, carries none — every transcode strips it, and manifest.json records c2paInMaster:false for it. Never say the site's video carries Content Credentials."
       },
       "note": "FIELD-BY-FIELD, RESOLVED 2026-09-06. origin is \"ai-generated\" (in SYNTHETIC_ORIGINS, so C15's disclosure guard fires and is satisfied by captionRule \"disclosure\"); rightsBasis is written from src:runway-terms-2026-05-11 and inherits art:hero-photo's; generator and contentCredentials are filled from src:hero-motion-generation (4), the installed calm take; captionText is IDENTICAL to art:hero-photo's, which lib/corpus/hero-asset.ts heroMotionPolicy() enforces at build; openQuestions is empty because src:hero-motion-disclosure-2026-09-06 answers them. WHAT THE FOUR OPEN QUESTIONS WERE, AND HOW EACH CLOSED — kept so the closure is checkable. (1) Ship it, and which clip: the owner watched the installed Seedance 2 transcode in preview and said \"turn it on\". (2) The line: he approved the proposed sentence verbatim; it now stands on both records. (3) The licence-back to Runway: stated to him before he answered; recorded in rightsBasis as a fact. (4) No Content Credentials in the shipped bytes: recorded in contentCredentials.presentIn; the credentialed master is under brand-masters/ (git LFS), the path in sourcePaths. assetDir is the directory the installer writes (public/brand/hero/motion) and C15's assetsOnDisk() counts .mp4/.webm there."
     }

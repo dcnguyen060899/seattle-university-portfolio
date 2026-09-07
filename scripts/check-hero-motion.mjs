@@ -7,7 +7,7 @@
  *     node scripts/check-hero-motion.mjs --clip <master.mp4> [--still <rung>] [--crop x,y,w,h]
  *                                        [--crossfade <s>] [--fade <s>] [--sample-fps 4] [--json <out>]
  *                                        [--prove] [--quiet]
- *     node scripts/check-hero-motion.mjs --install --clip <master.mp4> [--cap 0.85]
+ *     node scripts/check-hero-motion.mjs --install --clip <master.mp4> [--cap 0.85] [--once]
  *     node scripts/check-hero-motion.mjs --cap 0.85                # write a solved cap to the manifest
  *
  * With no `--clip` it reads public/brand/hero/motion/manifest.json: `present:
@@ -34,7 +34,9 @@
  *                  the last X seconds into the first, and a dissolve can only
  *                  hide a cut between frames whose content is already in the
  *                  same place: the SPAN rule catches a double exposure the
- *                  per-frame peak cannot.
+ *                  per-frame peak cannot. NOT ASKED of a `--once` clip: a
+ *                  one-way move is played through and held, so it has no loop
+ *                  point. Measured and printed anyway.
  *   3 CAMERA LOCK  did the camera move? The clip is registered to the still
  *                  pixel-for-pixel; a drifting clip slides against the still at
  *                  the feathered edges and reads as a double image. Global
@@ -122,12 +124,15 @@ const BUDGETS = {
      material: 2 MB/10.5 s assumed a 720p 10 s loop; 3 MB fitted a 1112-wide
      15 s take; 6 MB the calm 1536-wide one; and this pair fits the breathing
      take — 15 s of generation retimed to 30 s, so the light and the clouds
-     both slow by half (7.04 MiB at CRF 26). A longer loop is fewer loop points
-     per minute of reading, which is the one thing a reader can catch. It is
+     both slow by half (7.04 MiB at CRF 26); and 10 MiB fits the one-shot
+     nightfall, 30 s that plays once and holds (8.77 MiB at CRF 25, and it
+     carries a full sunset-to-night grade, which costs bits a static sky does
+     not). A one-shot clip is fetched once and never replayed, so the byte
+     budget buys a whole visit rather than a loop. It is
      fetched on desktop only, after the page has settled, and off the LCP path —
      the clip covers the whole viewport, which Chrome does not count as a
      largest-contentful-paint candidate (lib/hero-motion.ts's header). */
-  mp4Bytes: 8 * 1024 * 1024,
+  mp4Bytes: 10 * 1024 * 1024,
   webmBytes: 4 * 1024 * 1024,
   totalPerOrientationBytes: 12 * 1024 * 1024,
   maxDurationS: 30.5,
@@ -253,6 +258,17 @@ const SAMPLE_FPS = Number(arg('--sample-fps', '4'))
 const JSON_OUT = arg('--json', null)
 const CAP_ARG = arg('--cap', null)
 const CROP_ARG = arg('--crop', null)
+/* --once: the clip is a ONE-WAY move that the layer must not wrap (a descent
+   into night). It changes exactly two things — the manifest records
+   `loop: false`, which is what components/site/hero-motion.tsx switches on, and
+   SEAM stops being judged, because SEAM asks "does the clip END where it
+   BEGINS?" and the whole point of a one-way clip is that it does not. Nothing
+   else relaxes: HANDOFF still has to be the still's own picture, the camera
+   still has to be locked, the sky still has to hold a direction and the text
+   still has to be legible over every frame. With no --clip the flag is read
+   from the installed manifest instead, so `npm run check:motion` re-applies the
+   same rules the install was judged under. */
+const ONCE = has('--once')
 
 const log = (...s) => {
   if (!QUIET) console.log(...s)
@@ -302,6 +318,8 @@ function readMotionManifest() {
 
 let clipPath = arg('--clip', null)
 let manifestCrop = null
+/* absent → true: every clip installed before the flag existed is a loop */
+let manifestLoop = true
 const installed = readMotionManifest()
 
 if (clipPath === null && CAP_ARG !== null && !INSTALL) {
@@ -328,10 +346,15 @@ if (clipPath === null) {
   clipPath = join(MOTION_DIR, installed.file)
   if (!existsSync(clipPath)) stop(`${installed.file} is declared by the manifest but is not on disk.`, 1)
   manifestCrop = installed.crop ?? null
+  manifestLoop = installed.loop !== false
 } else {
   clipPath = resolve(clipPath)
   if (!existsSync(clipPath)) stop(`no clip at ${clipPath}`)
 }
+
+/* THE ONE FLAG THAT CHANGES A VERDICT. From --once on a candidate run, from
+   the manifest on a re-check of what is installed. */
+const LOOPS = arg('--clip', null) === null ? manifestLoop : !ONCE
 
 const stillPath = resolve(arg('--still', STILL_DEFAULT))
 if (!existsSync(stillPath)) stop(`no still rung at ${stillPath} — the clip has nothing to register against.`, 1)
@@ -1332,11 +1355,19 @@ const checks = [
   },
   {
     k: 'SEAM',
-    pass: seamVerdict(seam, stepP95),
-    value:
-      `crossfade ${CROSSFADE_S}s peak step ${seam.crossfadePeak.toFixed(2)} = ${seam.crossfadeRatio.toFixed(2)}× clip p95 step (${stepP95.toFixed(2)}, median ${stepMed.toFixed(2)}); ` +
-      `ends ${seam.hardCutLuma.toFixed(2)} luma apart = ${seam.spanRatio.toFixed(2)}× the clip's p95 distance across ${CROSSFADE_S}s (${seam.spanP95.toFixed(2)}, reported)`,
-    limit: `peak ≤ ${T.stepFloor} lv, or ≤ ${T.seamPeakRatio}× step p95 and ≤ ${T.seamPeakAbs} lv`,
+    /* A one-shot clip performs no handoff, so there is no seam to judge — the
+       layer plays it through once and holds its last frame. The numbers are
+       still measured and still printed, because "how far apart are the ends"
+       is exactly what says whether a clip could ever have looped. */
+    pass: LOOPS ? seamVerdict(seam, stepP95) : true,
+    value: LOOPS
+      ? `crossfade ${CROSSFADE_S}s peak step ${seam.crossfadePeak.toFixed(2)} = ${seam.crossfadeRatio.toFixed(2)}× clip p95 step (${stepP95.toFixed(2)}, median ${stepMed.toFixed(2)}); ` +
+        `ends ${seam.hardCutLuma.toFixed(2)} luma apart = ${seam.spanRatio.toFixed(2)}× the clip's p95 distance across ${CROSSFADE_S}s (${seam.spanP95.toFixed(2)}, reported)`
+      : `NOT JUDGED — one-shot clip (loop: false): the layer plays it once and holds the last frame, so it has no loop point. ` +
+        `Reported: ends ${seam.hardCutLuma.toFixed(2)} luma apart = ${seam.spanRatio.toFixed(2)}× the clip's p95 distance across ${CROSSFADE_S}s (${seam.spanP95.toFixed(2)})`,
+    limit: LOOPS
+      ? `peak ≤ ${T.stepFloor} lv, or ≤ ${T.seamPeakRatio}× step p95 and ≤ ${T.seamPeakAbs} lv`
+      : 'none — a one-way clip is not asked to end where it began',
   },
   {
     k: 'CAMERA LOCK',
@@ -1517,6 +1548,10 @@ if (INSTALL) {
     colour: container.colr,
     c2paInMaster: container.c2pa,
     crop: CROP,
+    /* Read by lib/hero-motion.ts's parseHeroMotion (absent → true) and by this
+       gate on every re-check. FALSE is a promise the layer keeps structurally:
+       one <video>, the element's own `loop` attribute off, played once and held. */
+    loop: LOOPS,
     stillAspect: STILL_ASPECT,
     madeFrom: {
       still: relative(ROOT, stillPath),

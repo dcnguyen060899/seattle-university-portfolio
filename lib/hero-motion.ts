@@ -99,6 +99,65 @@
  * still fails that check and the layer waits for the first input exactly as it
  * did before, which is why the old rule is still here rather than deleted.
  *
+ * ── THE ENTRANCE: ONE MOVE, BECAUSE THE INTRO'S RESOLVE IS THE ENTRANCE ─────
+ *
+ * The owner watched the shipping build and said the page appears and then,
+ * seconds later, something starts. He was right, and the timeline said so
+ * (production build, :3100, headless Chromium 151, webdriver spoofed false,
+ * 1440x900 dpr 2, fast link, first visit): html[data-intro] cleared at 3686 ms,
+ * the layer mounted at 5206, the first frame presented at 5252, the fade began
+ * at 5269 and ended at 8269. THREE staged reveals where a reader expects one,
+ * and the last of them three seconds long over a picture that barely moves.
+ *
+ * The fix is ordering, not speed. During the intro the hero is held at
+ * `--focus` INTRO_FOCUS_HOLD: the sharp copy contributes 22 % and a baked blur
+ * carries the rest, under the overlay's own veil. MEASURED on rendered pixels
+ * (1440x900, the live page, the layer's opacity transition neutralised so each
+ * shot is an endpoint) the step the reader would see when the clip replaces the
+ * still is:
+ *
+ *   | --focus | mean |Δ| sRGB | p95 | p99 |  max | under the copy |
+ *   |---------|---------------|-----|-----|------|----------------|
+ *   | 0.00    |     3.34      |11.7 |21.3 | 41.3 |     2.36       |
+ *   | 0.50    |     2.55      | 7.7 |13.3 | 26.3 |     1.93       |
+ *   | 0.78    |   **1.62**    | 4.7 | 7.7 | 15.0 |     1.21       |
+ *
+ * At the intro's hold the whole difference between the still and the clip is
+ * 1.62 sRGB levels of mean — under a JND for a large-area step, and that is
+ * BEFORE the overlay's veil, which can only shrink it. So a clip that arrives
+ * while the intro is still up arrives invisibly, and the `--focus` ramp then
+ * resolves the reader onto a picture that is ALREADY MOVING. The arrival stops
+ * being an event of its own; the intro's own resolve is the entrance.
+ *
+ * Hence the gate's door is now a race of two (components/site/hero-motion.tsx):
+ *
+ *   EARLY — the intro is really running (html[data-intro] has advanced past
+ *     `pending`, so the overlay mounted rather than yielding), the sharp <img>
+ *     is ALREADY decoded (not awaited: the hero's own bytes must be in before
+ *     the clip's go on the wire), and the clip's box covers the viewport. Then
+ *     the layer mounts behind the overlay. No `load`, no MOTION_SETTLE_MS, no
+ *     idle callback and no quiet window — every one of those is a wait for the
+ *     page to finish arriving, and the intro playing at all is the evidence
+ *     that it has.
+ *   LATE — everything else, unchanged: `load`, the intro gone, the settle and
+ *     the idle callback, then the quiet window and the coverage test, or the
+ *     first input. A page whose intro yielded (slow hydration —
+ *     INTRO_LATE_MOUNT_MS) or never ran (a repeat visit) takes this door, and a
+ *     slow link takes it BECAUSE the intro yields there: the early door is
+ *     self-calibrating, and needs no bandwidth guess.
+ *
+ * AND THE LCP HAZARD INVERTS WHEN THE MOUNT MOVES EARLIER. The measurement
+ * above this one is about a LATE mount: a clip presenting at 4068 ms, after the
+ * lede has painted at 3248, replaces the metric with its own later time. A clip
+ * that presents BEFORE the current largest paint cannot do that — a candidate
+ * at 2.8 s can only lower LCP, never raise it. The coverage test is kept on the
+ * early door anyway, so the shipping clip produces no <video> entry at all and
+ * the hero's lede stays the LCP element; but it is kept as a contract rather
+ * than as protection, and a false positive from the intro's own 1.11x scale
+ * (hero.module.css scales `.bg` by 1 + 0.14·--focus, so the box measured behind
+ * the overlay is a superset of the box at rest) is harmless for that reason.
+ * MEASURED after the change, same harness — see MOTION_FADE_BEHIND_MS.
+ *
  * ── WHY THE STYLESHEET IS A STRING AND NOT A CSS MODULE ─────────────────────
  *
  * The one hard requirement on this feature wherever it is off — an `off`
@@ -116,7 +175,7 @@
  * alpha only, exactly as hero-scrim.module.css argues for its own mask.
  */
 
-import { INTRO_FOCUS_MS } from './intro';
+import { INTRO_FOCUS_HOLD, INTRO_FOCUS_MS } from './intro';
 
 /* ── The flag ──────────────────────────────────────────────────────────── */
 
@@ -161,7 +220,7 @@ export const MOTION_FORCE_KEY = 'duyng.motion.force';
 export const MOTION_OFF_KEY = 'duyng.motion.off';
 
 /**
- * sessionStorage. A JSON `HeroMotion` that stands in for the manifest, read
+ * sessionStorage. A JSON `HeroMotion` that STANDS IN FOR the manifest, read
  * ONLY under `navigator.webdriver` AND the force key. It exists so the
  * controller can be tested against a candidate clip served from memory
  * without any clip in the repository — the repo held no clip until one
@@ -170,6 +229,15 @@ export const MOTION_OFF_KEY = 'duyng.motion.off';
  * and sessionStorage is same-origin, so this is unreachable without already
  * running script on the page. Validated through `parseHeroMotion` like the
  * manifest.
+ *
+ * It REPLACES an installed config rather than only filling in for a missing
+ * one (changed 2026-09-07, when `loop` arrived). A spec has to be able to
+ * describe a registration the installed manifest does not carry — a one-shot
+ * clip, a cropped one — and there is no other way in: the two keys it needs
+ * are already the two the layer refuses automation without, so nothing new is
+ * reachable. tests/e2e/hero-motion.spec.ts keeps one test that arms with the
+ * force key and NO override, so "the server hands the client a config at all"
+ * stays covered.
  */
 export const MOTION_OVERRIDE_KEY = 'duyng.motion.override';
 
@@ -228,17 +296,60 @@ export const MOTION_LCP_QUIET_MS = 1200;
 /* ── Timeline ──────────────────────────────────────────────────────────── */
 
 /**
- * The whole layer's fade-in, wall-clock, linear. ≥ 1500 by requirement
- * (asserted below): frame 0 of any clip differs from the still by a few sRGB
- * levels (the model re-renders it), and a slow linear dissolve is what turns
- * that difference into something the eye cannot catch as a pop.
+ * The whole layer's fade-in OVER THE SHARP PICTURE, wall-clock, linear. ≥ 1500
+ * by requirement (asserted below): frame 0 of any clip differs from the still
+ * by a few sRGB levels (the model re-renders it), and a slow linear dissolve is
+ * what turns that difference into something the eye cannot catch as a pop.
  */
 /* 3000, from 1800: the installed clip is a diffusion RE-RENDER of the still —
    frame 0 sits 17 sRGB levels from it, same composition, fine detail redrawn —
    so the fade-in is a morph between two drawings of one scene, and a slower one
    reads as the picture waking rather than changing. The harness reads this
-   number from here and judges it as a per-frame step. */
+   number from here and judges it as a per-frame step.
+
+   IT STAYS 3000, and the entrance work of 2026-09-07 is the reason it can:
+   this is now the LATE door's fade, performed over a picture that is already
+   sharp and settled, where the step is 3.34 sRGB levels of mean and 21.3 of
+   p99 (measured on rendered pixels — the header's table). That is the case
+   that needs three seconds. The early door does not, and does not take them;
+   see MOTION_FADE_BEHIND_MS. */
 export const MOTION_FADE_IN_MS = 3000;
+
+/**
+ * The fade-in BEHIND THE INTRO — used only when the clip's first frame
+ * presents while the hero is still held soft at INTRO_FOCUS_HOLD.
+ *
+ * Not a taste: the same rendered per-frame step, priced at the attenuation the
+ * intro is already applying. Measured on the live page at 1440x900, mean |Δ|
+ * between the layer on and the layer off is 3.34 sRGB levels at `--focus` 0 and
+ * 1.62 at 0.78 — 0.48x — so a dissolve of 0.48 x MOTION_FADE_IN_MS = 1455 ms
+ * moves the picture at the same rate the eye sees. Rounded up to 1500, which is
+ * this module's own asserted floor for a fade and therefore the shortest
+ * dissolve it will ever admit. Asserted below against the ratio, so the pair
+ * cannot drift apart silently.
+ *
+ * The point of it is not speed for its own sake. It lets the fade FINISH while
+ * the overlay is still up, so the `--focus` ramp resolves the reader onto a
+ * picture that is already moving, instead of handing them a sharp still that
+ * then spends three seconds turning into a clip.
+ */
+export const MOTION_FADE_BEHIND_MS = 1500;
+
+/**
+ * WHICH FADE, decided by what the reader can actually see at the moment the
+ * first frame presents — not by which door the gate came through. A clip that
+ * was let in early but only reached its first frame after the overlay had gone
+ * is arriving over a sharp picture and gets the long dissolve; that is the same
+ * rule, read at the only instant it matters.
+ *
+ * The threshold is INTRO_FOCUS_HOLD itself (with a hair of tolerance for the
+ * property's own string round-trip): the intro HOLDS `--focus` there for the
+ * whole reveal and only leaves it on the way down, so "still at the hold" is
+ * exactly "the overlay is still up and the picture is still soft".
+ */
+export function motionFadeMsForFocus(focus: number): number {
+  return focus >= INTRO_FOCUS_HOLD - 0.02 ? MOTION_FADE_BEHIND_MS : MOTION_FADE_IN_MS;
+}
 
 /**
  * The loop handoff: the incoming copy dissolves over the outgoing one across
@@ -261,17 +372,25 @@ export const MOTION_CROSS_S = 1.5;
  * After html[data-intro] is removed, wait this long before loading anything —
  * it covers the intro's --focus tail (INTRO_FOCUS_MS), asserted below.
  */
-/* THE HANDOFF, and why neither this number nor MOTION_FADE_IN_MS moved when the
-   layer started starting itself. Measured on the auto-start (2026-09-07, fast
-   link, first visit, 1280x800): html[data-intro] is removed at 3.65 s, the
-   intro's own --focus ramp lands the sharp photograph at 4.75 s (INTRO_FOCUS_MS
-   after that), and the clip's first frame presents at 5.2 s — 0.4 s later,
-   with the 3 s dissolve then carrying it. Shortening THIS number would put the
-   clip's fetch and decode inside the --focus ramp, which is the one thing it
-   exists to prevent; shortening the FADE would make the arrival more of an
-   event rather than less. The 0.4 s sits at the front of a linear dissolve
-   whose first perceptible change is well past it, so the resolve and the
-   waking read as one move. */
+/* IT IS THE LATE DOOR'S NUMBER NOW, AND IT IS NO LONGER WHAT THE READER WAITS
+   FOR. It was measured as the binding constraint on a fast first visit — the
+   intro cleared at 3686 ms and the layer mounted at 5206, which is this number
+   plus an idle callback — and that wait is what the owner saw. The early door
+   removed it from that path entirely rather than tuning it down: a clip that
+   arrives behind the overlay does not need the ramp protected from it, because
+   arriving before the ramp is the whole point.
+
+   On the paths that still use it, it is no longer binding either. Measured on
+   the same build: fast repeat visit, the intro is gone at 30 ms so the settle
+   ends at 1530 while MOTION_LCP_QUIET_MS ends at 2100 (the last entry at 900) —
+   the quiet window decides, and the mount landed at 2131. Throttled first
+   visit, the settle ends at 5950 against a quiet window ending at 5732 — 218 ms,
+   the only case where it still leads.
+
+   So it is kept at 1500, unchanged, for the one job the assertion below names:
+   on a LATE door reached while an intro DID play, it covers INTRO_FOCUS_MS so
+   the clip's fetch and decode land outside the `--focus` ramp. Lowering it
+   would buy at most that 218 ms and spend the guarantee. */
 export const MOTION_SETTLE_MS = 1500;
 
 /** requestIdleCallback's timeout, and the setTimeout stand-in where rIC is absent (Safari). */
@@ -280,11 +399,51 @@ export const MOTION_IDLE_TIMEOUT_MS = 4000;
 /** A `stalled` this long before the first frame → the still, for this page life. */
 export const MOTION_STALL_MS = 8000;
 
-/** Hidden this long → drop both decoders and ~10 MB of buffers; re-gate on visible. */
+/**
+ * Hidden this long → drop both decoders and ~10 MB of buffers; re-gate on
+ * visible.
+ *
+ * ⚠ A LOOPING CLIP ONLY. Re-gating restarts a clip at its first frame, which
+ * for a loop is the picture it was already showing — nothing is lost. For a
+ * ONE-SHOT clip (`loop: false`) the first frame is where the light STARTED: a
+ * reader who comes back after a minute would be thrown from the night they left
+ * to the sunset they began with, which is the exact fault the one-shot mode
+ * exists to remove. There is no resume that avoids it either — a remount fades
+ * up from the still, and the still IS the sunset. So the one-shot layer is
+ * never unmounted for being hidden; it holds, paused, at one decoder (half of
+ * what the looping mode holds, since there is no standby copy), and the tab
+ * discard the browser does for a long-hidden tab is the backstop.
+ */
 export const MOTION_HIDDEN_UNMOUNT_MS = 60_000;
 
-/** The clip's box dissolves into the identical still beneath it over this many px on every edge. */
+/**
+ * The clip's box dissolves into the still beneath it over this many px on every
+ * edge — CONDITIONALLY: see `motionNeedsFeather`.
+ */
 export const MOTION_EDGE_FEATHER_PX = 32;
+
+/**
+ * DOES THIS REGISTRATION NEED THE EDGE FEATHER? Only if the clip is a
+ * SUB-RECTANGLE of the still.
+ *
+ * The feather exists to hide the model's few-level re-render seam where the
+ * clip's edge lands INSIDE the picture — a real interior edge, with the same
+ * photograph on both sides of it. A clip registered to the whole frame
+ * (crop 0,0,1,1) has no such edge: the `cover` arithmetic pushes two of its
+ * sides outside the container on the overflowing axis, and puts the other two
+ * exactly ON the viewport's own edge, where the mask does not hide a seam — it
+ * MAKES one, fading the clip out over the outer 32 px so the still shows
+ * through in a band around the frame.
+ *
+ * While the two are the same picture that band is invisible and the feather is
+ * merely useless. With a clip whose light leaves the still's — a descent into
+ * night — it paints a warm sunset rim around a blue picture, which a design
+ * pass photographed. So the mask is emitted only for a crop that is actually a
+ * sub-rectangle, and the shipping registration gets none.
+ */
+export function motionNeedsFeather(crop: MotionCrop): boolean {
+  return crop.x > 0 || crop.y > 0 || crop.w < 1 || crop.h < 1;
+}
 
 /**
  * IntersectionObserver threshold: pause both copies when less than this
@@ -322,6 +481,21 @@ export interface HeroMotion {
   durationS: number;
   /** Which part of the still the clip depicts — the registration. */
   crop: MotionCrop;
+  /**
+   * TRUE — the clip is a loop: two stacked copies, a MOTION_CROSS_S dissolve at
+   * the wrap, forever. FALSE — the clip is a one-way move that must not wrap:
+   * ONE copy, no standby, no dissolve, played through once and held on its last
+   * frame for the rest of the page's life.
+   *
+   * It is the MANIFEST's word, defaulted to `true` when the key is absent, so
+   * every clip installed before the flag existed keeps behaving exactly as it
+   * did. A one-way clip cannot be detected from the file — the layer would have
+   * to decide from the material whether the light is meant to come back — and
+   * the one thing that must never happen is a descent into night wrapping to
+   * sunset because a flag was missing. The installer writes it
+   * (`check-hero-motion.mjs --install --once`).
+   */
+  loop: boolean;
   /** The still's width / height, from the desktop rung's intrinsic size — never retyped. */
   stillAspect: number;
   /** The measured opacity ceiling (tests/e2e/hero-motion.spec.ts solves it); (0, 1]. */
@@ -357,9 +531,15 @@ export function parseHeroMotion(value: unknown): HeroMotion | null {
   if ((type === 'video/mp4') !== src.endsWith('.mp4')) return null;
   const poster = typeof value.poster === 'string' ? value.poster : '';
 
+  // Absent → true: every clip installed before the flag existed is a loop, and
+  // a missing key must never turn a one-way clip into a wrapping one.
+  const loop = value.loop === undefined ? true : value.loop === true;
+
   const durationS = finite(value.durationS);
+  if (durationS === null || !(durationS > 0)) return null;
   // X ≤ 0.2·D: the handoff must be a small part of the loop, never half of it.
-  if (durationS === null || durationS < MOTION_CROSS_S * 5) return null;
+  // A one-shot clip performs no handoff, so the rule has nothing to constrain.
+  if (loop && durationS < MOTION_CROSS_S * 5) return null;
 
   if (!isRecord(value.crop)) return null;
   const x = fraction(value.crop.x);
@@ -375,7 +555,7 @@ export function parseHeroMotion(value: unknown): HeroMotion | null {
   const opacityCap = finite(value.opacityCap);
   if (opacityCap === null || !(opacityCap > 0 && opacityCap <= 1)) return null;
 
-  return { src, type, poster, durationS, crop: { x, y, w, h }, stillAspect, opacityCap };
+  return { src, type, poster, durationS, crop: { x, y, w, h }, loop, stillAspect, opacityCap };
 }
 
 /* ── The stylesheet ────────────────────────────────────────────────────── */
@@ -404,9 +584,12 @@ export function parseHeroMotion(value: unknown): HeroMotion | null {
  * carries it. NO `will-change`: a <video> is already a compositor layer.
  *
  * THE FEATHER is on the box (a div), not on the <video>, for WebKit's sake; it
- * dissolves the clip's edge into the identical still beneath it, which is what
- * hides the model's few-level re-render seam wherever the crop's edge lands.
- * `var(--ground)` is the opaque stop — alpha 1 — and paints nothing.
+ * dissolves the clip's edge into the still beneath it, which is what hides the
+ * model's few-level re-render seam wherever the crop's edge lands INSIDE the
+ * picture. `var(--ground)` is the opaque stop — alpha 1 — and paints nothing.
+ * It is emitted under `[data-feather]`, which the controller sets only for a
+ * crop that is a real sub-rectangle: see `motionNeedsFeather` for why a
+ * whole-frame registration is harmed rather than helped by it.
  */
 export const HERO_MOTION_STYLE =
   `[data-hero-motion]{position:absolute;inset:0;container-type:size;overflow:clip;` +
@@ -417,7 +600,8 @@ export const HERO_MOTION_STYLE =
   `--sw:max(100cqw,calc(100cqh * var(--m-ar,1.5)));--sh:calc(var(--sw) / var(--m-ar,1.5));` +
   `--sx:calc((100cqw - var(--sw)) * var(--m-px,0.5));--sy:calc((100cqh - var(--sh)) * var(--m-py,0.5));` +
   `position:absolute;left:calc(var(--sx) + var(--sw) * var(--m-cx,0));top:calc(var(--sy) + var(--sh) * var(--m-cy,0));` +
-  `width:calc(var(--sw) * var(--m-cw,1));height:calc(var(--sh) * var(--m-ch,1));opacity:0;` +
+  `width:calc(var(--sw) * var(--m-cw,1));height:calc(var(--sh) * var(--m-ch,1));opacity:0}` +
+  `[data-hero-motion][data-feather] [data-role]{` +
   `-webkit-mask-image:linear-gradient(to bottom,transparent,var(--ground) ${MOTION_EDGE_FEATHER_PX}px,var(--ground) calc(100% - ${MOTION_EDGE_FEATHER_PX}px),transparent),` +
   `linear-gradient(to right,transparent,var(--ground) ${MOTION_EDGE_FEATHER_PX}px,var(--ground) calc(100% - ${MOTION_EDGE_FEATHER_PX}px),transparent);` +
   `mask-image:linear-gradient(to bottom,transparent,var(--ground) ${MOTION_EDGE_FEATHER_PX}px,var(--ground) calc(100% - ${MOTION_EDGE_FEATHER_PX}px),transparent),` +
@@ -435,6 +619,34 @@ if (MOTION_FADE_IN_MS < 1500) {
   throw new Error(
     'lib/hero-motion.ts: MOTION_FADE_IN_MS must be at least 1500 — the fade-in is what makes ' +
       "frame 0's difference from the still a dissolve rather than a pop.",
+  );
+}
+
+if (MOTION_FADE_BEHIND_MS < 1500) {
+  throw new Error(
+    'lib/hero-motion.ts: MOTION_FADE_BEHIND_MS must be at least 1500 — the floor above applies to ' +
+      'every fade the layer can perform, not only the long one.',
+  );
+}
+
+/* The two fades are one rule read at two values of --focus, so they may not
+   drift apart. 0.485 is the measured attenuation the intro's hold applies to
+   the step (mean |Δ| 1.62 sRGB levels at --focus 0.78 against 3.34 at 0, on
+   rendered pixels at 1440x900): a fade shorter than that fraction of the long
+   one would move the picture FASTER, in what the eye sees, than the dissolve
+   this module already calls the slowest it may go. */
+if (MOTION_FADE_BEHIND_MS < 0.485 * MOTION_FADE_IN_MS) {
+  throw new Error(
+    'lib/hero-motion.ts: MOTION_FADE_BEHIND_MS is under 0.485 × MOTION_FADE_IN_MS — the fade behind ' +
+      'the intro would present a larger per-frame step, in rendered pixels, than the fade over the ' +
+      'sharp picture. Re-measure the attenuation before lowering either.',
+  );
+}
+
+if (motionFadeMsForFocus(INTRO_FOCUS_HOLD) !== MOTION_FADE_BEHIND_MS || motionFadeMsForFocus(0) !== MOTION_FADE_IN_MS) {
+  throw new Error(
+    'lib/hero-motion.ts: motionFadeMsForFocus does not return the behind-the-intro fade at the ' +
+      "intro's own hold, or the long fade at a sharp picture. Its threshold and INTRO_FOCUS_HOLD have drifted.",
   );
 }
 
