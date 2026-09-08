@@ -42,6 +42,15 @@ jobs:
       - name: Install
         run: npm ci
 
+      # `npm run verify` includes check:motion, which DECODES the installed clip
+      # in Chromium — the repo has no ffmpeg and this is how it reads frames.
+      # Without a browser here the whole verify job dies on a Playwright
+      # "Executable doesn't exist" error, which is what turned CI red on every
+      # push from 2026-09-06 until this line was added. Chromium only, since
+      # that is all the harness and the e2e suite ever launch.
+      - name: Install browsers
+        run: npx playwright install --with-deps chromium
+
       - name: npm run verify
         run: npm run verify
 

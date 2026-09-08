@@ -180,13 +180,34 @@ import { INTRO_FOCUS_HOLD, INTRO_FOCUS_MS } from './intro';
 /* ── The flag ──────────────────────────────────────────────────────────── */
 
 /**
- * THE build-time switch, from NEXT_PUBLIC_HERO_MOTION: unset or `on` → on;
+ * THE build-time switch, from NEXT_PUBLIC_HERO_MOTION: anything but `off` → on;
  * `off` → the still hero, byte-for-byte; `preview` → on, localhost only, with
  * the corpus record allowed to be pending. Any other value is a typo and is
  * treated as `off`, because a misspelled kill switch must still kill.
  */
 const MOTION_ENV = process.env.NEXT_PUBLIC_HERO_MOTION ?? '';
-export const HERO_MOTION_ENABLED = MOTION_ENV === '' || MOTION_ENV === 'on' || MOTION_ENV === 'preview';
+/**
+ * ONLY the literal `off` disables it, and that is deliberate rather than lazy.
+ *
+ * This was written as `MOTION_ENV === '' || 'on' || 'preview'`, and on
+ * 2026-09-08 the live site was found still — while localhost, from the same
+ * commit, animated. The diff was in the two BUNDLES, not in this file: on
+ * localhost the flag stayed a runtime lookup and read true, and in the deployed
+ * build the compiler proved it FALSE and folded the whole clause away (the
+ * gate's `!enabled && !forced` had become a bare `!forced`).
+ *
+ * The lesson is about the shape of the test, not about which value the deploy
+ * host happened to supply. An allow-list of three spellings has to guess every
+ * substitution a bundler might make for a variable nobody set — `undefined`,
+ * `''`, the string `"undefined"` — and it fails CLOSED, silently, on a host
+ * nobody can inspect from here. A deny-list of exactly one spelling cannot:
+ * anything that is not `off` runs, so an unset variable, an empty one, and any
+ * substitution all mean the same thing they mean on a developer's machine.
+ * `scripts/check-motion-switch.mjs` now reads the built bundle and refuses a
+ * build whose gate folded off while a clip is installed, so this specific
+ * failure cannot ship again without CI saying so.
+ */
+export const HERO_MOTION_ENABLED = MOTION_ENV !== 'off';
 /**
  * `preview`: the layer is on AND the server may hand it an installed clip whose
  * corpus record is still pending-owner — for looking at a candidate on

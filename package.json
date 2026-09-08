@@ -21,6 +21,7 @@
     "check:tokens": "node scripts/check-ground-tokens.mjs",
     "check:hero": "node scripts/check-hero-contrast.mjs",
     "check:motion": "node scripts/check-hero-motion.mjs",
+    "check:motion:live": "node scripts/check-motion-live.mjs",
     "verify": "npm run check:env && npm run check:tokens && npm run check:hero && npm run verify:hero && npm run check:motion && npm run verify:logo && npm run verify:corpus && npm run gen:resume -- --check && npm run lint && npm run typecheck && npm run test",
     "verify:urls": "bash scripts/verify-urls.sh",
     "verify:corpus": "node scripts/verify-corpus.mjs",
