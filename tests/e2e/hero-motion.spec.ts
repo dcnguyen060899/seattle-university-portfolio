@@ -53,21 +53,6 @@ import {
  *   that stays ended across a tab flip rather than restarting from its first
  *   frame.
  *
- *   AND THEN THE NIGHT FOR EVER. `loop: false` WITH a `loopFrom` — the lapse
- *   plays once and the clip then loops [loopFrom, D]: two copies, the element's
- *   own `loop` still off, the same media-time dissolve at the wrap, and the
- *   outgoing copy rewound to the TAIL rather than to frame 0. What the test
- *   below actually asserts is the owner's sentence: after it gets dark the
- *   picture keeps moving and never goes back to the sunset.
- *
- *   AND A REFRESH GOES STRAIGHT IN. On a repeat visit the intro is suppressed
- *   by its own seen flag, so there is no overlay to arrive behind — and the
- *   late door's waits (the settle, the idle callback, the LCP quiet window) are
- *   all waits for a page that has already been here. Measured before the return
- *   door existed: the layer mounted at 2117 ms on a page whose load event fired
- *   at 37. The test asserts the layer is ON before the settle could even have
- *   elapsed, and that the clip is still not an LCP candidate there.
- *
  *   THE FEATHER IS CONDITIONAL. The 32 px edge mask is emitted only for a crop
  *   that is a real sub-rectangle of the still; a whole-frame registration gets
  *   no mask at all.
@@ -109,8 +94,6 @@ const MOTION_FORCE_KEY = 'duyng.motion.force'
 const MOTION_OFF_KEY = 'duyng.motion.off'
 const MOTION_OVERRIDE_KEY = 'duyng.motion.override'
 const MOTION_CROSS_S = 1.5
-/** MOTION_TAIL_MIN_S, in crossfades: the shortest night tail the layer will loop. */
-const MOTION_TAIL_CROSSFADES = 3
 const MOTION_FADE_IN_MS = 3000
 const MOTION_FADE_BEHIND_MS = 1500
 const MOTION_SETTLE_MS = 1500
@@ -136,8 +119,6 @@ interface MotionConfig {
   crop: { x: number; y: number; w: number; h: number }
   /** Absent → a loop, exactly as `parseHeroMotion` defaults it. */
   loop?: boolean
-  /** Absent → no night tail; a number → the clip loops [loopFrom, D] after one pass. */
-  loopFrom?: number | null
   stillAspect: number
   opacityCap: number
 }
@@ -221,13 +202,6 @@ function loadClip(): { bytes: Buffer | null; config: MotionConfig; served: boole
         crop: m.crop,
         stillAspect,
         opacityCap: typeof m.opacityCap === 'number' ? m.opacityCap : 1,
-        /* THE MODE THE SITE ACTUALLY SERVES. Omitting these made every test run
-           the layer as a LOOP, because parseHeroMotion reads an absent `loop` as
-           true — so the suite's own "fetches the clip once" assertion was true of
-           a configuration this site does not ship, and could not have caught the
-           tail's second range request. Carry the manifest's word through. */
-        loop: typeof m.loop === 'boolean' ? m.loop : undefined,
-        loopFrom: typeof m.loopFrom === 'number' ? m.loopFrom : undefined,
       },
     }
   }
@@ -279,12 +253,6 @@ interface ArmOptions {
   refusePlay?: boolean
   /** Arm with the force key and NO override, so the config can only be the server's. */
   noOverride?: boolean
-  /**
-   * Force the intro but LEAVE the seen flag alone — the arming a repeat visit
-   * needs. `intro: true` clears the flag on every navigation, which is right for
-   * a test of the intro and fatal for a test of what happens after one.
-   */
-  introForce?: boolean
 }
 
 async function arm(page: Page, config: MotionConfig, opts: ArmOptions = {}): Promise<void> {
@@ -299,7 +267,6 @@ async function arm(page: Page, config: MotionConfig, opts: ArmOptions = {}): Pro
           sessionStorage.removeItem(keys.introSeen)
           sessionStorage.setItem(keys.introForce, '1')
         }
-        if (opts.introForce) sessionStorage.setItem(keys.introForce, '1')
       } catch {
         /* a locked-down storage: the gate fails closed, which the assertions then see */
       }
@@ -402,9 +369,6 @@ test.describe('hero motion: the contract this spec mirrors', () => {
       'export function motionFadeMsForFocus',
       'export function motionNeedsFeather',
       'loop: boolean',
-      'loopFrom: number | null',
-      'export function motionTailProblem',
-      `MOTION_TAIL_MIN_S = MOTION_CROSS_S * ${MOTION_TAIL_CROSSFADES}`,
       'navigator.webdriver',
     ]
     const missing = wanted.filter((w) => !src.includes(w))
@@ -679,16 +643,7 @@ test.describe('hero motion: the mount path', () => {
       expect(shape.videos, 'the loop is two stacked copies, no more, no fewer').toHaveLength(2)
       for (const v of shape.videos) {
         expect(v.muted, 'a copy is not muted — autoplay policy would refuse it and it must never make a sound').toBe(true)
-        /* `loop` is the missed-handoff fallback FOR A LOOP — one hard cut beats a
-           frozen frame. On a clip with a night tail it is the fault instead: it
-           would wrap to frame 0, the sunset. So the attribute follows the config
-           and this asserts whichever contract is being served. */
-        expect(
-          v.loop,
-          clip.config.loop === false
-            ? "a copy has `loop` on a clip that must not wrap — it would carry the picture back to the sunset"
-            : 'a copy has no `loop` — the missed-handoff fallback (one hard cut beats a frozen frame)',
-        ).toBe(clip.config.loop !== false)
+        expect(v.loop, 'a copy has no `loop` — the missed-handoff fallback (one hard cut beats a frozen frame)').toBe(true)
         expect(v.playsInline, 'a copy is not playsinline — iOS would go full-screen').toBe(true)
         expect(v.pip, 'a copy allows picture-in-picture').toBe(true)
         expect(v.tabIndex, 'a copy is focusable').toBe(-1)
@@ -918,15 +873,7 @@ test.describe('hero motion: the mount path', () => {
       expect(after.formerStandbyOpacity, 'the inline fade opacity was not cleared after the handoff').toBe('')
       expect(after.formerActiveRole, 'the outgoing copy did not become the standby').toBe('standby')
       expect(after.formerActivePaused, 'the outgoing copy is still playing after the handoff').toBe(true)
-      /* Rewound to WHERE IT NEXT ENTERS: frame 0 for a loop, the tail's head for
-         a night tail. Parking it anywhere else would make the next handoff a
-         seek under a running dissolve. */
-      const reentry = typeof clip.config.loopFrom === 'number' ? clip.config.loopFrom : 0
-      expect(
-        after.formerActiveTime,
-        `the outgoing copy was not rewound to ${reentry}s, where it next enters, for the following handoff`,
-      ).toBeLessThan(reentry + 0.25)
-      expect(after.formerActiveTime, `the outgoing copy was rewound past ${reentry}s`).toBeGreaterThan(reentry - 0.25)
+      expect(after.formerActiveTime, 'the outgoing copy was not rewound to 0 for the next handoff').toBeLessThan(0.25)
     } finally {
       await context.close()
     }
@@ -1278,10 +1225,7 @@ test.describe('hero motion: the mount path', () => {
     const context = await browser.newContext({ viewport: { width: 1280, height: 800 } })
     const page = await context.newPage()
     try {
-      /* A one-shot with NO TAIL: loopFrom is cleared explicitly, because the
-         installed manifest carries one and these two tests are about the clip that
-         holds, not the clip that wraps into its night. */
-      await arm(page, { ...clip.config, loop: false, loopFrom: undefined }, { force: true })
+      await arm(page, { ...clip.config, loop: false }, { force: true })
       if (clip.served) await serve(page, clip.bytes)
       await page.goto('/', { waitUntil: 'load' })
       await introGone(page)
@@ -1299,14 +1243,10 @@ test.describe('hero motion: the mount path', () => {
       }, ROOT_SELECTOR)
       expect(shape, 'the motion root disappeared after its first frame').not.toBeNull()
       if (shape === null) return
-      /* ONE copy, because this test armed a one-shot with NO tail. A one-shot
-         WITH a tail still dissolves — into itself, at the tail's head — and
-         needs the second decoder for the same reason a loop does; that shape is
-         covered by the night-tail test and by the server-config test. */
       expect(
         shape.videos,
-        'a one-shot clip with no tail mounted more than one <video>. There is no handoff to prepare for: ' +
-          'the second copy is a second decoder and a second buffer for nothing.',
+        'a one-shot clip mounted more than one <video>. There is no handoff to prepare for: the second copy ' +
+          'is a second decoder and a second buffer for nothing.',
       ).toBe(1)
       expect(
         shape.loops,
@@ -1328,10 +1268,7 @@ test.describe('hero motion: the mount path', () => {
     const context = await browser.newContext({ viewport: { width: 1280, height: 800 } })
     const page = await context.newPage()
     try {
-      /* A one-shot with NO TAIL: loopFrom is cleared explicitly, because the
-         installed manifest carries one and these two tests are about the clip that
-         holds, not the clip that wraps into its night. */
-      await arm(page, { ...clip.config, loop: false, loopFrom: undefined }, { force: true })
+      await arm(page, { ...clip.config, loop: false }, { force: true })
       if (clip.served) await serve(page, clip.bytes)
       await page.goto('/', { waitUntil: 'load' })
       await introGone(page)
@@ -1390,265 +1327,6 @@ test.describe('hero motion: the mount path', () => {
           'has to refuse that, or a reader who changes tabs is thrown from the night back to the sunset.',
       ).toBe(true)
       expect(after.count, 'a second copy appeared after the tab flip').toBe(1)
-    } finally {
-      await context.close()
-    }
-  })
-
-  /* ════════════════════════════════════════════════════════════════════════
-     AND THEN THE NIGHT FOR EVER — `loop: false` + `loopFrom`
-     ════════════════════════════════════════════════════════════════════════ */
-
-  test('a night tail: the clip wraps INSIDE the tail, and frame 0 is never shown again', async ({
-    browser,
-  }, testInfo) => {
-    testInfo.setTimeout(180_000)
-    if (clip === null) return
-    const D = clip.config.durationS
-    /* Four crossfades of tail: over the layer's own three-crossfade floor, and
-       short enough that a wrap can be watched inside one test. */
-    const loopFrom = Number((D - MOTION_CROSS_S * 4).toFixed(2))
-    const context = await browser.newContext({ viewport: { width: 1280, height: 800 } })
-    const page = await context.newPage()
-    try {
-      await arm(page, { ...clip.config, loop: false, loopFrom }, { force: true })
-      if (clip.served) await serve(page, clip.bytes)
-      await page.goto('/', { waitUntil: 'load' })
-      await introGone(page)
-      await waitForFirstFrame(page)
-      /* The standby loads once the active can play through, and parks itself at
-         loopFrom ONLY ONCE THOSE BYTES ARE LOCAL. Seeking a second decoder into
-         a range the first has not fetched issues a range request, and Chromium
-         abandons the in-flight whole-file response to serve it — which throws
-         away the clip's HTTP cache entry and made every page life re-download
-         it (measured: 38 freezes and 10.4 s frozen on a 1.6 Mbit/s link). So the
-         park waits for `buffered`, and this waits for the park. If it never
-         happens, `startHandoff` seeks at the handoff instead, on a file the
-         active has by then played to the end of. */
-      await page.waitForFunction((selector) => {
-        const standby = document.querySelector(`${selector} [data-role="standby"] video`) as HTMLVideoElement | null
-        return standby !== null && standby.currentTime > 1
-      }, ROOT_SELECTOR, { timeout: 15000 }).catch(() => {})
-      await settle(500)
-
-      const shape = await page.evaluate((selector) => {
-        const root = document.querySelector<HTMLElement>(selector)
-        if (root === null) return null
-        const videos = Array.from(root.querySelectorAll('video'))
-        const standby = root.querySelector<HTMLElement>('[data-role="standby"]')
-        return {
-          videos: videos.length,
-          loops: videos.map((v) => v.loop),
-          standbyTime: standby?.querySelector('video')?.currentTime ?? -1,
-        }
-      }, ROOT_SELECTOR)
-      expect(shape, 'the motion root disappeared after its first frame').not.toBeNull()
-      if (shape === null) return
-      expect(
-        shape.videos,
-        'a clip with a night tail mounted the wrong number of copies. The tail is performed by the SAME ' +
-          'two-copy handoff the loop uses — there is no second mechanism.',
-      ).toBe(2)
-      expect(
-        shape.loops,
-        "the element's own `loop` attribute is ON for a clip with a night tail. It is the missed-handoff " +
-          'fallback for a real loop; here it would wrap the picture to frame 0, which is the sunset — the ' +
-          'one thing this mode exists to prevent. The tail’s fallback is the controller’s `ended` handler.',
-      ).toEqual([false, false])
-      expect(
-        shape.standbyTime,
-        `the standby copy is parked at ${shape.standbyTime}s, not at the tail's head (${loopFrom}s). It has ` +
-          'to enter the night where the tail begins, not where the file does.',
-      ).toBeGreaterThan(loopFrom - 0.5)
-
-      /* Reach the handoff by seeking, exactly as the loop's own test does: the
-         controller schedules it from media time, so a seek exercises the real
-         alarm rather than skipping it. */
-      const during = await page.evaluate(
-        async ({ selector, seekTo }) => {
-          const root = document.querySelector<HTMLElement>(selector)
-          if (root === null) return null
-          const activeBox = root.querySelector<HTMLElement>('[data-role="active"]')
-          const standbyBox = root.querySelector<HTMLElement>('[data-role="standby"]')
-          const active = activeBox?.querySelector('video') ?? null
-          const standby = standbyBox?.querySelector('video') ?? null
-          if (activeBox === null || standbyBox === null || active === null || standby === null) return null
-          activeBox.dataset.e2eWas = 'active'
-          standbyBox.dataset.e2eWas = 'standby'
-          await new Promise<void>((resolve) => {
-            active.onseeked = () => resolve()
-            active.currentTime = seekTo
-          })
-          await new Promise((resolve) => setTimeout(resolve, 450))
-          return {
-            standbyRole: standbyBox.dataset.role,
-            standbyPlaying: !standby.paused,
-            standbyTime: standby.currentTime,
-            standbyOpacity: Number(standbyBox.style.opacity || '0'),
-          }
-        },
-        { selector: ROOT_SELECTOR, seekTo: D - MOTION_CROSS_S - 0.1 },
-      )
-      expect(during, 'the two copies could not be found').not.toBeNull()
-      if (during === null) return
-      expect(during.standbyRole, 'the standby did not become the incoming copy at D − X').toBe('incoming')
-      expect(during.standbyPlaying, 'the incoming copy is not playing during the tail handoff').toBe(true)
-      expect(
-        during.standbyTime,
-        `the incoming copy entered at ${during.standbyTime}s instead of inside the tail (${loopFrom}s+). ` +
-          'Entering at 0 is the sunset, played again.',
-      ).toBeGreaterThan(loopFrom - 0.5)
-      expect(
-        during.standbyOpacity,
-        'the incoming copy is at opacity 0 or 1 mid-handoff — a cut, not a dissolve. At a tail its ' +
-          'currentTime is ~D, so a dissolve clocked on currentTime rather than on time-since-it-entered ' +
-          'lands at 1 on the first frame.',
-      ).toBeGreaterThan(0)
-      expect(during.standbyOpacity, 'the incoming copy jumped to opacity 1 — a cut, not a dissolve').toBeLessThan(1)
-
-      await settle((MOTION_CROSS_S + 1.2) * 1000)
-      const after = await page.evaluate((selector) => {
-        const root = document.querySelector<HTMLElement>(selector)
-        if (root === null) return null
-        const was = (which: string) => root.querySelector<HTMLElement>(`[data-e2e-was="${which}"]`)
-        const a = was('active')
-        const sBox = was('standby')
-        const av = a?.querySelector('video') ?? null
-        const sv = sBox?.querySelector('video') ?? null
-        if (a === null || sBox === null || av === null || sv === null) return null
-        return {
-          formerActiveRole: a.dataset.role,
-          formerActiveTime: av.currentTime,
-          formerStandbyRole: sBox.dataset.role,
-          formerStandbyPlaying: !sv.paused,
-          formerStandbyTime: sv.currentTime,
-        }
-      }, ROOT_SELECTOR)
-      expect(after).not.toBeNull()
-      if (after === null) return
-      expect(after.formerStandbyRole, 'the incoming copy did not become the active one').toBe('active')
-      expect(after.formerStandbyPlaying, 'the new active copy is not playing inside the tail').toBe(true)
-      expect(after.formerActiveRole, 'the outgoing copy did not become the standby').toBe('standby')
-      expect(
-        after.formerActiveTime,
-        `the outgoing copy was rewound to ${after.formerActiveTime}s. For a loop that would be 0 and right; ` +
-          `here it has to be parked at the tail's head (${loopFrom}s), because 0 is the sunset.`,
-      ).toBeGreaterThan(loopFrom - 0.5)
-
-      /* AND IT STAYS IN THE NIGHT. Sample both copies across the next couple of
-         seconds: nothing may ever be near frame 0 again in this page life. */
-      const floor = await page.evaluate(
-        async (selector) => {
-          let min = Number.POSITIVE_INFINITY
-          for (let i = 0; i < 20; i += 1) {
-            for (const v of Array.from(document.querySelectorAll<HTMLVideoElement>(`${selector} video`))) {
-              min = Math.min(min, v.currentTime)
-            }
-            await new Promise((resolve) => setTimeout(resolve, 100))
-          }
-          return min
-        },
-        ROOT_SELECTOR,
-      )
-      expect(
-        floor,
-        `a copy was at ${floor.toFixed(2)}s after the tail had been entered. The owner's ask is that after ` +
-          'it gets dark the picture never goes back to the sunset — so no copy may ever be before the ' +
-          `tail's head (${loopFrom}s) again until the reader refreshes.`,
-      ).toBeGreaterThan(loopFrom - 0.5)
-    } finally {
-      await context.close()
-    }
-  })
-
-  /* ════════════════════════════════════════════════════════════════════════
-     THE RETURN DOOR — a refresh goes straight into the animation
-     ════════════════════════════════════════════════════════════════════════ */
-
-  test('a REPEAT visit does not wait: the layer is on before the settle could have elapsed', async ({
-    browser,
-  }, testInfo) => {
-    testInfo.setTimeout(180_000)
-    if (clip === null) return
-    const context = await browser.newContext({ viewport: { width: 1280, height: 800 } })
-    const page = await context.newPage()
-    try {
-      /* Records, in the page and from ITS OWN navigation start, the moment the
-         layer is on — so the number is the document's, not the poll's. */
-      await page.addInitScript(() => {
-        const w = window as unknown as { __motionOnAt?: number }
-        w.__motionOnAt = undefined
-        const check = (): void => {
-          if (w.__motionOnAt !== undefined) return
-          if (document.querySelector('#top [data-hero-motion][data-on]') !== null) w.__motionOnAt = performance.now()
-        }
-        new MutationObserver(check).observe(document, { subtree: true, childList: true, attributes: true })
-        check()
-      })
-      await arm(page, clip.config, { force: true, introForce: true })
-      if (clip.served) await serve(page, clip.bytes)
-
-      /* VISIT 1 — the intro runs and marks itself seen; the clip is fetched. */
-      await page.goto('/', { waitUntil: 'load' })
-      await waitForFirstFrame(page)
-      await settle(3000)
-      expect(
-        await page.evaluate((key) => sessionStorage.getItem(key), INTRO_SEEN_KEY),
-        'the intro did not mark itself seen on the first visit, so the second one is not a repeat visit and ' +
-          'this test is not testing anything',
-      ).toBe('1')
-
-      /* VISIT 2 — the refresh the owner described. */
-      await page.goto('/', { waitUntil: 'load' })
-      await waitForFirstFrame(page)
-      const onAt = await page.evaluate(() => (window as unknown as { __motionOnAt?: number }).__motionOnAt ?? -1)
-      expect(onAt, 'the layer never reached its first frame on the repeat visit').toBeGreaterThan(0)
-      expect(
-        onAt,
-        `The layer presented its first frame ${onAt.toFixed(0)} ms into a REPEAT visit. The late door cannot ` +
-          `mount before MOTION_SETTLE_MS (${MOTION_SETTLE_MS} ms) has elapsed, so anything under that is the ` +
-          'return door and anything over it means the return door did not open. Measured before it existed: ' +
-          '2117 ms to mount, 2197 to present, on a page whose load event fired at 37 ms — which is the ' +
-          '"static background then wait couple second" the owner reported.',
-      ).toBeLessThan(MOTION_SETTLE_MS)
-
-      /* AND THE LCP CONTRACT IS THE SAME CONTRACT. The return door mounts before
-         the page's own largest paint has landed, so the coverage test is doing
-         the work here that the quiet window is not. */
-      await settle(MOTION_FADE_IN_MS + 500)
-      const entries = await page.evaluate(
-        () =>
-          new Promise<Array<{ tag: string; startTime: number }>>((resolve) => {
-            const seen: Array<{ tag: string; startTime: number }> = []
-            try {
-              const observer = new PerformanceObserver((list) => {
-                for (const entry of list.getEntries() as Array<PerformanceEntry & { element?: Element | null }>) {
-                  seen.push({ tag: entry.element?.tagName ?? '(none)', startTime: entry.startTime })
-                }
-              })
-              observer.observe({ type: 'largest-contentful-paint', buffered: true })
-              setTimeout(() => {
-                observer.disconnect()
-                resolve(seen)
-              }, 1500)
-            } catch {
-              resolve(seen)
-            }
-          }),
-      )
-      test.skip(entries.length === 0, 'no largest-contentful-paint entry was observable in this browser')
-      await testInfo.attach('hero-motion-return-door.txt', {
-        body:
-          `first frame at ${onAt.toFixed(0)} ms on the repeat visit\n` +
-          entries.map((e) => `${e.startTime.toFixed(0)}ms <${e.tag}>`).join('\n'),
-        contentType: 'text/plain',
-      })
-      expect(
-        entries.filter((e) => e.tag === 'VIDEO'),
-        'A <video> was recorded as a largest-contentful-paint candidate on the RETURN door. That door mounts ' +
-          'the clip before the page has landed its own largest paint, so if the full-viewport exclusion ever ' +
-          'stops holding, this is where it shows first.',
-      ).toEqual([])
     } finally {
       await context.close()
     }
@@ -1735,55 +1413,6 @@ test.describe('hero motion: the mount path', () => {
       }, ROOT_SELECTOR)
       const m = heroMotionManifest()
       expect(src, 'the layer mounted on something other than the installed clip').toBe(`${HERO_MOTION_URL_PREFIX}${String(m?.file)}`)
-
-      /* AND THE MODE THE MANIFEST DECLARES IS THE MODE IT MOUNTED IN. Every
-         other test in this file hands the layer a config it wrote itself, so
-         until this assertion existed a `loopFrom` could have been dropped
-         anywhere between the manifest and the DOM — by hero.tsx's parse, by the
-         duration guard, by a typo in a field name — and every test would still
-         be green, because none of them read the installed number. The shipping
-         clip has carried one since 2026-09-07. */
-      await settle(1500)
-      const shape = await page.evaluate((selector) => {
-        const root = document.querySelector<HTMLElement>(selector)
-        if (root === null) return null
-        return {
-          videos: root.querySelectorAll('video').length,
-          standbyTime: root.querySelector<HTMLElement>('[data-role="standby"]')?.querySelector('video')?.currentTime ?? null,
-        }
-      }, ROOT_SELECTOR)
-      expect(shape, 'the motion root disappeared after its first frame').not.toBeNull()
-      if (shape === null) return
-      const tail = typeof m?.loopFrom === 'number' ? m.loopFrom : null
-      if (m?.loop === false && tail === null) {
-        expect(shape.videos, 'the manifest declares a one-shot with no tail, so the layer needs ONE copy').toBe(1)
-      } else {
-        expect(
-          shape.videos,
-          `the manifest declares ${m?.loop === false ? `a night tail from ${String(tail)}s` : 'a loop'}, which needs TWO copies. ` +
-            'One copy means the manifest\'s own mode never reached the layer.',
-        ).toBe(2)
-      }
-      if (tail !== null) {
-        /* The park waits for the tail's bytes to be LOCAL — seeking a second
-           decoder into an unfetched range aborts the whole-file response and
-           costs the clip its HTTP cache entry, so the layer will not do it
-           early. What matters is that it parks once it can; `startHandoff`
-           seeks anyway if it never does. */
-        await page.waitForFunction((selector) => {
-          const v = document.querySelector(`${selector} [data-role="standby"] video`) as HTMLVideoElement | null
-          return v !== null && v.currentTime > 1
-        }, ROOT_SELECTOR, { timeout: 15000 }).catch(() => {})
-        shape.standbyTime = await page.evaluate((selector) => {
-          const v = document.querySelector(`${selector} [data-role="standby"] video`) as HTMLVideoElement | null
-          return v?.currentTime ?? -1
-        }, ROOT_SELECTOR)
-        expect(
-          shape.standbyTime,
-          `the standby is parked at ${String(shape.standbyTime)}s, not at the manifest's own loopFrom (${tail}s). ` +
-            'Parked at 0 it would re-enter on the sunset, which is the one thing the tail exists to prevent.',
-        ).toBeGreaterThan(tail - 0.5)
-      }
     } finally {
       await context.close()
     }

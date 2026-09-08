@@ -129,7 +129,7 @@
  * resolves the reader onto a picture that is ALREADY MOVING. The arrival stops
  * being an event of its own; the intro's own resolve is the entrance.
  *
- * Hence the gate's door is now a race of three (components/site/hero-motion.tsx):
+ * Hence the gate's door is now a race of two (components/site/hero-motion.tsx):
  *
  *   EARLY — the intro is really running (html[data-intro] has advanced past
  *     `pending`, so the overlay mounted rather than yielding), the sharp <img>
@@ -139,20 +139,10 @@
  *     idle callback and no quiet window — every one of those is a wait for the
  *     page to finish arriving, and the intro playing at all is the evidence
  *     that it has.
- *   RETURN — the intro's own seen flag is set (2026-09-07, the second entrance
- *     pass): this tab has already rendered this page to completion, so the
- *     reader is looking at a REFRESH. No overlay is up and none is coming, the
- *     page's bytes and the clip's are in the cache, and every remaining wait was
- *     a wait for a page that has already arrived. `load`, the decoded picture
- *     and the coverage test, and nothing else. MEASURED before it existed: a
- *     repeat visit mounted at 2117 ms and presented at 2197, against a load
- *     event at 37 ms — two seconds of still picture, which is precisely what the
- *     owner reported. The binding constraint was MOTION_LCP_QUIET_MS (the lede's
- *     paint at 900 ms, the window to 2100), not MOTION_SETTLE_MS.
  *   LATE — everything else, unchanged: `load`, the intro gone, the settle and
  *     the idle callback, then the quiet window and the coverage test, or the
- *     first input. A first visit whose intro yielded (slow hydration —
- *     INTRO_LATE_MOUNT_MS) or whose storage is locked takes this door, and a
+ *     first input. A page whose intro yielded (slow hydration —
+ *     INTRO_LATE_MOUNT_MS) or never ran (a repeat visit) takes this door, and a
  *     slow link takes it BECAUSE the intro yields there: the early door is
  *     self-calibrating, and needs no bandwidth guess.
  *
@@ -160,8 +150,8 @@
  * above this one is about a LATE mount: a clip presenting at 4068 ms, after the
  * lede has painted at 3248, replaces the metric with its own later time. A clip
  * that presents BEFORE the current largest paint cannot do that — a candidate
- * at 2.8 s can only lower LCP, never raise it. The coverage test is kept on
- * both fast doors anyway, so the shipping clip produces no <video> entry at all and
+ * at 2.8 s can only lower LCP, never raise it. The coverage test is kept on the
+ * early door anyway, so the shipping clip produces no <video> entry at all and
  * the hero's lede stays the LCP element; but it is kept as a contract rather
  * than as protection, and a false positive from the intro's own 1.11x scale
  * (hero.module.css scales `.bg` by 1 + 0.14·--focus, so the box measured behind
@@ -379,26 +369,6 @@ export function motionFadeMsForFocus(focus: number): number {
 export const MOTION_CROSS_S = 1.5;
 
 /**
- * THE SHORTEST NIGHT TAIL the layer will loop — `durationS - loopFrom`, in
- * media seconds. Three crossfades, and the multiplier is arithmetic rather
- * than taste:
- *
- *   · TWO is the mechanism's hard floor. The handoff starts at D − X and the
- *     incoming copy enters at `loopFrom`, so it is X seconds old by the time it
- *     becomes the active one and has D − loopFrom − X of tail left to run
- *     before the NEXT handoff must start. At a tail of exactly 2X that is zero:
- *     the dissolves would touch, and the layer would be crossfading for ever.
- *   · THREE leaves one whole crossfade of un-dissolved material between them,
- *     so what the reader actually watches most of the time is the clip, not a
- *     blend of the clip with itself.
- *
- * A shorter tail is refused by `parseHeroMotion` rather than clamped: a tail
- * that short is a mis-specified clip, and the layer's honest fallback (play it
- * once, hold the last frame) is better than a permanent dissolve.
- */
-export const MOTION_TAIL_MIN_S = MOTION_CROSS_S * 3;
-
-/**
  * After html[data-intro] is removed, wait this long before loading anything —
  * it covers the intro's --focus tail (INTRO_FOCUS_MS), asserted below.
  */
@@ -433,17 +403,16 @@ export const MOTION_STALL_MS = 8000;
  * Hidden this long → drop both decoders and ~10 MB of buffers; re-gate on
  * visible.
  *
- * ⚠ A CLIP THAT WRAPS TO ITS OWN FIRST FRAME ONLY — `loop: true`, and nothing
- * else. Re-gating restarts a clip at frame 0, which for a loop is the picture
- * it was already showing: nothing is lost. For a clip whose light goes ONE WAY
- * (`loop: false`, with or without a `loopFrom` tail) frame 0 is where the light
- * STARTED: a reader who comes back after a minute would be thrown from the
- * night they left to the sunset they began with, which is the exact fault the
- * one-way mode exists to remove. There is no resume that avoids it either — a
- * remount fades up from the still, and the still IS the sunset. So a one-way
- * layer is never unmounted for being hidden; it holds, paused (one decoder
- * where it holds at the end, two where it loops a tail), and the tab discard
- * the browser does for a long-hidden tab is the backstop.
+ * ⚠ A LOOPING CLIP ONLY. Re-gating restarts a clip at its first frame, which
+ * for a loop is the picture it was already showing — nothing is lost. For a
+ * ONE-SHOT clip (`loop: false`) the first frame is where the light STARTED: a
+ * reader who comes back after a minute would be thrown from the night they left
+ * to the sunset they began with, which is the exact fault the one-shot mode
+ * exists to remove. There is no resume that avoids it either — a remount fades
+ * up from the still, and the still IS the sunset. So the one-shot layer is
+ * never unmounted for being hidden; it holds, paused, at one decoder (half of
+ * what the looping mode holds, since there is no standby copy), and the tab
+ * discard the browser does for a long-hidden tab is the backstop.
  */
 export const MOTION_HIDDEN_UNMOUNT_MS = 60_000;
 
@@ -527,29 +496,6 @@ export interface HeroMotion {
    * (`check-hero-motion.mjs --install --once`).
    */
   loop: boolean;
-  /**
-   * WHERE THE NIGHT TAIL BEGINS, in media seconds, or null for no tail. Read
-   * only when `loop` is false, and the whole of the owner's ask of 2026-09-07:
-   *
-   *   > "after it gets dark, don't stop the animation and become static and
-   *   > loop back to the first of the sunset to dark again, continue flow until
-   *   > recruiter or visitors refresh the page"
-   *
-   * So the clip is played 0 → D ONCE, and then [loopFrom, D] for ever: the
-   * lapse happens once per page life, and what a reader who stays gets is
-   * night that keeps moving rather than a held frame. A refresh is a new page
-   * life and starts at 0 again, which is exactly what he asked for.
-   *
-   * It is a NUMBER IN THE MANIFEST and not a decision the layer makes, for the
-   * same reason `loop` is: nothing in the file says where its light stops
-   * falling, and a wrong guess either freezes the picture or wraps a night back
-   * to a sunset. `scripts/check-hero-motion.mjs --install --once --loop-from
-   * <s>` writes it, having judged that wrap under SEAM.
-   *
-   * Absent, null, or `loop: true` → null: every clip installed before this
-   * existed keeps behaving exactly as it did.
-   */
-  loopFrom: number | null;
   /** The still's width / height, from the desktop rung's intrinsic size — never retyped. */
   stillAspect: number;
   /** The measured opacity ceiling (tests/e2e/hero-motion.spec.ts solves it); (0, 1]. */
@@ -567,49 +513,6 @@ function finite(value: unknown): number | null {
 function fraction(value: unknown): number | null {
   const n = finite(value);
   return n !== null && n >= 0 && n <= 1 ? n : null;
-}
-
-/**
- * IS THIS TAIL A TAIL THE LAYER TRUSTS? Returns the reason it is not, or null.
- *
- * One function so the two callers cannot disagree: `parseHeroMotion` below
- * (which fails closed, to the still hero) and components/site/hero.tsx's
- * `readHeroMotion` (which fails closed AND says why in the build log, because a
- * manifest whose tail is silently ignored looks exactly like a manifest with no
- * tail). Every clause refuses a config that would make the controller misbehave
- * rather than merely look wrong:
- *
- *   · NOT A FINITE NUMBER — there is nothing to seek to.
- *   · NEGATIVE, or ≥ the duration — a seek outside the media. The first plays
- *     the sunset again on every wrap, which is the fault this whole mode exists
- *     to remove; the second never resolves and the picture freezes.
- *   · A TAIL SHORTER THAN MOTION_TAIL_MIN_S — see that constant: the handoffs
- *     would overlap and the layer would dissolve for ever.
- *   · A TAIL ON A LOOPING CLIP — `loop: true` already wraps to frame 0, so a
- *     `loopFrom` beside it is two answers to one question. Refused rather than
- *     ranked, so nobody has to remember which one wins.
- */
-export function motionTailProblem(value: unknown, durationS: number, loop: boolean): string | null {
-  if (value === undefined || value === null) return null;
-  if (typeof value !== 'number' || !Number.isFinite(value)) {
-    return `loopFrom is ${JSON.stringify(value)}, which is not a number of seconds`;
-  }
-  if (loop) {
-    return `loopFrom is ${value} on a clip that also declares loop:true — a looping clip already wraps to its own frame 0`;
-  }
-  /* ZERO IS THE SUNSET BY ANOTHER SPELLING. The negative case is refused
-     because a wrap there replays the opening; `loopFrom: 0` wraps to the
-     opening exactly, which is the fault this mode exists to remove, so it is
-     refused by the same sentence rather than admitted by an off-by-one. */
-  if (value <= 0) return `loopFrom is ${value}, which would wrap to the clip's own frame 0 — the sunset, which is what a tail exists to avoid`;
-  if (value >= durationS) return `loopFrom is ${value}, which is at or past the clip's ${durationS}s duration`;
-  if (durationS - value < MOTION_TAIL_MIN_S) {
-    return (
-      `loopFrom ${value} leaves a ${(durationS - value).toFixed(2)}s tail, under the ${MOTION_TAIL_MIN_S}s floor ` +
-      `(${MOTION_CROSS_S}s crossfade × 3) — the handoffs would overlap and the layer would dissolve for ever`
-    );
-  }
-  return null;
 }
 
 /**
@@ -638,18 +541,6 @@ export function parseHeroMotion(value: unknown): HeroMotion | null {
   // A one-shot clip performs no handoff, so the rule has nothing to constrain.
   if (loop && durationS < MOTION_CROSS_S * 5) return null;
 
-  // The tail, judged by the one function hero.tsx also reports from.
-  /* A BAD TAIL DROPS THE TAIL, NOT THE CLIP. MOTION_TAIL_MIN_S's own comment
-     promises that the layer's fallback for a tail it cannot honour is "play it
-     once, hold the last frame" — and the runtime guard in
-     components/site/hero-motion.tsx does exactly that when the container's real
-     duration disagrees with the manifest. Returning null here instead took the
-     whole layer down and left the still, so one condition had two different
-     outcomes depending on which side noticed it. Now both degrade the same way.
-     The reason is not swallowed: readHeroMotion prints it. */
-  const tailProblem = motionTailProblem(value.loopFrom, durationS, loop);
-  const loopFrom = tailProblem === null && typeof value.loopFrom === 'number' ? value.loopFrom : null;
-
   if (!isRecord(value.crop)) return null;
   const x = fraction(value.crop.x);
   const y = fraction(value.crop.y);
@@ -664,7 +555,7 @@ export function parseHeroMotion(value: unknown): HeroMotion | null {
   const opacityCap = finite(value.opacityCap);
   if (opacityCap === null || !(opacityCap > 0 && opacityCap <= 1)) return null;
 
-  return { src, type, poster, durationS, crop: { x, y, w, h }, loop, loopFrom, stillAspect, opacityCap };
+  return { src, type, poster, durationS, crop: { x, y, w, h }, loop, stillAspect, opacityCap };
 }
 
 /* ── The stylesheet ────────────────────────────────────────────────────── */
@@ -761,17 +652,6 @@ if (motionFadeMsForFocus(INTRO_FOCUS_HOLD) !== MOTION_FADE_BEHIND_MS || motionFa
 
 if (!(MOTION_CROSS_S > 0)) {
   throw new Error('lib/hero-motion.ts: MOTION_CROSS_S must be positive — a zero-length handoff is a hard cut.');
-}
-
-/* The tail floor is a multiple of the crossfade and must stay clear of the
-   mechanism's own hard bound: at exactly 2X the incoming copy becomes active
-   with nothing left to play before the next handoff, and the layer crossfades
-   for ever. */
-if (MOTION_TAIL_MIN_S <= 2 * MOTION_CROSS_S) {
-  throw new Error(
-    'lib/hero-motion.ts: MOTION_TAIL_MIN_S must exceed 2 × MOTION_CROSS_S, or a night tail at the floor ' +
-      'leaves no un-dissolved material between one handoff and the next.',
-  );
 }
 
 if (MOTION_SETTLE_MS < INTRO_FOCUS_MS) {

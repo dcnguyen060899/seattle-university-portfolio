@@ -125,7 +125,6 @@ import {
   HERO_MOTION_PREVIEW_ON_DEPLOY_HOST,
   MOTION_FILE_NAME,
   MOTION_PUBLIC_DIR,
-  motionTailProblem,
   parseHeroMotion,
 } from '@/lib/hero-motion';
 import type { HeroMotion } from '@/lib/hero-motion';
@@ -439,14 +438,10 @@ function readHeroPhoto(): HeroPhoto | null {
  *      (src:hero-motion-disclosure-2026-09-06), and the record is verified.
  *      The accessor throws on a missing or broken record, and that is a build
  *      failure on purpose.
- *   5. The numbers the layer registers with — duration, crop, opacity cap,
- *      whether the clip loops at all, and where its night tail begins — are a
- *      config `parseHeroMotion` trusts. The still's aspect comes from the
- *      desktop rung's own intrinsic size, never retyped. A tail the layer does
- *      not trust is rejected BY NAME (`motionTailProblem`) rather than folded
- *      into the general refusal, because a manifest whose `loopFrom` is
- *      silently dropped looks exactly like a manifest that never had one — and
- *      the difference between them is whether the picture keeps moving.
+ *   5. The numbers the layer registers with — duration, crop, opacity cap, and
+ *      whether the clip loops at all — are a config `parseHeroMotion` trusts.
+ *      The still's aspect comes from the desktop rung's own intrinsic size,
+ *      never retyped.
  */
 function readHeroMotion(desktop: HeroCrop): HeroMotion | null {
   if (!existsSync(MOTION_MANIFEST_PATH)) return null;
@@ -509,12 +504,6 @@ function readHeroMotion(desktop: HeroCrop): HeroMotion | null {
     warn(`motion PREVIEW — art:hero-motion is "${policy.status}"; the clip renders on this localhost build only`);
   }
 
-  /* The tail, named before the general parse so the log says which number is
-     wrong. `durationS` may be anything here; motionTailProblem is only asked
-     about the tail, and parseHeroMotion refuses the rest. */
-  const tailProblem = motionTailProblem(parsed.loopFrom, num(parsed.durationS) ?? 0, parsed.loop !== false);
-  if (tailProblem !== null) return reject(`the manifest's ${tailProblem}`);
-
   const motion = parseHeroMotion({
     src: `${MOTION_PUBLIC_DIR}/${file}`,
     type: file.endsWith('.webm') ? 'video/webm' : 'video/mp4',
@@ -526,15 +515,11 @@ function readHeroMotion(desktop: HeroCrop): HeroMotion | null {
        (true, a loop) is written, so a clip installed before the flag existed
        and a clip that declares itself a loop cannot disagree. */
     loop: parsed.loop,
-    /* Where the night tail begins, or absent for a clip that has none. Passed
-       through UNTOUCHED for the same reason `loop` is: parseHeroMotion is the
-       one place `undefined` becomes null. */
-    loopFrom: parsed.loopFrom,
     stillAspect: desktop.width / desktop.height,
     opacityCap: parsed.opacityCap,
   });
   if (motion === null) {
-    return reject("the manifest's durationS, crop, loopFrom or opacityCap is not a config the layer trusts");
+    return reject("the manifest's durationS, crop or opacityCap is not a config the layer trusts");
   }
   return motion;
 }
