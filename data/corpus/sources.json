@@ -414,12 +414,13 @@
     "id": "src:psb-manuscript",
     "kind": "artifact-private",
     "repo": null,
-    "label": "First-author manuscript under review, PSB 2027",
-    "locator": "Not public while under review. Duy can supply on request.",
+    "label": "First-author manuscript, accepted at PSB 2027 (camera-ready pending)",
+    "locator": "Not public until the camera-ready is submitted (due 1 October 2026) and the proceedings appear (January 2027). Duy can supply on request.",
     "custodian": "Duy",
     "trust": "primary",
     "firstRecorded": "2026-09-02",
-    "lastChecked": "2026-09-02"
+    "lastChecked": "2026-09-08",
+    "note": "The manuscript itself. Its STATUS is src:psb-acceptance-2026-09; this record only says where the bytes are."
   },
   {
     "id": "src:yang-report",
@@ -596,5 +597,53 @@
     "firstRecorded": "2026-09-06",
     "lastChecked": "2026-09-06",
     "note": "ANSWERED. This closes art:hero-motion's open questions: whether the moving version ships and which clip (the installed Seedance 2 transcode, which he had just seen in preview on localhost), and the wording of the line. The licence-back to Runway (src:runway-terms-2026-05-11, s.4.4) had been stated to him in the record and in the recap he was replying to, so \"turn it on\" was given with that on the table. \"Turn it on\" is implemented as the switch's DEFAULT — lib/hero-motion.ts, NEXT_PUBLIC_HERO_MOTION unset → on, `off` the deploy-side kill switch — because .env.* is gitignored in this repository and a committed default is the auditable form of a deploy setting. The live site changes when main is pushed and deployed; this record does not claim that it has been."
+  },
+  {
+    "id": "src:psb-acceptance-2026-09",
+    "kind": "artifact-private",
+    "repo": null,
+    "label": "PSB 2027 acceptance notice — e-mail from the PSB Coordinator, September 2026",
+    "locator": "E-mail from the PSB Coordinator (Pacific Symposium on Biocomputing) to the paper's authors, September 2026: accepted for publication in the proceedings and for oral presentation at the meeting of 3–7 January 2027 on the Big Island of Hawaii; camera-ready PDF due 1 October 2026 via the accepted-paper submission form. Not public; Duy can supply on request.",
+    "custodian": "Duy",
+    "trust": "primary",
+    "firstRecorded": "2026-09-08",
+    "lastChecked": "2026-09-08",
+    "note": "The primary record for the acceptance. It supersedes 'under review' everywhere (clm:yang-psb-submission, clm:yang-psb-caveat, clm:yang-psb-oral). The conference site (https://psb.stanford.edu/) will corroborate once the programme is posted."
+  },
+  {
+    "id": "src:su-gradstudies-interview-2026-08",
+    "kind": "artifact-private",
+    "repo": null,
+    "label": "Interview request from Seattle University Graduate Studies marketing, August 2026",
+    "locator": "E-mail from the Marketing Manager for Graduate Enrollment, Graduate Studies, Seattle University, August 2026, requesting an interview about the Data Scrollytelling award for a university story. Not public; Duy can supply on request.",
+    "custodian": "Duy",
+    "trust": "primary",
+    "firstRecorded": "2026-09-08",
+    "lastChecked": "2026-09-08",
+    "note": "Evidences the REQUEST and the requesting office. That the interview took place is src:owner-update-2026-09-08. The sender is not named in any record or on any surface."
+  },
+  {
+    "id": "src:owner-update-2026-09-08",
+    "kind": "owner-statement",
+    "repo": null,
+    "label": "Owner's update, 2026-09-08 — PSB acceptance received; Graduate Studies interview held",
+    "locator": "Owner's message of 2026-09-08 in the rebuild session: the PSB 2027 paper was accepted for the proceedings and for oral presentation, and the Seattle University Graduate Studies marketing interview about the CAUSE award took place.",
+    "custodian": "Duy",
+    "trust": "self-reported",
+    "firstRecorded": "2026-09-08",
+    "lastChecked": "2026-09-08",
+    "note": "Same standing as src:owner-corrections-2026-09-02: where the owner reports an event in his own timeline, he is the authority and this is the source."
+  },
+  {
+    "id": "src:su-cns-web",
+    "kind": "url",
+    "repo": null,
+    "label": "SU Computational Neuroscience Research Group — Brian Fischer's site (title 'SU CNS')",
+    "locator": "http://fac-staff.seattleu.edu/fischer9/web/",
+    "custodian": "public",
+    "trust": "primary",
+    "firstRecorded": "2026-09-09",
+    "lastChecked": "2026-09-09",
+    "note": "Read via https://web.archive.org/web/20240605235547id_/http://fac-staff.seattleu.edu/fischer9/web/ on 2026-09-09; the origin timed out from this network. Names the group, the department (Mathematics) and the research (Bayesian neural coding, barn-owl sound localization)."
   }
 ]

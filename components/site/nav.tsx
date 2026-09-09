@@ -154,11 +154,11 @@
  *
  * ── THE LINKS ─────────────────────────────────────────────────────────────
  *
- * The hrefs are root-relative (`/#research`, not `#research`) so the same nav
+ * The hrefs are root-relative (`/#highlights`, not `#highlights`) so the same nav
  * works from app/not-found.tsx, which has no such sections of its own. The
- * page is nine bands long, the sections are anchored, and the footer repeats
- * every destination — so the bar is a convenience, and nothing here is the
- * only route to anything.
+ * page is four bands long (since 2026-09-08), the sections are anchored, and
+ * the footer repeats every destination — so the bar is a convenience, and
+ * nothing here is the only route to anything.
  */
 
 import Link from 'next/link';
@@ -168,9 +168,8 @@ import { useNavGround } from '@/hooks/use-scroll-driver';
 import styles from './nav.module.css';
 
 const SECTIONS = [
-  { href: '/#research', label: 'Research' },
+  { href: '/#highlights', label: 'Highlights' },
   { href: '/#fit', label: 'For recruiters' },
-  { href: '/#full-stack', label: 'Full stack' },
   { href: '/#contact', label: 'Contact' },
 ] as const;
 

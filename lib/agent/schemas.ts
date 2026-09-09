@@ -48,7 +48,7 @@ const citation = {
     artifact_label: {
       type: 'string',
       description:
-        'How to name the link to a reader, e.g. "PSB 2027 manuscript (under review)". At most 60 characters.',
+        'How to name the link to a reader, e.g. "PSB 2027 paper (accepted)". At most 60 characters.',
     },
     artifact_url: {
       type: 'string',

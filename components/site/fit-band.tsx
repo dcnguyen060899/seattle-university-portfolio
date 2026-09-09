@@ -41,16 +41,18 @@ export function FitBand() {
     <Band tone="paper" id="fit">
       <Eyebrow>For recruiters</Eyebrow>
 
-      <h2 className="mt-[14px] max-w-[22ch]">Paste the job description. Get the honest fit.</h2>
+      <h2 className="mt-[14px] max-w-[22ch]">Paste a job description or pick a role</h2>
 
       <Reveal index={1}>
+        {/*
+          Two sentences, since 2026-09-08. The earlier paragraph explained the
+          brief's shape, its source and its refusal to inflate; the panel below
+          demonstrates all three in the time it takes to read them.
+        */}
         <p className="mt-[22px] max-w-[var(--container-prose)] text-lede text-[color:var(--fg-muted)]">
-          Paste a description, or pick a role, and this returns a short brief: which of
-          your requirements I can evidence, which I can evidence only partly, and which I
-          cannot — each one mapped to a specific piece of work and linked to it. It reads
-          the same evidence record this page renders from, and nothing else. There is no
-          inflation mode: where the answer is “no evidence for this”, it says so and says
-          what the nearest thing is.
+          You get a short brief: which of your requirements I can evidence, which only
+          partly, and which I cannot, each tied to a specific piece of work. It reads the
+          same record this page renders from, and where there is no evidence it says so.
         </p>
       </Reveal>
 

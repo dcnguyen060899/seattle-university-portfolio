@@ -1401,6 +1401,7 @@
   */
   --hero-headroom: clamp(7.5rem, 21svh, 12.5rem); /* 120 → 200px */
 
+
   /*
     ── THE FOOT — WHERE THE PHOTOGRAPH ENDS, WRITTEN ONCE ─────────────────
     The bottom edge of `.frame`, and therefore the position every dissolve

@@ -6,8 +6,8 @@
  "requirements":[
   {"id":"r:rs-publication","label":"Peer-reviewed publication record","weight":1.0,
    "concepts":["cpt:research-publication"],
-   "pinned":["clm:yang-psb-submission","clm:yang-report-37p"],
-   "fallback":"One first-author manuscript under review; no accepted publication yet. Say 'under review', never 'published'."},
+   "pinned":["clm:yang-psb-submission","clm:yang-psb-oral","clm:yang-report-37p"],
+   "fallback":"One first-author paper accepted at PSB 2027, for the proceedings and an oral presentation; the camera-ready is due and nothing is published yet. Say 'accepted', never 'published'."},
   {"id":"r:rs-experimental-design","label":"Experimental design and controls","weight":1.0,
    "concepts":["cpt:experimental-design","cpt:causal-inference"],
    "pinned":["clm:yang-design-24cells","clm:yang-negative-control","clm:yang-encoders"],

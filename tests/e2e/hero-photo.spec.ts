@@ -1186,19 +1186,19 @@ test.describe('hero photo: the photograph covers the band', () => {
 test.describe('hero: the evidence the earlier rounds bought', () => {
   test.use({ viewport: { width: 1280, height: 800 } })
 
-  test('all three hero figures render above the fold at 1280x800', async ({ page }) => {
+  test('the name, the statement and the primary action render above the fold at 1280x800', async ({ page }) => {
     await page.goto('/', { waitUntil: 'load' })
     await page.waitForLoadState('networkidle').catch(() => undefined)
 
     const extent = await page.evaluate(readPhotoExtent)
-    /* The figures are matched on the numerals themselves rather than on a
-       component class: they come from the corpus (`figureAt`), so the exact
-       strings are the contract the corpus gate already enforces, and a
-       component rename must not silently drop this guard. */
+    /* Since 2026-09-08 the hero carries no figures — they moved, with their
+       caveats, to components/site/highlights-band.tsx — so the first screen's
+       contract is the three things it exists to show. Matched on text rather
+       than on a component class so a rename cannot silently drop the guard. */
     const wanted = [
-      { name: 'the P@1 headline figure', match: /^0\.585$/ },
-      { name: 'the retrieval floor', match: /P@1\s+0\.487/ },
-      { name: 'the CAUSE / barn-owl readouts', match: /(Winner, Graduate Division|neurons ·)/ },
+      { name: 'the name', match: /^Duy Nguyen$/ },
+      { name: 'the statement', match: /I find out whether/ },
+      { name: 'the primary action', match: /Ask about a role/ },
     ]
 
     const missing: string[] = []
@@ -1215,18 +1215,17 @@ test.describe('hero: the evidence the earlier rounds bought', () => {
 
     expect(
       missing,
-      'A hero figure stopped rendering. These are corpus-backed numbers, not decoration — ' +
-        'if one is gone the corpus record behind it was dropped or renamed. ' +
-        'Territory: components/site/hero.tsx and the corpus.',
+      'Part of the first screen stopped rendering. The name, the statement and the ' +
+        'primary action are the whole hero since 2026-09-08. ' +
+        'Territory: components/site/hero.tsx.',
     ).toEqual([])
 
     expect(
       belowFold,
-      'A HERO FIGURE FELL BELOW THE FOLD at 1280x800.\n  ' +
+      'PART OF THE FIRST SCREEN FELL BELOW THE FOLD at 1280x800.\n  ' +
         belowFold.join('\n  ') +
-        '\nAll three were above it before this change (y 472 / 571 / 690 against an 800px ' +
-        'fold). Growing the band — extra headroom, a taller photograph box, more padding — ' +
-        'pushes the evidence out of the first screen, which is the one thing this hero is ' +
+        '\nGrowing the band — extra headroom, a taller photograph box, more padding — ' +
+        'pushes the copy out of the first screen, which is the one thing this hero is ' +
         'for. Territory: components/site/hero-scrim.module.css and components/site/hero.tsx.',
     ).toEqual([])
   })

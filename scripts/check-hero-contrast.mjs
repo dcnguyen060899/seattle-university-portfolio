@@ -396,11 +396,45 @@ const EXTENT_MARGIN = 0.02;
   — and tests/e2e/hero-contrast.spec.ts reads it through --emit-extent and
   sizes its viewport to it.
 */
+/*
+  RE-MEASURED 2026-09-08, when the band was cut to the name, the statement,
+  the three actions and one line of fine print at the foot (the three
+  evidence blocks and their quoted caveats moved to
+  components/site/highlights-band.tsx). Same instrument, same six boxes.
+
+    width   box height   band height          measured glyph box
+    375        812       1385 ->  812         x  5.3% .. 92.0%   y 30.0% .. 93.7%
+    390        844       1350 ->  844         x  5.1% .. 91.5%   y 29.6% .. 94.0%
+    768       1024       1225 -> 1024         x  4.5% .. 72.4%   y 27.1% .. 95.0%
+    861       1000       1257 -> 1000         x  4.5% .. 65.1%   y 28.7% .. 94.9%
+    1280       800        800 (unchanged)     x 10.9% .. 56.3%   y 16.1% .. 93.6%
+    1600       900        900 (unchanged)     x 18.8% .. 55.0%   y 15.7% .. 94.4%
+
+  THE FLOOR NOW BINDS EVERYWHERE. With four things at its top the band is
+  shorter than a screen at every width, so `min-block-size: 100svh` sets its
+  height at all six boxes, not only the two desktop ones — bandH IS the box
+  height, and the four phone/tablet rows are corrected to it.
+
+  THE TOP EDGE MOVES DOWN, ON PURPOSE, AND IT IS THE SECOND TIME. The first
+  glyph is still at --hero-headroom + --spacing-band, but that offset is now
+  a larger fraction of a shorter band: 14.4% -> 30.0% at 375. This is the
+  same move the 2026-09-03 aperture note records ("the top ninth of the band
+  is now photograph rather than the first line of copy"), and it is declared
+  from the measurement for the same reason: a y0 left at 14.4% of an 812px
+  band would gate rows 117-243px, which is the pocket's own ramp, for a text
+  floor no glyph needs there. The browser gate proves the declared box still
+  contains every glyph rectangle. Every OTHER side keeps the wider of the old
+  declaration and the new measurement, per this file's rule — the right edge
+  in particular is left at the old, wider value at every width, because the
+  evidence column that used to reach it is gone and gating empty ground costs
+  nothing. The two desktop rows are unchanged: the band there was already the
+  box, and the measured glyphs sit inside the declared box on all four sides.
+*/
 export const TEXT_EXTENT = [
-  { w: 375, h: 812, bandH: 1385, x0: 0.053, x1: 0.946, y0: 0.144, y1: 0.965 },
-  { w: 390, h: 844, bandH: 1350, x0: 0.051, x1: 0.944, y0: 0.153, y1: 0.964 },
-  { w: 768, h: 1024, bandH: 1225, x0: 0.045, x1: 0.954, y0: 0.202, y1: 0.959 },
-  { w: 861, h: 1000, bandH: 1257, x0: 0.045, x1: 0.951, y0: 0.201, y1: 0.961 },
+  { w: 375, h: 812, bandH: 812, x0: 0.053, x1: 0.946, y0: 0.3, y1: 0.965 },
+  { w: 390, h: 844, bandH: 844, x0: 0.051, x1: 0.944, y0: 0.296, y1: 0.964 },
+  { w: 768, h: 1024, bandH: 1024, x0: 0.045, x1: 0.954, y0: 0.271, y1: 0.959 },
+  { w: 861, h: 1000, bandH: 1000, x0: 0.045, x1: 0.951, y0: 0.287, y1: 0.961 },
   { w: 1280, h: 800, bandH: 800, x0: 0.109, x1: 0.886, y0: 0.098, y1: 0.938 },
   { w: 1600, h: 900, bandH: 900, x0: 0.187, x1: 0.809, y0: 0.104, y1: 0.939 },
 ];

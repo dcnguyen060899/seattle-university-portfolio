@@ -4,9 +4,9 @@
   "provenance": {
     "composer": "deterministic",
     "model": null,
-    "builtAt": "2026-09-07T17:02:25.960Z",
-    "corpusVersion": "80c37cc8cbb1",
-    "corpusSize": 116,
+    "builtAt": "2026-09-09T08:09:53.454Z",
+    "corpusVersion": "9f3791ebfa96",
+    "corpusSize": 118,
     "guardrailTotal": 5
   },
   "brief": {
@@ -18,22 +18,22 @@
         "requirement": "Peer-reviewed publication record",
         "verdict": "adjacent",
         "confidence": "high",
-        "rationale": "The report was condensed into a first-author manuscript, \"Separation Without Transfer: The Retrieval Encoder's Substrate, Not the VLM Decoder, Decides Whether Contrastive Fine-Tuning Transfers in Mammography Report Generation\", submitted to the Pacific Symposium on Biocomputing 2027 with Dr. Wenjing Yang as…",
+        "rationale": "The report was condensed into a first-author manuscript, \"Separation Without Transfer: The Retrieval Encoder's Substrate, Not the VLM Decoder, Decides Whether Contrastive Fine-Tuning Transfers in Mammography Report Generation\", with Dr. Wenjing Yang as co-author. In September 2026 the Pacific Symposium on…",
         "evidence": [
           {
             "evidence_id": "clm:yang-psb-submission",
-            "quoted_claim": "First-author manuscript under review, PSB 2027",
+            "quoted_claim": "First-author paper accepted at PSB 2027, with an oral presentation",
             "artifact_label": "Separation Without Transfer: The Retrieval Encoder's…",
             "artifact_url": ""
           },
           {
-            "evidence_id": "clm:yang-report-37p",
-            "quoted_claim": "37-page technical report",
-            "artifact_label": "37-page technical report on the mammography retrieval…",
+            "evidence_id": "clm:yang-psb-oral",
+            "quoted_claim": "Oral presentation at PSB 2027, January 2027",
+            "artifact_label": "Separation Without Transfer: The Retrieval Encoder's…",
             "artifact_url": ""
           }
         ],
-        "caveat": "One first-author manuscript under review; no accepted publication yet. The manuscript is under review; it is not accepted and not published."
+        "caveat": "One first-author paper accepted at PSB 2027, for the proceedings and an oral presentation; the camera-ready is due and nothing is published yet. Accepted, not yet published: the camera-ready…"
       },
       {
         "requirement": "Experimental design and controls",

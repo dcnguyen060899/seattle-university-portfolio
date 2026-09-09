@@ -94,26 +94,26 @@
       {
         "check": "LEGIBILITY 375x812 (never mounts under 1280px — reported)",
         "pass": true,
-        "value": "worst cell 0.992 (still 0.983) · p95 0.759 @t27.8 (still 0.667) · mean 0.132 @t28.3 (still 0.152)",
-        "limit": "worst ≤ 1.000 · p95 ≤ 0.720 · mean ≤ 0.173 at field floor 54.2%"
+        "value": "worst cell 0.987 (still 0.997) · p95 0.777 @t27.8 (still 0.756) · mean 0.149 @t1.0 (still 0.180)",
+        "limit": "worst ≤ 1.000 · p95 ≤ 0.813 · mean ≤ 0.203 at field floor 54.2%"
       },
       {
         "check": "LEGIBILITY 390x844 (never mounts under 1280px — reported)",
         "pass": true,
-        "value": "worst cell 0.992 (still 0.983) · p95 0.765 @t29.0 (still 0.660) · mean 0.133 @t28.8 (still 0.154)",
-        "limit": "worst ≤ 1.000 · p95 ≤ 0.712 · mean ≤ 0.176 at field floor 54.2%"
+        "value": "worst cell 0.987 (still 0.997) · p95 0.777 @t27.8 (still 0.753) · mean 0.148 @t1.0 (still 0.179)",
+        "limit": "worst ≤ 1.000 · p95 ≤ 0.811 · mean ≤ 0.202 at field floor 54.2%"
       },
       {
         "check": "LEGIBILITY 768x1024 (never mounts under 1280px — reported)",
         "pass": true,
-        "value": "worst cell 1.000 (still 0.999) · p95 0.837 @t27.8 (still 0.781) · mean 0.220 @t28.8 (still 0.237)",
-        "limit": "worst ≤ 1.000 · p95 ≤ 0.840 · mean ≤ 0.264 at field floor 54.2%"
+        "value": "worst cell 0.997 (still 0.999) · p95 0.835 @t27.8 (still 0.825) · mean 0.227 @t28.8 (still 0.257)",
+        "limit": "worst ≤ 1.000 · p95 ≤ 0.887 · mean ≤ 0.285 at field floor 54.2%"
       },
       {
         "check": "LEGIBILITY 861x1000 (never mounts under 1280px — reported)",
         "pass": true,
-        "value": "worst cell 1.000 (still 0.999) · p95 0.836 @t27.8 (still 0.818) · mean 0.242 @t28.8 (still 0.262)",
-        "limit": "worst ≤ 1.000 · p95 ≤ 0.880 · mean ≤ 0.290 at field floor 54.2%"
+        "value": "worst cell 0.990 (still 0.999) · p95 0.837 @t27.8 (still 0.853) · mean 0.250 @t28.8 (still 0.283)",
+        "limit": "worst ≤ 1.000 · p95 ≤ 0.916 · mean ≤ 0.313 at field floor 54.2%"
       },
       {
         "check": "LEGIBILITY 1280x800",

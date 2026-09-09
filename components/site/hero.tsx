@@ -2,34 +2,32 @@
  * components/site/hero.tsx — band 1. The ink ground, and the first of the two
  * the page is allowed (see components/ui/system.ts for the budget).
  *
- * ── WHY THREE MEASURED FIGURES AND NOT THE GPA (Addendum B, R-8) ──────────
+ * ── THE BAND IS THE NAME AND THE SLOGAN, AND NOTHING ELSE (2026-09-08) ────
  *
- * The earlier copy deck put GPA 4.0 in the hero as its only number. Two things
- * are wrong with that. The owner’s own `Resume.pdf` — the artifact recruiters
- * actually download — contains no GPA at all, so his editorial judgment had
- * already made this call. And a grade is the weakest of the four signals the
- * brief asks the page to carry, sitting in the strongest slot on the page.
+ * Until 2026-09-08 this band carried three titled evidence blocks beside the
+ * name — the retrieval threshold, the contest win, the barn-owl database —
+ * and the quoted caveats under them: roughly 1,000 characters of copy on the
+ * first screen. The owner's verdict on it was the one every recruiter-lens
+ * review had already given: "text is a bit too lengthy, no recruiter would
+ * actually read those… in the first page just highlight my name and slogan".
  *
- * So the hero carries the three figures a hiring manager can act on:
- *   1. the retrieval threshold and the one arm of twenty-four that cleared it,
- *   2. the blind-judged national win,
- *   3. the barn-owl database, in one line.
- * GPA and the Dean’s Honor Roll moved to the education credentials block.
+ * So the first screen is now four things: the programme line, the name, the
+ * statement, and the three actions. The three claims did not leave the page;
+ * they moved one scroll down into components/site/highlights-band.tsx, where
+ * each has a title, one line and one link, and where the caveats the corpus
+ * attaches to them are rendered beside them (check C10 still holds that).
  *
- * ── WHY THE THRESHOLD IS THE HERO OBJECT ──────────────────────────────────
+ * WHAT THIS BAND STILL OWES. One line of fine print at its foot: the
+ * AI-disclosure for the picture behind it, which is a property of the image
+ * and stays with the image. It is the only thing on the first screen that is
+ * not the owner's own words, and it keeps the 32px dash every block on this
+ * page opens with — that dash is also the element scripts/check-hero-contrast
+ * .mjs credits the `--rule` collar on (`.threshold-rule`), and
+ * tests/e2e/hero-contrast.spec.ts holds that the selector still matches
+ * something inside the band.
  *
- * `<Threshold>` is not a decoration reused here. This portfolio’s headline
- * research result IS a threshold: a held-out majority-class retrieval floor,
- * and exactly one arm of a twenty-four-cell experiment above it. The device
- * encodes the claim’s shape — the clearing figure sits over the line, the
- * floor sits on it — which is why it is the single most important object on
- * the page and why the whole crimson budget is spent on it.
- *
- * ── WHY THE LIMITS ARE IN THE HERO ────────────────────────────────────────
- *
- * Because the page’s argument is that its numbers are checkable, and a page
- * that puts its figures first and its caveats last has already lost that
- * argument. Two lines of 13.6px is the entire cost.
+ * GPA and the Dean’s Honor Roll stay where Addendum B R-8 put them: out of
+ * the hero. They are credentials, not results, and the résumé carries them.
  *
  * ═══════════════════════════════════════════════════════════════════════════
  * ── THE PHOTOGRAPH, AND THE ONE RULE IT HAS TO OBEY ───────────────────────
@@ -116,9 +114,9 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import type { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties } from 'react';
 
-import { Band, Btn, Reveal, Threshold } from '@/components/ui';
+import { Band, Btn, Reveal } from '@/components/ui';
 import { heroCaption, heroMotionPolicy } from '@/lib/corpus/hero-asset';
 import {
   HERO_MOTION_PREVIEW,
@@ -128,22 +126,11 @@ import {
   parseHeroMotion,
 } from '@/lib/hero-motion';
 import type { HeroMotion } from '@/lib/hero-motion';
-import { EvidenceLink, Limit, figureAt, pageShort } from './evidence';
+import { artifactUrl } from './evidence';
 import { HeroMotionLayer } from './hero-motion';
 import { ScrollDriver } from './scroll-driver';
 import scrim from './hero-scrim.module.css';
 import styles from './hero.module.css';
-
-/**
- * Positions inside the corpus value blocks this band reads by hand.
- * `figureAt` asserts the array length, so a corpus edit that reorders or
- * extends either of these stops the build instead of silently renaming a
- * number. The comments are the contract; the assertion is the enforcement.
- */
-const P1 = { FLOOR: 0, FROZEN: 1, FINE_TUNED: 2, COUNT: 3 } as const;
-const CELLS = { TOTAL: 0, COUNT: 4 } as const;
-const DB = { NEURONS: 0, PASSES: 3, COUNT: 5 } as const;
-const ARCHIVE = { RAW: 0, COUNT: 2 } as const;
 
 /* ══════════════════════════════════════════════════════════════════════════
    THE ASSET GATE
@@ -538,10 +525,11 @@ const PHOTO: HeroPhoto | null = readHeroPhoto();
  * institution's marks, on a page that claims a real affiliation with that
  * institution. The owner's answer to that was to state it, in the band's own
  * voice: "Background: an AI-generated composite, not a photograph of the
- * campus." It sits in the <Limit> block beside the BI-RADS caveat and the
- * Fischer live-figures caveat, at the same weight and in the same type,
- * because it is the same kind of object — a stated limit, on the largest
- * element on the page.
+ * campus." Since 2026-09-08 it is the only fine print in the band — the
+ * figures and their caveats moved to the highlights band — and it sits at
+ * the band's foot under the same 32px dash every block on this page opens
+ * with, because it is the same kind of object: a stated limit, on the
+ * largest element on the page.
  *
  * Three properties of how it is wired, each deliberate:
  *
@@ -563,71 +551,10 @@ const PHOTO: HeroPhoto | null = readHeroPhoto();
 const HERO_DISCLOSURE = PHOTO === null ? null : heroCaption();
 
 /* ══════════════════════════════════════════════════════════════════════════
-   THE EVIDENCE BLOCK
-   ══════════════════════════════════════════════════════════════════════════
-
-   One titled block in the evidence column: a 32px dash of --rule (painted by
-   hero.module.css), a title in the serif, and whatever the block measures.
-
-   THE TITLE IS THE LABEL. The previous band opened every block with a
-   tracked-uppercase mono eyebrow — RESEARCH, RECOGNITION, RESEARCH
-   INFRASTRUCTURE — and then a mono readout, and then a mono label under
-   that. Three registers to say one thing. A recruiter giving the page twenty
-   seconds reads a title in a serif as "the name of a piece of work", which is
-   what each of these is, and reads a category eyebrow as furniture. The
-   eyebrows are gone; the titles carry what they said.
-
-   AN h2, because it is one. The name is the band's h1 and these are the
-   three things the band says about it, so the outline a screen reader walks
-   is name → evidence → evidence → evidence, which is the visual order too.
-   The base `h2` rule in app/globals.css sets the display face at --text-h2;
-   every one of those is overridden here by a utility, on purpose — this is
-   the one place on the page a heading is set in the serif, and it is set at
-   --text-title, the serif's own step.
-*/
-/*
-   `proof` IS AN ATTRIBUTE FOR THE TESTS AND NOTHING ELSE. Added 2026-09-06:
-   the three blocks used to be counted through `[data-numeric]`, and the
-   recognition proof stopped carrying one when its readout became a serif
-   title ("Winner, Graduate Division — CAUSE 2026" has no figure in it). The
-   band still makes exactly three claims — research, recognition,
-   infrastructure — and tests/e2e/nav.spec.ts holds all three above the fold
-   by this attribute. No class, no style, nothing in the cascade reads it.
-*/
-type Proof = 'research' | 'recognition' | 'infrastructure';
-
-function Evidence({
-  title,
-  proof,
-  children,
-}: {
-  title: string;
-  proof: Proof;
-  children: ReactNode;
-}) {
-  return (
-    <section className={styles.block} data-proof={proof}>
-      <h2 className="font-serif text-title font-[400] leading-[1.2] tracking-[-0.005em] text-[color:var(--fg)]">
-        {title}
-      </h2>
-      {children}
-    </section>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════════════
    THE BAND
    ══════════════════════════════════════════════════════════════════════════ */
 
 export function Hero() {
-  const floor = figureAt('clm:yang-p1-floor', P1.FLOOR, P1.COUNT);
-  const frozen = figureAt('clm:yang-p1-floor', P1.FROZEN, P1.COUNT);
-  const fineTuned = figureAt('clm:yang-p1-floor', P1.FINE_TUNED, P1.COUNT);
-  const cells = figureAt('clm:yang-design-24cells', CELLS.TOTAL, CELLS.COUNT);
-  const neurons = figureAt('clm:fischer-db-scale', DB.NEURONS, DB.COUNT);
-  const passes = figureAt('clm:fischer-db-scale', DB.PASSES, DB.COUNT);
-  const rawFiles = figureAt('clm:fischer-raw-archive', ARCHIVE.RAW, ARCHIVE.COUNT);
-
   return (
     <Band tone="ink" id="top" bleed className={`${scrim.ground} ${styles.band}`}>
       {/*
@@ -849,183 +776,75 @@ export function Hero() {
 
       <div className={`wrap ${styles.inner}`}>
         {/*
-          ── TWO COLUMNS, AND WHAT THE SPLIT IS FOR ─────────────────────────
+          ── ONE COLUMN, FOUR THINGS ─────────────────────────────────────────
 
-          The band used to run as one column: identity, then the threshold,
-          then the two readouts, then the caveats, then the actions. Everything
-          a recruiter came for sat BELOW the sentence explaining who he is, in
-          the order it happened to be written.
-
-          It is now identity on the left and EVIDENCE on the right, three
-          blocks each opening with a serif TITLE that names the work — the
-          Mammo-CLIP evaluation, the contest win, the barn-owl database. Two
-          consequences, and the second is the one that matters:
-
-            · the figures rise. On one column the readouts sat at the bottom of
-              the band; beside the lede they are level with it, so the first
-              screen carries the claim and its evidence at the same time
-              instead of asking the reader to scroll for the second.
-            · the blocks say WHAT THEY ARE before they say what they measure.
-              "P@1 0.585" is a number until something names the work it
-              belongs to; the title is the difference between a figure a
-              reader has to interpret and one they can file.
-
-          EVERY FIGURE, NOTE AND CAVEAT BELOW IS THE STRING IT ALREADY WAS,
-          from the accessor it already used. What changed are LABELS — the
-          words that say what a figure is — and the faces they are set in;
-          this is a re-setting, not a rewrite, and the numeric licensing gate
-          (C8) would fail the build if it were not.
+          The programme line, the name, the statement, the actions. The band
+          used to split into identity-left / evidence-right at 900px; the
+          evidence is one band down now, so the grid, the areas and the
+          `order` argument that went with them are gone with it. What is left
+          is the reading order and the tab order, which are the same order.
         */}
-        <div className={styles.split}>
-          {/* ── LEFT: who, in his own words ──────────────────────────────── */}
-          <div>
-            {/*
-              THE CITY IS DELIBERATELY NOT HERE. This line used to read
-              "Seattle, Washington · M.S. Data Science, Seattle University",
-              which put SEATTLE twice in one line and a third time in the nav
-              directly above it. "Seattle University" already places him.
+        <div className={styles.copy}>
+          {/*
+            THE CITY IS DELIBERATELY NOT HERE. "Seattle University" already
+            places him, and lib/seo.ts publishes the locality in the Person
+            schema, which is what a search engine and an ATS actually read.
+            Sentence case, body face, a comma: the first thing on the page and
+            the first tell of a template if it were a tracked mono eyebrow.
 
-              The location signal is NOT lost: lib/seo.ts publishes
-              homeLocation with addressLocality "Seattle" / addressRegion "WA"
-              in the Person schema, which is what a search engine and an ATS
-              actually read.
-
-              SENTENCE CASE, BODY FACE, A COMMA. It was a tracked-uppercase
-              mono eyebrow with a middle dot, which is the first thing on the
-              page and the first tell of a template. As a line of body face it
-              reads as what it is — where he is, said once — and leaves the
-              name below it as the only display-size object in the column.
-            */}
-            <p className="font-body text-[0.9375rem] leading-[1.4] text-[color:var(--fg-muted)]">
-              M.S. Data Science, Seattle University
-            </p>
-
-            {/*
-              THE NAME IS MIST BLUE, THE LEDE IS NOT — and that split is the
-              whole idea rather than a decoration.
-
-              WHY COOL AND NOT WARM. This went through a warm cream first,
-              matching the lockup, and the cream was the weaker answer: the
-              photograph's lights are amber, so a warm name sits INSIDE the
-              picture's own hue and has only luminance left to separate with.
-              Mist blue sits across it. The name reads as a distinct object,
-              and the sunset reads warmer by comparison.
-
-              A ROLE, NOT THE HEX. --fg-brand is mist on ink and plain --fg on
-              paper and crimson, where the same blue would be 1.48:1 and
-              unreadable. IT IS DARKER THAN THE CREAM WAS (luminance 0.628
-              against 0.690), so it has LESS headroom against the band's
-              brightest sky; rule 5b's collar in hero-scrim.module.css is what
-              carries it.
-            */}
-            {/*
-              THE NAME IS THE ONE THING ON THE PAGE SET IN THE SERIF — that,
-              and the three evidence titles beside it. app/layout.tsx carries
-              the argument for why a personal name may leave the university's
-              display face; this comment carries the setting.
-
-              WEIGHT 500, AGAINST THE LEDE'S 300. The scale's h1 is 200 and
-              the lede is 300, so in the display face the name was the
-              THINNEST ink in the block while being the largest, and at a
-              glance weight wins. A serif at 500 is a full step above the
-              lede rather than one below, and its stem — 0.104em at the
-              thinnest point of Newsreader's optical axis, 3.75px at the phone
-              step — is three times what Montserrat 200 gave the collar to
-              work with. The tracking is loosened from the scale's -0.025em to
-              -0.01em because a serif's serifs already close its fit; the
-              geometric sans needed the pull, this does not.
-
-              SCOPED TO THE HERO, not to the scale. `h1, h2` in
-              app/globals.css stay in the display face for the band headings
-              further down the page, which sit on paper and are the
-              university's register. This is the one h1 set at 64px over a
-              photograph, and the one heading that is his mark rather than a
-              section's.
-            */}
-            <h1 className="mt-[16px] max-w-[14ch] font-serif font-[500] tracking-[-0.01em] text-[color:var(--fg-brand)]">
-              Duy Nguyen
-            </h1>
-
-            {/*
-              THE LEDE IS 20→28px, NOT --text-h2, AND THE REASON IS THE RATIO.
-
-              Measured on the production build before this change, 2026-09-06:
-              at 1280 the sentence set at --text-h2 was 40px — 0.63 of the 64px
-              name — and wrapped to SIX lines, 264px tall, inside a 503px
-              column. At 375 it was 26px against a 36px name: 0.72. A sentence
-              that is two-thirds the size of the heading above it is not
-              subordinate to it; the two compete, the eye has nowhere to land,
-              and six two-word lines read as chopped rather than as a sentence.
-              The owner's reference render sets the same sentence at roughly
-              0.4 of the name and lets it run three lines. That is what "flow"
-              means here: fewer, longer lines under a heading that is clearly
-              the heading.
-
-              THE SCALE HAS NO STEP WHERE THIS NEEDS TO SIT. --text-h3 tops out
-              at 20px and --text-h2 starts at 26px; between them there is
-              nothing, and the hero's lede — one sentence, over a photograph,
-              beside a 64px name — is the only thing on the page that wants
-              one. So this is a bespoke measure, scoped to this element, and
-              written down: clamp(1.125rem, 2.2vw, 1.75rem) is 18px at 375
-              (0.50 of the name) and 28px at 1280 (0.44). Line-height 1.3
-              rather than h2's 1.1, because this is now a read sentence rather
-              than a display fragment.
-
-              NO GATE DEPENDS ON THE OLD SIZE. Every collar rule in
-              hero-scrim.module.css keys its stem model to --text-data,
-              --text-fine, --text-stat or --text-h1 — never to --text-h2 — and
-              the base collar deliberately models the THINNEST type in the
-              band, so a 28px display sentence sits on the safe side of it.
-              max-w-[32ch] is kept: below the split, where the wrap is the
-              measure again, it is still what stops the line running long.
-            */}
-            <Reveal index={1}>
-              <p className="mt-[30px] max-w-[32ch] font-display text-[length:clamp(1.125rem,2.2vw,1.75rem)] leading-[1.3] tracking-[-0.01em] font-[300] text-balance">
-                I design experiments for machine-learning systems where being wrong has a
-                cost — and I build the infrastructure they run on.
-              </p>
-            </Reveal>
-
-          </div>
+            --fg, NOT --fg-muted (2026-09-08). The one-screen band puts the
+            portrait crop's lit windows under this line at 768x1024, and the
+            brightest pixel there measured 2.62:1 against the muted role
+            (tests/e2e/hero-contrast.spec.ts, the 3:1 ink-pixel floor); the
+            same pixel is 6.3:1 against --fg. hero.module.css's type essay
+            already names --fg-muted as the residual failure in this band and
+            says the fix is to retire it from the photographic region — for
+            this line only, because the foot's disclosure sits where the veil
+            dissolves to ground and its muted colour is what keeps
+            hero-blend.spec.ts's "no deeper than legibility requires" budget
+            honest. Hierarchy here is size and weight, not tone.
+          */}
+          <p className="font-body text-[0.9375rem] leading-[1.4] text-[color:var(--fg)]">
+            M.S. Data Science, Seattle University{'\u00a0'}·{'\u00a0'}second year
+          </p>
 
           {/*
-            ── THE ACTIONS ARE A THIRD GRID CHILD, NOT A CHILD OF THE LEFT
-               COLUMN, AND THEY SIT BETWEEN THE IDENTITY AND THE EVIDENCE IN
-               SOURCE ORDER.
+            THE NAME IS MIST BLUE, THE STATEMENT IS NOT — and that split is the
+            whole idea. The photograph's lights are amber, so a warm name sits
+            inside the picture's own hue; mist blue sits across it. --fg-brand
+            is mist on ink and plain --fg elsewhere; rule 5b's collar in
+            hero-scrim.module.css carries it over the band's brightest sky.
 
-            They belong under the lede on desktop, which is where the reference
-            render puts them and where a reader who has decided can act without
-            passing every caveat first. Above the 900px split hero.module.css
-            places them there by AREA, so no `order:` declaration is involved
-            and the DOM order, the tab order and the screen-reader order are
-            the one order this comment describes: identity → actions →
-            evidence.
+            THE ONE h1 ON THE PAGE SET IN THE SERIF, at 500 against the
+            statement's 300, so at a glance the name outweighs the sentence
+            beside it by a full step. app/layout.tsx carries the argument for
+            why a personal name may leave the university's display face.
+          */}
+          <h1 className="mt-[16px] max-w-[14ch] font-serif font-[500] tracking-[-0.01em] text-[color:var(--fg-brand)]">
+            Duy Nguyen
+          </h1>
 
-            BELOW THE SPLIT THAT ORDER IS THE PHONE'S LAYOUT, and it is the
-            point. With the actions AFTER the evidence in source order they
-            sat under three evidence blocks at 375x812 and 390x844 — below
-            the fold by more than a screen, with the nav's two rows already
-            spending 104px of the first one. Under the lede they land inside
-            the first screen; the measured positions are in hero.module.css
-            under THE PHONE'S FIRST SCREEN.
+          {/*
+            THE STATEMENT IS 18→28px, NOT --text-h2: at --text-h2 it was 0.63 of
+            the name and wrapped to six two-word lines. clamp(1.125rem, 2.2vw,
+            1.75rem) is 0.50 of the name at 375 and 0.44 at 1280 — a sentence
+            under a heading that is clearly the heading. The owner approved
+            these words verbatim; this file does not restate them.
+          */}
+          <Reveal index={1}>
+            <p className="mt-[30px] max-w-[32ch] font-display text-[length:clamp(1.125rem,2.2vw,1.75rem)] leading-[1.3] tracking-[-0.01em] font-[300] text-balance">
+              I find out whether a machine-learning result is real, build the data it
+              depends on, and explain it to the people who decide.
+            </p>
+          </Reveal>
 
-            HISTORY, BECAUSE THIS ARRANGEMENT ONCE BROKE A GLYPH. The last time
-            the actions sat above the evidence on the phone, the "0.585" figure
-            landed on a brighter patch of the photograph and measured 2.78:1
-            against its 3:1 obligation, caught at the INK PIXELS by
-            tests/e2e/hero-contrast.spec.ts ("at the ink pixels themselves at
-            375") — a real failure, not a sampling artefact, because that test
-            differences the rendered frame against the same frame with the fill
-            removed and so already credits the collar. That test is the check
-            on this move, and the fix for a failure there is the collar for
-            that role in hero-scrim.module.css — never moving the actions back
-            and never the veil.
-
-            `face="body"`: sentence-case Inter 500 at 14px. With every other
-            tracked cap gone from the band, mono-caps buttons would have been
-            the last thing on it still shaped like a form control. The Btn
-            primitive's default is unchanged, so the contact band, the agent
-            panel and the 404 keep the tracked mono idiom.
+          {/*
+            `face="body"`: sentence-case Inter 500 at 14px. With every tracked
+            cap gone from the band, mono-caps buttons would be the last thing
+            on it still shaped like a form control. The Btn default is
+            unchanged, so the contact band and the agent panel keep the mono
+            idiom. tests/e2e/hero-contrast.spec.ts samples the ghost button's
+            border by name; keep the résumé button a ghost.
           */}
           <div className={styles.actions}>
             <Btn href="#fit" face="body">
@@ -1034,148 +853,56 @@ export function Hero() {
             <Btn href="/docs/Resume.pdf" variant="ghost" face="body">
               Résumé (PDF)
             </Btn>
-            <EvidenceLink id="art:github" label="GitHub" face="body" />
-          </div>
-
-          {/* ── RIGHT: the evidence, titled ──────────────────────────────── */}
-          <div className={styles.evidence}>
             {/*
-              FIGURE 1 — the threshold. The only <Threshold> in the hero, and
-              one of two on the whole page: past three the device stops
-              meaning "threshold" and starts meaning "line".
-
-              The title names the work; the label under the 0.585 used to
-              name it again ("Mammo-CLIP, fine-tuned — …"), so that label now
-              says only what the figure is: the fine-tuned arm, alone of the
-              twenty-four. Same figures, same accessors, one fewer repetition.
-
-              THE RULE UNDER THE 0.585 IS A 32px STUB HERE, in --rule, the
-              same dash every block in this band opens with — hero.module.css
-              shortens it (THE THRESHOLD RULE IS A STUB). It was the last
-              full-width hairline in the band. The device's shape survives:
-              the clearing figure still sits over the line and the floor
-              still sits on it; only the line's length changed.
+              A ghost BUTTON, not a quiet link (2026-09-08 review). At 375 the
+              three actions cannot share a row (148 + 137 + 46px in a 335px
+              column), so the third wraps — and a bare word under two boxed
+              buttons read as a stray label. Boxed, the wrapped row reads as a
+              third action. The URL is the corpus's, not typed.
             */}
-            <Evidence title="Mammo-CLIP evaluation" proof="research">
-              <Threshold
-                index={3}
-                clearedValue={fineTuned}
-                clearedLabel={`Fine-tuned, the only arm of ${cells} to clear the floor`}
-                value={`P@1 ${floor}`}
-                label="held-out majority-class retrieval floor"
-                cleared={`${frozen} frozen → ${fineTuned} fine-tuned, the decoder frozen throughout`}
-              />
-            </Evidence>
-
-            {/*
-              FIGURES 2 and 3 — the award and the barn-owl database.
-
-              THE AWARD'S TITLE IS THE CORPUS'S OWN SHORT FORM, VERBATIM.
-              "Winner, Graduate Division — CAUSE 2026" is pageShort on
-              clm:cause-win; it carries a year, so it is not a string this
-              file may type, and it is set in the serif exactly as the record
-              renders it. The contest's name sits under it as a plain line.
-
-              THE NOTES ARE `pageShort`, NOT `pageText`, AND THAT IS THE
-              ACCESSOR DOING WHAT IT SAYS. evidence.tsx documents pageShort as
-              "a licensed short form — chip and readout length"; the corpus's
-              full third-person sentences are two-line paragraphs under a
-              title, and a title wants one line beneath it.
-
-              Nothing left the page. clm:cause-blind-judging is still attached
-              to clm:cause-win here, which its own corpus note requires ("Keep
-              it attached to clm:cause-win in copy"), and clm:fischer-selfserve
-              — the outcome claim for rol:fischer-rde — is still in short form.
-            */}
-            <Evidence title={pageShort('clm:cause-win')} proof="recognition">
-              <p className="mt-[8px] text-data text-[color:var(--fg)]">
-                Student Data Scrollytelling Contest
-              </p>
-              <p className="mt-[6px] text-[0.8rem] leading-[1.55] text-[color:var(--fg-muted)]">
-                {pageShort('clm:cause-blind-judging')}
-              </p>
-            </Evidence>
-
-            {/*
-              THE THREE FIGURES ARE THREE RUNS, NOT ONE STRING. They used to be
-              joined with middle dots into a single mono line, which is the
-              second-commonest tell of a generated page after the eyebrow.
-              As three spans in a wrapping row they are still tabular mono —
-              this is data, and mono is the measurement voice — but the
-              separation is space rather than punctuation, and on a phone the
-              row breaks between figures instead of mid-figure. Each span's
-              text is the string the old line carried, so the numeric gate
-              sees exactly what it saw.
-            */}
-            <Evidence title="One database for the barn-owl lab" proof="infrastructure">
-              <p
-                data-numeric
-                className="mt-[8px] flex flex-wrap gap-x-[18px] gap-y-[2px] font-mono text-data text-[color:var(--fg)]"
-              >
-                <span>{neurons} neurons</span>
-                <span>{passes} passes</span>
-                <span>{rawFiles} raw files</span>
-              </p>
-              <p className="mt-[6px] text-[0.8rem] leading-[1.55] text-[color:var(--fg-muted)]">
-                {pageShort('clm:fischer-selfserve')}
-              </p>
-            </Evidence>
+            <Btn
+              href={artifactUrl('art:github')}
+              variant="ghost"
+              face="body"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GitHub
+            </Btn>
           </div>
         </div>
 
         {/*
-          THE PAGE'S THESIS USED TO SIT HERE — "Every figure on this page is
-          licensed by a record that names its source…" — and it now opens the
-          research band instead. It started at y=890 against a fold of 800: it
-          was ninety pixels below the fold of the viewport it was written for,
-          so it did no hero work at all, and it sat BETWEEN the three figures
-          and the caveats that qualify them. The brief's rule is that the
-          caveats sit *with* the figures; deleting the paragraph that separated
-          them is that rule enforced, not weakened.
-        */}
+          THE FOOT. The disclosure the picture owes, rendered verbatim from the
+          corpus and never reformatted: C15 matches this string against the
+          built HTML whenever hero assets are on disk. It sits at the band's
+          foot — `.foot` takes the flex column's remaining height — so the
+          first screen reads name, statement, actions, and then, at the bottom
+          edge where the photograph dissolves into the ground, one line saying
+          what the photograph is.
 
-        {/*
-          The mandatory caveats of everything above. C10 fails the build if a
-          claim is rendered without them, which is what makes this block
-          structural rather than polite.
-
-          IT SPANS BOTH COLUMNS, at the foot of the band, because it qualifies
-          figures in one column and a claim in the other. Putting it under the
-          evidence column alone would have implied it qualified only that.
+          THE DASH ABOVE IT IS `.threshold-rule`, NOT DECORATION. The scrim's
+          `--rule` collar is credited on that selector
+          (hero-scrim.module.css rule 7) and hero.module.css shortens it to the
+          32px stub every block on the page opens with. It is the one element
+          of that class left in the band, and it renders only WITH the
+          disclosure — i.e. only when a photograph is on disk, which is the
+          only state in which the browser gate samples this band's collars.
         */}
-        <Limit
-          ids={['clm:yang-label-caveat', 'clm:fischer-live-caveat']}
+        {HERO_DISCLOSURE !== null && (
           /*
-            THE LABEL IS THE OWNER'S, AND ONLY THE LABEL. "Stated limits —
-            quoted from the record" is the paper bands' form, in their tracked
-            mono. This band sets its labels in sentence-case body face
-            (hero.module.css re-faces this one), and "Methods & limitations"
-            is the label the owner wrote for this block in his reference
-            render. The sentences under it are the record's, verbatim, and
-            cannot be touched from here.
+            `data-hero-caption` is for tests/e2e/nav.spec.ts, which counts how
+            many times the first screen states the affiliation and must not
+            count a caption that names the campus in a picture. An attribute,
+            nothing visual; nothing in the cascade reads it.
           */
-          label="Methods & limitations"
-          /*
-            A READING MEASURE, not a decoration. These were the only lines of
-            running prose on the site set to the full 1088px page measure —
-            ~120 characters — while nine other bands already pull their prose
-            to `--container-prose`. The rule and the measurement are THE
-            QUOTED LIMITS GET A READING MEASURE in hero.module.css.
-          */
-          className={styles.limits}
-        >
-          {HERO_DISCLOSURE !== null && (
-            /*
-              Rendered verbatim from the corpus and never reformatted: C15
-              matches this string against the built HTML. Same <li> shape as
-              the ids above, because it is not a footnote about the page — it
-              is one of the page's stated limits.
-            */
-            <li className="text-[0.85rem] leading-[1.6] text-[color:var(--fg-muted)]">
+          <div className={styles.foot} data-hero-caption="">
+            <Reveal as="hr" motion="none" index={2} className="threshold-rule" />
+            <p className="mt-[8px] text-[0.8rem] leading-[1.55] text-[color:var(--fg-muted)]">
               {HERO_DISCLOSURE.text}
-            </li>
-          )}
-        </Limit>
+            </p>
+          </div>
+        )}
       </div>
     </Band>
   );

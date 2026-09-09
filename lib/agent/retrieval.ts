@@ -347,7 +347,7 @@ export function searchForQuestion(question: string, k = 6): RankedRecord[] {
  *
  * `fallback` is the corpus author's own framing note for this requirement — the
  * sentence a human wrote for when the evidence needs qualifying ("one
- * first-author manuscript under review; no accepted publication yet"). Its mere
+ * first-author paper accepted at PSB 2027 …; nothing is published yet"). Its mere
  * PRESENCE is information: somebody looked at this requirement, decided the
  * evidence would read as stronger than it is, and wrote the correction down.
  * The caller uses it to cap the verdict, which is why it is returned here

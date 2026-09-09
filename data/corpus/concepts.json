@@ -139,7 +139,7 @@
     "adjacent": [], "negativeGapId": null, "note": null },
 
   { "id": "cpt:research-publication", "label": "Peer-reviewed publication", "family": "rigor",
-    "aliases": ["publication", "publications", "peer-reviewed", "peer reviewed", "first-author", "first author", "conference paper", "manuscript", "neurips", "psb", "published research"],
+    "aliases": ["publication", "publications", "peer-reviewed", "peer reviewed", "first-author", "first author", "conference paper", "manuscript", "neurips", "psb", "published research", "oral presentation", "conference talk", "accepted paper"],
     "adjacent": [], "negativeGapId": null, "note": null },
 
   { "id": "cpt:mlops", "label": "MLOps", "family": "infrastructure",

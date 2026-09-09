@@ -4,10 +4,10 @@
     "kind": "paper",
     "title": "Separation Without Transfer: The Retrieval Encoder's Substrate, Not the VLM Decoder, Decides Whether Contrastive Fine-Tuning Transfers in Mammography Report Generation",
     "url": null,
-    "access": "under-review",
+    "access": "on-request",
     "roleId": "rol:yang-gra",
     "legacyPath": null,
-    "note": "access=under-review: it exists and cannot be shown yet. A surface must say so rather than linking."
+    "note": "access=on-request since the September 2026 acceptance: the camera-ready revision is due 1 October 2026 and the manuscript is not public until the proceedings appear (January 2027). Surfaces say so rather than linking. Give it a URL and access 'public' when the proceedings are out."
   },
   {
     "id": "art:yang-report",
@@ -147,7 +147,7 @@
     "access": "public",
     "roleId": null,
     "legacyPath": "public/docs/Resume.pdf",
-    "note": "THE HIGHEST-TRAFFIC RESUME SURFACE ON THE DOMAIN and, as committed, the only one still outside the corpus gates. It carries 'Winter 2025 - Present' (retracted) and closes the Fischer role in July 2026 (contradicting the ongoing role). See the report accompanying this corpus for the proposed regeneration path; until it lands, `node scripts/verify-corpus.mjs --built` runs the C9 retraction scan over its extracted text and fails on a hit."
+    "note": "THE HIGHEST-TRAFFIC RESUME SURFACE ON THE DOMAIN. Compiled from the owner's LaTeX source (~/Downloads/prep_intern_interview/resume_duy_nguyen/resume.tex, outside this repo) and replaced whole on his instruction — last on 2026-09-09, for the PSB acceptance and the two stale dates. On the public/docs edit allowlist since then. `node scripts/verify-corpus.mjs --built` runs the C9 retraction scan over its extracted text and fails on a hit."
   },
   {
     "id": "art:resume-page",

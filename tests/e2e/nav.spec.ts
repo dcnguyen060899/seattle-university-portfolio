@@ -196,7 +196,15 @@ const NAV = 'header'
  * record's, quoted verbatim, so the affiliation test does not count them as
  * the page announcing itself.
  */
-const HERO_LIMITS = '#top aside'
+/*
+  Since 2026-09-08 the hero carries no <Limit> aside — its quoted caveats moved
+  to the highlights band — and the one quoted line it keeps, the picture's
+  AI-disclosure, sits at the band's foot in a container marked
+  `data-hero-caption`. Same exclusion, same reason: that sentence is the
+  record's, about the picture ("…the Seattle University campus…"), not the
+  page announcing where he studies.
+*/
+const HERO_LIMITS = '#top aside, #top [data-hero-caption]'
 
 interface NavGeometry {
   found: boolean
@@ -1607,7 +1615,16 @@ test.describe('§6 the page does not jump', () => {
     and the fold is held against those three blocks' bottom edges. The two
     numeric objects are still checked, by the mark they already carry.
   */
-  test('the three hero figures are above the fold at 1280x800', async ({ page }) => {
+  /*
+    ── RE-DERIVED 2026-09-08 ───────────────────────────────────────────────
+
+    The three evidence blocks and both numeric objects left the hero for
+    components/site/highlights-band.tsx, so `[data-proof]` and `[data-numeric]`
+    match nothing in #top by design. The above-the-fold budget is now the
+    three things the first screen exists to show — the name, the statement
+    and the primary action — held to the same 800px fold.
+  */
+  test('the name, the statement and the primary action are above the fold at 1280x800', async ({ page }) => {
     await page.setViewportSize(DESIGN)
     await page.goto('/', { waitUntil: 'networkidle' })
     await hideDevChrome(page)
@@ -1636,38 +1653,45 @@ test.describe('§6 the page does not jump', () => {
         selector,
       )
 
-    const proofs = await measure('#top [data-proof]')
-    expect(
-      proofs.map((p) => p.proof).sort(),
-      'The hero makes three claims — research, recognition, infrastructure — ' +
-        'and each evidence block declares which one it is with data-proof. A ' +
-        'different set means the hero changed and this budget needs ' +
-        're-deriving, not relaxing.',
-    ).toEqual(['infrastructure', 'recognition', 'research'])
+    const parts = await page.evaluate(() => {
+      const band = document.querySelector('#top')
+      const box = (el: Element | null | undefined) => {
+        if (!el) return null
+        const b = el.getBoundingClientRect()
+        return { top: Math.round(b.top), bottom: Math.round(b.bottom) }
+      }
+      const statement = Array.from(band?.querySelectorAll('p') ?? []).find((p) =>
+        /I find out whether/.test(p.textContent ?? ''),
+      )
+      return {
+        name: box(band?.querySelector('h1')),
+        statement: box(statement),
+        action: box(band?.querySelector('a[href="#fit"]')),
+      }
+    })
 
-    const below = proofs.filter((p) => p.bottom > DESIGN.height)
+    for (const [what, b] of Object.entries(parts)) {
+      expect(b, `The hero's ${what} is missing from #top.`).not.toBeNull()
+    }
+    const below = Object.entries(parts)
+      .filter(([, b]) => b !== null && b.bottom > DESIGN.height)
+      .map(([what, b]) => `${what}: top ${b!.top} bottom ${b!.bottom} (fold ${DESIGN.height})`)
     expect(
-      below.map((p) => `${p.proof}: top ${p.top} bottom ${p.bottom} (fold ${DESIGN.height})`),
-      'A hero proof is below the fold at the design width. BASELINE, with the ' +
-        'nav still in flow: 494-632, 688-784, 688-784 — 16px of headroom. ' +
-        'Taking the nav out of flow returns 61px, and the one-screen band of ' +
-        '2026-09-06 puts all three blocks inside 797px; if this is failing, ' +
+      below,
+      'Part of the first screen is below the fold at the design width. The band is ' +
+        'a floor of one viewport carrying four things at its top; if this is failing, ' +
         'something is padding the top of the page back in.',
     ).toEqual([])
 
-    // The objects that ARE numeric keep their own check: the <Threshold> and
-    // the barn-owl readout, by the [data-numeric] mark they already carry.
+    // Nothing numeric is left in the hero by design (2026-09-08); the figures
+    // and their marks are in the highlights band. A count here means a figure
+    // came back to the first screen without the caveat that travels with it.
     const figures = await measure('#top [data-numeric]')
     expect(
       figures.length,
-      'The serif band carries two numeric objects — the <Threshold> and the ' +
-        'barn-owl readout. A different count means a figure was added or ' +
-        'lost; re-derive this, do not relax it.',
-    ).toBe(2)
-    expect(
-      figures.filter((f) => f.bottom > DESIGN.height).map((f) => `top ${f.top} bottom ${f.bottom}`),
-      'A numeric hero figure is below the fold at the design width.',
-    ).toEqual([])
+      'The hero carries no numeric object since 2026-09-08 — the figures moved to ' +
+        'the highlights band with their caveats. Re-derive this budget if one returns.',
+    ).toBe(0)
   })
 })
 

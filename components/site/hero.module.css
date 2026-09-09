@@ -185,125 +185,57 @@
   position: relative;
   z-index: 0;
   padding-block-start: var(--hero-headroom, 0px);
-}
-
-/*
-  ═══════════════════════════════════════════════════════════════════════════
-  THE TWO COLUMNS
-  ═══════════════════════════════════════════════════════════════════════════
-
-  Identity left, evidence right. LAYOUT ONLY — not one colour, size or face is
-  named here; the faces are the scale's (app/globals.css) and the hero's own
-  choices among them are made in hero.tsx, where each is argued.
-
-  THE BREAKPOINT IS 900px, NOT THE PAGE'S 861px ART-DIRECTION SWITCH. They are
-  different questions. 861 is where the photograph swaps from landscape to
-  portrait crop; this is where an evidence column stops having room to set a
-  serif title such as "Winner, Graduate Division — CAUSE 2026" on one line.
-  Tying them together would mean one of the two lands wrong.
-
-  THE RIGHT COLUMN IS CAPPED AT 420px rather than given a fraction. A
-  fractional column keeps growing with the viewport and at 1600 it would set
-  the titles and their notes at a measure long enough that the eye loses
-  which line belongs to which block. 420px holds the longest title on one
-  line at every width above the breakpoint and the notes under ~50ch.
-
-  BELOW THE BREAKPOINT this collapses to a single column in source order:
-  identity, the three actions, then the three evidence blocks. That is the
-  same reading order as the desktop layout — name, lede, the things a reader
-  can do, then the evidence — which is what keeps the tab order and the
-  screen-reader order honest without a single `order:` declaration.
-*/
-.split {
-  display: grid;
-  gap: clamp(36px, 5vw, 52px);
-  align-items: start;
-}
-
-/*
-  SOURCE ORDER IS identity -> actions -> evidence, which is the phone's reading
-  order and the only order the DOM has. Desktop re-places the three by AREA, so
-  the actions sit under the lede without `order:` and without the tab order
-  disagreeing with the visual one. hero.tsx carries the history of that order
-  (the 0.585 figure once measured 2.78:1 at the ink pixels with the actions
-  above the evidence) and names the test that guards it.
-*/
-@media (min-width: 900px) {
-  .split {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
-    grid-template-areas:
-      'identity evidence'
-      'actions  evidence';
-    grid-template-rows: auto 1fr;
-    column-gap: clamp(48px, 6vw, 88px);
-    row-gap: clamp(28px, 4vw, 40px);
-  }
-
-  .split > *:nth-child(1) { grid-area: identity; }
-  .split > .evidence { grid-area: evidence; }
-  .split > .actions { grid-area: actions; }
-}
-
-/*
-  The three evidence blocks, on one rhythm. <Threshold> carries its own top
-  margin (`mt-[clamp(28px,4vw,44px)]`) for the paper bands; inside a block it
-  is reset to the same gap the other two blocks put under their titles, so a
-  title-to-content distance is one number here rather than three.
-
-  24px, FLAT, AND THAT IS THE ONE-SCREEN BUDGET — see ONE SCREEN below for
-  the arithmetic. It was clamp(28px, 3.5vw, 40px), 40px at every desktop
-  width; this column is the tallest thing in the split and its two gaps were
-  80px of the band. A 24px gap above a 32px dash still reads as a break —
-  the dash-to-title distance below it is 8px, a third of the gap, so the dash
-  belongs unambiguously to the title under it and not to the note above.
-*/
-.evidence {
+  /*
+    A FLEX COLUMN THAT FILLS THE BAND (2026-09-08). The band is a floor of one
+    viewport (see `.band` below) and now carries four things at its top and
+    one line of fine print at its foot; `.foot`'s `margin-block-start: auto`
+    is what puts that line at the bottom edge instead of under the buttons.
+    The band is the other half of the pair — it is a flex column too, or this
+    element has nothing to grow into.
+  */
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  flex: 1 1 auto;
 }
 
 /*
   ═══════════════════════════════════════════════════════════════════════════
-  THE DASH — a rule that encodes something, not a rule under everything
+  ONE COLUMN (2026-09-08) — where THE TWO COLUMNS used to be
   ═══════════════════════════════════════════════════════════════════════════
 
-  Each evidence block and the limits block opens with a 32px stroke of
-  --rule, which .ground resolves to --fg here (crimson is spent on the
-  Threshold's figure and nowhere else in this band). It is the owner's own
-  device — every reference render he made marks a block with a short dash
-  above it and nothing below — and it replaces two full-width hairlines that
-  used to sit under the readouts.
+  The identity-left / evidence-right grid, its 900px breakpoint, the 420px
+  evidence column, the `.block` dash rules and the `.limits` re-facing left
+  this file on 2026-09-08, when the three evidence blocks and their quoted
+  caveats moved into components/site/highlights-band.tsx. The band is one
+  column again: the programme line, the name, the statement, the actions, and
+  at the foot the picture's disclosure. The essays further down about the type
+  over the photograph still describe what is here; the ONE SCREEN arithmetic
+  describes a band that no longer needs it and is kept as the record of how
+  the previous band was made to fit.
 
-  WHY SHORT. A full-measure hairline over a photograph is a line laid across
-  a picture; at 1280 the limits' rule used to cross the lettering of the
-  SEATTLE UNIVERSITY sign, which read as a printing error. A 32px stroke
-  cannot cross anything at any viewport. And it carries information a
-  hairline did not: it marks where a block BEGINS, which is what the eye
-  needs when three blocks of different heights stack in one column.
-
-  WHY IT IS NOT A BORDER. `::before` rather than `border-block-start`, so the
-  stroke's width is its own and not the column's, and so the Threshold's rule
-  — the one 2px line in the band that has to mean "threshold" — is not
-  echoed by a second full-width 2px line above it.
-
-  8px UNDER THE DASH AND 8px UNDER THE TITLE. Both were larger (14 and 12)
-  and both are part of the one-screen budget below; 8px is the step the
-  Threshold already puts under its own figure (`mt-[8px]` on the label), so
-  a block's internal rhythm is one number rather than three.
+  `.copy` is a reading measure for the identity block, not a grid: 40rem
+  holds the 32ch statement and lets the name breathe at 1600 without the
+  buttons drifting toward the middle of the band.
 */
-.block::before {
-  content: '';
-  display: block;
-  inline-size: 32px;
-  block-size: 2px;
-  margin-block-end: 8px;
-  background: var(--rule);
+.copy {
+  max-inline-size: 40rem;
 }
 
-.block > [data-numeric] {
-  margin-block-start: 8px;
+/*
+  THE FOOT — the picture's one line, at the bottom edge of the band. Takes the
+  column's remaining height (`margin-block-start: auto`) so it sits at the
+  foot at every viewport, over the region where the veil has already
+  dissolved into --ground (hero-scrim.module.css: `--frame-foot`), which is
+  the darkest ground in the band and the reason a 0.8rem muted line is legal
+  there. Reading measure, not the wrap: the disclosure is prose. The dash
+  above it is `.threshold-rule`, shortened to 32px below.
+*/
+.foot {
+  margin-block-start: auto;
+  padding-block-start: clamp(32px, 5vh, 56px);
+  max-inline-size: var(--container-prose);
 }
+
 
 /*
   ═══════════════════════════════════════════════════════════════════════════
@@ -351,6 +283,10 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 16px 32px;
+  /* The distance from the statement's last line. It used to be the split
+     grid's row-gap (2026-09-06); with the grid gone the buttons sat flush
+     under the sentence. Same clamp the grid used. */
+  margin-block-start: clamp(28px, 4vw, 40px);
 }
 
 /*
@@ -468,114 +404,22 @@
   tracking, weight and size rather than by tone, so the band still reads when
   every run is one colour.
 */
-.inner {
-  /* The hero's step of the micro scale. Paper keeps app/globals.css's 10.5px. */
-  --text-micro: 0.6875rem;
-}
-
-.inner :global(.font-mono) {
-  font-weight: 500;
-}
+/*
+  THE MONO REGISTER LEFT WITH THE FIGURES (2026-09-08). Two rules stood here —
+  `.inner { --text-micro: 0.6875rem }` and `.inner :global(.font-mono)
+  { font-weight: 500 }` — and both were measured for the readouts, labels and
+  quoted limits that now live in components/site/highlights-band.tsx. Nothing
+  in this band is set in the mono face any more, so a rule for it selected
+  nothing; the measurements above are kept as the record of why the weight
+  was 500, for the day a mono run returns to a photograph.
+*/
 
 /*
-  ═══════════════════════════════════════════════════════════════════════════
-  THE LIMITS RULE IS A STUB, NOT A SPAN
-  ═══════════════════════════════════════════════════════════════════════════
-
-  <Limit> paints `border-t-2` across its whole inline size. Everywhere else on
-  the page that is right — it sits on paper and separates two blocks of prose.
-  Over the photograph it is a long horizontal hairline laid across a picture,
-  and at 1280 it lands squarely through the lettering of the SEATTLE UNIVERSITY
-  sign, which reads as a printing error rather than as a divider.
-
-  A LONGER RULE CANNOT BE MADE SAFE. The sign is at a fixed place in the
-  photograph and the layout is fluid, so any full-measure line collides with
-  SOMETHING at some viewport; moving the block only moves the collision. A stub
-  cannot cross anything, which is why the owner's reference render uses one.
-
-  Two class names deep so it beats the utility's single class without
-  !important. The rule is not removed, it is shortened: it is THE DASH above,
-  the same 32px of --rule every evidence block opens with, so the limits read
-  as the fourth block of the band rather than as a footnote in another
-  register.
-
-  THE LABEL IS RE-FACED HERE, NOT IN <Limit>. On paper the block's label is
-  the same tracked-uppercase mono as every eyebrow on those bands, and it
-  should stay that: the paper bands are one register. This band has no
-  eyebrows any more — its blocks are titled in the serif and its labels are
-  sentence-case body face — so the label follows THIS band's rule. Unlayered
-  module CSS beats a Tailwind utility regardless of specificity, which is
-  what lets one selector retype it without touching the component.
+  THE LIMITS BLOCK LEFT THIS BAND on 2026-09-08 — its three quoted caveats
+  moved with their figures to components/site/highlights-band.tsx, and the
+  one line of fine print the band still carries (the picture's disclosure)
+  is `.foot` above. The stub-dash rule it used is the `.threshold-rule` stub.
 */
-.inner .limits {
-  border-block-start: 0;
-  padding-block-start: 0;
-  /* 16px above the fourth block's dash, against <Limit>'s own mt-[26px] for
-     the paper bands, and 8px under it like every other dash here. Part of
-     the one-screen budget below. */
-  margin-block-start: 16px;
-}
-
-.inner .limits::before {
-  content: '';
-  display: block;
-  inline-size: 32px;
-  block-size: 2px;
-  margin-block-end: 8px;
-  background: var(--rule);
-}
-
-/*
-  THE CAVEATS' OWN LEADING AND GAPS, in the hero only. <Limit> sets its list
-  at `mt-[10px] gap-[8px]` and its lines at `leading-[1.6]` for the paper
-  bands, where they sit alone under a rule with room around them. Here the
-  block is the foot of a band that has to fit a screen, so the list opens 6px
-  under its label, the three caveats sit 6px apart, and the lines are set at
-  1.5 — the body's own --text-data leading, not a number invented for this.
-  Every caveat still renders in full (verify:corpus C10 / C15 read the built
-  HTML); nothing here can drop a line, only tighten the space between two.
-*/
-.inner .limits > ul {
-  margin-block-start: 6px;
-  gap: 6px;
-}
-
-.inner .limits li {
-  line-height: 1.5;
-  /* the disclosure line grew on 2026-09-06 and left a one-word last line at 390;
-     `pretty` balances the last two lines the way app/globals.css already does for <p> */
-  text-wrap: pretty;
-}
-
-.inner .limits > p:first-child {
-  font-family: var(--font-body);
-  font-size: var(--text-data);
-  line-height: var(--text-data--line-height);
-  letter-spacing: 0;
-  font-weight: 500;
-  text-transform: none;
-}
-
-/*
-  THE QUOTED LIMITS GET A READING MEASURE, like every other block of prose on
-  this page.
-
-  They were the only running text on the site set to the full 1088px page
-  measure — three lines of 13.6px Inter at ~120 characters, where
-  app/globals.css publishes `--container-prose` (544px, ~66ch) for exactly
-  this and nine other bands already use it. So this is a typographic
-  correction that the photograph happens to reward: the limits are the largest
-  single mass of ink in the band (5,146 of its 17,199 ink pixels), and pulling
-  them off the right half of the column returns that area to the picture —
-  measured, the band's halo footprint at r=18 falls from 29.0% to 26.8%.
-
-  Costs 44px of band at 1280 and 22px at 768, all of it below the fold; the
-  three figures do not move. At 375 the measure was never binding and the
-  layout is byte-for-byte unchanged.
-*/
-.limits {
-  max-inline-size: var(--container-prose);
-}
 
 /*
   ═══════════════════════════════════════════════════════════════════════════
@@ -688,6 +532,11 @@
     collapsing URL bar cannot make the band jump.
   */
   min-block-size: 100svh;
+  /* The other half of `.inner`'s flex column — see that rule. The two
+     absolutely-positioned children (the pin and the veil) are out of flow
+     and unaffected. */
+  display: flex;
+  flex-direction: column;
 }
 
 /*

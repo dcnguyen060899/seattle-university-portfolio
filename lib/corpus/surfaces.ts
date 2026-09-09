@@ -67,7 +67,7 @@ export function formatPeriod(period: Period | null | undefined): string {
 /** A role's dates, honouring `ongoing`. */
 export const rolePeriod = (roleId: RoleId): string => formatPeriod(roleById(roleId).period)
 
-/** "Research Data Engineer, Computational Neuroscience Lab, Seattle University". */
+/** "Research Data Engineer, SU Computational Neuroscience Research Group, Seattle University". */
 export function roleHeading(roleId: RoleId): string {
   const role = roleById(roleId)
   const org = orgById(role.orgId)

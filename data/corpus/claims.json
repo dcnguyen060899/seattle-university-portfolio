@@ -1744,24 +1744,24 @@
     "id": "clm:yang-psb-submission",
     "kind": "fact",
     "subject": "rol:yang-gra",
-    "statement": "The report was condensed into a first-author manuscript, \"Separation Without Transfer: The Retrieval Encoder's Substrate, Not the VLM Decoder, Decides Whether Contrastive Fine-Tuning Transfers in Mammography Report Generation\", submitted to the Pacific Symposium on Biocomputing 2027 with Dr. Wenjing Yang as co-author. It is under review.",
-    "short": "First-author manuscript under review, PSB 2027",
+    "statement": "The report was condensed into a first-author manuscript, \"Separation Without Transfer: The Retrieval Encoder's Substrate, Not the VLM Decoder, Decides Whether Contrastive Fine-Tuning Transfers in Mammography Report Generation\", with Dr. Wenjing Yang as co-author. In September 2026 the Pacific Symposium on Biocomputing 2027 accepted it for publication in the proceedings and for oral presentation at the meeting, held 3–7 January 2027 on the Big Island of Hawaii.",
+    "short": "First-author paper accepted at PSB 2027, with an oral presentation",
     "period": {
       "start": "2026-08",
-      "end": null,
+      "end": "2026-09",
       "precision": "month"
     },
-    "status": "in-progress",
-    "tense": "present-progressive",
+    "status": "verified",
+    "tense": "past",
     "confidence": "high",
     "evidenceStrength": "research",
     "sources": [
+      "src:psb-acceptance-2026-09",
       "src:news-html",
-      "src:resume-2026-08",
       "src:psb-manuscript"
     ],
-    "verificationPath": "public/docs/news.html — August 2026 entry",
-    "verifiedOn": "2026-09-02",
+    "verificationPath": "PSB 2027 acceptance e-mail from the PSB Coordinator to the paper's authors, September 2026 (src:psb-acceptance-2026-09; Duy can supply it on request). Conference site: https://psb.stanford.edu/",
+    "verifiedOn": "2026-09-08",
     "quote": null,
     "caveats": [
       "clm:yang-psb-caveat"
@@ -1784,26 +1784,69 @@
     ],
     "asserted": true,
     "disputeId": null,
-    "lastReviewed": "2026-09-02",
-    "reviewEvery": 90,
-    "note": "status in-progress because the outcome is not decided. The statement is written so that the past-tense verbs describe the SUBMISSION (which happened) and the present tense describes the REVIEW (which is ongoing)."
+    "lastReviewed": "2026-09-08",
+    "reviewEvery": 120,
+    "note": "ACCEPTED in September 2026, for the proceedings AND an oral presentation (see clm:yang-psb-oral for the slot on its own). It is NOT published and NOT presented until the meeting of 3–7 January 2027; clm:yang-psb-caveat carries that and the 1 October 2026 camera-ready deadline. When the proceedings appear: update both records, give art:psb-manuscript its URL, and let lib/seo.ts emit the CreativeWork. The past tense describes the submission and the acceptance, both of which happened."
+  },
+  {
+    "id": "clm:yang-psb-oral",
+    "kind": "fact",
+    "subject": "rol:yang-gra",
+    "statement": "The paper was selected for oral presentation at the Pacific Symposium on Biocomputing 2027, held 3–7 January 2027 on the Big Island of Hawaii, in addition to publication in the proceedings, which are indexed in PubMed.",
+    "short": "Oral presentation at PSB 2027, January 2027",
+    "period": {
+      "start": "2026-09",
+      "end": "2026-09",
+      "precision": "month"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "research",
+    "sources": [
+      "src:psb-acceptance-2026-09"
+    ],
+    "verificationPath": "PSB 2027 acceptance e-mail from the PSB Coordinator, September 2026: 'accepted for publication in the proceedings AND oral presentation at the meeting' (src:psb-acceptance-2026-09)",
+    "verifiedOn": "2026-09-08",
+    "quote": null,
+    "caveats": [
+      "clm:yang-psb-caveat"
+    ],
+    "concepts": [
+      "cpt:research-publication",
+      "cpt:medical-ai"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:psb-manuscript"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-08",
+    "reviewEvery": 120,
+    "note": "Separate from clm:yang-psb-submission so the oral slot can be cited on its own: at PSB an oral slot is a selection above acceptance to the proceedings, and it is the line the owner wants a recruiter to see. The period is the SELECTION (September 2026), which is what the past tense describes; the talk itself is January 2027 and has not happened. Licensed for page and agent only: the résumé bullet from clm:yang-psb-submission already carries the slot, the dates and the place, and a second bullet repeated them."
   },
   {
     "id": "clm:yang-psb-caveat",
     "kind": "caveat",
     "subject": "rol:yang-gra",
-    "statement": "The manuscript is under review; it is not accepted and not published.",
-    "short": "Under review, not published",
+    "statement": "Accepted, not yet published: the camera-ready revision is due 1 October 2026 and the manuscript is not public until it is submitted; the proceedings and the oral presentation follow at the meeting in January 2027.",
+    "short": "Accepted, not yet published; camera-ready due 1 Oct 2026",
     "period": null,
     "status": "in-progress",
     "tense": "present-progressive",
     "confidence": "high",
     "evidenceStrength": "research",
     "sources": [
-      "src:news-html"
+      "src:psb-acceptance-2026-09"
     ],
-    "verificationPath": "public/docs/news.html — August 2026 entry, 'PSB 2027 · under review'",
-    "verifiedOn": "2026-09-02",
+    "verificationPath": "PSB 2027 acceptance e-mail, September 2026: camera-ready PDF due 1 October 2026 via the accepted-paper submission form (src:psb-acceptance-2026-09)",
+    "verifiedOn": "2026-09-08",
     "quote": null,
     "caveats": [],
     "concepts": [
@@ -1820,9 +1863,9 @@
     ],
     "asserted": true,
     "disputeId": null,
-    "lastReviewed": "2026-09-02",
-    "reviewEvery": 90,
-    "note": "reviewEvery 90 days: the day this becomes 'accepted' or 'rejected' is the day the copy is wrong. C11 will surface it."
+    "lastReviewed": "2026-09-08",
+    "reviewEvery": 30,
+    "note": "Dated sentence: the camera-ready deadline is 1 October 2026 and the meeting is January 2027. reviewEvery 30 so C11 flags it within a week of the deadline passing; re-cut it the day the camera-ready is submitted."
   },
   {
     "id": "clm:yang-stack",
@@ -1905,8 +1948,8 @@
     "id": "clm:fischer-role",
     "kind": "fact",
     "subject": "rol:fischer-rde",
-    "statement": "As Research Data Engineer in Prof. Brian Fischer's Computational Neuroscience Lab, Duy builds the data infrastructure for an NIH CRCNS-funded project on barn-owl sound localization — concurrent with study in spring, full-time over the summer term, and continuing into the fall 2026 quarter.",
-    "short": "Research Data Engineer — Fischer lab (ongoing)",
+    "statement": "As Research Data Engineer in Prof. Brian Fischer's Computational Neuroscience Research Group, Duy builds the data infrastructure for an NIH CRCNS-funded project on barn-owl sound localization — concurrent with study in spring, full-time over the summer term, and continuing into the fall 2026 quarter.",
+    "short": "Research Data Engineer — SU Computational Neuroscience Research Group (ongoing)",
     "period": {
       "start": "2026-03",
       "end": null,
@@ -1919,7 +1962,8 @@
     "sources": [
       "src:resume-2026-08",
       "src:news-html",
-      "src:owner-corrections-2026-09-02"
+      "src:owner-corrections-2026-09-02",
+      "src:su-cns-web"
     ],
     "verificationPath": "git show 234cbcd:docs/resume_content.html — Experience, second entry (lines 281-292); ongoing status from Rebuild brief Addendum A.5",
     "verifiedOn": "2026-09-02",
@@ -1945,7 +1989,7 @@
     ],
     "asserted": true,
     "disputeId": null,
-    "lastReviewed": "2026-09-02",
+    "lastReviewed": "2026-09-09",
     "reviewEvery": 90,
     "note": "ONGOING, present tense (Addendum A.5). The resume closes this role in July 2026; that end date is stale and no surface may print it."
   },
@@ -3054,6 +3098,48 @@
     "lastReviewed": "2026-09-02",
     "reviewEvery": 365,
     "note": "REWRITTEN from the legacy 'three courses' phrasing, which named no course and could not be checked. It now names the one course that IS evidenced, with dated code, and drops the unverifiable count."
+  },
+  {
+    "id": "clm:cause-su-interview",
+    "kind": "fact",
+    "subject": "art:cause-story",
+    "statement": "After the award, the marketing team for Graduate Enrollment at Seattle University Graduate Studies asked to interview Duy for a story on the win, and the interview took place in August 2026.",
+    "short": "Interviewed by Seattle University Graduate Studies for a story on the win",
+    "period": {
+      "start": "2026-08",
+      "end": "2026-08",
+      "precision": "month"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "personal-project",
+    "sources": [
+      "src:su-gradstudies-interview-2026-08",
+      "src:owner-update-2026-09-08"
+    ],
+    "verificationPath": "E-mail from the Marketing Manager for Graduate Enrollment, Seattle University Graduate Studies, August 2026, requesting an interview about the Data Scrollytelling award (src:su-gradstudies-interview-2026-08); that it took place is the owner's statement of 2026-09-08 (src:owner-update-2026-09-08)",
+    "verifiedOn": "2026-09-08",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:data-viz",
+      "cpt:ownership"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:cause-story"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-09-08",
+    "reviewEvery": 180,
+    "note": "The interviewer is NOT named in any record or on any surface. The story's publication is NOT asserted: when it has a URL, add an artifact record and link it from the CAUSE item. reviewEvery 180 so the record is revisited once the story is out."
   },
   {
     "id": "clm:econ-essay",

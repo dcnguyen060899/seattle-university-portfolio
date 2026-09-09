@@ -23,9 +23,11 @@
  *
  * ── WHAT IS DELIBERATELY OMITTED FROM THE PERSON NODE ─────────────────────
  *
- *   · `award` for anything under review. The PSB manuscript is submitted, not
- *     accepted; `clm:yang-psb-caveat` says so, and a `CreativeWork` node with
- *     no publication would read to an aggregator as a published paper.
+ *   · `award` or `CreativeWork` for the PSB manuscript. It is accepted (for the
+ *     proceedings and an oral presentation), not yet published;
+ *     `clm:yang-psb-caveat` says so, and a `CreativeWork` node with no
+ *     publication would read to an aggregator as a published paper. Emit it
+ *     the day the proceedings appear.
  *   · any `Occupation` / `seeks` node built from the availability claim.
  *     Availability is a date-bounded fact that will be wrong in a year, and
  *     schema.org has no expiry.
@@ -150,9 +152,9 @@ export function personSchema(): Record<string, unknown> {
     // clm:cause-win. An award that has been decided, unlike the manuscript.
     award: claimText('clm:cause-win', 'jsonld'),
     // clm:yang-psb-submission is deliberately NOT emitted as a CreativeWork —
-    // clm:yang-psb-caveat records that it is under review, not published, and
-    // there is no schema.org shape that carries “submitted” without implying
-    // more than that.
+    // clm:yang-psb-caveat records that it is accepted, not yet published, and
+    // there is no schema.org shape that carries “accepted” without implying
+    // more than that. Add it when the proceedings are out.
     knowsAbout: assertedSkills().map((skill) => skill.label),
     sameAs: profiles,
   };

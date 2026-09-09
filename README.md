@@ -75,13 +75,14 @@ for exactly this.
 ### `public/docs/` is not byte-frozen — it is maintained under an edit allowlist
 
 Every file under `public/docs/` is a URL that is on a résumé or on LinkedIn.
-Exactly three files may be edited:
+Exactly four files may be edited:
 
 | file | why |
 |---|---|
 | `index.html` | the chatbot widget markup and its `js/chat.js` script tag were stripped — `chat.js` is deleted, and a tag pointing at a deleted file is a console 404 for every visitor |
 | `js/mcp-tools.js` | the stale availability block. Availability is Summer 2027 |
 | `resume_content.html` | generated from the corpus by `npm run gen:resume` |
+| `Resume.pdf` | compiled from the owner's LaTeX résumé (outside this repo) and replaced whole on his instruction; still size-asserted by `verify-urls.sh` (added 2026-09-09) |
 
 Everything else is size-asserted by `scripts/verify-urls.sh` and diff-guarded by
 `.github/workflows/ci.yml`. Adding a fourth file to that list is a decision about

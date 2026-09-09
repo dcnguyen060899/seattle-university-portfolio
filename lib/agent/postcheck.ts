@@ -90,7 +90,7 @@ export function splitUnits(text: string): string[] {
  * A requirement's framing note, reduced to the part a RECRUITER should read.
  *
  * Some of those notes end with an instruction addressed to whoever is writing
- * the brief — "Say 'under review', never 'published'." That instruction is
+ * the brief — until September 2026 "Say 'under review', never 'published'", and since the acceptance "say 'accepted', never 'published'". That instruction is
  * correct and it is not a sentence to show a hiring manager, who did not ask
  * for a style guide. So an imperative sentence aimed at the writer is dropped
  * and the substantive half is kept.
@@ -132,8 +132,35 @@ const FORBIDDEN_PATTERNS: ReadonlyArray<{ pattern: RegExp; label: string }> = Ob
     label: 'years of experience',
   },
   {
-    pattern: /\b(?:published|accepted|presented|appeared)\b[^.]{0,80}\b(?:psb|pacific symposium|biocomputing)\b/i,
+    // The PSB 2027 paper was ACCEPTED in September 2026 — for the proceedings
+    // and for an oral presentation — and it is not PUBLISHED and not PRESENTED
+    // until the meeting in January 2027. "accepted" is therefore allowed here;
+    // the three verbs that overstate it are not.
+    //
+    // NEGATION-AWARE (2026-09-08 review): the record's own framing is
+    // "accepted, not yet published", and the Yang work is a replication of
+    // "a published pipeline" — both true, both naming the venue in the same
+    // breath. A lookbehind spares "not (yet) published/presented" and the
+    // article/adverb cases ("a published", "previously presented"); "was
+    // published at PSB", "presented the work at the Pacific Symposium" and
+    // "gave a talk at PSB" are still refused.
+    pattern:
+      /(?<!\bnot\s)(?<!\bnot yet\s)(?<!\b(?:a|the|an|previously|already)\s)\b(?:published|presented|appeared|gave (?:an? |the )?(?:oral )?(?:presentation|talk))\b[^.]{0,80}\b(?:psb|pacific symposium|biocomputing)\b/i,
     label: 'publication status',
+  },
+  {
+    // The PRE-acceptance status. It was true until September 2026 and it is
+    // the phrase a model that learned this site's older copy is likeliest to
+    // repeat, so it is refused as a specific falsehood rather than left to
+    // the status guard below, which only ADDS the current status.
+    //
+    // Every phrasing of "not accepted yet" a model that learned the older copy
+    // reaches for — including "has not been accepted", which contains the
+    // word "accepted" and would otherwise satisfy the status guard below and
+    // ship uncaveated. scanText drops the unit before that guard ever sees it.
+    pattern:
+      /\b(?:under review|under consideration|not (?:yet |been |yet been |formally )?accepted|awaiting (?:acceptance|a decision)|pending (?:acceptance|a decision|review))\b[^.]{0,80}\b(?:psb|pacific symposium|biocomputing|manuscript)\b|\b(?:psb|pacific symposium|biocomputing|manuscript)\b[^.]{0,80}\b(?:under review|under consideration|not (?:yet |been |yet been |formally )?accepted|awaiting (?:acceptance|a decision)|pending (?:acceptance|a decision|review))\b/i,
+    label: 'stale publication status',
   },
   {
     pattern: /\b(?:perfect|ideal|excellent|outstanding|exceptional)\s+(?:fit|match|candidate)\b/i,
@@ -427,42 +454,49 @@ function enforceTense(text: string, citations: readonly Citation[], g: Guardrail
   return changed ? out.join(' ') : text
 }
 
-const UNDER_REVIEW_TOPIC = /\b(?:psb|pacific symposium|biocomputing|manuscript)\b/i
+const PUBLICATION_TOPIC = /\b(?:psb|pacific symposium|biocomputing|manuscript)\b/i
 
 /**
- * A field that mentions the manuscript and nowhere says "under review" has the
- * corpus record's own sentence APPENDED, which does say it.
+ * A field that mentions the manuscript and nowhere says "accepted" has the
+ * corpus record's own sentence APPENDED, which does say it — and says, in the
+ * same breath, that it is not yet published.
  *
  * Appending, not replacing, and checked over the WHOLE field rather than
  * sentence by sentence — for one reason worth writing down: a corpus statement
  * quoted correctly often carries the status in its LAST sentence, so a
  * per-sentence rule would "repair" the site's own wording into something it did
- * not say. The falsehood this guards against — "published at PSB" — is already
- * a discard-free redaction under FORBIDDEN_PATTERNS above. Two gates, one for
- * the false claim and one for the missing status, and neither mangles a quote.
+ * not say. The falsehoods this does not guard against — "published at PSB",
+ * "under review at PSB" — are already discard-free redactions under
+ * FORBIDDEN_PATTERNS above. Two gates, one for the false claim and one for the
+ * missing status, and neither mangles a quote.
+ *
+ * Until September 2026 this guard enforced "under review". The status word it
+ * enforces is read from the record, not typed here, so the next change — the
+ * proceedings appearing in January 2027 — is a corpus edit and a change to the
+ * one regex below, not a rewrite.
  */
-function enforceUnderReview(text: string, g: Guardrails): string {
-  if (!UNDER_REVIEW_TOPIC.test(text)) return text
-  if (/under review/i.test(text)) return text
-  const canonical = findUnderReviewRecord()
+function enforcePublicationStatus(text: string, g: Guardrails): string {
+  if (!PUBLICATION_TOPIC.test(text)) return text
+  if (/\baccepted\b/i.test(text)) return text
+  const canonical = findPublicationStatusRecord()
   if (!canonical) return text
   g.claims_redacted += 1
   return `${text.trim()} ${canonical}`.trim()
 }
 
-let underReviewCache: string | null | undefined
-function findUnderReviewRecord(): string | null {
-  if (underReviewCache !== undefined) return underReviewCache
+let publicationStatusCache: string | null | undefined
+function findPublicationStatusRecord(): string | null {
+  if (publicationStatusCache !== undefined) return publicationStatusCache
   // The caveat record is the short one and is the sentence a reader needs.
   const candidates = ['clm:yang-psb-caveat', 'clm:yang-psb-submission']
   for (const id of candidates) {
     const record = recordById(id)
-    if (record && /under review/i.test(record.statement)) {
-      underReviewCache = record.statement
-      return underReviewCache
+    if (record && /\baccepted\b/i.test(record.statement)) {
+      publicationStatusCache = record.statement
+      return publicationStatusCache
     }
   }
-  underReviewCache = null
+  publicationStatusCache = null
   return null
 }
 
@@ -513,7 +547,7 @@ export function factCheckBrief(raw: unknown, ctx: FactCheckContext): CheckedBrie
 
     // 3. tense and publication status, repaired rather than deleted.
     rationale = enforceTense(rationale, kept, g)
-    rationale = enforceUnderReview(rationale, g)
+    rationale = enforcePublicationStatus(rationale, g)
 
     // 4. the verdict.
     let verdict: Verdict = req.verdict
@@ -525,7 +559,7 @@ export function factCheckBrief(raw: unknown, ctx: FactCheckContext): CheckedBrie
     // A framing note on this requirement means a human already decided the
     // evidence reads stronger than it is. "Peer-reviewed publication record" is
     // the case that matters: the retrieval is strong, the manuscript is real,
-    // and it is under review rather than published — so a direct match would be
+    // and it is accepted rather than published — so a direct match would be
     // the single most damaging overclaim this brief could make. The note caps
     // the verdict at adjacent, and the note itself is appended as the caveat.
     if (fallback && VERDICT_RANK[ceiling] > VERDICT_RANK.adjacent) {
@@ -564,7 +598,7 @@ export function factCheckBrief(raw: unknown, ctx: FactCheckContext): CheckedBrie
     if (evidence.length) {
       caveat = restoreCaveats({ ...req, evidence, caveat }, g)
     }
-    caveat = enforceUnderReview(caveat, g)
+    caveat = enforcePublicationStatus(caveat, g)
 
     requirements.push({
       requirement: cap(requirementText, CAPS.requirement),
@@ -605,7 +639,7 @@ export function factCheckBrief(raw: unknown, ctx: FactCheckContext): CheckedBrie
 
   // gaps_summary is non-empty whenever anything is less than direct. A brief
   // with a gap and no sentence about it is the shape of a brief that hides one.
-  let gapsSummary = enforceUnderReview(gapsScan.text === WITHHELD ? '' : gapsScan.text, g)
+  let gapsSummary = enforcePublicationStatus(gapsScan.text === WITHHELD ? '' : gapsScan.text, g)
   if (!gapsSummary && coverage.direct < requirements.length) {
     gapsSummary = deterministicGapsSummary(requirements)
   }
@@ -616,7 +650,7 @@ export function factCheckBrief(raw: unknown, ctx: FactCheckContext): CheckedBrie
     role_label: cap(scanText(input.role_label).text || ctx.roleLabel, CAPS.role_label),
     jd_source: ctx.jdSource,
     headline: cap(
-      enforceUnderReview(headlineScan.text, g) || deterministicHeadline(coverage, ctx.roleLabel),
+      enforcePublicationStatus(headlineScan.text, g) || deterministicHeadline(coverage, ctx.roleLabel),
       CAPS.headline,
     ),
     requirements,
@@ -624,7 +658,7 @@ export function factCheckBrief(raw: unknown, ctx: FactCheckContext): CheckedBrie
     gaps_summary: cap(gapsSummary, CAPS.gaps_summary),
     not_claimed: notClaimed,
     closing: cap(
-      enforceUnderReview(closingScan.text === WITHHELD ? '' : closingScan.text, g) ||
+      enforcePublicationStatus(closingScan.text === WITHHELD ? '' : closingScan.text, g) ||
         'Every claim above links to the record it came from.',
       CAPS.closing,
     ),
@@ -736,7 +770,7 @@ export function factCheckAnswer(raw: unknown): CheckedAnswer {
   g.claims_redacted += scan.droppedUnits
 
   let text = enforceTense(scan.text, kept, g)
-  text = enforceUnderReview(text, g)
+  text = enforcePublicationStatus(text, g)
 
   // A refusal carries no citations; an answer that lost all of its citations
   // becomes an honest "not on this site" rather than an uncited assertion.

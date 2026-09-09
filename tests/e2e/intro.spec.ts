@@ -531,11 +531,11 @@ test.describe('§1 the page without an intro', () => {
 
     expect(await introIsUp(page)).toBe(false)
 
-    // The three measured figures — the page's whole argument — are present.
+    // The hero's copy — the name, the statement, the action — is present.
     await expect(page.getByRole('heading', { name: /Duy Nguyen/i }).first()).toBeVisible()
     const body = await page.locator('body').innerText()
-    expect(body).toContain('0.585')
-    expect(body).toContain('0.487')
+    expect(body).toContain('I find out whether')
+    expect(body).toContain('Ask about a role')
 
     // --focus resolves SHARP. `var(--focus, 0)` is the CSS default, so an
     // unwritten property and a written 0 are the same picture.
@@ -689,7 +689,7 @@ test.describe('§3 no JavaScript', () => {
     ).toBeNull()
 
     const body = await page.locator('body').innerText()
-    expect(body).toContain('0.585')
+    expect(body).toContain('I find out whether')
     await expect(page.getByRole('heading', { name: /Duy Nguyen/i }).first()).toBeVisible()
   })
 })
@@ -773,8 +773,9 @@ test.describe('§4 inertness and skip', () => {
     })
     expect(onTop, 'a dissolved intro must not intercept the pointer').not.toBe('INTRO')
 
-    // And the nav beneath is genuinely clickable again.
-    const link = page.getByRole('link', { name: /research/i }).first()
+    // And the nav beneath is genuinely clickable again. (The first section
+    // link reads "Highlights" since 2026-09-08; it was "Research".)
+    const link = page.getByRole('link', { name: /highlights/i }).first()
     await expect(link).toBeVisible()
     await link.click({ timeout: 5000 })
 
@@ -998,15 +999,15 @@ test.describe('§5 the intro plays over the BLURRED photograph, not over black',
    ════════════════════════════════════════════════════════════════════════════ */
 
 test.describe('§6 the hero must not regress', () => {
-  test('the three measured figures are above the fold at 1280x800', async ({ page }) => {
+  test('the name, the statement and the primary action are above the fold at 1280x800', async ({ page }) => {
     await seedBypass(page)
     await page.setViewportSize({ width: 1280, height: 800 })
     await page.goto('/')
     await page.waitForLoadState('load')
 
-    // MEASURED at baseline: 0.585 at y=433, P@1 0.487 at y=527, and the
-    // Barn-Owl counts at y=655 — all inside 800.
-    const figures = ['0.585', '0.487', '30,147']
+    // Since 2026-09-08 the hero carries no figures; the first screen is the
+    // name, the statement and the action, and all three sit inside 800.
+    const figures = ['Duy Nguyen', 'I find out whether', 'Ask about a role']
     for (const figure of figures) {
       const box = await page
         .locator(`text=${figure}`)
@@ -1048,7 +1049,7 @@ test.describe('§6 the hero must not regress', () => {
     const heading = page.getByRole('heading', { name: /Duy Nguyen/i }).first()
     await expect(heading).toHaveCount(1, { timeout: 5000 })
     const text = await page.locator('body').innerText()
-    expect(text).toContain('0.585')
+    expect(text).toContain('I find out whether')
   })
 
   test('LCP stays close to the measured baseline', async ({ page }) => {

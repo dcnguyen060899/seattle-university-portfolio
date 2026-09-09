@@ -79,7 +79,7 @@ export const CORPUS_VERSION: string = (() => {
 /**
  * Fixed entries: the owner's own public handles. Everything else comes from the
  * corpus's artifacts, and ONLY from artifacts marked `public` — a manuscript
- * under review has no URL and must not acquire one here.
+ * that is not yet public has no URL and must not acquire one here.
  */
 const FIXED_URLS: readonly string[] = Object.freeze([
   'https://github.com/dcnguyen060899',

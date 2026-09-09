@@ -408,7 +408,9 @@ describe('the projection the agent consumes', () => {
   it('describes a non-public artifact instead of linking to it', () => {
     const record = toEvidenceRecord(claimById('clm:yang-psb-submission'))
     const manuscript = record.links.find((l) => l.id === 'art:psb-manuscript')!
-    expect(manuscript.access).toBe('under-review')
+    // on-request since the September 2026 acceptance; it stays unlinked until
+    // the proceedings appear.
+    expect(manuscript.access).toBe('on-request')
     expect(manuscript.url).toBeNull()
   })
 })

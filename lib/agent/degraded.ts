@@ -116,8 +116,8 @@ function rationaleFor(result: RequirementResult): string {
   // The framing note goes in EVERY time, not only when coverage is weak. It is
   // the sentence a human wrote for exactly this row, and the one case that
   // proves the rule is a publication record: retrieval finds a real first-author
-  // manuscript, and the note is the half that says it is under review rather
-  // than accepted. Dropping it because the retrieval looked strong is how an
+  // manuscript, and the note is the half that says it is accepted rather
+  // than published. Dropping it because the retrieval looked strong is how an
   // honest system produces a dishonest sentence.
   const note = framingNote(result.fallback)
   if (note) sentences.push(note)

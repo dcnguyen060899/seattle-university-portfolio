@@ -1,49 +1,48 @@
 /**
  * app/page.tsx — the portfolio.
  *
- * A Server Component that composes nine bands and nothing else. All the copy,
+ * A Server Component that composes four bands and nothing else. All the copy,
  * and every reach into the evidence store, lives in `components/site/*`; this
  * file is the running order and the argument it makes.
  *
- * ── THE ORDER, AND WHY IT IS THIS ORDER ───────────────────────────────────
+ * ── THE ORDER, AND WHY IT IS THIS ORDER (2026-09-08) ──────────────────────
  *
- *  1  hero          ink      the three measured figures, and the honesty rule
- *  2  research      paper    two positions at once — signal #1, the spine
+ *  1  hero          ink      the name, the statement, three actions
+ *  2  highlights    paper    the three things this year — the whole argument
  *  3  fit           paper    the recruiter agent (Addendum B, R-7: paper)
- *  4  production    paper    the same work, one step further on. In progress.
- *  5  award         ink      blind-judged win — signal #2, and the one loud band
- *  6  coursework    paper    the curriculum, and CPSC 5330 — signal #3
- *  7  full-stack    paper    MAVTERRAS — signal #4, the closer
- *  8  selected      paper    older evidence, compressed
- *  9  contact       paper    availability, and four ways to reach him
+ *  4  contact       paper    availability, and three ways to reach him
  *
- * RESEARCH BEFORE THE AGENT. The agent is a delivery mechanism, not a signal:
- * putting it above the research band makes a recruiter’s first interaction a
- * wait before they have read any human-written evidence. Putting it directly
- * after means the spine has been read and the reader now knows what to ask.
+ * FOUR BANDS, NOT NINE. Until 2026-09-08 this file mounted nine: research,
+ * fit, production, award, coursework, full-stack, selected work, contact,
+ * behind a hero carrying three evidence blocks and their caveats. The owner's
+ * verdict — "no recruiter would actually read that much words… just highlight
+ * three main things" — is the running order above. The first screen is who;
+ * the second is the three results of 2026; the third is the thing a recruiter
+ * can DO with the page; the fourth is how to reach him.
  *
- * THE AWARD IS BAND 5, NOT BAND 2. It is the most legible credential on the
- * page and it would win a race to the top of it — but a blind-judged
- * scrollytelling prize read before the research reframes the whole page as a
- * design portfolio. It lands after the reader knows what the research is.
+ * THE OTHER BANDS ARE UNMOUNTED, NOT DELETED. components/site/research-band,
+ * production-band, award-band, coursework-band, mavterras-band and
+ * selected-work-band are still in the tree, still pass the corpus gates
+ * (C7/C10 scan every file under components/), and any one of them is an
+ * import and a line here away from returning. They are kept because each one
+ * argues something the highlights compress — the through-line, the full-stack
+ * thesis, the coursework arc — and because the month-by-month record they
+ * link to is still served and linked from the footer.
+ *
+ * RESEARCH BEFORE THE AGENT, STILL. The agent is a delivery mechanism, not a
+ * signal: a recruiter's first interaction should be reading three lines of
+ * human-written evidence, not waiting on a model. The highlights band is
+ * those three lines.
  *
  * ── THE GROUND BUDGET, SPENT ──────────────────────────────────────────────
  *
- * Two `ink` bands (hero, award) and NO `crimson` band. The budget allows one
- * crimson ground and this page declines it: a full-bleed #AA0000 section reads
- * as collegiate athletics, which is the opposite of what the owner asked for.
- * The Seattle colourway is carried instead by the accent — every eyebrow,
- * every threshold rule, every hairline, the focus ring — which is 7.43:1 on
- * paper and present on every band. The nav and footer declare `paper`
- * explicitly so nothing in the page chrome inherits a ground it did not paint.
- *
- * ── WHAT IS NOT ON THIS PAGE, AND WHERE IT WENT ───────────────────────────
- *
- * The ten-entry news list → /docs/news.html, linked from the research band and
- * from the footer. The algorithm tutor → the footer; it is a second AI
- * evaluation system on a page whose owner decided there would be one agent and
- * no second demo. Percentage skill bars, a metric-card band, a portrait
- * flip-card and the admin-panel link → deleted outright.
+ * One `ink` band (the hero) and NO `crimson` band. The award band used to be
+ * the second ink band; with the win now one of three records on paper, the
+ * page has one held breath, at the top, and three paper bands after it. The
+ * Seattle colourway is carried by the accent — every eyebrow, every hairline,
+ * the focus ring — which is 7.43:1 on paper. The nav and footer declare
+ * `paper` explicitly so nothing in the page chrome inherits a ground it did
+ * not paint.
  *
  * ── WHERE THE NUMBERS COME FROM ───────────────────────────────────────────
  *
@@ -55,17 +54,12 @@
  * licenses. The third is the one that matters, because it reads what shipped.
  */
 
-import { AwardBand } from '@/components/site/award-band';
 import { ContactBand } from '@/components/site/contact-band';
-import { CourseworkBand } from '@/components/site/coursework-band';
 import { FitBand } from '@/components/site/fit-band';
 import { Hero } from '@/components/site/hero';
+import { HighlightsBand } from '@/components/site/highlights-band';
 import { Intro, LogoReveal } from '@/components/site/intro';
 import { introLogo } from '@/components/site/intro/source';
-import { MavterrasBand } from '@/components/site/mavterras-band';
-import { ProductionBand } from '@/components/site/production-band';
-import { ResearchBand } from '@/components/site/research-band';
-import { SelectedWorkBand } from '@/components/site/selected-work-band';
 
 /**
  * ── THE INTRO, AND WHY IT IS MOUNTED HERE AND NOT IN THE LAYOUT ───────────
@@ -82,7 +76,7 @@ import { SelectedWorkBand } from '@/components/site/selected-work-band';
  *     brand reveal. The gate script is inert off "/" as well; this is the
  *     second, structural half of the same guarantee.
  *  3. Last in document order so every word of the hero — the LCP copy, the
- *     three measured figures — is parsed and painted before the overlay's
+ *     name and the statement — is parsed and painted before the overlay's
  *     markup is even reached. The intro is an overlay on a page that has
  *     already rendered; it is never the reason the hero is late.
  *
@@ -96,13 +90,8 @@ export default function HomePage() {
   return (
     <>
       <Hero />
-      <ResearchBand />
+      <HighlightsBand />
       <FitBand />
-      <ProductionBand />
-      <AwardBand />
-      <CourseworkBand />
-      <MavterrasBand />
-      <SelectedWorkBand />
       <ContactBand />
       {logo !== null && (
         <Intro>

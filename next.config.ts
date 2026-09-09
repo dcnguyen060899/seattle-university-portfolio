@@ -84,15 +84,17 @@ const nextConfig: NextConfig = {
       { source: '/docs/index_gpa_analysis', destination: '/', statusCode: 301 },
 
       // A fragment in `destination` is passed through to Location verbatim.
-      // Measured: Location: /#research.
+      // Measured: Location: /#research. Since 2026-09-08 the research lives in
+      // the highlights band (#highlights); the reader clicked a link about
+      // research and still lands on it.
       {
         source: '/docs/index_independent_research.html',
-        destination: '/#research',
+        destination: '/#highlights',
         statusCode: 301,
       },
       {
         source: '/docs/index_independent_research',
-        destination: '/#research',
+        destination: '/#highlights',
         statusCode: 301,
       },
     ]

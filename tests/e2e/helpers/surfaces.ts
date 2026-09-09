@@ -94,8 +94,8 @@ export const DELETED_PAGE_REDIRECTS = [
   { from: '/docs/index_portfolio', to: '/', status: 308 },
   { from: '/docs/index_gpa_analysis.html', to: '/', status: 301 },
   { from: '/docs/index_gpa_analysis', to: '/', status: 301 },
-  { from: '/docs/index_independent_research.html', to: '/#research', status: 301 },
-  { from: '/docs/index_independent_research', to: '/#research', status: 301 },
+  { from: '/docs/index_independent_research.html', to: '/#highlights', status: 301 },
+  { from: '/docs/index_independent_research', to: '/#highlights', status: 301 },
 ] as const
 
 /**

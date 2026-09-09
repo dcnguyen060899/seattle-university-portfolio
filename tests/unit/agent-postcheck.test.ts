@@ -343,19 +343,76 @@ describe('the tense guard', () => {
   })
 })
 
-describe('the under-review guard', () => {
+describe('the publication-status guard', () => {
   it('appends the status to a field that names the manuscript without it', () => {
     const result = factCheckBrief(
       brief({ closing: 'The manuscript went to the Pacific Symposium.' }),
       CTX,
     )
-    expect(result.brief.closing.toLowerCase()).toContain('under review')
+    const closing = result.brief.closing.toLowerCase()
+    expect(closing).toContain('accepted')
+    // The record's own sentence carries the half that keeps "accepted" honest.
+    expect(closing).toContain('not yet published')
   })
 
   it('leaves a field alone when it already carries the status', () => {
-    const before = 'The manuscript is under review at the Pacific Symposium.'
+    const before = 'The manuscript was accepted at the Pacific Symposium, with an oral presentation.'
     const result = factCheckBrief(brief({ closing: before }), CTX)
     expect(result.brief.closing).toBe(before)
+  })
+
+  it('refuses the pre-acceptance status, which was true until September 2026', () => {
+    const result = factCheckBrief(
+      brief({ closing: 'The manuscript is under review at the Pacific Symposium.' }),
+      CTX,
+    )
+    expect(result.brief.closing.toLowerCase()).not.toContain('under review')
+    expect(result.guardrails.claims_redacted).toBeGreaterThan(0)
+  })
+
+  it('refuses every other phrasing of "not accepted yet" — including the one that contains "accepted"', () => {
+    for (const closing of [
+      'The manuscript has not been accepted at PSB yet.',
+      'The paper is not yet accepted at PSB.',
+      'The paper is awaiting acceptance at the Pacific Symposium.',
+      'It is still under consideration at PSB.',
+      'The manuscript is pending a decision.',
+    ]) {
+      const result = factCheckBrief(brief({ closing }), CTX)
+      // The stale unit is dropped whole; once nothing in the field names the
+      // manuscript there is no status to append, and the deterministic
+      // closing takes its place. Redacted, not rephrased.
+      expect(result.brief.closing, closing).not.toMatch(
+        /not been accepted|not yet accepted|awaiting acceptance|under consideration|pending a decision/i,
+      )
+      expect(result.guardrails.claims_redacted, closing).toBeGreaterThan(0)
+    }
+  })
+
+  it("keeps the record's own \"not yet published\" beside the venue, and an honest \"a published pipeline\"", () => {
+    for (const before of [
+      'Accepted, not yet published, at the Pacific Symposium on Biocomputing 2027.',
+      'His replication of a published pipeline was accepted at the Pacific Symposium on Biocomputing 2027.',
+    ]) {
+      const result = factCheckBrief(brief({ closing: before }), CTX)
+      expect(result.brief.closing).toBe(before)
+      expect(result.guardrails.claims_redacted).toBe(0)
+    }
+  })
+
+  it('refuses a talk that has not been given', () => {
+    const result = factCheckBrief(brief({ closing: 'He gave an oral presentation at PSB 2027.' }), CTX)
+    expect(result.brief.closing.toLowerCase()).not.toContain('gave')
+  })
+
+  it('still refuses "published" and "presented" — the meeting is in January 2027', () => {
+    for (const closing of [
+      'The paper was published at PSB 2027.',
+      'He presented the work at the Pacific Symposium on Biocomputing.',
+    ]) {
+      const result = factCheckBrief(brief({ closing }), CTX)
+      expect(result.brief.closing.toLowerCase()).not.toMatch(/\b(?:published|presented)\b/)
+    }
   })
 })
 

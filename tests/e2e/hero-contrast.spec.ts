@@ -62,9 +62,10 @@ import { decodePng, describePatch, sampleRects, type PatchStats, type Rect } fro
  * 2. NON-TEXT (borders, rules) — `shoulder >= min(3, baseline * 0.85)`, where
  *    `baseline` is what the same colour measures over the FLAT ink ground.
  *    One expression carrying both intents:
- *      · a graphical object that carries meaning — the `<Threshold>` rule at
- *        `--fg-accent`, 5.68:1 on ink — has to clear the real 1.4.11 minimum
- *        of 3:1 over the photograph.
+ *      · a graphical object that carries meaning — since 2026-09-08 the
+ *        `.threshold-rule` stub above the disclosure, the band's block mark
+ *        in `--rule` (which this band resolves to `--fg`) — has to clear the
+ *        real 1.4.11 minimum of 3:1 over the photograph.
  *      · `--edge`, the decorative hairline, measures 1.37:1 on ink and
  *        `globals.css` waives 1.4.11 for it with a written argument (the
  *        records it separates are also separated by space and by type
@@ -187,63 +188,35 @@ interface RosterEntry {
   optional?: boolean
 }
 
+/*
+  RE-ROSTERED 2026-09-08, when the band was cut to the name, the statement,
+  the actions and the picture's one line. The Threshold, the two readouts and
+  the quoted <Limit> lines moved to components/site/highlights-band.tsx, a
+  paper band with no photograph behind it, so the entries that named them
+  named elements the hero can no longer produce. The AI-disclosure line is
+  still here — it is a property of the picture and stays with it — and it is
+  now the smallest muted run in the band, which makes it the binding case
+  this roster exists to keep looking at.
+*/
 const ROSTER: RosterEntry[] = [
   {
-    id: 'eyebrow',
-    what: '11px --fg-accent eyebrow — the historically binding case in this band',
-    match: /seattle,\s*washington/i,
+    id: 'programme',
+    what: 'the programme line above the name — the smallest body-face run at the top of the band',
+    match: /seattle university/i,
   },
   { id: 'h1', what: 'the h1', match: /^duy nguyen$/i },
   {
     id: 'statement',
     what: 'the display statement',
-    match: /i design experiments/i,
+    match: /i find out whether/i,
   },
-  {
-    id: 'threshold-cleared',
-    what: "the Threshold's cleared value",
-    match: /the only arm of/i,
-  },
-  {
-    id: 'threshold-floor',
-    what: "the Threshold's floor line",
-    match: /held-out majority-class retrieval floor/i,
-  },
-  {
-    id: 'threshold-value',
-    what: "the Threshold's P@1 value",
-    match: /p@1/i,
-  },
-  {
-    id: 'readout-award',
-    what: 'the award Readout label',
-    match: /student data scrollytelling contest/i,
-  },
-  {
-    id: 'readout-db',
-    what: 'the barn-owl database Readout label',
-    match: /queryable database for the barn-owl lab/i,
-  },
-  /*
-    WAS `thesis`, matching /every figure on this page is licensed/. That
-    sentence is no longer in this band — it is rendered by
-    components/site/research-band.tsx, a different band with a different
-    ground — so the entry named an element the hero cannot produce and the
-    roster check failed at every sampled viewport for a copy move, not a
-    contrast defect. Verified against the live band's text runs (2026-09-03,
-    1280x800): 21 runs, none matching the old pattern.
-
-    It is replaced rather than deleted, and by the one text-bearing thing in
-    this band the roster had never named: the AI-disclosure line. It is
-    foreground copy over the photograph like everything else here, it is the
-    line hero-photo.spec.ts requires to render whenever the picture does, and
-    until now nothing asserted that the CONTRAST sampler was still reaching
-    it. Naming it makes this gate strictly stronger than the one that shipped.
-  */
   {
     id: 'ai-disclosure',
-    what: 'the AI-disclosure line under the photograph',
+    what: 'the AI-disclosure line at the foot of the band',
     match: /ai-generated composite/i,
+    // Renders only once a generated photograph has landed; with no picture
+    // there is nothing to disclose and the band carries no such line.
+    optional: !photoLanded,
   },
   {
     id: 'cta-primary',
@@ -257,15 +230,6 @@ const ROSTER: RosterEntry[] = [
   },
   { id: 'evidence-link', what: 'the GitHub evidence link', match: /github/i },
 ]
-
-/**
- * The <Limit> block. Its lines come from the corpus at runtime, so matching
- * them by literal text would be matching a copy deck this file does not own.
- * They are asserted as a GROUP instead: at least two limits always, and a
- * third — the AI-disclosure line — once a photograph has landed, because that
- * line exists only when there is a generated image to disclose.
- */
-const LIMIT_LINES_MINIMUM = photoLanded ? 3 : 2
 
 /* ════════════════════════════════════════════════════════════════════════════
    axe — the half of the problem a scanner CAN see
@@ -753,6 +717,37 @@ async function sampleState(
   viewportWidth: number,
 ): Promise<Map<string, Measurement>> {
   const targets = await collectTargets(page)
+
+  /*
+    THE FIXED NAV IS CHROME, NOT BACKDROP (2026-09-08). At a scroll stop that
+    puts a hero line's top edge under the bar, the neutralised screenshot
+    still carries the bar's own glyphs and monogram — the nav is outside #top
+    and keeps its ink — and the sampler read the DN mark's white stroke as a
+    pixel "behind" the disclosure line at 375 (2.24:1 against a line the
+    reader cannot see under the bar at that scroll position anyway). The bar
+    has its own gate (scripts/check-nav-contrast.mjs, tests/e2e/nav.spec.ts);
+    this one measures the pixels the HERO paints under its text. So a rect
+    the bar occludes is dropped from this state, the same way a partially
+    visible rect is. Coverage is not lost: the stops overlap by a fifth of the
+    viewport and the bar is shorter than that at every width, so every line
+    is fully clear of it at some other stop, and the ROSTER check still fails
+    the run if a named line was never sampled anywhere.
+  */
+  const chrome = await page.evaluate(() => {
+    const nav = document.getElementById('site-nav')
+    if (!nav) return null
+    const position = getComputedStyle(nav).position
+    if (position !== 'fixed' && position !== 'sticky') return null
+    const r = nav.getBoundingClientRect()
+    return { x: r.x, y: r.y, width: r.width, height: r.height }
+  })
+  const underChrome = (rect: { x: number; y: number; width: number; height: number }) =>
+    chrome !== null &&
+    rect.x < chrome.x + chrome.width &&
+    rect.x + rect.width > chrome.x &&
+    rect.y < chrome.y + chrome.height &&
+    rect.y + rect.height > chrome.y
+
   await neutraliseHeroForeground(page)
   const shot = await page.screenshot()
   await restoreHeroForeground(page)
@@ -769,7 +764,8 @@ async function sampleState(
         rect.y >= 0 &&
         (rect.y + rect.height) * scale <= image.height &&
         rect.x >= 0 &&
-        (rect.x + rect.width) * scale <= image.width,
+        (rect.x + rect.width) * scale <= image.width &&
+        !underChrome(rect),
     )
     if (onScreen.length === 0) continue
     const stats = sampleRects(image, onScreen, scale)
@@ -990,24 +986,10 @@ for (const viewport of VIEWPORTS) {
           [...new Set(sampledText.map((m) => m.target.text))].join('\n  '),
       ).toEqual([])
 
-      /* The <Limit> block, as a group. Its lines come from the corpus, so they
-         are counted rather than matched — including the AI-disclosure line,
-         which exists only once a generated photograph has landed. */
-      const limitLines = new Set(
-        sampledText.filter((m) => m.target.tag === 'li').map((m) => m.target.text),
-      )
-      expect(
-        limitLines.size,
-        `Only ${limitLines.size} <Limit> line(s) were measured inside the hero at ` +
-          `${viewport.key}; ${LIMIT_LINES_MINIMUM} were expected` +
-          (photoLanded
-            ? ' (two corpus limits plus the AI-disclosure line, which renders because a ' +
-              'generated photograph landed).'
-            : ' (the two corpus limits; the AI-disclosure line only renders with a photograph).') +
-          "\n\nThe caveats are in the hero because the page's argument is that its numbers are " +
-          'checkable. A caveat nobody can read is a caveat that is not there.\n\nMeasured:\n  ' +
-          [...limitLines].join('\n  '),
-      ).toBeGreaterThanOrEqual(LIMIT_LINES_MINIMUM)
+      /* The <Limit> block used to be counted here as a group. Since 2026-09-08
+         the band carries no corpus limits — they moved with their figures to
+         the highlights band — and the one line of fine print it keeps, the
+         AI-disclosure, is asserted by name in the ROSTER above. */
 
       /* ── 1 · TEXT: the absolute WCAG floor ─────────────────────────────── */
       const textFailures = textTargets.filter((m) => m.shoulder < m.required)

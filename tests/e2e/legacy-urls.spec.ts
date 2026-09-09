@@ -111,8 +111,9 @@ for (const { from, to, status } of [...DELETED_PAGE_REDIRECTS, ...ROOT_REDIRECTS
     expect(
       location,
       `${from} redirected to "${location}" instead of "${to}". The fragment matters: ` +
-        'R-4 sends the independent-research URL to /#research, not to the top of the ' +
-        'homepage, because the reader clicked a link about research.',
+        'R-4 sends the independent-research URL to the research section (/#highlights ' +
+        'since 2026-09-08), not to the top of the homepage, because the reader clicked a ' +
+        'link about research.',
     ).toBe(to)
   })
 }

@@ -144,6 +144,10 @@ redirect() { # redirect <path> <expected-code> <expected-location>
 # These three still MUST return 200 — they are exempt from the SIZE assertion,
 # not from existing. Adding a fourth entry here is a decision about the frozen
 # legacy site and needs a ruling, not a commit.
+#
+# Resume.pdf (2026-09-09) is on the CI edit allowlist but NOT exempt here: it is
+# compiled from the owner's LaTeX source outside this repo and replaced whole,
+# so the served bytes must still equal the committed bytes.
 # ─────────────────────────────────────────────────────────────────────────────
 size_exempt() {
   case "$1" in
@@ -195,8 +199,8 @@ redirect /docs/index_portfolio                      308 "$BASE/"
 # R-4 specifies a literal 301 for these two; next.config.ts uses `statusCode: 301`.
 redirect /docs/index_gpa_analysis.html              301 "$BASE/"
 redirect /docs/index_gpa_analysis                   301 "$BASE/"
-redirect /docs/index_independent_research.html      301 "$BASE/#research"
-redirect /docs/index_independent_research           301 "$BASE/#research"
+redirect /docs/index_independent_research.html      301 "$BASE/#highlights"
+redirect /docs/index_independent_research           301 "$BASE/#highlights"
 
 # ── 4. the /docs directory index ────────────────────────────────────────────
 echo

@@ -18,8 +18,10 @@ Division of the CAUSE Student Data Scrollytelling Contest.
 
 **Credential boundary — hard limit.** He is a graduate student at Seattle University.
 He does NOT hold an economics PhD or an econometrics degree. Never write, in anything
-published under his name, that he does. Similarly the PSB paper is **under review**,
-never "accepted."
+published under his name, that he does. The PSB 2027 paper is **accepted** (September
+2026, for the proceedings and an oral presentation at the January 2027 meeting) — it is
+NOT "published" and NOT "presented" until then, and it is no longer "under review".
+The camera-ready revision is due 1 October 2026; the manuscript is not public until then.
 
 **How to apply:** when drafting anything public in his voice (essays, SOPs, cover
 letters, site copy), this thesis and these boundaries are the frame. Argue at the level

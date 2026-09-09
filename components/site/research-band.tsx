@@ -189,7 +189,7 @@ export function ResearchBand() {
         <Entry
           rail={rolePeriod('rol:fischer-rde')}
           title="One question across the lab’s file formats"
-          meta={`Research Data Engineer · Computational Neuroscience Lab · ${fischer}`}
+          meta={`Research Data Engineer · SU Computational Neuroscience Research Group · ${fischer}`}
           actions={<EvidenceLink id="art:iccl-db" label="Lab database" />}
         >
           <p>

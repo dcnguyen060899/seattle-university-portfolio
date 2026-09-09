@@ -33,8 +33,9 @@ import './globals.css';
  *
  * ── AND THE ONE THING THAT LEAVES IT: THE NAME ────────────────────────────
  *
- * The hero's h1 — "Duy Nguyen" — and the three evidence titles beside it are
- * set in the SERIF below, not in Montserrat. That is a deliberate exception
+ * The hero's h1 — "Duy Nguyen" — and the three highlight titles one band
+ * below it (components/site/highlights-band.tsx, since 2026-09-08) are set in
+ * the SERIF below, not in Montserrat. That is a deliberate exception
  * to the paragraph above, and here is why it does not break the SU tie.
  *
  * What the university's guideline governs is INSTITUTIONAL surfaces: the
@@ -51,14 +52,15 @@ import './globals.css';
  * mark is entitled to its own register — nobody reads a signature on a
  * letterhead as a breach of the letterhead. Setting the name in Montserrat
  * was making it the university's name; setting it in a serif of his own
- * makes it his, sitting on the university's ground. The three evidence titles
- * take the same face for the same reason: they are the titles of HIS work,
- * and a serif is the register in which a paper's title is set.
+ * makes it his, sitting on the university's ground. The three highlight
+ * titles take the same face for the same reason: they are the titles of HIS
+ * work, and a serif is the register in which a paper's title is set.
  *
  * Where this argument would stop being honest: if the serif reached the band
  * headings, the lede, or any institutional surface. It must not. The scale
- * in globals.css publishes it as `--font-serif` with exactly two jobs, and the
- * hero is the only band that asks for it.
+ * in globals.css publishes it as `--font-serif` with exactly two jobs — the
+ * name, and the titles of his work — and only the hero and the highlights
+ * band ask for it.
  */
 const montserrat = Montserrat({
   subsets: ['latin'],

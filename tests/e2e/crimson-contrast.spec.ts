@@ -341,9 +341,9 @@ test('the threshold rule holds 3:1 — it is a graphical object, not a divider',
 
   test.skip(
     rules.length === 0,
-    'No <Threshold> on the page yet. It is the signature element and Addendum B ' +
-      'ruling R-8 puts the P@1 0.487 → 0.585 threshold in the hero, so this should ' +
-      'not stay skipped — but it belongs to the content territory, not this one.',
+    'No .threshold-rule on the page. Since 2026-09-08 the hero keeps exactly one — the ' +
+      '32px dash above its disclosure line, which the scrim credits a collar on — so ' +
+      'this should not stay skipped; if it does, the hero lost its dash.',
   )
 
   const failures = rules

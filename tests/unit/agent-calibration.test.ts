@@ -187,12 +187,18 @@ describe('a strong-match posting still carries at least one honest gap', () => {
     expect(envelope.brief.requirements.some((r) => r.verdict !== 'direct')).toBe(true)
   })
 
-  it('says "under review" wherever the manuscript is mentioned', async () => {
+  it('says "accepted" wherever the manuscript is mentioned, and never the stale status', async () => {
     const envelope = await runBrief(STRONG_MATCH_RESEARCH)
     const text = JSON.stringify(envelope.brief)
-    if (/pacific symposium|manuscript/i.test(text)) {
-      expect(text.toLowerCase()).toContain('under review')
-    }
+    // Unconditional: the publication requirement pins the PSB records, so a
+    // strong research match that never mentions the manuscript is itself a
+    // regression, not a case this test may skip.
+    expect(text).toMatch(/pacific symposium|manuscript|psb/i)
+    expect(text.toLowerCase()).toContain('accepted')
+    expect(text.toLowerCase()).not.toContain('under review')
+    // "not yet published" is the record's own caveat and is allowed; a claim
+    // that it IS published is not.
+    expect(text.toLowerCase()).not.toMatch(/\bpublished (?:at|in)\b/)
   })
 })
 

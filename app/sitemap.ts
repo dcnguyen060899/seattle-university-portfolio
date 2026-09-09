@@ -20,7 +20,7 @@ import { SITE_ORIGIN } from '@/lib/seo';
  *
  *   /docs/index_portfolio.html          308 → /
  *   /docs/index_gpa_analysis.html       301 → /
- *   /docs/index_independent_research.html  301 → /#research
+ *   /docs/index_independent_research.html  301 → /#highlights
  *
  * All three are redirects now: the files are deleted and the URLs are kept
  * alive so that inbound links from a résumé and from LinkedIn do not 404.

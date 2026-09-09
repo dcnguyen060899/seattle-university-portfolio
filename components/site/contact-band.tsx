@@ -25,7 +25,7 @@
  */
 
 import { Band, Btn, Eyebrow, Reveal } from '@/components/ui';
-import { EvidenceLink, contactEmails, pageQuote } from './evidence';
+import { EvidenceLink, contactEmails } from './evidence';
 
 export function ContactBand() {
   const emails = contactEmails('clm:identity-contact');
@@ -34,7 +34,7 @@ export function ContactBand() {
     <Band tone="paper" id="contact">
       <Eyebrow>Contact</Eyebrow>
 
-      <h2 className="mt-[14px] max-w-[20ch]">What I’m looking for</h2>
+      <h2 className="mt-[14px] max-w-[20ch]">Hiring for 2027?</h2>
 
       {/*
         clm:availability, and it is the single most dangerous sentence on the
@@ -52,11 +52,15 @@ export function ContactBand() {
         </p>
       </Reveal>
 
-      {/* clm:resume-reporting-note, in his own words — the record kept the quote. */}
+      {/*
+        One line, since 2026-09-08: the résumé is the artifact a recruiter
+        actually downloads, and the box above is the fastest thing to do with a
+        description in hand. clm:resume-reporting-note still licenses the
+        résumé buttons below.
+      */}
       <Reveal index={2}>
         <p className="mt-[18px] max-w-[var(--container-prose)] text-[color:var(--fg-muted)]">
-          {pageQuote('clm:resume-reporting-note')} If you have a description in hand, the
-          fastest thing you can do with this page is paste it into the box further up.
+          The résumé has the timeline; the fit brief above has the evidence.
         </p>
       </Reveal>
 
