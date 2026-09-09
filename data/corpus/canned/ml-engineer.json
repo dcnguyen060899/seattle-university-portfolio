@@ -4,8 +4,8 @@
   "provenance": {
     "composer": "deterministic",
     "model": null,
-    "builtAt": "2026-09-09T08:09:53.643Z",
-    "corpusVersion": "9f3791ebfa96",
+    "builtAt": "2026-09-09T19:51:52.180Z",
+    "corpusVersion": "05db3d9e0f8a",
     "corpusSize": 118,
     "guardrailTotal": 3
   },
@@ -60,11 +60,11 @@
         "requirement": "Deployment and serving",
         "verdict": "adjacent",
         "confidence": "high",
-        "rationale": "Duy is building a containerized FastAPI evaluation service on AWS around the mammography retrieval work. He deployed it and still operates it: Vercel for hosting, Neon serverless Postgres for the data written at runtime, Cloudflare R2 for photo storage and Inngest for background jobs — which means he owns what…",
+        "rationale": "Duy is building a containerized FastAPI evaluation service on AWS around the mammography retrieval work. He deployed it and still operates it: Vercel for hosting, Neon serverless Postgres for the data written at runtime, Cloudflare R2 for photo storage, and the lead-to-brief pipeline running as background work after…",
         "evidence": [
           {
             "evidence_id": "clm:mav-operating",
-            "quoted_claim": "Deployed and operated on Vercel, Neon, R2 and Inngest",
+            "quoted_claim": "Deployed and operating: Vercel · Neon Postgres · Cloudflare R2 · background pipeline",
             "artifact_label": "mavterras.com",
             "artifact_url": "https://mavterras.com"
           },

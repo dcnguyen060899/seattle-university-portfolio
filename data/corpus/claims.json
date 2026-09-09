@@ -3910,7 +3910,7 @@
     "id": "clm:mav-stack",
     "kind": "fact",
     "subject": "rol:mavterras-eng",
-    "statement": "The stack is Next.js 16 App Router, React 19, TypeScript in strict mode, Tailwind v4 with CSS Modules, Neon serverless Postgres, the Anthropic SDK with structured outputs, ONNX Runtime Web running a client-side CLIP ViT-B/32 int8 encoder, sharp, Zod and framer-motion, deployed on Vercel, with Cloudflare R2 for photo storage and Inngest for background jobs.",
+    "statement": "The stack is Next.js 16 App Router, React 19, TypeScript in strict mode, Tailwind v4 with CSS Modules, Neon serverless Postgres, the Anthropic SDK with structured outputs, ONNX Runtime Web running a client-side CLIP ViT-B/32 int8 encoder, sharp, Zod and framer-motion, deployed on Vercel, with Cloudflare R2 for photo storage and the lead-to-brief pipeline running as background work after the response is sent.",
     "short": "Next.js 16 · React 19 · TS strict · Neon · Vercel",
     "period": null,
     "status": "verified",
@@ -3944,9 +3944,9 @@
     ],
     "asserted": true,
     "disputeId": null,
-    "lastReviewed": "2026-09-02",
+    "lastReviewed": "2026-09-09",
     "reviewEvery": 180,
-    "note": null
+    "note": "CORRECTED 2026-09-09: Inngest removed — package.json has no such dependency; see clm:mav-operating's note."
   },
   {
     "id": "clm:mav-requirements-elicited",
@@ -4071,8 +4071,8 @@
     "id": "clm:mav-operating",
     "kind": "fact",
     "subject": "rol:mavterras-eng",
-    "statement": "He deployed it and still operates it: Vercel for hosting, Neon serverless Postgres for the data written at runtime, Cloudflare R2 for photo storage and Inngest for background jobs — which means he owns what happens when a background job fails, when a photo upload does not land, and when a serverless database is cold.",
-    "short": "Deployed and operated on Vercel, Neon, R2 and Inngest",
+    "statement": "He deployed it and still operates it: Vercel for hosting, Neon serverless Postgres for the data written at runtime, Cloudflare R2 for photo storage, and the lead-to-brief pipeline running as background work after the response is sent — which means he owns what happens when that work fails, when a photo upload does not land, and when a serverless database is cold.",
+    "short": "Deployed and operating: Vercel · Neon Postgres · Cloudflare R2 · background pipeline",
     "period": {
       "start": "2026-08",
       "end": null,
@@ -4087,8 +4087,8 @@
       "src:mav-live",
       "src:mav-repo"
     ],
-    "verificationPath": "/Users/dcnguyen060899/Downloads/MAVTERRAS/package.json (@neondatabase/serverless, inngest) and https://mavterras.com",
-    "verifiedOn": "2026-09-02",
+    "verificationPath": "/Users/dcnguyen060899/Downloads/MAVTERRAS/app/api/leads/route.ts — 'INNGEST SEAM' comment and after(runBriefInBackground); package.json has no inngest dependency",
+    "verifiedOn": "2026-09-09",
     "quote": null,
     "caveats": [],
     "concepts": [
@@ -4108,9 +4108,9 @@
     ],
     "asserted": true,
     "disputeId": null,
-    "lastReviewed": "2026-09-02",
+    "lastReviewed": "2026-09-09",
     "reviewEvery": 180,
-    "note": "Addendum B R-9b: the band needs elicitation and OPERATION, not a paragraph about the design system — the reader is looking at the design system."
+    "note": "CORRECTED 2026-09-09: the 2026-09-02 owner brief named Inngest for background jobs, but the shipped code has no Inngest dependency — the brief pipeline runs via Next's after() once the response is sent, and the route comments call the queue an 'INNGEST SEAM' for later. The owner now intends NOT to adopt a third-party job service (cost to the company) and to design and build the company's own job/agent system for internal operations. That is roadmap, not a claim; it enters the corpus as in-progress when work starts."
   },
   {
     "id": "clm:mav-quality-gates",

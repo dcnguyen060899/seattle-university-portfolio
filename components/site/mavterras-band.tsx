@@ -135,10 +135,10 @@ export function MavterrasBand() {
 
         <Reveal index={7} as="p">
           I deployed it and I still operate it: Vercel for hosting, Neon serverless
-          Postgres for the data written at runtime, Cloudflare R2 for photo storage and
-          Inngest for background jobs — which means I own what happens when a background
-          job fails, when a photo upload does not land, and when a serverless database is
-          cold.
+          Postgres for the data written at runtime, Cloudflare R2 for photo storage, and the
+          lead-to-brief pipeline running as background work after the response is sent —
+          which means I own what happens when that work fails, when a photo upload does not
+          land, and when a serverless database is cold.
         </Reveal>
       </div>
 

@@ -140,7 +140,7 @@
   {"id":"r:de-orchestration","label":"Scheduling and orchestration","weight":0.7,
    "concepts":["cpt:orchestration"],
    "pinned":["clm:mlops-airflow"],
-   "fallback":"Airflow is in the in-progress build, not in a shipped system. Inngest background jobs are shipped, and that is scheduling rather than DAG orchestration."},
+   "fallback":"Airflow is in the in-progress build, not in a shipped system. What is shipped is a production website whose lead-to-brief pipeline runs as background work after the response is sent — a queue seam, not DAG orchestration."},
   {"id":"r:de-enablement","label":"Enabling downstream users","weight":0.7,
    "concepts":["cpt:mentoring","cpt:stakeholder"],
    "pinned":["clm:fischer-selfserve","clm:fischer-curated-subset","clm:mav-requirements-elicited"],

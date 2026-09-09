@@ -246,10 +246,35 @@ export function HighlightsBand() {
           band this replaced is unmounted, not deleted — see app/page.tsx. */}
       <Reveal index={6}>
         <p className="mt-[22px] max-w-[var(--container-prose)] text-[color:var(--fg-muted)]">
-          Also live: <EvidenceLink id="art:mavterras-site" label="mavterras.com" face="body" />, the
-          site of my brother’s construction company. Sole engineer, from design to
-          operation.
+          Also live: <EvidenceLink id="art:mavterras-site" label="mavterras.com" face="body" />, my
+          brother’s construction company. I turned two founders’ requirements into a scope,
+          wrote the code with AI, and I deployed it and operate it in production: every
+          customer brief and photo set is saved on arrival, sent to the company, and given an
+          AI-drafted pre-call brief. It runs on Vercel, Neon Postgres and Cloudflare R2, the
+          model calls sit behind a demo-mode lock that defaults on, and when that pipeline
+          fails or the database is cold, that is mine. Next, and mine to design and build: the
+          company’s own job and agent system for internal operations, built in-house instead
+          of another third-party service, so every lead is qualified and the homework done
+          before anyone drives to a site.
         </p>
+        {/*
+          Every fact above is an existing verified record, in the record’s own
+          words where it has them: clm:mav-requirements-elicited (two founders,
+          a scope), clm:mav-ai-division-of-labour (wrote it with AI, drew the
+          line himself), clm:mav-operating (deployed and still operates it;
+          Vercel, Neon, R2, the pipeline as background work; owns the
+          failures — NOT Inngest: the code has no such dependency, see the
+          record's note), clm:mav-demo-mode (the lock defaults on). The last
+          sentence is roadmap stated as roadmap — "next", "to design and
+          build" — never as a thing that exists. The intake path — saved on arrival, a fixed
+          company recipient, an AI-drafted pre-call brief — is what
+          MAVTERRAS’s app/api/leads and app/api/leads/[id]/brief do, and its
+          public health endpoint reported demo mode OFF with AI, email, database
+          and storage live on 2026-09-09. None of the four carries a caveat.
+          "Sole engineer" was the earlier line; in 2026 it reads as "prompted
+          an app into existence" and says nothing a data-science recruiter
+          scans for, so the line now says what was decided, shipped and owned.
+        */}
       </Reveal>
     </Band>
   );
