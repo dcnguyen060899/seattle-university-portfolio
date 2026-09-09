@@ -258,19 +258,6 @@ export function HighlightsBand() {
           before anyone drives to a site.
         </p>
         {/*
-          The stack as data, in the page's own idiom for one: the mono register
-          the research band used for clm:yang-stack. Not bold inside the prose —
-          the band's hierarchy is structural, and bright vendor names in a muted
-          paragraph read as keyword stuffing. Every name here is in
-          clm:mav-stack; "16" is a version number on the allowed list.
-        */}
-        <p
-          data-numeric
-          className="mt-[12px] font-mono text-fine text-[color:var(--fg-muted)]"
-        >
-          Vercel · Neon Postgres · Cloudflare R2 · Anthropic API · Next.js 16 · TypeScript, strict
-        </p>
-        {/*
           Every fact above is an existing verified record, in the record’s own
           words where it has them: clm:mav-requirements-elicited (two founders,
           a scope), clm:mav-ai-division-of-labour (wrote it with AI, drew the
