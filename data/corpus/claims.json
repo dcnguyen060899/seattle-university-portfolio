@@ -1835,7 +1835,7 @@
     "id": "clm:yang-psb-caveat",
     "kind": "caveat",
     "subject": "rol:yang-gra",
-    "statement": "Accepted, not yet published: the camera-ready revision is due 1 October 2026 and the manuscript is not public until it is submitted; the proceedings and the oral presentation follow at the meeting in January 2027.",
+    "statement": "Accepted, not yet published: the camera-ready revision is due 1 October 2026 and the manuscript is not public until it is submitted; it then appears in the proceedings, which are indexed in PubMed and other online literature databases, and the oral presentation follows at the meeting in January 2027.",
     "short": "Accepted, not yet published; camera-ready due 1 Oct 2026",
     "period": null,
     "status": "in-progress",
@@ -1863,9 +1863,9 @@
     ],
     "asserted": true,
     "disputeId": null,
-    "lastReviewed": "2026-09-08",
+    "lastReviewed": "2026-09-10",
     "reviewEvery": 30,
-    "note": "Dated sentence: the camera-ready deadline is 1 October 2026 and the meeting is January 2027. reviewEvery 30 so C11 flags it within a week of the deadline passing; re-cut it the day the camera-ready is submitted."
+    "note": "Dated sentence: the camera-ready deadline is 1 October 2026 and the meeting is January 2027. reviewEvery 30 so C11 flags it within a week of the deadline passing; re-cut it the day the camera-ready is submitted. PubMed indexing is the acceptance letter's own sentence and is what makes the venue legible to a non-specialist reader; it is stated as a property of the proceedings, never as something already true of this paper. Checked against the agent's publication-status and stale-status guards: neither fires, so the caveat can still be quoted verbatim."
   },
   {
     "id": "clm:yang-stack",

@@ -177,12 +177,20 @@ export function HighlightsBand() {
           (who, what) and the record's caveat carries the status, the deadline
           and the date. Earlier drafts said "accepted … oral presentation" in
           the title, the body AND the caveat; the 2026-09-08 review counted it.
+
+          "SELECTED for", not "and an", because at PSB the talk is a second
+          decision: its call for papers says all accepted papers are published
+          and indexed, "and the best of these will be presented orally". The
+          page states the fact and stops — quoting that sentence here would be
+          self-praise in the venue's voice, which is the move the CAUSE record
+          below deliberately declines ("judged blind on four criteria" states
+          the process, never the verdict's rarity).
           No link: the caveat already says the manuscript is not public.
         */}
         <Highlight
           index={2}
           rail="PSB 2027"
-          title="First-author paper, accepted for the proceedings and an oral presentation"
+          title="First-author paper, accepted for the proceedings and selected for an oral presentation"
           meta="Pacific Symposium on Biocomputing · January 2027 · Big Island of Hawaii"
         >
           <p>With {yang}, on retrieval-augmented mammography report generation.</p>
