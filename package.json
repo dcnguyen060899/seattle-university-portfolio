@@ -21,8 +21,9 @@
     "check:tokens": "node scripts/check-ground-tokens.mjs",
     "check:hero": "node scripts/check-hero-contrast.mjs",
     "check:motion": "node scripts/check-hero-motion.mjs",
+    "check:resume": "node scripts/check-resume-pdf.mjs",
     "check:motion:live": "node scripts/check-motion-live.mjs",
-    "verify": "npm run check:env && npm run check:tokens && npm run check:hero && npm run verify:hero && npm run check:motion && npm run verify:logo && npm run verify:corpus && npm run gen:resume -- --check && npm run lint && npm run typecheck && npm run test",
+    "verify": "npm run check:env && npm run check:tokens && npm run check:hero && npm run verify:hero && npm run check:motion && npm run verify:logo && npm run verify:corpus && npm run gen:resume -- --check && npm run check:resume && npm run lint && npm run typecheck && npm run test",
     "verify:urls": "bash scripts/verify-urls.sh",
     "verify:corpus": "node scripts/verify-corpus.mjs",
     "verify:hero": "node scripts/verify-hero-assets.mjs",
@@ -32,6 +33,7 @@
     "gen:hero:motion": "node scripts/check-hero-motion.mjs --install --clip",
     "gen:logo": "node scripts/gen-logo-paths.mjs",
     "gen:resume": "node scripts/gen-resume.mjs",
+    "gen:resume:pdf": "node scripts/check-resume-pdf.mjs --install",
     "build:canned": "node scripts/build-canned.mjs"
   },
   "dependencies": {

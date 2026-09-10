@@ -90,7 +90,7 @@ Exactly four files may be edited:
 | `index.html` | the chatbot widget markup and its `js/chat.js` script tag were stripped — `chat.js` is deleted, and a tag pointing at a deleted file is a console 404 for every visitor |
 | `js/mcp-tools.js` | the stale availability block. Availability is Summer 2027 |
 | `resume_content.html` | generated from the corpus by `npm run gen:resume` |
-| `Resume.pdf` | compiled from the owner's LaTeX résumé (outside this repo) and replaced whole on his instruction; still size-asserted by `verify-urls.sh` (added 2026-09-09) |
+| `Resume.pdf` | compiled from the owner's LaTeX résumé (outside this repo) and replaced whole on his instruction; `npm run check:resume` catches it falling behind that source, and `verify-urls.sh` still size-asserts it (added 2026-09-09) |
 
 Everything else is size-asserted by `scripts/verify-urls.sh` and diff-guarded by
 `.github/workflows/ci.yml`. Adding a fourth file to that list is a decision about
@@ -146,6 +146,8 @@ when run with `EXPECT_LIVE_AGENT=1`.
 | `npm test` | Vitest (unit) |
 | `npm run test:e2e` | Playwright + `@axe-core/playwright` |
 | `npm run check:env` | the capability table — LIVE vs SEEDED, per capability |
+| `npm run check:resume` | is `public/docs/Resume.pdf` still the LaTeX source's current build, and still two pages? Warns and passes where the source is absent (CI) |
+| `npm run gen:resume:pdf` | recompile that source, verify the page shape, copy it in |
 | **`npm run verify`** | **`check:env && lint && typecheck && test`** — the gate |
 | `npm run verify:urls` | probe every preserved legacy URL against a real host |
 | `npm run verify:corpus` | the corpus build gate |
