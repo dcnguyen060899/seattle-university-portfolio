@@ -12,31 +12,39 @@ Live: [duyng-portfolio.com](https://duyng-portfolio.com) ·
 
 ## The one thing to know before you touch anything
 
-**`duyng-portfolio.com` is served by GitHub Pages, not by Vercel.**
+**`duyng-portfolio.com` is served by Vercel, and every push to `main` is a live
+deploy.**
 
-Verified 2026-09-02:
+Verified 2026-09-10:
 
 ```
 $ dig +short duyng-portfolio.com A
-185.199.110.153  185.199.111.153  185.199.108.153  185.199.109.153   # GitHub Pages anycast
+216.198.79.1                                                        # Vercel
 
 $ curl -sSI https://duyng-portfolio.com/ | head -2
 HTTP/2 200
-server: GitHub.com
+server: Vercel
 ```
 
-Pages publishes from `main`, path `/`, with a legacy (Jekyll) build.
-`seattle-university-portfolio.vercel.app` is a **second host serving the same
-repository**, and it is where the Flask backend runs.
+**The DNS cutover from GitHub Pages is DONE, and this section used to say the
+opposite.** Until it happened, Pages served the domain, nothing pushed here
+could reach it, and that was the whole reason the Next.js app could be built and
+verified in the open. It is why this heading exists — and it is now the one
+sentence in this repository that will hurt you if you trust the old version of
+it. Three consequences:
 
-Two consequences, and they shape everything else in this repo:
-
-1. **Nothing you push to Vercel changes the live domain until the DNS A records
-   move.** That is a gift, not a problem: the whole Next.js app is built, deployed
-   and verified on `*.vercel.app` while the live domain sits untouched.
-2. **The migration is a DNS cutover.** It has an ordering, a TLS-issuance gap and
-   a rollback that is *not* five minutes. All of that is written down; do not
-   improvise it.
+1. **There is no rehearsal host any more.** A push to `main` publishes to a
+   domain that is on a résumé and on LinkedIn. Rehearse on a branch instead:
+   Vercel builds a preview deployment per branch and per pull request, which is
+   why `npm run verify:urls` takes a `BASE`.
+2. **The legacy URLs survived the cutover and have to keep surviving.** Checked
+   the same day: `/docs/Resume.pdf` returns 200 `application/pdf` and
+   `/docs/news.html` returns 200. Those are printed on a résumé, and
+   `scripts/verify-urls.sh` is what proves they still answer — it now runs
+   against the live domain, not a preview.
+3. **Rollback is a Vercel operation, not a DNS one.** Promote the previous
+   production deployment from the dashboard. That is minutes, rather than the
+   certificate wait a Pages rollback used to imply.
 
 ---
 
@@ -148,8 +156,8 @@ when run with `EXPECT_LIVE_AGENT=1`.
 ### `npm run verify:urls`
 
 ```bash
-BASE=https://<preview>.vercel.app       npm run verify:urls   # before DNS
-BASE=https://duyng-portfolio.com        npm run verify:urls   # after DNS
+BASE=https://<preview>.vercel.app       npm run verify:urls   # a branch preview
+BASE=https://duyng-portfolio.com        npm run verify:urls   # live (Vercel)
 BASE=http://127.0.0.1:3000              npm run verify:urls   # against `next start`
 ```
 
@@ -332,10 +340,12 @@ DNS.**
 `excludeFiles` glob that keeps the corpus, the tests, the frozen legacy site and
 the retired Python modules out of the Python function bundle.
 
-**The DNS cutover has its own runbook.** Read it before doing any of it. The
-ordering is not obvious, the TLS-issuance gap is real, and the rollback is not a
-five-minute operation: re-adding a custom domain to GitHub Pages triggers fresh
-certificate provisioning, which GitHub documents as taking up to 24 hours.
+**The DNS cutover is done** — verified 2026-09-10, the A record is Vercel's and
+the response carries `server: Vercel`. What survives from that runbook is the
+check above, and it survives because it is the one failure a green build does
+not catch: confirm `GET /` on a preview deployment before you promote anything,
+since the `"framework": "nextjs"` pin is all that stands between you and Flask
+owning `/`.
 
 ---
 
