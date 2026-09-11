@@ -127,7 +127,7 @@ jobs:
           base="origin/${{ github.base_ref }}"
           # Resume.pdf joined the list on 2026-09-09: it is compiled from the
           # owner's LaTeX source outside this repo and lands here on his say-so.
-          allow='^public/docs/(index\.html|js/mcp-tools\.js|resume_content\.html|Resume\.pdf)$'
+          allow='^public/docs/(index\.html|js/mcp-tools\.js|Resume\.pdf)$'
           bad=""
           moved=0
           edited=0
@@ -159,7 +159,7 @@ jobs:
           echo "unchanged (or purely moved): $moved   changed: $edited"
           if [ -n "$bad" ]; then
             echo "::error::public/docs is frozen outside the Addendum B R-4 allowlist."
-            echo "::error::Allowed: index.html, js/mcp-tools.js, resume_content.html, Resume.pdf."
+            echo "::error::Allowed: index.html, js/mcp-tools.js, Resume.pdf."
             for f in $bad; do echo "::error::  $f"; done
             exit 1
           fi

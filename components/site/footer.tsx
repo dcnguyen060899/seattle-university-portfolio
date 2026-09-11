@@ -39,7 +39,6 @@ import type { ArtifactId } from '@/lib/corpus';
  */
 const RECORD: ReadonlyArray<{ id: ArtifactId; label: string }> = [
   { id: 'art:news-archive', label: 'The month-by-month record' },
-  { id: 'art:resume-page', label: 'Résumé (web)' },
   { id: 'art:resume-pdf', label: 'Résumé (PDF)' },
   { id: 'art:econ-essay', label: 'Essay: the scarce complement to AI work' },
 ];

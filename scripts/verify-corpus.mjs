@@ -804,7 +804,10 @@ if (!snapshot) {
    C8 / C9 over the built output — only with --built
    ═══════════════════════════════════════════════════════════════════════════ */
 
-const OWNED_IN_PUBLIC_DOCS = ['public/docs/resume_content.html']
+// Was ['public/docs/resume_content.html'] until 2026-09-11, when the served
+// web résumé was retired in favour of the PDF. Nothing the corpus generates
+// lives under public/docs any more; Resume.pdf is scanned separately below.
+const OWNED_IN_PUBLIC_DOCS = []
 
 function builtHtmlFiles() {
   const roots = [join(ROOT, '.next', 'server', 'app'), join(ROOT, 'out')]

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * gen-resume.mjs — generate public/docs/resume_content.html from the corpus.
+ * gen-resume.mjs — generate docs/resume_content.html from the corpus.
  *
  *   node scripts/gen-resume.mjs           write the file
  *   node scripts/gen-resume.mjs --check   exit 1 if the committed file is stale
@@ -36,7 +36,19 @@ import * as nodeChildProcess from 'node:child_process'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const CORPUS = join(ROOT, 'data', 'corpus')
-const OUT = join(ROOT, 'public', 'docs', 'resume_content.html')
+/*
+  NOT public/docs ANY MORE (2026-09-11). The owner retired the served web
+  résumé: the site offered the same document twice and now offers the PDF only,
+  so /docs/resume_content.html is a 301 to it (next.config.ts).
+
+  This still runs, and it is still gated by --check, because what it produces
+  is the ONLY rendering of the résumé that cannot contradict the page: the PDF
+  is hand-built outside this repository and reaches the corpus's gates only
+  through the retraction scan over its text. Keeping this current gives that
+  PDF something to be diffed against. `docs/` is engineering-only and is
+  excluded from the build (.vercelignore), so nothing here is served.
+*/
+const OUT = join(ROOT, 'docs', 'resume_content.html')
 
 const CHECK = process.argv.includes('--check')
 const PDF = process.argv.includes('--pdf')
@@ -105,6 +117,12 @@ const RESUME_BULLETS = {
     'clm:yang-suspicion-f1',
     'clm:yang-birads-delta',
     'clm:yang-ft-attribution',
+    // The negative control, and the decoders it names. Added 2026-09-11: the
+    // ATS résumé leads on "validated by a built-in negative control" and the
+    // generated one said nothing about it, which left the strongest
+    // methodological claim on the weaker of the two documents.
+    'clm:yang-decoders',
+    'clm:yang-negative-control',
     'clm:yang-regenerators',
     'clm:yang-report-37p',
     'clm:yang-psb-submission',
@@ -434,7 +452,20 @@ function build() {
 
   /* experience — research first, in narrative-weight order */
   {
-    const order = ['rol:yang-gra', 'rol:fischer-rde', 'rol:mavterras-eng']
+    /*
+      MAVTERRAS IS DELIBERATELY NOT HERE (owner, 2026-09-11). It is on the
+      portfolio page, at length, and it stays there: this document is read by
+      recruiters hiring for data science, and a construction company's website
+      reads as a side project beside two research positions. The decision was
+      made for the PDF résumé first; this is the same document in another
+      format, and two résumés that disagree about which jobs exist is worse
+      than either choice on its own.
+
+      Restoring it is adding the id back to this array — RESUME_BULLETS below
+      still carries its curated bullets, and the claims are still licensed for
+      this surface, so nothing else has to change.
+    */
+    const order = ['rol:yang-gra', 'rol:fischer-rde']
     const entries = order.map((roleId) => {
       const role = roleById.get(roleId)
       const { main, caveats } = bulletsFor(roleId)
@@ -578,7 +609,7 @@ for (const r of retractions) {
 
 if (CHECK) {
   if (!existsSync(OUT)) {
-    console.error('gen-resume --check: public/docs/resume_content.html does not exist. Run `node scripts/gen-resume.mjs`.')
+    console.error('gen-resume --check: docs/resume_content.html does not exist. Run `node scripts/gen-resume.mjs`.')
     process.exit(1)
   }
   const committed = readFileSync(OUT, 'utf8')
@@ -587,7 +618,7 @@ if (CHECK) {
     const b = html.split('\n')
     let line = 0
     while (line < Math.max(a.length, b.length) && a[line] === b[line]) line += 1
-    console.error('gen-resume --check: public/docs/resume_content.html is STALE.\n')
+    console.error('gen-resume --check: docs/resume_content.html is STALE.\n')
     console.error(`  first difference at line ${line + 1}`)
     console.error(`    committed: ${(a[line] ?? '(end of file)').trim().slice(0, 120)}`)
     console.error(`    generated: ${(b[line] ?? '(end of file)').trim().slice(0, 120)}`)
@@ -596,10 +627,10 @@ if (CHECK) {
     console.error('  a fact that exists in exactly one place, which is the defect this replaced.\n')
     process.exit(1)
   }
-  console.log('gen-resume --check: public/docs/resume_content.html is current.')
+  console.log('gen-resume --check: docs/resume_content.html is current.')
 } else {
   writeFileSync(OUT, html)
-  console.log(`gen-resume: wrote public/docs/resume_content.html (${html.length} bytes, corpus ${meta.corpusHash}).`)
+  console.log(`gen-resume: wrote docs/resume_content.html (${html.length} bytes, corpus ${meta.corpusHash}).`)
   if (PDF) renderPdf()
 }
 

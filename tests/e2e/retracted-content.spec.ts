@@ -83,7 +83,7 @@ test('the retraction list is non-trivial — this gate is guarding something', a
  * lives under public/docs but it is a new surface, and it is the source the
  * résumé PDF is rendered from.
  */
-const NEW_SURFACES = ['/', '/not-a-real-page-404', '/docs/resume_content.html'] as const
+const NEW_SURFACES = ['/', '/not-a-real-page-404'] as const
 
 for (const path of NEW_SURFACES) {
   test(`no retracted content on ${path}`, async ({ request }) => {

@@ -153,21 +153,21 @@
     "id": "art:resume-page",
     "kind": "page",
     "title": "Resume (web)",
-    "url": "https://duyng-portfolio.com/docs/resume_content.html",
+    "url": "https://duyng-portfolio.com/docs/Resume.pdf",
     "access": "public",
     "roleId": null,
-    "legacyPath": "public/docs/resume_content.html",
-    "note": "GENERATED from this corpus by scripts/gen-resume.mjs. Exempt from the byte-freeze; gated by `node scripts/gen-resume.mjs --check`."
+    "legacyPath": null,
+    "note": "RETIRED 2026-09-11. It was the corpus-generated web résumé at /docs/resume_content.html; the site offered the same document twice, so the owner kept the PDF. That URL is now a 301 to Resume.pdf, which is why this record's url is the PDF's: an artifact must resolve to what a reader actually gets. The generator still runs into docs/ (unserved) as the corpus's own rendering."
   },
   {
     "id": "art:resume-frame",
     "kind": "page",
     "title": "Resume (framed view)",
-    "url": "https://duyng-portfolio.com/docs/index_resume.html",
+    "url": "https://duyng-portfolio.com/docs/Resume.pdf",
     "access": "public",
     "roleId": null,
-    "legacyPath": "public/docs/index_resume.html",
-    "note": null
+    "legacyPath": null,
+    "note": "RETIRED 2026-09-11. /docs/index_resume.html did nothing but frame the web résumé in an iframe. Both are 301s to Resume.pdf now."
   },
   {
     "id": "art:news-archive",

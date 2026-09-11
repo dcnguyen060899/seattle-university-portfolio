@@ -41,10 +41,8 @@ const FROZEN_PAGES = [
   'index_data5100_project',
   'index_image_classification',
   'index_mosaic_chatbot',
-  'index_resume',
   'learning_algorithm',
   'news',
-  'resume_content',
 ] as const
 
 const isDev = process.env.NODE_ENV === 'development'
@@ -97,6 +95,22 @@ const nextConfig: NextConfig = {
         destination: '/#highlights',
         statusCode: 301,
       },
+
+      /* ── The web résumé, retired 2026-09-11 ──────────────────────────────
+       * The site offered the same résumé twice: a PDF and a corpus-generated
+       * HTML page, plus a third URL that did nothing but frame the second in
+       * an iframe. The owner kept the PDF. Same shape as R-4 above — the
+       * CONTENT is gone from public/docs, the URLs stay alive, and they land
+       * on the résumé that replaced them rather than on a 404, because both
+       * are old enough to be on LinkedIn or on a printed copy.
+       *
+       * A PDF destination is a real page to a browser: Chrome and Safari
+       * render it inline, so a reader who followed "Résumé (web)" still gets
+       * a résumé rather than a download prompt they did not ask for. */
+      { source: '/docs/resume_content.html', destination: '/docs/Resume.pdf', statusCode: 301 },
+      { source: '/docs/resume_content', destination: '/docs/Resume.pdf', statusCode: 301 },
+      { source: '/docs/index_resume.html', destination: '/docs/Resume.pdf', statusCode: 301 },
+      { source: '/docs/index_resume', destination: '/docs/Resume.pdf', statusCode: 301 },
     ]
   },
 

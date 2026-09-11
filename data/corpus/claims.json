@@ -972,11 +972,12 @@
     "derivedFrom": [],
     "surfaces": [
       "page",
+      "resume",
       "agent"
     ],
     "asserted": true,
     "disputeId": null,
-    "lastReviewed": "2026-09-02",
+    "lastReviewed": "2026-09-11",
     "reviewEvery": 365,
     "note": null
   },
@@ -1008,11 +1009,12 @@
     "derivedFrom": [],
     "surfaces": [
       "page",
+      "resume",
       "agent"
     ],
     "asserted": true,
     "disputeId": null,
-    "lastReviewed": "2026-09-02",
+    "lastReviewed": "2026-09-11",
     "reviewEvery": 365,
     "note": null
   },

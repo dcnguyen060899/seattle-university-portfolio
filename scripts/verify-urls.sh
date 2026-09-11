@@ -151,7 +151,7 @@ redirect() { # redirect <path> <expected-code> <expected-location>
 # ─────────────────────────────────────────────────────────────────────────────
 size_exempt() {
   case "$1" in
-    public/docs/index.html | public/docs/js/mcp-tools.js | public/docs/resume_content.html) return 0 ;;
+    public/docs/index.html | public/docs/js/mcp-tools.js) return 0 ;;
     *) return 1 ;;
   esac
 }
@@ -201,6 +201,12 @@ redirect /docs/index_gpa_analysis.html              301 "$BASE/"
 redirect /docs/index_gpa_analysis                   301 "$BASE/"
 redirect /docs/index_independent_research.html      301 "$BASE/#highlights"
 redirect /docs/index_independent_research           301 "$BASE/#highlights"
+
+# The web résumé and its iframe wrapper, retired 2026-09-11 for the PDF.
+redirect /docs/resume_content.html                  301 "$BASE/docs/Resume.pdf"
+redirect /docs/resume_content                       301 "$BASE/docs/Resume.pdf"
+redirect /docs/index_resume.html                    301 "$BASE/docs/Resume.pdf"
+redirect /docs/index_resume                         301 "$BASE/docs/Resume.pdf"
 
 # ── 4. the /docs directory index ────────────────────────────────────────────
 echo

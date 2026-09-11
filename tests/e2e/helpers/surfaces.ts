@@ -96,6 +96,11 @@ export const DELETED_PAGE_REDIRECTS = [
   { from: '/docs/index_gpa_analysis', to: '/', status: 301 },
   { from: '/docs/index_independent_research.html', to: '/#highlights', status: 301 },
   { from: '/docs/index_independent_research', to: '/#highlights', status: 301 },
+  // The web résumé and its frame, retired 2026-09-11 in favour of the PDF.
+  { from: '/docs/resume_content.html', to: '/docs/Resume.pdf', status: 301 },
+  { from: '/docs/resume_content', to: '/docs/Resume.pdf', status: 301 },
+  { from: '/docs/index_resume.html', to: '/docs/Resume.pdf', status: 301 },
+  { from: '/docs/index_resume', to: '/docs/Resume.pdf', status: 301 },
 ] as const
 
 /**

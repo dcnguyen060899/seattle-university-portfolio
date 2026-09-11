@@ -91,9 +91,6 @@ export function ContactBand() {
       */}
       <div className="mt-[clamp(28px,4vw,40px)] flex flex-wrap items-center gap-x-8 gap-y-4">
         <Btn href="/docs/Resume.pdf">Résumé (PDF)</Btn>
-        <Btn href="/docs/resume_content.html" variant="ghost">
-          Résumé (web)
-        </Btn>
       </div>
     </Band>
   );
