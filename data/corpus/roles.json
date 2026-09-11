@@ -4,7 +4,11 @@
     "title": "M.S. Data Science candidate",
     "orgId": "org:seattle-u",
     "advisorIds": [],
-    "period": { "start": "2025-09", "end": "2027-06", "precision": "month" },
+    "period": {
+      "start": "2025-09",
+      "end": "2027-06",
+      "precision": "month"
+    },
     "kind": "study",
     "commitment": "full-time",
     "status": "verified",
@@ -17,8 +21,14 @@
     "id": "rol:yang-gra",
     "title": "Graduate Research Assistant — medical vision-language RAG",
     "orgId": "org:seattle-u",
-    "advisorIds": ["per:wenjing-yang"],
-    "period": { "start": "2026-04", "end": null, "precision": "quarter" },
+    "advisorIds": [
+      "per:wenjing-yang"
+    ],
+    "period": {
+      "start": "2026-04",
+      "end": null,
+      "precision": "quarter"
+    },
     "kind": "research",
     "commitment": "concurrent-with-study",
     "status": "verified",
@@ -31,8 +41,14 @@
     "id": "rol:fischer-rde",
     "title": "Research Data Engineer",
     "orgId": "org:su-cns-lab",
-    "advisorIds": ["per:brian-fischer"],
-    "period": { "start": "2026-03", "end": null, "precision": "month" },
+    "advisorIds": [
+      "per:brian-fischer"
+    ],
+    "period": {
+      "start": "2026-03",
+      "end": null,
+      "precision": "month"
+    },
     "kind": "research",
     "commitment": "full-time",
     "status": "verified",
@@ -43,24 +59,32 @@
   },
   {
     "id": "rol:mavterras-eng",
-    "title": "Sole engineer — design, build, deploy, operate",
+    "title": "Full-stack engineer — requirements, build, deploy, operate",
     "orgId": "org:mavterras",
     "advisorIds": [],
-    "period": { "start": "2026-08", "end": null, "precision": "month" },
+    "period": {
+      "start": "2026-08",
+      "end": null,
+      "precision": "month"
+    },
     "kind": "self-directed",
     "commitment": "part-time",
     "status": "verified",
     "ongoing": true,
     "weight": 0.8,
     "summary": "Designed, built, deployed and operates mavterras.com for a construction company's founder and co-founder: requirements elicitation, architecture, implementation, accessibility, statutory compliance and the operational safety controls.",
-    "note": "The build ran 2026-08-17 to 2026-08-26 across 29 commits; the site is live and Duy still operates it, so period.end is null."
+    "note": "The build ran 2026-08-17 to 2026-08-26 across 29 commits; the site is live and Duy still operates it, so period.end is null. Title retired the phrase \"sole engineer\" on 2026-09-10: clm:mav-sole-author still records that all 29 commits are his, but as a HEADING it reads in 2026 as having prompted an app into existence rather than as having owned one."
   },
   {
     "id": "rol:blueprint",
     "title": "AI Engineer",
     "orgId": "org:sfu-blueprint",
     "advisorIds": [],
-    "period": { "start": "2024-03", "end": "2024-10", "precision": "month" },
+    "period": {
+      "start": "2024-03",
+      "end": "2024-10",
+      "precision": "month"
+    },
     "kind": "volunteer",
     "commitment": "part-time",
     "status": "verified",
@@ -74,7 +98,11 @@
     "title": "AI Research Engineer",
     "orgId": "org:sfu-faisal-lab",
     "advisorIds": [],
-    "period": { "start": "2024-01", "end": "2024-05", "precision": "month" },
+    "period": {
+      "start": "2024-01",
+      "end": "2024-05",
+      "precision": "month"
+    },
     "kind": "research",
     "commitment": "part-time",
     "status": "verified",
@@ -88,7 +116,11 @@
     "title": "Professional Certificate, Machine Learning and AI",
     "orgId": "org:uc-berkeley",
     "advisorIds": [],
-    "period": { "start": "2024-01", "end": "2024-07", "precision": "month" },
+    "period": {
+      "start": "2024-01",
+      "end": "2024-07",
+      "precision": "month"
+    },
     "kind": "study",
     "commitment": "part-time",
     "status": "verified",
@@ -102,7 +134,11 @@
     "title": "B.A. Economics, Data Analysis concentration",
     "orgId": "org:sfu",
     "advisorIds": [],
-    "period": { "start": null, "end": "2023-05", "precision": "month" },
+    "period": {
+      "start": null,
+      "end": "2023-05",
+      "precision": "month"
+    },
     "kind": "study",
     "commitment": "full-time",
     "status": "verified",

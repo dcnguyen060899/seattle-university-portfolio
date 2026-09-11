@@ -155,7 +155,17 @@ for (const path of PDF_PATHS) {
       `${path} does not begin with the %PDF- magic number — a 200 with the right ` +
         'content type over the wrong bytes is worse than a 404.',
     ).toBe('%PDF-')
-    expect(body.byteLength, `${path} is suspiciously small`).toBeGreaterThan(10_000)
+    /*
+      4 KB, not the 10 KB this floor used to carry. The résumé stopped being a
+      LaTeX build on 2026-09-10 and became a ReportLab one, which draws in the
+      standard 14 faces and embeds no font programs: the same two pages that
+      cost 149 KB as LaTeX cost 6.5 KB here. The floor exists to catch a
+      truncated body or an error page served with the right headers, and the
+      two assertions above — the content type and the %PDF- magic number —
+      already do most of that work. Lowering it keeps the check meaningful
+      without encoding an assumption about which generator produced the file.
+    */
+    expect(body.byteLength, `${path} is suspiciously small`).toBeGreaterThan(4_000)
   })
 }
 

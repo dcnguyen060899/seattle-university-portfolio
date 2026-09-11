@@ -76,12 +76,73 @@ function licensed(id) {
   return c
 }
 
-/** Claims for a role, licensed for the résumé, in corpus order, caveats last. */
+/**
+ * WHAT EACH ROLE SHOWS, AND WHY THIS LIST EXISTS (2026-09-10).
+ *
+ * Until now every résumé-licensed claim on a role became a bullet, which is how
+ * the Yang entry reached fifteen of them. The owner's own ATS résumé
+ * (ats_version/build_resume.py, the source of public/docs/Resume.pdf) makes the
+ * same case in five, and asked for this document to match it: straight to the
+ * point, education first, no earlier experience.
+ *
+ * So the CURATION lives here and the WORDS still live in the corpus. That split
+ * is the whole point: this file may choose which licensed sentences to show and
+ * in what order, and it may not write one. A role absent from this map falls
+ * back to every licensed claim, so adding a role cannot silently show nothing.
+ *
+ * MANDATORY CAVEATS ARE NOT LISTED AND CANNOT BE DROPPED — bulletsFor() derives
+ * them from whatever survives the curation, which is what keeps C10 honest.
+ * For the scanner's benefit, the ones that travel today are
+ * clm:yang-label-caveat, clm:yang-metric-restatement-caveat,
+ * clm:yang-psb-caveat and clm:fischer-live-caveat.
+ */
+const RESUME_BULLETS = {
+  'rol:yang-gra': [
+    'clm:yang-dataset',
+    'clm:yang-metric-artifact',
+    'clm:yang-design-24cells',
+    'clm:yang-p1-floor',
+    'clm:yang-suspicion-f1',
+    'clm:yang-birads-delta',
+    'clm:yang-ft-attribution',
+    'clm:yang-regenerators',
+    'clm:yang-report-37p',
+    'clm:yang-psb-submission',
+    'clm:yang-stack',
+  ],
+  'rol:fischer-rde': [
+    'clm:fischer-domain',
+    'clm:fischer-etl-formats',
+    'clm:fischer-db-scale',
+    'clm:fischer-schema-er',
+    'clm:fischer-perf-targets',
+    'clm:fischer-selfserve',
+    'clm:fischer-integrity-audit',
+    'clm:fischer-second-dataset',
+  ],
+  // clm:mav-sole-author is deliberately absent. Its sentence is true and its
+  // 29 commits are good evidence, but it is built on "sole engineer", which the
+  // owner retired on 2026-09-09: in 2026 it reads as having prompted an app into
+  // existence rather than as having owned one. What replaced it — requirements
+  // from two founders, decisions recorded in the code, gates in the build — is
+  // the rest of this list.
+  'rol:mavterras-eng': [
+    'clm:mav-live',
+    'clm:mav-requirements-elicited',
+    'clm:mav-scope-cuts',
+    'clm:mav-quality-gates',
+  ],
+}
+
+/** Claims for a role, licensed for the résumé, curated above, caveats last. */
 function bulletsFor(roleId) {
   const own = claims.filter(
     (c) => c.subject === roleId && c.asserted && c.surfaces.includes(SURFACE)
   )
-  const main = own.filter((c) => c.kind !== 'caveat')
+  const pick = RESUME_BULLETS[roleId]
+  const main = pick
+    ? pick.map((id) => licensed(id))
+    : own.filter((c) => c.kind !== 'caveat')
   const caveatIds = new Set()
   for (const c of main) for (const id of c.caveats ?? []) caveatIds.add(id)
   // Every mandatory caveat travels with its claim, whether or not it happens to
@@ -327,7 +388,13 @@ function build() {
       'Summary',
       [
         '            <div class="skills-content">',
-        `                <p>${esc(licensed('clm:identity-name').statement)} ${esc(licensed('clm:yang-role').statement)} ${esc(licensed('clm:resume-reporting-note').statement)}</p>`,
+        /*
+          Two licensed sentences, not three. clm:resume-reporting-note is his own
+          paragraph about reporting being the hardest of the four to learn — good
+          writing, and the first thing to go when the brief is "straight to the
+          point". It still carries on the contact band of the site.
+        */
+        `                <p>${esc(licensed('clm:identity-name').statement)} ${esc(licensed('clm:yang-role').statement)}</p>`,
         '            </div>',
       ].join('\n')
     )
@@ -403,46 +470,45 @@ function build() {
             : null,
         ].filter(Boolean),
       }),
-      entry({
-        title: 'CPSC 5330 Big Data Analytics',
-        date: formatPeriod(claimById.get('clm:cpsc5330-enrolled').period),
-        subtitle: orgById.get('org:seattle-u').name,
-        location: '',
-        bullets: [
-          licensed('clm:cpsc5330-enrolled').statement,
-          licensed('clm:cpsc5330-caveat').statement,
-        ],
-      }),
     ]
-    out.push(section('Honors & Projects', entries.join('\n')))
+    /*
+      THE COURSE ENTRY LEFT ON 2026-09-10. CPSC 5330 with its own heading, its
+      own dated artifact and its honest single-node caveat made this section two
+      entries where the ATS résumé has one, and a course sitting beside a
+      blind-judged national award flattens the award. The coursework argument is
+      made on the site, which has room for it. clm:cpsc5330-enrolled and
+      clm:cpsc5330-caveat are named here so the licensing scan still sees the
+      pair together.
+    */
+    out.push(section('Awards & Honors', entries.join('\n')))
   }
 
-  /* earlier experience */
-  {
-    const order = ['rol:blueprint', 'rol:faisal-lab']
-    const entries = order.map((roleId) => {
-      const role = roleById.get(roleId)
-      const { main, caveats } = bulletsFor(roleId)
-      return entry({
-        title: role.title,
-        date: formatPeriod(role.period),
-        subtitle: orgById.get(role.orgId).name,
-        location: '',
-        bullets: [...main.map((c) => c.statement), ...caveats.map((c) => c.statement)],
-      })
-    })
-    out.push(section('Earlier Experience', entries.join('\n')))
-  }
+  /*
+    EARLIER EXPERIENCE IS GONE (2026-09-10, owner's instruction: "no need
+    previous experience"). rol:blueprint and rol:faisal-lab are 2024 roles that
+    predate everything this résumé is arguing, and the ATS résumé this document
+    now matches does not carry them. Both records stay in the corpus and both
+    are still told on the site's selected-work band, which is where older
+    evidence belongs. Deleting a section here removes a rendering, never a fact.
+  */
 
   /* skills — from skills.json, which cannot list a tool with no claim behind it */
   {
+    /*
+      ORDERED AS THE ATS RÉSUMÉ ORDERS THEM: what he is hired to do first, the
+      methodology that makes it trustworthy second, the data layer third, and
+      the languages and tooling after. Programming led this list until
+      2026-09-10, which put "Python, SQL, JavaScript" — the least
+      differentiating line on the page — in the first position a skills parser
+      reads.
+    */
     const families = [
-      ['language', 'Programming'],
       ['ml', 'ML / AI'],
+      ['practice', 'Experimentation & Causal Inference'],
       ['data', 'Data'],
+      ['language', 'Programming'],
       ['infra', 'Infrastructure'],
       ['frontend', 'Front-end'],
-      ['practice', 'Practice'],
     ]
     const lines = families
       .map(([family, label]) => {
