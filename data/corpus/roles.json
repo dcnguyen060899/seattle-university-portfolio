@@ -25,9 +25,9 @@
       "per:wenjing-yang"
     ],
     "period": {
-      "start": "2026-04",
+      "start": "2026-02",
       "end": null,
-      "precision": "quarter"
+      "precision": "month"
     },
     "kind": "research",
     "commitment": "concurrent-with-study",

@@ -60,7 +60,7 @@ export function ResearchBand() {
         <p className="mt-[22px] max-w-[var(--container-prose)] text-lede text-[color:var(--fg-muted)]">
           The master’s has carried both at once since the spring quarter. The first grew
           out of the curriculum: I met {yang} as a student in her Statistical Machine
-          Learning I course and began experimentation the following spring. They have
+          Learning I course and began the literature review for her that February. They have
           nothing in common except the part I was hired for — turning a question somebody
           else cares about into something that can be measured, and then measuring it
           honestly enough that the answer is allowed to be disappointing.

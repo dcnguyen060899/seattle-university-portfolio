@@ -687,9 +687,9 @@
     "statement": "As a Graduate Research Assistant with Dr. Wenjing Yang, Duy runs a critical replication of a published retrieval-augmented mammography report-generation pipeline, which became a controlled experiment of his own design.",
     "short": "Graduate Research Assistant — medical vision-language RAG",
     "period": {
-      "start": "2026-04",
+      "start": "2026-02",
       "end": null,
-      "precision": "quarter"
+      "precision": "month"
     },
     "status": "verified",
     "tense": "present",
@@ -699,7 +699,7 @@
       "src:resume-2026-08",
       "src:news-html"
     ],
-    "verificationPath": "public/docs/news.html:L237-L245 — March 2026 entry",
+    "verificationPath": "public/docs/news.html — the March 2026 entry is the earliest dated record of the work; the February 2026 start of the literature review is the owner's own account, refined 2026-09-11 (see clm:yang-origin-course).",
     "verifiedOn": "2026-09-02",
     "quote": null,
     "caveats": [
@@ -721,7 +721,7 @@
     ],
     "asserted": true,
     "disputeId": null,
-    "lastReviewed": "2026-09-02",
+    "lastReviewed": "2026-09-11",
     "reviewEvery": 180,
     "note": "Present tense: the position is ongoing with weekly meetings (Addendum A.3)."
   },
@@ -729,12 +729,12 @@
     "id": "clm:yang-origin-course",
     "kind": "fact",
     "subject": "rol:yang-gra",
-    "statement": "The research relationship grew out of coursework: Duy met Dr. Yang as a student in her Statistical Machine Learning I course, began reading for her over the winter break at the end of that course, and started experimentation in the spring 2026 quarter.",
+    "statement": "The research relationship grew out of coursework: Duy met Dr. Yang as a student in her Statistical Machine Learning I course and began the literature review for her in February 2026, during that quarter.",
     "short": "Research grew out of Statistical Machine Learning I",
     "period": {
-      "start": "2026-04",
+      "start": "2026-02",
       "end": null,
-      "precision": "quarter"
+      "precision": "month"
     },
     "status": "verified",
     "tense": "present",
@@ -743,7 +743,7 @@
     "sources": [
       "src:owner-corrections-2026-09-02"
     ],
-    "verificationPath": "Rebuild brief, Addendum A.3 — owner's own account of the timeline",
+    "verificationPath": "Owner's own account of the timeline (Rebuild brief, Addendum A.3), refined by the owner on 2026-09-11: the literature review began in February 2026, not 'over the winter break' and not in the spring quarter.",
     "verifiedOn": "2026-09-02",
     "quote": null,
     "caveats": [],
@@ -760,7 +760,7 @@
     ],
     "asserted": true,
     "disputeId": null,
-    "lastReviewed": "2026-09-02",
+    "lastReviewed": "2026-09-11",
     "reviewEvery": 365,
     "note": "Supports the 'curriculum as a coherent arc' argument: the research came out of a class, not out of a job board. The resume's start date is a typo and is retracted (ret:yang-winter-2025); no other start string may be printed."
   },
@@ -771,9 +771,9 @@
     "statement": "The position is ongoing, with weekly meetings.",
     "short": "Ongoing, with weekly meetings",
     "period": {
-      "start": "2026-04",
+      "start": "2026-02",
       "end": null,
-      "precision": "quarter"
+      "precision": "month"
     },
     "status": "verified",
     "tense": "present",
@@ -799,7 +799,7 @@
     ],
     "asserted": true,
     "disputeId": null,
-    "lastReviewed": "2026-09-02",
+    "lastReviewed": "2026-09-11",
     "reviewEvery": 90,
     "note": "reviewEvery 90: the day this stops being true is the day the page is wrong."
   },
@@ -829,7 +829,7 @@
       "src:resume-2026-08",
       "src:news-html"
     ],
-    "verificationPath": "public/docs/news.html:L196-L201 — May 2026 entry, '1,000-study VinDr-Mammo held-out test split'",
+    "verificationPath": "public/docs/news.html:L214-L219 — May 2026 entry, '1,000-study VinDr-Mammo held-out test split'",
     "verifiedOn": "2026-09-02",
     "quote": null,
     "caveats": [
@@ -886,7 +886,7 @@
       "src:resume-2026-08",
       "src:news-html"
     ],
-    "verificationPath": "public/docs/news.html:L135-L144 — July 2026, 'That completed the design'",
+    "verificationPath": "public/docs/news.html:L153-L162 — July 2026, 'That completed the design'",
     "verifiedOn": "2026-09-02",
     "quote": "four retrieval-encoder substrates, each evaluated frozen and fine-tuned, crossed with three frozen VLM decoders — 24 evaluation cells",
     "caveats": [],
@@ -923,7 +923,7 @@
     "sources": [
       "src:news-html"
     ],
-    "verificationPath": "public/docs/news.html:L135-L140 — July 2026, 'Added a fourth encoder, BioCLIP'",
+    "verificationPath": "public/docs/news.html:L153-L158 — July 2026, 'Added a fourth encoder, BioCLIP'",
     "verifiedOn": "2026-09-02",
     "quote": null,
     "caveats": [],
@@ -959,7 +959,7 @@
     "sources": [
       "src:news-html"
     ],
-    "verificationPath": "public/docs/news.html:L237-L245 — March 2026 entry",
+    "verificationPath": "public/docs/news.html:L255-L263 — March 2026 entry",
     "verifiedOn": "2026-09-02",
     "quote": null,
     "caveats": [],
@@ -996,7 +996,7 @@
       "src:news-html",
       "src:resume-2026-08"
     ],
-    "verificationPath": "public/docs/news.html:L150-L163 — July 2026, 'while MedGemma did not respond to it'",
+    "verificationPath": "public/docs/news.html:L168-L181 — July 2026, 'while MedGemma did not respond to it'",
     "verifiedOn": "2026-09-02",
     "quote": null,
     "caveats": [],
@@ -1047,7 +1047,7 @@
     "sources": [
       "src:news-html"
     ],
-    "verificationPath": "public/docs/news.html:L150-L163 — July 2026, 'Confirmed the headline result'",
+    "verificationPath": "public/docs/news.html:L168-L181 — July 2026, 'Confirmed the headline result'",
     "verifiedOn": "2026-09-02",
     "quote": "the only arm to clear the held-out majority-class retrieval floor of P@1 = 0.487, moving from 0.513 frozen to 0.585 fine-tuned",
     "caveats": [
@@ -1086,7 +1086,7 @@
     "sources": [
       "src:news-html"
     ],
-    "verificationPath": "public/docs/news.html:L150-L163 — July 2026, 'inflated training-set separation but left held-out retrieval tied with that floor'",
+    "verificationPath": "public/docs/news.html:L168-L181 — July 2026, 'inflated training-set separation but left held-out retrieval tied with that floor'",
     "verifiedOn": "2026-09-02",
     "quote": null,
     "caveats": [],
@@ -1284,7 +1284,7 @@
     "sources": [
       "src:news-html"
     ],
-    "verificationPath": "public/docs/news.html:L150-L163 — July 2026, 'suspicion accuracy +20.7% and +15.6% relative to the frozen baseline'",
+    "verificationPath": "public/docs/news.html:L168-L181 — July 2026, 'suspicion accuracy +20.7% and +15.6% relative to the frozen baseline'",
     "verifiedOn": "2026-09-02",
     "quote": null,
     "caveats": [
@@ -1322,7 +1322,7 @@
       "src:resume-2026-08",
       "src:news-html"
     ],
-    "verificationPath": "git show 234cbcd:docs/resume_content.html line 274 and public/docs/news.html:L150-L163 describe the same experiment arm",
+    "verificationPath": "git show 234cbcd:docs/resume_content.html line 274 and public/docs/news.html:L168-L181 describe the same experiment arm",
     "verifiedOn": "2026-09-02",
     "quote": null,
     "caveats": [],
@@ -1374,7 +1374,7 @@
     "sources": [
       "src:news-html"
     ],
-    "verificationPath": "public/docs/news.html:L120-L129 — July 2026, 'Tested whether the effect was specific to the label'",
+    "verificationPath": "public/docs/news.html:L138-L147 — July 2026, 'Tested whether the effect was specific to the label'",
     "verifiedOn": "2026-09-02",
     "quote": null,
     "caveats": [
@@ -1413,7 +1413,7 @@
     "sources": [
       "src:news-html"
     ],
-    "verificationPath": "public/docs/news.html:L127-L129 — 'though nearly all of it landed on the majority BI-RADS categories'",
+    "verificationPath": "public/docs/news.html:L145-L147 — 'though nearly all of it landed on the majority BI-RADS categories'",
     "verifiedOn": "2026-09-02",
     "quote": "though nearly all of it landed on the majority BI-RADS categories rather than the clinically decisive ones",
     "caveats": [],
@@ -1449,7 +1449,7 @@
     "sources": [
       "src:news-html"
     ],
-    "verificationPath": "public/docs/news.html:L285-L287 — closing note on the clinical labels",
+    "verificationPath": "public/docs/news.html:L303-L305 — closing note on the clinical labels",
     "verifiedOn": "2026-09-02",
     "quote": "VinDr-Mammo carries radiologist BI-RADS assessments, not biopsy-confirmed pathology. The suspicion and BI-RADS results above are agreement with a radiologist's reading, not diagnostic accuracy.",
     "caveats": [],
@@ -1538,7 +1538,7 @@
     "sources": [
       "src:news-html"
     ],
-    "verificationPath": "public/docs/news.html:L105-L114 — July 2026, 'Found the geometric signature'",
+    "verificationPath": "public/docs/news.html:L123-L132 — July 2026, 'Found the geometric signature'",
     "verifiedOn": "2026-09-02",
     "quote": null,
     "caveats": [],
@@ -1579,7 +1579,7 @@
       "src:news-html",
       "src:resume-2026-08"
     ],
-    "verificationPath": "public/docs/news.html:L169-L178 — June 2026 entry",
+    "verificationPath": "public/docs/news.html:L187-L196 — June 2026 entry",
     "verifiedOn": "2026-09-02",
     "quote": "its published precision, recall and F1 are computed as weighted averages while its text describes them as macro-averaged — the two are not the same metric",
     "caveats": [],
@@ -1668,7 +1668,7 @@
     "sources": [
       "src:news-html"
     ],
-    "verificationPath": "public/docs/news.html:L92-L99 — July 2026, 'assembled a reproducibility package'",
+    "verificationPath": "public/docs/news.html:L110-L117 — July 2026, 'assembled a reproducibility package'",
     "verifiedOn": "2026-09-02",
     "quote": null,
     "caveats": [],
@@ -1718,7 +1718,7 @@
       "src:resume-2026-08",
       "src:yang-report"
     ],
-    "verificationPath": "public/docs/news.html:L161-L163 — July 2026, 'Wrote up the full analysis in a 37-page technical report'",
+    "verificationPath": "public/docs/news.html:L179-L181 — July 2026, 'Wrote up the full analysis in a 37-page technical report'",
     "verifiedOn": "2026-09-02",
     "quote": null,
     "caveats": [],
