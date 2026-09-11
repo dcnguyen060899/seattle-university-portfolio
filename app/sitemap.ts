@@ -72,8 +72,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
         !EXCLUDED.includes(path as (typeof EXCLUDED)[number]),
     );
 
+  /*
+   * Routes this app serves itself. A legacy page is advertised through its
+   * `legacyPath`, which C12 asserts exists on disk; a Next.js route has no
+   * file under public/ to assert, so it is advertised through the pathname of
+   * its own canonical URL. Deriving it from the artifact table rather than
+   * typing it here keeps the same guarantee the legacy half has: an essay that
+   * leaves the corpus leaves the sitemap with it.
+   */
+  const routes = ARTIFACTS.filter(
+    (artifact) =>
+      artifact.access === 'public' &&
+      !artifact.legacyPath &&
+      typeof artifact.url === 'string' &&
+      artifact.url.startsWith(`${SITE_ORIGIN}/`),
+  ).map((artifact) => new URL(artifact.url as string).pathname);
+
   // De-duplicated: two artifacts may legitimately describe one file.
-  const paths = ['/', ...Array.from(new Set(legacy))];
+  const paths = ['/', ...Array.from(new Set([...legacy, ...routes]))];
 
   return paths.map((path) => ({
     url: new URL(path, `${SITE_ORIGIN}/`).toString(),

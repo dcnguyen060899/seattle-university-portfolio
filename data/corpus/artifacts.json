@@ -250,6 +250,16 @@
     "note": null
   },
   {
+    "id": "art:reach-essay",
+    "kind": "post",
+    "title": "Stop Asking Whether It Thinks. Ask What It Can Reach.",
+    "url": "https://duyng-portfolio.com/essays/what-it-can-reach",
+    "access": "public",
+    "roleId": null,
+    "legacyPath": null,
+    "note": "Served by app/essays/what-it-can-reach/page.tsx, not from public/docs — so legacyPath is null and the footer resolves the link from this URL's pathname."
+  },
+  {
     "id": "art:econ-essay",
     "kind": "post",
     "title": "AI Didn't Take Your Job. It Created One Nobody Is Trained For",

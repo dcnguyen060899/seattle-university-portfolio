@@ -31,6 +31,7 @@
 import { Eyebrow, Mark, Rule } from '@/components/ui';
 import { artifactById, personById } from '@/lib/corpus';
 import type { ArtifactId } from '@/lib/corpus';
+import { SITE_ORIGIN } from '@/lib/seo';
 
 /**
  * The legacy surfaces worth a footer link, in reading order. Each is resolved
@@ -40,6 +41,7 @@ import type { ArtifactId } from '@/lib/corpus';
 const RECORD: ReadonlyArray<{ id: ArtifactId; label: string }> = [
   { id: 'art:news-archive', label: 'The month-by-month record' },
   { id: 'art:resume-pdf', label: 'Résumé (PDF)' },
+  { id: 'art:reach-essay', label: 'Essay: what a language model is actually for' },
   { id: 'art:econ-essay', label: 'Essay: the scarce complement to AI work' },
 ];
 
@@ -61,11 +63,20 @@ const ELSEWHERE: ReadonlyArray<{ id: ArtifactId; label: string }> = [
 function href(id: ArtifactId): string {
   const artifact = artifactById(id);
   if (!artifact.url) throw new Error(`corpus: ${id} has no URL to link from the footer`);
-  // Legacy pages on this domain are linked by path, not by absolute URL: the
-  // site is served from two hostnames and an absolute link would send a visitor
-  // on one of them to the other mid-session.
+  // Anything served from this domain is linked by PATH, not by absolute URL:
+  // the site is served from two hostnames and an absolute link would send a
+  // visitor on one of them to the other mid-session.
+  //
+  // Two kinds of on-domain artifact reach this function. A frozen legacy page
+  // carries `legacyPath`, a path under public/ that C12 asserts still exists.
+  // A Next.js route (the 2026 essays) has no file under public/ to point at,
+  // so its path is the pathname of its own canonical URL. Both resolve here
+  // rather than at the call sites, so a link and the record that promises it
+  // cannot drift apart.
   const local = artifact.legacyPath?.replace(/^public/, '');
-  return local ?? artifact.url;
+  if (local !== undefined) return local;
+  if (artifact.url.startsWith(`${SITE_ORIGIN}/`)) return new URL(artifact.url).pathname;
+  return artifact.url;
 }
 
 function FooterList({

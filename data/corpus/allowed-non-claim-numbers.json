@@ -154,5 +154,21 @@
  {
   "value": "500",
   "why": "HTTP status code on the framework's error page."
+ },
+ {
+  "value": "1986",
+  "why": "Publication year of Don Swanson's 'Undiscovered Public Knowledge' and his fish-oil/Raynaud's paper, cited in the essay at /essays/what-it-can-reach."
+ },
+ {
+  "value": "1989",
+  "why": "Publication year of the DiGiacomo et al. fish-oil trial in The American Journal of Medicine, cited in the essay at /essays/what-it-can-reach."
+ },
+ {
+  "value": "2019",
+  "why": "Publication year of the Tshitoyan et al. materials-science embeddings paper (Nature) and the Obermeyer et al. algorithmic-bias paper (Science), both cited in the essay at /essays/what-it-can-reach."
+ },
+ {
+  "value": "2021",
+  "why": "Publication year of Wong et al., the external validation of a proprietary sepsis model (JAMA Internal Medicine), cited in the essay at /essays/what-it-can-reach."
  }
 ]
