@@ -186,11 +186,18 @@ export function HighlightsBand() {
           below deliberately declines ("judged blind on four criteria" states
           the process, never the verdict's rarity).
           No link: the caveat already says the manuscript is not public.
+
+          "for the proceedings" came OUT of the title on 2026-09-11 and stayed
+          in the caveat, which states it in full. The three titles scan as a
+          set and this one was 86 characters against 65 and 50, wrapping to two
+          lines at desktop while the others held one — the record meant to be
+          read fastest looked the most like a paragraph. What survives is the
+          pair of decisions: accepted, and selected.
         */}
         <Highlight
           index={2}
           rail="PSB 2027"
-          title="First-author paper, accepted for the proceedings and selected for an oral presentation"
+          title="First-author paper, accepted and selected for an oral presentation"
           meta="Pacific Symposium on Biocomputing · January 2027 · Big Island of Hawaii"
         >
           <p>With {yang}, on retrieval-augmented mammography report generation.</p>
