@@ -1229,10 +1229,34 @@ if (failures.length === 0) {
   }
   if (snapshot) hash.update('fischer-snapshot.json').update(canonical(snapshot))
 
+  const corpusHash = `sha256:${hash.digest('hex').slice(0, 32)}`
+
+  /*
+    THE DATE MOVES ONLY WHEN THE CONTENT DOES (2026-09-14).
+
+    This used to be `today` on every successful run, which made the gate
+    non-deterministic in the one way that matters: scripts/gen-resume.mjs
+    embeds this date in the résumé footer, and `npm run verify` runs this
+    script BEFORE `gen:resume --check`. So any run on a new calendar day
+    rewrote the date, the committed résumé no longer matched, and the check
+    failed without a single claim having changed. CI went red at midnight and
+    stayed red, and every local run dirtied meta.json.
+
+    generatedAt now means "the date this corpus content was produced": kept
+    while the hash is unchanged, stamped with today only when the hash moves.
+    Two runs over an unchanged corpus now write identical bytes, which is what
+    a gate should do. corpusHash remains the staleness signal; the date was
+    never needed to detect staleness, only to tell a reader when.
+  */
+  const generatedAt =
+    data.meta.corpusHash === corpusHash && data.meta.generatedAt
+      ? data.meta.generatedAt
+      : today.toISOString().slice(0, 10)
+
   const meta = {
     version: data.meta.version,
-    generatedAt: today.toISOString().slice(0, 10),
-    corpusHash: `sha256:${hash.digest('hex').slice(0, 32)}`,
+    generatedAt,
+    corpusHash,
     counts: {
       claims: data.claims.length,
       metrics: data.claims.filter((c) => c.kind === 'metric').length,
