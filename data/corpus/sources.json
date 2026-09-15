@@ -645,5 +645,17 @@
     "firstRecorded": "2026-09-09",
     "lastChecked": "2026-09-09",
     "note": "Read via https://web.archive.org/web/20240605235547id_/http://fac-staff.seattleu.edu/fischer9/web/ on 2026-09-09; the origin timed out from this network. Names the group, the department (Mathematics) and the research (Bayesian neural coding, barn-owl sound localization)."
+  },
+  {
+    "id": "src:portrait-origin",
+    "kind": "owner-statement",
+    "repo": null,
+    "label": "Owner's statements of origin, placement and approval for the contact-band portrait",
+    "locator": "Owner, 2026-09-14, verbatim, in order. Origin: \"its retouch headshot help polished by AI\". Source: \"the photo is from: /Users/dcnguyen060899/Downloads/profile picture so make a copy to repo accordingly\". His own proposed disclosure: \"oh we can just said portrait re polish with AI. real picture of me, no problem with that\". After seeing the preview captioned \"Portrait: AI-edited from a photograph of me.\" at desktop and phone width: \"i want to keep\". What the files show, checked the same day: the master is ChatGPT's output (filename \"ChatGPT Image Sep 13, 2026 at 02_31_37 PM.png\"), made from a Photo Booth photograph he took on 2026-09-12; the face, glasses and hair match it, while the clothing (plaid shirt to navy suit and blue shirt), the pose and gaze, the lighting and the backdrop were generated.",
+    "custodian": "Duy Nguyen",
+    "trust": "self-reported",
+    "firstRecorded": "2026-09-14",
+    "lastChecked": "2026-09-14",
+    "note": "ANSWERED. Why the caption says \"AI-edited\" and not his \"re-polish ... real picture\": polishing implies cosmetic changes to a photograph that exists, and here the model produced the clothing, pose and backdrop, so the origin is ai-generated. \"From a photograph of me\" keeps the true half of his point — it is his likeness, made from his own photo. The shipped line is the one he kept after seeing it; his proposed wording is quoted above so the record shows both, dated, rather than rewriting what he said. The reference photograph is deliberately NOT in this repository: the repository is public and the photograph shows the inside of his home."
   }
 ]

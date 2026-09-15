@@ -512,5 +512,41 @@
       },
       "note": "FIELD-BY-FIELD, RESOLVED 2026-09-06. origin is \"ai-generated\" (in SYNTHETIC_ORIGINS, so C15's disclosure guard fires and is satisfied by captionRule \"disclosure\"); rightsBasis is written from src:runway-terms-2026-05-11 and inherits art:hero-photo's; generator and contentCredentials are filled from src:hero-motion-generation (4), the installed calm take; captionText is IDENTICAL to art:hero-photo's, which lib/corpus/hero-asset.ts heroMotionPolicy() enforces at build; openQuestions is empty because src:hero-motion-disclosure-2026-09-06 answers them. WHAT THE FOUR OPEN QUESTIONS WERE, AND HOW EACH CLOSED — kept so the closure is checkable. (1) Ship it, and which clip: the owner watched the installed Seedance 2 transcode in preview and said \"turn it on\". (2) The line: he approved the proposed sentence verbatim; it now stands on both records. (3) The licence-back to Runway: stated to him before he answered; recorded in rightsBasis as a fact. (4) No Content Credentials in the shipped bytes: recorded in contentCredentials.presentIn; the credentialed master is under brand-masters/ (git LFS), the path in sourcePaths. assetDir is the directory the installer writes (public/brand/hero/motion) and C15's assetsOnDisk() counts .mp4/.webm there."
     }
+  },
+  {
+    "id": "art:portrait",
+    "kind": "image",
+    "title": "Contact-band portrait — AI-edited from a photograph of the owner",
+    "url": null,
+    "access": "private",
+    "roleId": null,
+    "legacyPath": null,
+    "note": "Published rather than cited, like art:hero-photo: decoration with a disclosed origin, not evidence of anything, so access stays 'private' and url null, and no generated brief may cite it or describe it as a photograph. captionText is the exact line the contact band renders, read through lib/corpus, and C15 greps the built HTML for it — so the picture cannot ship without its line.",
+    "provenance": {
+      "status": "verified",
+      "origin": "ai-generated",
+      "depicts": "real-person",
+      "rightsBasis": "The owner's own likeness, generated at his direction with ChatGPT's image tool from a photograph he took of himself on 2026-09-12, and used as the portrait on his personal site. No third party appears in the frame and no licence is claimed from anyone.",
+      "attributionRequired": false,
+      "captionRule": "disclosure",
+      "captionText": "Portrait: AI-edited from a photograph of me.",
+      "endorsement": "none",
+      "affiliationBasis": "clm:identity-name",
+      "affiliationStatement": "The portrait is of Duy Nguyen, whose site this is. No institution appears in it, and it implies no endorsement by one.",
+      "assetDir": "public/brand/portrait",
+      "sourcePaths": [
+        "brand-masters/portrait-source.png"
+      ],
+      "sources": [
+        "src:portrait-origin"
+      ],
+      "verifiedOn": "2026-09-14",
+      "verificationPath": "Owner's statements held verbatim in data/corpus/sources.json (src:portrait-origin, 2026-09-14). The master is committed at brand-masters/portrait-source.png through git LFS, byte-identical to his ChatGPT output (md5 157108328c37a5550cc7c98985914cc6); the three served renditions in public/brand/portrait are resized from it. The reference photograph stays in the owner's archive and out of this public repository.",
+      "openQuestions": [],
+      "containsThirdPartyMarks": false,
+      "disclosureRequired": true,
+      "sourceImagesProvenance": "One photograph the owner took of himself with Photo Booth on 2026-09-12. Kept in his own archive and deliberately not committed: this repository is public and the photograph shows the inside of his home.",
+      "note": "WHY 'ai-generated' AND NOT A RETOUCHED PHOTOGRAPH. The schema has no 'retouched' origin, and it does not need one here: retouching adjusts a photograph that exists, and in this image the model produced the clothing (plaid shirt to navy suit), the pose and gaze, the lighting and the backdrop. What it kept is his likeness. The caption says both halves in one line — AI-edited, from a photograph of me — and is the line he chose to keep after seeing it (src:portrait-origin)."
+    }
   }
 ]

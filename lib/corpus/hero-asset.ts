@@ -150,6 +150,15 @@ export const HERO_ARTIFACT_ID = 'art:hero-photo' as const
  */
 export const HERO_MOTION_ARTIFACT_ID = 'art:hero-motion' as const
 
+/**
+ * The contact band's portrait (2026-09-14) — an AI edit of a photograph of the
+ * owner, so a disclosure the page must render. It is read here rather than in
+ * a new module because the policy that governs it is this module's
+ * `captionFor`, and a second copy of that policy is exactly the drift C15
+ * exists to catch.
+ */
+export const PORTRAIT_ARTIFACT_ID = 'art:portrait' as const
+
 /* ── reads ─────────────────────────────────────────────────────────────────── */
 
 function recordFor(id: ArtifactId, what: string): ArtifactWithProvenance {
@@ -247,6 +256,20 @@ export interface HeroCaption {
  */
 export function heroCaption(): HeroCaption | null {
   return captionFor(heroProvenance(), HERO_ARTIFACT_ID)
+}
+
+/**
+ * The portrait's disclosure line, or null when the page owes none — which, for
+ * an `ai-generated` origin, can only mean provenance is not yet resolved. The
+ * contact band renders the image ONLY when this returns a caption, so the
+ * picture cannot reach the page without its line. Throws, through captionFor,
+ * when the record owes a caption and carries no text.
+ */
+export function portraitCaption(): HeroCaption | null {
+  return captionFor(
+    provenanceFor(PORTRAIT_ARTIFACT_ID, 'The contact-band portrait'),
+    PORTRAIT_ARTIFACT_ID
+  )
 }
 
 /** The same policy, for any record that carries a provenance block. */
