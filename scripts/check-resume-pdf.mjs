@@ -38,7 +38,7 @@
  * onto page 3. It happened on 2026-09-09 and it is invisible unless somebody
  * opens the PDF. The generator reflows rather than breaking hard, so the same
  * defect now wears different clothes — a third page — and the same assertion
- * catches it. Two pages, with page 2 opening on SKILLS, is the shape.
+ * catches it. Two pages, with page 2 opening on EARLIER EXPERIENCE, is the shape.
  *
  * ── THE CI PATH IS "WARN AND PASS", AND THAT IS DELIBERATE ────────────────
  *
@@ -92,8 +92,13 @@ const GENERATOR = join(SRC_DIR, 'build_resume.py')
  */
 const VARIANT = /^Resume_Duy_Nguyen_Data_Scientist_.*\.pdf$/
 
-/** Page 2 has to open on this. See WHY IT ASSERTS THE PAGE SHAPE above. */
-const PAGE_TWO_OPENER = 'SKILLS'
+/**
+ * Page 2 has to open on this. See WHY IT ASSERTS THE PAGE SHAPE above.
+ * Changed from 'SKILLS' on 2026-09-17: the résumé now carries the two earlier
+ * roles (SFU Faisal Lab, SFU Blueprint) under their own heading at the top of
+ * page 2, after a hard break that keeps both current roles whole on page 1.
+ */
+const PAGE_TWO_OPENER = 'EARLIER EXPERIENCE'
 const EXPECTED_PAGES = 2
 
 const problems = []

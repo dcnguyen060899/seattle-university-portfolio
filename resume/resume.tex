@@ -1,127 +1,100 @@
-\documentclass[letterpaper,11pt]{article}
-\usepackage[margin=0.36in]{geometry}
+\documentclass[letterpaper,10pt]{article}
+\usepackage[margin=0.4in]{geometry}
 \usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
 \usepackage{lmodern}
 \usepackage{enumitem}
 \usepackage{amssymb}
 \usepackage[hidelinks]{hyperref}
 \usepackage{titlesec}
 
-% --- ATS-friendly: single column, standard fonts, selectable text, no graphics ---
+% GENERATED FILE (copy). Source of truth: ~/Downloads/prep_intern_interview/ats_version/build_resume.py;
+% regenerate with ~/Downloads/prep_intern_interview/resume_duy_nguyen/gen_from_ats.py, then copy here. Original note:
+%   python3 gen_from_ats.py && latexmk -pdf resume.tex
+% Single column, standard fonts, selectable text, no graphics.
 \setcounter{secnumdepth}{0}
 \setlist[itemize]{leftmargin=1.2em, itemsep=0pt, topsep=0pt, parsep=0pt}
 \titleformat{\section}{\normalsize\bfseries}{}{0em}{}[\vspace{-0.6em}\rule{\textwidth}{0.6pt}]
-\titlespacing{\section}{0pt}{2pt}{2pt}
+\titlespacing{\section}{0pt}{3pt}{2pt}
 \pagestyle{empty}
 \setlength{\parindent}{0pt}
 
-% role: title | dates ; org/context (italic) --- and a no-subline variant
+% role: title | dates ; org/context (italic)
 \newcommand{\role}[3]{\vspace{1pt}\textbf{#1}\hfill #2\\[1pt]\textit{#3}\\[1pt]}
-\newcommand{\rolens}[2]{\vspace{1pt}\textbf{#1}\hfill #2\\[1pt]}
 
 \begin{document}
 
 %==================== HEADER ====================
 \begin{center}
   {\LARGE\bfseries Duy Nguyen}\\[4pt]
-  Seattle, WA \ \textbullet\ \ \href{mailto:dnguyen44@seattleu.edu}{dnguyen44@seattleu.edu}
-  \ \textbullet\ \ \href{https://www.linkedin.com/in/duwe-ng}{linkedin.com/in/duwe-ng}
-  \ \textbullet\ \ \href{https://github.com/dcnguyen060899}{github.com/dcnguyen060899}
+  Seattle, WA \ \textbullet\ \ \href{mailto:dnguyen44@seattleu.edu}{dnguyen44@seattleu.edu} \ \textbullet\ \ \href{https://duyng-portfolio.com}{duyng-portfolio.com} \ \textbullet\ \ \href{https://linkedin.com/in/duwe-ng}{linkedin.com/in/duwe-ng} \ \textbullet\ \ \href{https://github.com/dcnguyen060899}{github.com/dcnguyen060899}
 \end{center}
 
 %==================== SUMMARY ====================
 \section{Summary}
-Data scientist and MS candidate who designs and runs rigorous ML experiments---and
-builds the data pipelines they run on. Recent research isolated the retrieval
-\emph{encoder}, not costly decoder fine-tuning, as the performance lever in
-medical-imaging RAG; the result is a first-author paper under review at PSB 2027. I own
-problems end to end: experiment design, modeling, evaluation, and reporting. Of those
-four, reporting has been the hardest to learn --- it is where months of shared work have
-to be revised into a single coherent argument, and where a deadline leaves the least room
-to get it wrong.
+I am an M.S. Data Science candidate at Seattle University with two research roles. In one I designed a 24-cell controlled experiment on retrieval-augmented mammography report generation and first-authored a paper accepted at PSB 2027; its lesson is that a train/test split alone is not enough: a retrieval metric must clear the prevalence floor and its gain must propagate downstream. In the other I built the 3NF SQLite database that turned a neuroscience lab's selection criteria into reproducible SQL. I bring experimental design, reproducible evaluation, and the habit of checking a number before I report it.
 
 %==================== EDUCATION ====================
 \section{Education}
-\role{M.S.\ in Data Science --- Seattle University}{Expected Jun 2027}{Seattle, WA}
+\role{M.S. in Data Science --- Seattle University}{Expected Jun 2027}{Seattle, WA \textbar\  GPA 4.0; Dean's Graduate Student Honor Roll, Winter 2026}
 \vspace{-3pt}
-\rolens{Certificate, Machine Learning \& AI --- UC Berkeley (Online)}{Jul 2024}
+\role{Professional Certificate, Machine Learning \& AI --- UC Berkeley College of Engineering (Online)}{Jul 2024}{Capstone selected as a program exemplar}
 \vspace{-3pt}
-\role{B.A.\ in Economics, Data Analysis Concentration --- Simon Fraser University}{May 2023}{Burnaby, BC, Canada}
+\role{B.A. in Economics, Data Analysis Concentration --- Simon Fraser University}{May 2023}{Burnaby, BC, Canada}
+\vspace{-3pt}
 
 %==================== EXPERIENCE ====================
 \section{Experience}
-
-\role{Graduate Research Assistant --- Medical Vision--Language RAG}{Spring 2026 -- Present}%
-{Seattle University \ \textbar\ \ Advisor: Dr.\ Wenjing Yang}
+\role{Graduate Research Assistant, Medical Vision-Language RAG}{Feb 2026 -- Present}{Seattle University \textbar\  Advisor: Wenjing Yang, PhD \textbar\  Seattle, WA}
 \begin{itemize}
-  \item Replicated and audited a published mammography-RAG benchmark on VinDr-Mammo
-    (20{,}000 images / 5{,}000 patients) in \textbf{Python} and \textbf{PyTorch},
-    uncovering a metric-labeling artifact (weighted scores published as ``macro'') that
-    corrected how the reference numbers must be interpreted and compared.
-  \item Designed and ran a 24-cell controlled experiment (4 encoder substrates $\times$
-    frozen/fine-tuned $\times$ 3 vision--language models) with \textbf{HuggingFace
-    Transformers}, \textbf{ChromaDB}, and \textbf{scikit-learn} to isolate the causal
-    driver of generated-report quality.
-  \item Isolated the retrieval \emph{encoder} as the lever: replacing the frozen OpenCLIP
-    retriever with a domain-native, supervised-contrastively fine-tuned Mammo-CLIP encoder---%
-    decoder frozen throughout---raised suspicion macro-F1 0.35 to 0.48 (\textbf{+0.13}) and
-    BI-RADS (+0.10) on LLaVA-Med; the fine-tuning step alone accounts for +0.11
-    (Qwen2.5-VL) and +0.06 (LLaVA-Med), with retrieval-insensitive MedGemma as a
-    negative control.
-  \item Automated evaluation with reproducible, self-verifying generators
-    (\textbf{Python}/\textbf{pandas}) that recompute 100+ reported metrics byte-exact
-    from raw model predictions; authored a 37-page report, condensed into a first-author
-    manuscript submitted to the Pacific Symposium on Biocomputing (PSB) 2027, under review.
+  \item Replicated and audited a published mammography-RAG benchmark on VinDr-Mammo (5,000 studies; patient-level 80:20 split) in Python and PyTorch; found the headline scores mislabeled, with weighted metrics reported as macro, which motivated a controlled re-evaluation of the full pipeline.
+  \item Designed and ran a 24-cell controlled experiment: 4 encoder substrates (OpenCLIP, BiomedCLIP, BioCLIP, Mammo-CLIP) x frozen/fine-tuned x 3 frozen VLM decoders (MedGemma, Qwen2.5-VL, LLaVA-Med), with one identical supervised-contrastive recipe across all arms; HuggingFace Transformers, ChromaDB, scikit-learn.
+  \item Showed that a train/test split alone is not sufficient evidence of generalization here: three fine-tuned out-of-domain encoders inflated train-set margin 9 to 23x while held-out P@1 rose only from below the 0.487 majority-class floor to a tie with it; only mammography-native Mammo-CLIP cleared it (0.585, p = 3.3e-10).
+  \item Verified the gain propagates to the report with every decoder frozen: fine-tuning Mammo-CLIP alone raised suspicion macro-F1 by 0.11 (Qwen2.5-VL) and 0.06 (LLaVA-Med) and five-class BI-RADS accuracy by 10.5 and 6.6 points (23.2\% and 14.6\% relative), mostly on majority classes; retrieval-insensitive MedGemma was the control.
+  \item Distilled this into a component-wise auditing protocol (held-out P@1 vs the prevalence floor, train/test margin ratio, paired within-decoder tests under multiplicity control) and self-verifying Python generators that recompute the paper's 100+ metrics byte-exact from raw predictions; first-author paper accepted at PSB 2027, oral presentation.
 \end{itemize}
-
-\role{Research Data Engineer}{Spring 2026 -- Present}%
-{Computational Neuroscience Lab (Prof.\ Brian Fischer), Seattle University}
+\vspace{2pt}
+\role{Research Data Engineer, Computational Neuroscience Research Group}{Mar 2026 -- Present}{Seattle University \textbar\  Supervisor: Prof. Brian Fischer \textbar\  Seattle, WA}
 \begin{itemize}
-  \item Supported an NIH CRCNS-funded computational neuroscience project, full-time over the summer and continuing,
-    (NIH-CRCNS-Fischer) on barn owl sound localization by building data infrastructure
-    for neural recordings.
-  \item Engineered an end-to-end \textbf{ETL} pipeline in \textbf{Python}
-    (\textbf{pandas}, \textbf{SciPy}, \textbf{h5py}) converting 5+ proprietary
-    electrophysiology formats (XDPHYS \texttt{.iid/.itd/.bf}, MATLAB \texttt{.mat},
-    headerless CSV) into a normalized \textbf{SQLite} database of 195 neurons and
-    1{,}325 recording passes, with a second researcher's spike-reliability dataset
-    staged and schema-provisioned for load.
-  \item Designed the relational schema and ER model (documented in \textbf{LaTeX}) with
-    foreign-key constraints and explicit data-quality rules (missing-data handling,
-    tracked exclusions, path remapping), consolidating scattered lab files into one
-    queryable source of truth.
-  \item Tuned queries and ETL to meet ${<}200$\,ms query and ${<}30$\,s full-load
-    targets, letting lab students self-serve neuron-level queries that previously
-    required manual file handling.
-  \item Ran \textbf{SQL}/SQLite schema and data-integrity audits that caught and
-    corrected issues (all-zero rows, weak-tuning exclusions) before downstream analysis.
+  \item Built the research database for an NIH CRCNS-funded barn-owl sound-localization project: curated a 53 GB, 30,147-file raw archive to 1,579 staged files and loaded 1,325 recording passes, 195 neurons, 7 owls, and 13 paradigm types into a 3NF SQLite schema (7 tables, 5 views, CHECK/UNIQUE rules) with a read-only pandas loader.
+  \item Found what hand curation could not see: keying every recording on filename plus header resolved all 77 of the PI's hand-selected neurons and surfaced 118 recorded-but-never-analyzed neurons, 49 of which carry the exact ITD x ILD measurement his selection criteria require.
+  \item Rewrote those criteria as SQL over all 195 neurons at the PI's request, replacing a per-neuron file loop from a hard-coded laptop path with one reproducible query that screens the whole set in about a second; added a depth\_source column recording whether each depth came from the instrument header or the curated position file.
+  \item Engineered the ETL for failure across 5+ formats (XDPHYS binary, MATLAB, headerless CSV): copy-only staging with SHA256 manifests never mutates the raw tree, checksum dedup kept three same-named but different recordings a filename rule would have dropped, and an atomic build-then-swap publish survived a mid-fill disk I/O abort.
+  \item Audited the team's pipeline output against the lab's 8 file-naming and content rules, found 164 violations across all 16 uploaded date folders and traced the largest class to one hard-coded line in the shared renaming notebook; automated integrity checks also caught all-zero rows and weak-tuning exclusions before analysis.
 \end{itemize}
+\vspace{2pt}
 
-
-%==================== HONORS & PROJECTS ====================
+%==================== EARLIER EXPERIENCE ====================
 \newpage
-\section{Honors \& Projects}
-
-\role{Winner, Graduate Division ---
-  \href{https://www.causeweb.org/cause/contests/data-scrollytelling}{CAUSE Student Data
-  Scrollytelling Contest}}{2026}%
-{Consortium for the Advancement of Undergraduate Statistics Education}
+\section{Earlier Experience}
+\role{Research RAG Engineer}{Jan 2024 -- May 2024}{SFU Faisal Lab (medical-imaging AI), Simon Fraser University \textbar\  Burnaby, BC}
 \begin{itemize}
-  \item ``Will AI Make Human Work Worthless---or Priceless?'': a nine-act interactive data
-    story (\textbf{D3.js}, \textbf{Scrollama.js}) with scroll-driven animation and a
-    reader-controlled parameter widget, translating an original nested-CES
-    general-equilibrium model of AI and cognitive labor into a narrative for
-    non-specialists. Judged on narrative, data interpretation, scrollytelling, and visual
-    design.
+  \item Built a Chainlit chatbot (Python, LlamaIndex, GPT-4, Pydantic) that turns a clinician's plain-English CT / PET-CT request into the deterministic slab and ROI JSON the lab's DAFS tool expects, asking a follow-up when slab or ROI is missing or unclear.
+  \item Compared two designs; the simpler won: a system-prompt agent with typed output gave correct JSON more reliably in the demo than a tool-calling OpenAIAgent with query-engine tools, which I diagnosed as emitting malformed output; the supervisor adopted it.
+  \item After the role (Dec 2025 to Jan 2026), refactored the single-file scripts into a modular deployed app (Claude Sonnet 4.5 via the Anthropic API, Pydantic, Chainlit, Render) with a live demo, applying the modular structure learned at Blueprint.
+\end{itemize}
+\vspace{2pt}
+\role{AI Engineer}{Mar 2024 -- Oct 2024}{SFU Blueprint \textbar\  Client: MOSAIC (immigrant and refugee settlement services) \textbar\  Burnaby, BC}
+\begin{itemize}
+  \item Built features, with a tech lead, a senior developer and a junior engineer, for MOSAIC's settlement-services assistant (Neo4j knowledge graph and vector index over 50+ programs, LangChain, GPT-4o mini, Flask); delivered in the team's production handoff.
+  \item Owned a fallback ticket from a senior developer in the modular RAG pipeline: a second LLM call judges whether the primary Cypher answer is specific and, if not, triggers vector-search fallback, as no parser can enumerate every phrasing of ``no result''.
+  \item Traced a defect (backend emitted hyperlinks, React showed raw text) to missing rendering logic and fixed it with two engineers and the tech lead; shortlisted (top four) for the SFU Computing Science Diversity Award on a signed MOSAIC endorsement.
+\end{itemize}
+\vspace{2pt}
+
+%==================== HONORS ====================
+\section{Honors \& Awards}
+\begin{itemize}
+  \item Winner, Graduate Division, CAUSE Student Data Scrollytelling Contest 2026: ``Will AI Make Human Work Worthless or Priceless?'', a nine-act data story (D3.js, Scrollama.js) with a reader-controlled parameter widget, translating an original nested-CES general-equilibrium model of AI and cognitive labor for non-specialists.
+  \item 12th of 111 teams, Computer Vision track, ISODS World Championship in Data Science and AI (Kaggle-hosted, Oct 2023): embryo-quality classification from day-3/day-5 microscopy with a fine-tuned ResNet50 in PyTorch, class-weighted loss, 5-fold stratified CV, and F1 threshold tuning.
 \end{itemize}
 
 %==================== SKILLS ====================
 \section{Skills}
+\textbf{ML / AI:} PyTorch, HuggingFace Transformers, scikit-learn, RAG, vision-language models, supervised contrastive fine-tuning, QLoRA / parameter-efficient fine-tuning, LLM-as-judge evaluation, LlamaIndex, LangChain, Pydantic, OpenAI and Anthropic APIs \\[1pt]
+\textbf{Experimentation \& Causal Inference:} experimental design, factorial designs, controls and negative controls, prevalence floors and confidence intervals, hypothesis testing, effect-size estimation, multiplicity control, replication and reproducibility auditing \\[1pt]
+\textbf{Data Engineering:} pandas, NumPy, SciPy, SQLite, ETL design, atomic publish and checksum manifests, relational schema / ER design (3NF), data quality and provenance, ChromaDB, Neo4j / Cypher \\[1pt]
 \textbf{Programming:} Python, SQL, JavaScript \\[1pt]
-\textbf{ML / AI:} PyTorch, HuggingFace Transformers, scikit-learn, Retrieval-Augmented
-Generation (RAG), vision--language models, QLoRA / parameter-efficient fine-tuning \\[1pt]
-\textbf{Data:} pandas, NumPy, SciPy, SQLite, ETL design, relational schema / ER design,
-data quality \\[1pt]
-\textbf{Tools:} Jupyter, Git, LaTeX, D3.js, Scrollama.js, Google Colab (A100 GPU), Ollama
+\textbf{Tools:} Jupyter, Git, LaTeX, D3.js, Scrollama.js, Chainlit, Flask, Docker, Render, Google Colab (A100 GPU), Ollama
 
 \end{document}
