@@ -267,10 +267,18 @@ export function HighlightsBand() {
           customer brief and photo set is saved on arrival, sent to the company, and given an
           AI-drafted pre-call brief. It runs on Vercel, Neon Postgres and Cloudflare R2, the
           Anthropic API calls sit behind a demo-mode lock that defaults on, and when that pipeline
-          fails or the database is cold, that is mine. Next, and mine to design and build: the
-          company’s own job and agent system for internal operations, built in-house instead
-          of another third-party service, so every lead is qualified and the homework done
-          before anyone drives to a site.
+          fails or the database is cold, that is mine.
+        </p>
+        <p className="mt-[10px] max-w-[var(--container-prose)] text-[color:var(--fg-muted)]">
+          Next, and mine to design and build, from the founder’s written spec: a bathroom
+          configurator where a client swaps real vendor materials on a locked photograph of
+          the room and watches the price change. The first version is one room and one
+          surface, the shower wall, composited with masks, perspective and real tile
+          dimensions so the original light and the glass in front of it survive; AI is the
+          final polish, not the renderer, and an unverified SKU or price stays blank. Then
+          the company’s own job and agent system for internal operations, built in-house
+          instead of another third-party service, so every lead is qualified and the
+          homework done before anyone drives to a site.
         </p>
         {/*
           Every fact above is an existing verified record, in the record’s own
@@ -279,9 +287,29 @@ export function HighlightsBand() {
           line himself), clm:mav-operating (deployed and still operates it;
           Vercel, Neon, R2, the pipeline as background work; owns the
           failures — NOT Inngest: the code has no such dependency, see the
-          record's note), clm:mav-demo-mode (the lock defaults on). The last
-          sentence is roadmap stated as roadmap — "next", "to design and
-          build" — never as a thing that exists. The intake path — saved on arrival, a fixed
+          record's note), clm:mav-demo-mode (the lock defaults on). The second
+          paragraph is roadmap stated as roadmap — "next", "to design and
+          build", "then" — never as a thing that exists, and it is its own
+          paragraph so what is live and what is planned cannot be read as one
+          list.
+
+          THE CONFIGURATOR (added 2026-09-19, owner's instruction) is scoped
+          from a written spec the company's founder sent him that day: a
+          fixed room photograph, editable surfaces, real vendor product
+          records, live pricing, save and compare; first version one room,
+          three design packages, the shower wall as the first surface; AI as
+          an optional last refinement; unverified product data left blank.
+          The page names the room and the surface and leaves the packages out:
+          planned work should not run longer than the live work above it.
+          The same rule as src:mav-decisions applies: the founder is described
+          by ROLE and the spec is never quoted. No configurator code of Duy's
+          exists yet (MAVTERRAS's last commit is 2026-09-05; the prototypes
+          the founder shared were made on his side), so no verb here may say
+          built, shipped or live. It is not a corpus claim for the reason the
+          note on clm:mav-operating gives: roadmap enters the corpus as
+          in-progress when work starts, with the spec as its source. The
+          numbers are spelled out because C8 licenses digits, and a roadmap
+          has no metric claim to license them. The intake path — saved on arrival, a fixed
           company recipient, an AI-drafted pre-call brief — is what
           MAVTERRAS’s app/api/leads and app/api/leads/[id]/brief do, and its
           public health endpoint reported demo mode OFF with AI, email, database
