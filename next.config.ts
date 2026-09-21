@@ -31,7 +31,6 @@ import type { NextConfig } from 'next'
  */
 const FROZEN_PAGES = [
   'admin',
-  'blog_econometrics_of_ai',
   'business_card_design',
   'business_card_print_ready_FedEx',
   'index',
@@ -111,6 +110,24 @@ const nextConfig: NextConfig = {
       { source: '/docs/resume_content', destination: '/docs/Resume.pdf', statusCode: 301 },
       { source: '/docs/index_resume.html', destination: '/docs/Resume.pdf', statusCode: 301 },
       { source: '/docs/index_resume', destination: '/docs/Resume.pdf', statusCode: 301 },
+
+      /* ── The first essay, moved onto the design system 2026-09-21 ────────
+       * It was a legacy page in the old SU stylesheet while the second essay
+       * was built on the grounds and the type scale; the owner asked for the
+       * two to match. The text moved verbatim to a route, the file left
+       * public/docs, and — same shape as the résumé above — both URLs stay
+       * alive because the essay is linked from the news archive and has been
+       * shared since August. 301, not 308, to match that precedent. */
+      {
+        source: '/docs/blog_econometrics_of_ai.html',
+        destination: '/essays/the-scarce-complement',
+        statusCode: 301,
+      },
+      {
+        source: '/docs/blog_econometrics_of_ai',
+        destination: '/essays/the-scarce-complement',
+        statusCode: 301,
+      },
     ]
   },
 

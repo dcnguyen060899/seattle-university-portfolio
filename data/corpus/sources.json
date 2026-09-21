@@ -134,11 +134,11 @@
     "kind": "repo-file",
     "repo": "target",
     "label": "Essay: \"AI Didn't Take Your Job. It Created One Nobody Is Trained For\"",
-    "locator": "public/docs/blog_econometrics_of_ai.html",
+    "locator": "app/essays/the-scarce-complement/page.tsx",
     "custodian": "public",
     "trust": "self-reported",
     "firstRecorded": "2026-09-02",
-    "lastChecked": "2026-09-02"
+    "lastChecked": "2026-09-21"
   },
   {
     "id": "src:su-catalog",

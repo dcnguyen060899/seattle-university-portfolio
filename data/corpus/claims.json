@@ -1486,8 +1486,8 @@
     "sources": [
       "src:blog-html"
     ],
-    "verificationPath": "public/docs/blog_econometrics_of_ai.html",
-    "verifiedOn": "2026-09-02",
+    "verificationPath": "app/essays/the-scarce-complement/page.tsx",
+    "verifiedOn": "2026-09-21",
     "quote": null,
     "caveats": [],
     "concepts": [
@@ -1504,7 +1504,7 @@
     ],
     "asserted": true,
     "disputeId": null,
-    "lastReviewed": "2026-09-02",
+    "lastReviewed": "2026-09-21",
     "reviewEvery": 365,
     "note": "An identification limit the author states about his own result. Worth shipping: it is the clearest evidence in the corpus that he knows the difference between a finding and a proof."
   },
@@ -3161,8 +3161,8 @@
     "sources": [
       "src:blog-html"
     ],
-    "verificationPath": "public/docs/blog_econometrics_of_ai.html",
-    "verifiedOn": "2026-09-02",
+    "verificationPath": "app/essays/the-scarce-complement/page.tsx",
+    "verifiedOn": "2026-09-21",
     "quote": null,
     "caveats": [],
     "concepts": [
@@ -3181,7 +3181,7 @@
     ],
     "asserted": true,
     "disputeId": null,
-    "lastReviewed": "2026-09-02",
+    "lastReviewed": "2026-09-21",
     "reviewEvery": 365,
     "note": null
   },

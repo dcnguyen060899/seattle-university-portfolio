@@ -49,6 +49,8 @@ const RETIRED = [
   '/docs/index_portfolio.html',
   '/docs/index_gpa_analysis.html',
   '/docs/index_independent_research.html',
+  // Moved to /essays/the-scarce-complement on 2026-09-21; now a 301.
+  '/docs/blog_econometrics_of_ai.html',
 ] as const;
 
 const EXCLUDED = [

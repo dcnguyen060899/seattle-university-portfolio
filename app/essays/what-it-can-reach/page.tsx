@@ -1,33 +1,30 @@
 import type { Metadata } from 'next';
-import { Band, Eyebrow, Reveal, Rule } from '@/components/ui';
+import {
+  EssayBody,
+  EssayHeader,
+  EssayHeading,
+  EssayLinks,
+  EssayParagraph,
+  Source,
+  SourceList,
+} from '@/components/site/essay';
+import { Rule } from '@/components/ui';
 
 /**
  * app/essays/what-it-can-reach/page.tsx — the second essay.
  *
- * ── WHY IT IS A ROUTE AND NOT ANOTHER public/docs PAGE ────────────────────
+ * ── LAYOUT ─────────────────────────────────────────────────────────────────
  *
- * The first essay (public/docs/blog_econometrics_of_ai.html) is a frozen
- * legacy page: it is on a résumé and on LinkedIn, it is served byte-for-byte,
- * and next.config.ts keeps its URL alive. Nothing new should be added to that
- * directory. This one is written against the design system instead — the
- * grounds, the type scale, the nav and the footer — so it reads as part of the
- * site rather than as a page that imitates it.
+ * Set entirely in components/site/essay.tsx, which both essays share. Read the
+ * two traps at the top of that file before changing how the body is wrapped:
+ * a <Reveal> around it renders the whole essay invisible, and `<Band prose>`
+ * centres it away from its own title.
  *
  * `paper` throughout, and no ink band. The nav keys its legible face on
  * `body:not(:has(#top[data-ground="ink"]))`, so a route with no ink hero gets
  * the sticky paper bar with nothing to configure. A dark band mid-essay was
  * drafted and cut: the ink register on this site means "a production readout",
  * and a paragraph of prose is not one.
- *
- * ⚠ THE BODY IS NOT WRAPPED IN <Reveal>, AND IT MUST NOT BE. <Reveal> observes
- * with `threshold: 0.15`, so an element only reveals once 15% of it is on
- * screen. This essay's body is over 12,000px tall; 15% of it is roughly two
- * viewports, which can never be visible at once, so the observer never fires
- * and the entire essay stays at `opacity: 0` — invisible, with the build green
- * and the HTML correct. It was written that way first and caught in the
- * browser. Reveal is for elements SHORTER than the viewport: a lede, a record,
- * a rule. The lede above uses it. Long-form prose reveals nothing and simply
- * renders, which is also how a document should behave.
  *
  * ── WHAT THIS FILE MAY AND MAY NOT SAY ────────────────────────────────────
  *
@@ -80,82 +77,23 @@ export const metadata: Metadata = {
   alternates: { canonical: '/essays/what-it-can-reach' },
 };
 
-/**
- * A section heading.
- *
- * No size class: `<h2>` already resolves to the display face at --text-h2 in
- * globals.css, which is the register every band heading on the home page is
- * set in. An earlier draft overrode it down to --text-h3 and the essay stopped
- * looking like the rest of the site — the headings read as bold body text
- * rather than as section breaks.
- */
-function H({ children }: { children: React.ReactNode }) {
-  return <h2 className="mt-[clamp(52px,7vw,84px)] max-w-[24ch]">{children}</h2>;
-}
-
-/** Body paragraph at the reading measure. */
-function P({ children }: { children: React.ReactNode }) {
-  return <p className="mt-[18px] max-w-[var(--container-prose)]">{children}</p>;
-}
-
-/** A source. Author, title, venue, year, and a link a reader can open. */
-function S({ children, href }: { children: React.ReactNode; href?: string }) {
-  return (
-    <li className="mt-[10px] text-fine text-[color:var(--fg-muted)]">
-      {href === undefined ? (
-        children
-      ) : (
-        <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline decoration-transparent decoration-1 underline-offset-4 hover:decoration-[color:var(--fg-accent)] hover:text-[color:var(--fg)]"
-        >
-          {children}
-        </a>
-      )}
-    </li>
-  );
-}
-
 export default function EssayPage() {
   return (
     <>
-      <Band tone="paper" id="top">
-        <Eyebrow>Essay · September 2026</Eyebrow>
+      <EssayHeader
+        date="September 2026"
+        title="Stop Asking Whether It Thinks. Ask What It Can Reach."
+        lede="What I learned from the week a machine proved a theorem about moving water, why I think we have been using the wrong word for this technology, and the place I would rather point it."
+      />
 
-        <h1 className="mt-[14px] max-w-[20ch] font-serif text-h1">
-          Stop Asking Whether It Thinks. Ask What It Can Reach.
-        </h1>
+      <EssayBody>
+        <EssayHeading>A librarian, and two piles of paper</EssayHeading>
 
-        <Reveal index={1}>
-          <p className="mt-[26px] max-w-[var(--container-prose)] text-lede text-[color:var(--fg-muted)]">
-            What I learned from the week a machine proved a theorem about moving
-            water, why I think we have been using the wrong word for this
-            technology, and the place I would rather point it.
-          </p>
-        </Reveal>
-      </Band>
-
-      {/*
-        NOT `<Band prose>`. That prop puts `.prose-measure` on the same element
-        as `.wrap`, so the narrower max-width wins and `.wrap`'s
-        `margin-inline: auto` CENTERS the whole reading column — which would
-        leave this essay's body sitting in the middle of the page while the
-        title above it starts at the gutter. The home page's idiom is the other
-        one: a full-width wrap with each element constrained by
-        `max-w-[var(--container-prose)]`, all of it left-aligned. <P> and <H>
-        carry that measure themselves, so the essay lines up with the title and
-        with every band on the home page.
-      */}
-      <Band tone="paper" className="pt-0">
-        <H>A librarian, and two piles of paper</H>
-
-        <P>
+        <EssayParagraph>
           Start in a library, because that is where this actually starts.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           A librarian at the University of Chicago named Don Swanson spent
           years worrying about a problem that sounds like a riddle and turns
           out to be a fact about the world. Science publishes far more than
@@ -167,9 +105,9 @@ export default function EssayPage() {
           It is sitting on the shelves. It is undiscovered anyway, because no
           one person read both shelves. He gave the condition a name:
           undiscovered public knowledge.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           Then he went and did it. He read one literature on the blood of
           people with Raynaud’s syndrome, a condition where the small vessels
           in the fingers clamp shut painfully in the cold. He read a second
@@ -178,9 +116,9 @@ export default function EssayPage() {
           by side, they licensed a hypothesis nobody had stated: that fish oil
           might help. Swanson ran no experiment. He wrote the sentence, and
           published it.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           I want to be accurate about what happened next, because the honest
           version is the useful one. A small double-blind trial three years
           later found a benefit in primary Raynaud’s and none in the secondary
@@ -190,16 +128,16 @@ export default function EssayPage() {
           to even evaluate itself. So this is not a story about a librarian
           who was always right. It is a story about where a hypothesis came
           from. It came from reading, and from nothing else.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           Hold that shape in your head. Everything below is the same shape at
           a different scale.
-        </P>
+        </EssayParagraph>
 
-        <H>The week in September</H>
+        <EssayHeading>The week in September</EssayHeading>
 
-        <P>
+        <EssayParagraph>
           On the eighth of September, OpenAI published a paper claiming that
           an internal system of theirs had proved that a three-dimensional
           fluid, starting from rest, under a smooth push, with its energy
@@ -209,9 +147,9 @@ export default function EssayPage() {
           first of the month, that the winning group ran on the order of ten
           thousand agents at once, and that the proof arrived about
           eighty-eight hours later.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           About twelve hours before that announcement, Tristan Buckmaster of
           NYU posted a statement. He and Levent Alpöge, a mathematician who
           works at Anthropic, had been working privately for about a year, and
@@ -227,9 +165,9 @@ export default function EssayPage() {
           the length of the project, and that he did not get an answer on
           training. He describes proposals about authorship that he declined,
           and an exchange that turned sharp.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           OpenAI’s account is that its researchers and its agents did not see
           any of that work through any means until it was public, and that no
           specific user data was accessed to solve the problem. Its original
@@ -240,9 +178,9 @@ export default function EssayPage() {
           influenced the system in any way, including through training. The
           researcher at the center of the sharpest exchange has apologized for
           his words and disputes the characterization of what he asked for.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           I am not going to tell you who is right, and I am not writing this
           to. I will point out the thing I found most striking, which is that
           Buckmaster himself declines to. His statement says it outright: he
@@ -251,9 +189,9 @@ export default function EssayPage() {
           anyone of anything. He is stating what he was told and when. And he
           adds that if an OpenAI model really did close that gap, it is a
           remarkable thing and should be said loudly, with the history intact.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           The history, in this case, is not in dispute by anyone. Both sides
           credit the same two people. Diego Córdoba and Luis Martínez-Zoroa
           spent years building the program that made this line of attack
@@ -261,11 +199,11 @@ export default function EssayPage() {
           writes in his statement that he believes Martínez-Zoroa deserves a
           Fields Medal. Nobody’s result here came from nowhere. It came from a
           road two humans built.
-        </P>
+        </EssayParagraph>
 
-        <H>The sentence that made me want to write this</H>
+        <EssayHeading>The sentence that made me want to write this</EssayHeading>
 
-        <P>
+        <EssayParagraph>
           It is in Buckmaster’s statement, and it is about his own work, not
           OpenAI’s. Describing the first proof his collaborator’s model
           produced, he writes that it was the most horrendous thing he has
@@ -273,31 +211,31 @@ export default function EssayPage() {
           twenty-second of August. And then, in his words, they worked around
           the clock to understand this proof and turn it into something
           readable.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           Read that again slowly. The machine found it. Two human beings then
           spent weeks understanding it. He is candid about how that went: he
           calls one of the resulting write-ups AI slop, apologizes for it, and
           says the community and the problems deserve better care than he had
           time to give.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           That gap — between a thing being found and a thing being understood
           — is the whole subject of this essay. It is not a gap that
           embarrasses the technology. It is a description of what the
           technology is.
-        </P>
+        </EssayParagraph>
 
-        <H>What the instrument actually does</H>
+        <EssayHeading>What the instrument actually does</EssayHeading>
 
-        <P>
+        <EssayParagraph>
           Here is the claim I want to make, and it is deliberately smaller
           than the one you have been hearing.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           A large language model is an instrument for reaching regions of an
           enormous space of already-existing information that we could not
           practically reach before. Not a mind. Not a colleague. A reader with
@@ -305,9 +243,9 @@ export default function EssayPage() {
           us and notice which two pages are reaching for each other. Swanson
           did that by hand with two literatures. This does it across a space
           no person could walk.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           This is not a metaphor I invented, and the literature is better than
           the metaphor. In a study in Nature, researchers trained word
           embeddings on millions of materials-science abstracts and recovered
@@ -317,9 +255,9 @@ export default function EssayPage() {
           discoveries. The authors’ own sentence is the cleanest statement of
           the idea I have found: latent knowledge regarding future discoveries
           is, to a large extent, embedded in past publications.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           Look at how the strongest systems are actually built and you find
           the same admission. FunSearch, in Nature, pairs a language model
           with an automatic evaluator, and its authors are explicit that the
@@ -330,9 +268,9 @@ export default function EssayPage() {
           peer-reviewed journal last year, called these systems embodiments of
           brute-force search, and I do not think that is an insult. It is a
           specification.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           And there is a beautiful piece of evidence for the boundary of the
           thing. When Nature had working mathematicians put AlphaProof through
           its paces, the pattern that came back was that it did well on
@@ -343,18 +281,18 @@ export default function EssayPage() {
           is full of bespoke definitions that the library — and so the training
           — does not contain. His summary was blunt: no AI system is anywhere
           near useful to him right now.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           That is the thesis stated as a measurement. The instrument navigates
           the space that is already represented. Which is exactly why it is
           powerful, and exactly why calling it a general intelligence gets the
           engineering wrong.
-        </P>
+        </EssayParagraph>
 
-        <H>The time everyone got this wrong in public</H>
+        <EssayHeading>The time everyone got this wrong in public</EssayHeading>
 
-        <P>
+        <EssayParagraph>
           In the autumn of last year a researcher posted that a model had
           solved a batch of open problems from a well-known database of
           Erdős’s unsolved questions, and declared that science acceleration
@@ -365,30 +303,30 @@ export default function EssayPage() {
           The model had gone and found the papers that already solved them,
           some of them obscure, and it had done that very well. The head of a
           rival lab called the whole episode embarrassing.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           I think about that story constantly, because nothing in it was fake.
           The capability was real and, honestly, wonderful. A machine read a
           corpus nobody had finished reading and returned the connection. The
           only thing that was wrong was the word we reached for. We said
           solved. It had searched.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           And here is what bothers me about that mistake: searching was the
           more useful thing. Swanson’s whole career says so.
-        </P>
+        </EssayParagraph>
 
-        <H>Where I could be wrong, stated at full strength</H>
+        <EssayHeading>Where I could be wrong, stated at full strength</EssayHeading>
 
-        <P>
+        <EssayParagraph>
           If I only told you the part above, I would be doing the thing I am
           complaining about, in the other direction. So here is the strongest
           evidence against my own framing.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           In July, the same Levent Alpöge published an explicit counterexample
           to the Jacobian conjecture, a problem that had stood since the
           nineteen-thirties, crediting an Anthropic model with finding it. A
@@ -396,9 +334,9 @@ export default function EssayPage() {
           produced it. You substitute the numbers and look. It either is or is
           not a counterexample, and this one is. And you cannot retrieve from
           a corpus an object that is not in the corpus.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           I do not know how to fit that cleanly into a story about searching a
           space of existing information, and I am not going to pretend
           otherwise. The most honest thing I can say is that the space these
@@ -406,16 +344,16 @@ export default function EssayPage() {
           written. It seems to include the space of things constructible from
           what people have written, which is unimaginably larger, and which we
           have no map of. That is more than a library. It is still not a mind.
-        </P>
+        </EssayParagraph>
 
-        <H>The part that makes it knowledge</H>
+        <EssayHeading>The part that makes it knowledge</EssayHeading>
 
-        <P>
+        <EssayParagraph>
           Now the detail from September that I find genuinely moving, and that
           almost nobody wrote about.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           OpenAI’s formal proof is checked against problem statements it did
           not write. The statements were taken, at a pinned version, from an
           independent repository of formalized open conjectures maintained by
@@ -423,18 +361,18 @@ export default function EssayPage() {
           to define what counted as proving it. Someone else held the
           definition, in machine-checkable form, and the proof had to satisfy
           that.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           I would like that to be the most-copied idea of this whole episode.
           It is the answer to the question everyone keeps asking in the wrong
           key. You do not need to know whether the machine understood
           anything. You need the statement of the problem to live somewhere
           the machine’s owner does not control, and you need the check to be
           mechanical.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           Which is why nothing is settled yet, and why that is fine. The Clay
           Mathematics Institute has recognized no one; its rules require
           publication, years of elapsed time, and general acceptance by the
@@ -446,9 +384,9 @@ export default function EssayPage() {
           — the unforced question, the one most people mean when they say
           Navier–Stokes, is still open. OpenAI has said it does not intend to
           claim the prize.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           Terence Tao, who has thought about these equations for most of his
           career, gave the objection its best form. Getting the answer this
           way, he told CNN, is a little like watching a movie by jumping from
@@ -458,24 +396,24 @@ export default function EssayPage() {
           public evidence about what these systems can do is subject to severe
           reporting bias, because successes are announced and failures are
           not.
-        </P>
+        </EssayParagraph>
 
-        <H>Why the framing is not just semantics</H>
+        <EssayHeading>Why the framing is not just semantics</EssayHeading>
 
-        <P>
+        <EssayParagraph>
           Five days before the mathematics announcement, at a briefing for a
           different model, OpenAI’s president told reporters it was not
           unreasonable to feel that we are now in the AGI era. Those two
           events got welded together in the retelling, and they should not be:
           different week, different model, different claim.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           But the welding is the whole problem, and it is why I care about a
           word.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           If the frame is artificial general intelligence, the only available
           question is whether the machine is smarter than us, and that
           question has no engineering answer. It cannot be measured, it cannot
@@ -488,31 +426,31 @@ export default function EssayPage() {
           and who can afford it — a fair question here, since one mathematician
           observed that very few mathematicians will ever have resources at
           that scale.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           Those are questions a graduate student can work on. The other one is
           a question you can only have opinions about.
-        </P>
+        </EssayParagraph>
 
-        <H>Where I would rather point it</H>
+        <EssayHeading>Where I would rather point it</EssayHeading>
 
-        <P>
+        <EssayParagraph>
           Now the science fiction, except that every piece of it has already
           been built and published, which is why I think it is not fiction so
           much as an unfinished assignment.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           Picture a person’s medical record as what it actually is: a
           time series. Visits, codes, prescriptions, values, decades long,
           written by dozens of people who never met each other and were each
           solving that day’s problem. It is a library, and nobody has read the
           whole of it — not the patient, and not, in any real sense, any one
           of their doctors.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           Last year a group published a generative model in Nature trained on
           the records of about four hundred thousand people, which predicts
           rates for more than a thousand diseases from a person’s history and
@@ -523,14 +461,14 @@ export default function EssayPage() {
           to flag pancreatic cancer risk years before diagnosis. This is
           Swanson’s shape again: A and B in one part of the record, B and C in
           another, and the sentence connecting them in nobody’s chart.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           And now the guardrail, which belongs in the same paragraph as the
           hope rather than in a footnote after it.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           That Nature model’s accuracy fell when it crossed the border, and
           fell further the farther ahead it looked. Its own authors report
           that it learned artifacts of how the data was collected — diseases
@@ -545,9 +483,9 @@ export default function EssayPage() {
           risk algorithm used on millions of patients turned out to be
           predicting cost rather than illness, which quietly meant Black
           patients had to be sicker to get the same score.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           So the instrument does not get to diagnose. It gets to notice. A
           clinician decides. And between noticing and deciding sits the
           unglamorous machinery I have come to think is the actual frontier:
@@ -560,11 +498,11 @@ export default function EssayPage() {
           in. What that work taught me is that the hard parts are almost never
           the model. They are the questions about what a comparison entitles
           you to claim.
-        </P>
+        </EssayParagraph>
 
-        <H>The thing I want you to keep</H>
+        <EssayHeading>The thing I want you to keep</EssayHeading>
 
-        <P>
+        <EssayParagraph>
           A journalist told a small story on a podcast this month that has
           stayed with me more than the theorem did. He had been covering a
           puzzle about dice — sets of dice fair enough that players can each
@@ -577,9 +515,9 @@ export default function EssayPage() {
           dusty. What he contributed was not mathematics. It was
           encouragement: the model would stall, ask whether it should try
           looking somewhere else instead, and he would say yes, go on.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           I should be careful with that story, because I checked it and it is
           smaller than it sounds: solutions for that size of set already
           existed publicly, including on the wiki the puzzle’s own community
@@ -587,147 +525,139 @@ export default function EssayPage() {
           matters survives checking. A person with no standing in that field
           reached into a space he could not otherwise have entered, and the
           only thing he supplied was direction and permission to continue.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           That is the future I actually believe in, and it is smaller and
           better than the one being sold. Not a machine that thinks for us. A
           machine that goes where we cannot go and comes back with something,
           while the deciding what it means, and the checking whether it is
           true, and the caring who it is for, stay exactly where they have
           always been.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           Every correction in this essay — the misquoted line, the dice claim
           that was bigger than the record, the two announcements welded into
           one — came from a person opening a source and reading it. That is
           not a defeat for the technology. It is the other half of it, and it
           is the half that is ours.
-        </P>
+        </EssayParagraph>
 
-        <P>
+        <EssayParagraph>
           Finding is not a lesser act than creating. Swanson settled that
           forty years ago in a library, and the machines have only made the
           point louder. But nothing that is found becomes knowledge until
           somebody understands it. Buckmaster and Alpöge lost weeks of sleep
           to that, and it was the most human thing in the whole story.
-        </P>
+        </EssayParagraph>
 
-        <P>Don’t forget which half is yours.</P>
+        <EssayParagraph>Don’t forget which half is yours.</EssayParagraph>
 
         <Rule className="mt-[clamp(44px,6vw,72px)]" />
 
-        <H>Sources</H>
+        <EssayHeading>Sources</EssayHeading>
 
-        <P>
+        <EssayParagraph>
           Everything above is checkable, so here is what I read. Where a claim
           in the news cycle did not survive checking, I left it out.
-        </P>
+        </EssayParagraph>
 
-        <ul className="mt-[18px] max-w-[var(--container-prose)] list-none">
-          <S href="https://doi.org/10.1086/601720">
+        <SourceList>
+          <Source href="https://doi.org/10.1086/601720">
             Don R. Swanson, “Undiscovered Public Knowledge”, The Library
             Quarterly, 1986 — and the companion case study, “Fish Oil,
             Raynaud’s Syndrome, and Undiscovered Public Knowledge”, Perspectives
             in Biology and Medicine, the same year.
-          </S>
-          <S href="https://doi.org/10.1016/0002-9343(89)90261-1">
+          </Source>
+          <Source href="https://doi.org/10.1016/0002-9343(89)90261-1">
             R. A. DiGiacomo, J. M. Kremer and D. M. Shah, “Fish-oil dietary
             supplementation in patients with Raynaud’s phenomenon”, The American
             Journal of Medicine, 1989 — the small trial that followed Swanson’s
             hypothesis, positive in the primary form only.
-          </S>
-          <S href="https://doi.org/10.1093/bioinformatics/btad090">
+          </Source>
+          <Source href="https://doi.org/10.1093/bioinformatics/btad090">
             Erwan Moreau, “Literature-based discovery: addressing the issue of
             the subpar evaluation methodology”, Bioinformatics, 2023 — the
             field’s own account of how hard it is to tell whether this works.
-          </S>
-          <S href="https://doi.org/10.1038/s41586-019-1335-8">
+          </Source>
+          <Source href="https://doi.org/10.1038/s41586-019-1335-8">
             Vahe Tshitoyan et al., “Unsupervised word embeddings capture latent
             knowledge from materials science literature”, Nature, 2019.
-          </S>
-          <S href="https://doi.org/10.1038/s41586-023-06924-6">
+          </Source>
+          <Source href="https://doi.org/10.1038/s41586-023-06924-6">
             Bernardino Romera-Paredes et al., “Mathematical discoveries from
             program search with large language models” (FunSearch), Nature.
-          </S>
-          <S href="https://doi.org/10.1038/s41586-025-09833-y">
+          </Source>
+          <Source href="https://doi.org/10.1038/s41586-025-09833-y">
             Thomas Hubert et al., “Olympiad-level formal mathematical reasoning
             with reinforcement learning” (AlphaProof), Nature, 2025.
-          </S>
-          <S href="https://www.nature.com/articles/d41586-025-03585-5">
+          </Source>
+          <Source href="https://www.nature.com/articles/d41586-025-03585-5">
             “Mathematicians put AlphaProof to the test”, Nature, 2025 — where
             the mathlib pattern and Kevin Buzzard’s verdict come from.
-          </S>
-          <S href="https://doi.org/10.1093/philmat/nkaf005">
+          </Source>
+          <Source href="https://doi.org/10.1093/philmat/nkaf005">
             Walter Dean and Alberto Naibo, “Artificial Intelligence and Inherent
             Mathematical Difficulty”, Philosophia Mathematica, 2025.
-          </S>
-          <S href="https://openai.com/index/navier-stokes-solution/">
+          </Source>
+          <Source href="https://openai.com/index/navier-stokes-solution/">
             OpenAI, “On the Navier–Stokes Millennium Prize Problem”, and the
             paper “Finite time blowup for Navier–Stokes”, September 2026, with
             the Lean formalization released alongside them.
-          </S>
-          <S href="https://cims.nyu.edu/~tristanb/statement.pdf">
+          </Source>
+          <Source href="https://cims.nyu.edu/~tristanb/statement.pdf">
             Tristan Buckmaster’s statement, September 2026 — quoted here for his
             description of his own work, and for his explicit refusal to accuse
             anyone.
-          </S>
-          <S href="https://www.claymath.org/millennium/navier-stokes-equation/">
+          </Source>
+          <Source href="https://www.claymath.org/millennium/navier-stokes-equation/">
             Charles Fefferman’s official statement of the Navier–Stokes problem
             for the Clay Mathematics Institute, which is where the four
             alternatives and the role of the forcing term are defined.
-          </S>
-          <S href="https://terrytao.wordpress.com/">
+          </Source>
+          <Source href="https://terrytao.wordpress.com/">
             Terence Tao’s blog, and his lecture “Mathematics in the age of AI”,
             on verification, on reporting bias, and on what is lost when the
             middle of the story is skipped.
-          </S>
-          <S href="https://doi.org/10.1038/s41586-025-09529-3">
+          </Source>
+          <Source href="https://doi.org/10.1038/s41586-025-09529-3">
             Artem Shmatko et al., “Learning the natural history of human disease
             with generative transformers” (Delphi-2M), Nature, 2025 — read it
             with its own limitations section open.
-          </S>
-          <S href="https://doi.org/10.1038/s41591-023-02332-5">
+          </Source>
+          <Source href="https://doi.org/10.1038/s41591-023-02332-5">
             Davide Placido et al., “A deep learning algorithm to predict risk of
             pancreatic cancer from disease trajectories”, Nature Medicine, 2023.
-          </S>
-          <S href="https://doi.org/10.1001/jamainternmed.2021.2626">
+          </Source>
+          <Source href="https://doi.org/10.1001/jamainternmed.2021.2626">
             Andrew Wong et al., “External Validation of a Widely Implemented
             Proprietary Sepsis Prediction Model in Hospitalized Patients”, JAMA
             Internal Medicine, 2021.
-          </S>
-          <S href="https://doi.org/10.1126/science.aax2342">
+          </Source>
+          <Source href="https://doi.org/10.1126/science.aax2342">
             Ziad Obermeyer et al., “Dissecting racial bias in an algorithm used
             to manage the health of populations”, Science, 2019.
-          </S>
-          <S href="https://doi.org/10.1136/bmj-2023-078378">
+          </Source>
+          <Source href="https://doi.org/10.1136/bmj-2023-078378">
             Gary S. Collins et al., the TRIPOD+AI statement, BMJ, 2024 — one of
             the reporting standards that already exists for exactly this.
-          </S>
-          <S href="https://doi.org/10.1162/daed_a_01915">
+          </Source>
+          <Source href="https://doi.org/10.1162/daed_a_01915">
             Erik Brynjolfsson, “The Turing Trap: The Promise &amp; Peril of
             Human-Like Artificial Intelligence”, Daedalus, 2022.
-          </S>
-        </ul>
+          </Source>
+        </SourceList>
 
         <Rule className="mt-[clamp(36px,5vw,56px)]" />
 
-        <div className="mt-[26px] flex flex-wrap gap-x-8 gap-y-3 text-fine">
-          <a
-            href="/docs/blog_econometrics_of_ai.html"
-            className="underline decoration-transparent decoration-1 underline-offset-4 hover:decoration-[color:var(--fg-accent)]"
-          >
-            Earlier essay: the scarce complement to AI work
-          </a>
-          <a
-            href="/docs/news.html"
-            className="underline decoration-transparent decoration-1 underline-offset-4 hover:decoration-[color:var(--fg-accent)]"
-          >
-            The month-by-month record
-          </a>
-        </div>
-      </Band>
+        <EssayLinks
+          links={[
+            { href: '/essays/the-scarce-complement', label: 'Earlier essay: the scarce complement to AI work' },
+            { href: '/docs/news.html', label: 'The month-by-month record' },
+          ]}
+        />
+      </EssayBody>
     </>
   );
 }

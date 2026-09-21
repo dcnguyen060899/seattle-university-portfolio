@@ -263,11 +263,11 @@
     "id": "art:econ-essay",
     "kind": "post",
     "title": "AI Didn't Take Your Job. It Created One Nobody Is Trained For",
-    "url": "https://duyng-portfolio.com/docs/blog_econometrics_of_ai.html",
+    "url": "https://duyng-portfolio.com/essays/the-scarce-complement",
     "access": "public",
     "roleId": null,
-    "legacyPath": "public/docs/blog_econometrics_of_ai.html",
-    "note": null
+    "legacyPath": null,
+    "note": "Moved 2026-09-21 from public/docs/blog_econometrics_of_ai.html onto the design system, text verbatim. Both old URLs are 301s to this route in next.config.ts, so legacyPath is null and the footer resolves the link from this URL's pathname."
   },
   {
     "id": "art:learning-algorithm",

@@ -101,6 +101,9 @@ export const DELETED_PAGE_REDIRECTS = [
   { from: '/docs/resume_content', to: '/docs/Resume.pdf', status: 301 },
   { from: '/docs/index_resume.html', to: '/docs/Resume.pdf', status: 301 },
   { from: '/docs/index_resume', to: '/docs/Resume.pdf', status: 301 },
+  // The first essay, moved onto the design system 2026-09-21, text verbatim.
+  { from: '/docs/blog_econometrics_of_ai.html', to: '/essays/the-scarce-complement', status: 301 },
+  { from: '/docs/blog_econometrics_of_ai', to: '/essays/the-scarce-complement', status: 301 },
 ] as const
 
 /**
