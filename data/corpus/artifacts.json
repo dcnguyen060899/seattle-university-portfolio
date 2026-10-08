@@ -80,6 +80,16 @@
     "note": null
   },
   {
+    "id": "art:su-story",
+    "kind": "page",
+    "title": "Finding Humanity Amongst Automation",
+    "url": "https://www.seattleu.edu/newsroom/2026/finding-humanity-amongst-automation.php",
+    "access": "public",
+    "roleId": null,
+    "legacyPath": null,
+    "note": "Seattle University's newsroom story on the CAUSE win, published 16 September 2026. Linked, not reproduced: the page carries the university's own headshot of Duy, which this site does not republish, so no provenance block is needed."
+  },
+  {
     "id": "art:mavterras-site",
     "kind": "website",
     "title": "mavterras.com",

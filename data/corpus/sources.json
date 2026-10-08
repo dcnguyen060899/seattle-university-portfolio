@@ -623,6 +623,18 @@
     "note": "Evidences the REQUEST and the requesting office. That the interview took place is src:owner-update-2026-09-08. The sender is not named in any record or on any surface."
   },
   {
+    "id": "src:su-newsroom-2026-09",
+    "kind": "url",
+    "repo": null,
+    "label": "Seattle University newsroom, \"Finding Humanity Amongst Automation\", 16 September 2026",
+    "locator": "https://www.seattleu.edu/newsroom/2026/finding-humanity-amongst-automation.php",
+    "custodian": "public",
+    "trust": "primary",
+    "firstRecorded": "2026-10-07",
+    "lastChecked": "2026-10-07",
+    "note": "The university's published story on the CAUSE win, under the SU News byline with no named author. By subject and timing it is the story the August 2026 interview (src:su-gradstudies-interview-2026-08) was for; the page does not itself say which office commissioned it. Read in full on 2026-10-07."
+  },
+  {
     "id": "src:owner-update-2026-09-08",
     "kind": "owner-statement",
     "repo": null,

@@ -47,15 +47,20 @@
  *
  * The Graduate Studies interview is stated as the office that asked and the
  * fact that it happened (clm:cause-su-interview). The person who wrote is
- * not named on any surface, and the story's publication is not asserted —
- * when it has a URL it enters the corpus as an artifact and gets a link.
+ * not named on any surface. The story ran in the university's newsroom on
+ * 16 September 2026 (clm:cause-su-story), so it is now an artifact
+ * (art:su-story) and the record links it — the plan this comment carried
+ * until 2026-10-07, when it had a URL. The article's own characterisations
+ * are the university's words and are not repeated here; the link carries
+ * them.
  *
  * Claims rendered here in the first person, with their ids recorded so the
  * licensing and caveat gates can see them: clm:yang-psb-submission ·
  * clm:yang-psb-oral · clm:fischer-role · clm:fischer-domain ·
  * clm:fischer-etl-formats · clm:fischer-selfserve · clm:cause-win ·
  * clm:cause-blind-judging · clm:cause-build · clm:cause-story ·
- * clm:cause-su-interview · clm:mav-live · clm:mav-sole-author.
+ * clm:cause-su-interview · clm:cause-su-story · clm:mav-live ·
+ * clm:mav-sole-author.
  */
 
 import type { ReactNode } from 'react';
@@ -233,8 +238,13 @@ export function HighlightsBand() {
         </Highlight>
 
         {/* ── 3 · CAUSE 2026 ───────────────────────────────────────────────
-          clm:cause-win, clm:cause-blind-judging, clm:cause-story and
-          clm:cause-su-interview in the first person. None carries a caveat. */}
+          clm:cause-win, clm:cause-blind-judging, clm:cause-story,
+          clm:cause-su-interview and clm:cause-su-story in the first person.
+          None carries a caveat.
+
+          "Read the DATA story", not "Read the story": once the university's
+          story sits beside it, two links both called a story would leave a
+          reader guessing which is his work and which is coverage of it. */}
         <Highlight
           index={4}
           rail="CAUSE 2026"
@@ -242,15 +252,16 @@ export function HighlightsBand() {
           meta={`CAUSE Student Data Scrollytelling Contest · ${pageValue('clm:cause-build')}`}
           links={
             <>
-              <EvidenceLink id="art:cause-story" label="Read the story" />
+              <EvidenceLink id="art:cause-story" label="Read the data story" />
               <EvidenceLink id="art:cause-contest" label="The contest" />
+              <EvidenceLink id="art:su-story" label="Seattle U’s story" />
             </>
           }
         >
           <p>
             Judged blind on narrative, data interpretation, scrollytelling, and visual
             design. Seattle University Graduate Studies interviewed me for a story on the
-            win.
+            win, which the university published in September.
           </p>
         </Highlight>
       </ol>

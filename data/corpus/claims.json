@@ -3130,7 +3130,8 @@
     ],
     "skills": [],
     "artifacts": [
-      "art:cause-story"
+      "art:cause-story",
+      "art:su-story"
     ],
     "derivedFrom": [],
     "surfaces": [
@@ -3139,9 +3140,50 @@
     ],
     "asserted": true,
     "disputeId": null,
-    "lastReviewed": "2026-09-08",
+    "lastReviewed": "2026-10-07",
     "reviewEvery": 180,
-    "note": "The interviewer is NOT named in any record or on any surface. The story's publication is NOT asserted: when it has a URL, add an artifact record and link it from the CAUSE item. reviewEvery 180 so the record is revisited once the story is out."
+    "note": "The interviewer is NOT named in any record or on any surface. The story is now published (16 September 2026) — that fact is its own record, clm:cause-su-story, sourced to the public page rather than to the e-mail, and the CAUSE item links it through art:su-story."
+  },
+  {
+    "id": "clm:cause-su-story",
+    "kind": "fact",
+    "subject": "art:cause-story",
+    "statement": "Seattle University published a story on the win, \"Finding Humanity Amongst Automation\", in its newsroom on 16 September 2026.",
+    "short": "Featured in a Seattle University newsroom story on the win",
+    "period": {
+      "start": "2026-09",
+      "end": "2026-09",
+      "precision": "month"
+    },
+    "status": "verified",
+    "tense": "past",
+    "confidence": "high",
+    "evidenceStrength": "personal-project",
+    "sources": [
+      "src:su-newsroom-2026-09"
+    ],
+    "verificationPath": "https://www.seattleu.edu/newsroom/2026/finding-humanity-amongst-automation.php",
+    "verifiedOn": "2026-10-07",
+    "quote": null,
+    "caveats": [],
+    "concepts": [
+      "cpt:data-viz",
+      "cpt:economics"
+    ],
+    "skills": [],
+    "artifacts": [
+      "art:su-story"
+    ],
+    "derivedFrom": [],
+    "surfaces": [
+      "page",
+      "agent"
+    ],
+    "asserted": true,
+    "disputeId": null,
+    "lastReviewed": "2026-10-07",
+    "reviewEvery": 365,
+    "note": "States only that the story exists and when it ran. The article's own characterisations — e.g. calling the contest 'an international competition' — are the university's words, not corpus facts, and no surface repeats them; a reader who wants them follows the link."
   },
   {
     "id": "clm:econ-essay",
